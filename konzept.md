@@ -918,6 +918,32 @@ flowchart TD
     G --> H[Wartende Workflow-Aktion stoppen]
 ~~~
 
+### 17.12 Externer Connector: n8n
+
+**Produktentscheidung:** n8n wird in Version 1 über offene, dokumentierte HTTP-Webhooks angebunden. Der Connector benötigt keinen eigenen n8n-Node und keine n8n-API-Schlüssel für den Regelbetrieb. Nutzer können die Standardknoten **Webhook** und **HTTP Request** einsetzen. Unterstützt werden n8n Cloud, selbst gehostete öffentliche Instanzen sowie lokal oder im privaten Netzwerk laufendes n8n. Basisadresse und vollständige Webhook-URL sind editierbar; der Verbindungstest prüft die Erreichbarkeit aus Sicht des WordPress-Servers. Die n8n-Webhook-Dokumentation unterscheidet Test- und Produktions-URLs und unterstützt Header-, Basic- und JWT-Authentifizierung. Produktions-URLs werden erst mit veröffentlichten/aktiven n8n-Workflows registriert. citeturn671857936view0
+
+**Datenfluss A – Workflow Captain → n8n:** Pro-Connection wird eine n8n-Produktions-Webhook-URL mit optionaler Header-Authentifizierung konfiguriert. Ausgewählte Ereignisse aus WordPress, WooCommerce und Captain-Providern werden nach Commit über die dauerhafte Workflow-Outbox zugestellt. Die Verbindung sendet nur ausgewählte, schema-validierte Felder samt Event-ID, Eventtyp, Schema-Version und Zeitpunkt. Keine Secrets, Gutschein-/Ticketcodes, Zahlungsdaten oder unnötigen personenbezogenen Daten. n8n muss die Event-ID zum Deduplizieren verwenden; Wiederholungen bekommen dieselbe Event-ID. Test-URLs sind nur für den Verbindungstest erlaubt und werden nicht für aktive Workflows genutzt.
+
+**Datenfluss B – n8n → Workflow Captain:** Workflow Captain stellt einen versionierten, authentifizierten Inbound-Trigger bereit. Pro Verbindung wird ein eigener, widerrufbarer API-Token mit minimalen Rechten erzeugt. Der Token darf nur freigegebene externe Trigger starten; er berechtigt weder zur allgemeinen REST-API noch zum Ausführen beliebiger Workflows oder Adminaktionen. Jede Anfrage enthält Eventtyp, eindeutige Request-/Idempotency-ID und JSON-Payload. Workflow Captain validiert Vertrag, Triggerfreigabe, Größe, Rate-Limit und Wiederholungsschutz, bevor ein Lauf angenommen wird; Antwort mit Run-/Request-ID nach dauerhafter Annahme, kein synchrones Warten auf den vollständigen Ablauf.
+
+~~~mermaid
+flowchart LR
+    A[WordPress / Captain Event] --> B[Workflow Captain Outbox]
+    B --> C[n8n Webhook]
+    D[n8n HTTP Request] --> E[Geschützter Captain Trigger]
+    E --> F[Workflow Run]
+~~~
+
+**Einrichtung und Status:** Unter „Integrationen → n8n“ Verbindung anlegen, Richtung auswählen, n8n-Basis-URL (Protokoll, Host, Port und optional Basis-Pfad) und vollständige Webhook-URL editieren, Authentifizierung konfigurieren, erlaubte Eventtypen/Trigger und Datenfelder wählen, Verbindung testen und anschließend aktivieren. Für n8n lokal sind z. B. `http://localhost:5678`, `http://127.0.0.1:5678`, eine LAN-Adresse wie `http://192.168.1.20:5678` oder ein internes Docker-/VPN-Hostname zulässig, wenn der WordPress-Host diesen Endpunkt tatsächlich erreichen kann. `localhost` bezeichnet immer den Host bzw. Netzwerk-Namespace, in dem WordPress läuft, nicht automatisch den Rechner des Admins. Status zeigt Verbindungstyp, letzten erfolgreichen Versand, letzte Fehlermeldung in redigierter Form, Warteschlange und Credential-Rotation. Secrets sind nach dem Speichern maskiert und nur durch Rotation ersetzbar. Änderungen am Endpoint oder Scope erfordern erneuten Test.
+
+**Betriebs- und Sicherheitsregeln:** Für öffentliche/produtive Endpunkte HTTPS verpflichtend. Lokales HTTP und private/LAN-Adressen sind nur nach expliziter Administratorfreigabe für diese konkrete Verbindung zulässig. Egress-/SSRF-Schutz blockiert standardmäßig private, Loopback-, Link-Local- und Metadaten-IP-Ziele; bei freigegebenen lokalen Verbindungen werden erlaubter Host/IP bzw. CIDR, Port und Redirect-Ziele eng gebunden und erneut geprüft. Cloud-Metadatenziele und nicht freigegebene private Ziele bleiben immer gesperrt. DNS-Auflösung, DNS-Rebinding, Zeit- und Antwortgröße werden validiert/begrenzt. Eingehend schützt HTTPS plus ein je Verbindung erzeugter, scope-begrenzter Token; Requests bekommen Zeitstempel, Nonce/Request-ID, Deduplizierung, Rate-Limit, Body-Limit und Auditspur. Keine n8n-Kontodaten oder pauschalen Admin/API-Keys verwenden. Schlüssel nie in Logs, Exporten, Run-Payloads oder Screenshots ausgeben. Fehler werden begrenzt mit Backoff wiederholt; nicht wiederholbare 4xx-Fehler gehen in die Fehlerwarteschlange. n8n bleibt Eigentümer seiner Workflows und Credentials; Workflow Captain bleibt Eigentümer seiner Trigger, Actions und Business-Regeln.
+
+**Abgrenzung zur n8n Management API:** V1 synchronisiert oder verwaltet keine n8n-Workflows über dessen öffentliche Management-API. Diese API wird mit eigenem API-Key authentifiziert; Verfügbarkeit und Scopes sind von n8n-Version und Plan abhängig. Der Webhook-Datenfluss vermeidet diese Zusatzabhängigkeit und verhindert, dass ein weitreichender n8n-Schlüssel in WordPress gespeichert werden muss. Eine spätere optionale Verwaltungsintegration benötigt eine eigene explizite Freigabe, minimale Scopes und Versionstest. citeturn671857936view1
+
+**V1-Szenarien:** WooCommerce-Bestellung bezahlt → n8n CRM/ERP/Support-Ablauf; Voucher Captain Gutschein ausgestellt/eingelöst → n8n Kundenservice oder Reporting (ohne Codewert); Pass Captain Ticket ausgegeben/eingecheckt → n8n Termin-/Teilnahmeprozess (ohne Einlasstoken); Form Captain Entry eingegangen → n8n genehmigte CRM-/Helpdesk-Übergabe mit Consent- und Feldfilter; n8n externe Freigabe abgeschlossen → freigegebener Workflow-Captain-Trigger startet eine interne, typisierte Folgeaktion. Bestehende native Suite-Flows bleiben maßgeblich für Zahlung, Voucher, Zutritt, Berechtigungen, Provisionen und Einwilligung.
+
+**Free/Pro:** Die Basisversion kann Installationsstatus und Dokumentation anzeigen. Ausgehende/inbound n8n-Verbindungen, Credentials, dauerhafte Zustellung, Retry/Replay und produktive Trigger sind Pro-Connector-Funktionen und folgen demselben Lizenz-/Site-Modell wie andere externe Connectoren.
+
 ## 18. Wenn Workflow Captain installiert ist: Zentral steuern, Plugins eigenständig halten
 
 ### 18.1 Verbindliche Entscheidung: kein stiller globaler Takeover
