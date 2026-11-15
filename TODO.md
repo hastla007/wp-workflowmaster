@@ -105,3 +105,28 @@
 - [ ] WF-CONNECTOR-12 – Connectoren mit Entitlement `workflow.custom_connectors` und externe Webhook-Verbindungen mit `workflow.webhooks` absichern; Lizenzablauf pausiert neue Pro-Runs, erhält Konfiguration/Logs lesbar und zeigt betroffene Workflows.
 - [ ] WF-CONNECTOR-13 – Vertrags-/E2E-Abnahme für App fehlt/deaktiviert, falscher Contract-Major, fehlende Rechte, ungültige Signatur, Replay, Duplikat, Timeout nach erfolgreichem Zielaufruf, Secret-Rotation, Retry, PII-Redaktion und Lizenzablauf ergänzen.
 - [ ] WF-CONNECTOR-14 – Praxisbeispiele und Dokumentation für Kundenportal/CRM, kundenspezifische Buchung, Membership-Zugang nach Gutschein-Einlösung und benutzerdefinierte Benachrichtigung veröffentlichen; klarmachen, dass der Connector die Fachlogik besitzt und Workflow Captain nur koordiniert.
+
+### Kundenconnector 1 – BoatingSchool B2B / Laravel
+
+- [ ] WF-CUST1-01 – Vorhandenen WooCommerce-Connector als fachlichen Owner von Paid-Order-Codezustellung, Idempotenz pro Order-Position, Retry und Refund-Sperrung festhalten; Workflow darf diese Befehle nicht nochmals ausführen.
+- [ ] WF-CUST1-02 – In BoatingSchool einen eigenen dauerhaften Workflow-Event-Outbox-Dispatcher nach Commit ergänzen. Nicht die vorhandene `tenant.provision`-Shop-Outbox oder bloße Commerce-Logs als allgemeine Zustellgarantie voraussetzen.
+- [ ] WF-CUST1-03 – Versionierte Events für Shopkonto registriert/verknüpft/deaktiviert, Provisionierung erfolgreich/fehlgeschlagen sowie Code-Batch geliefert/entwertet veröffentlichen; stabile Event-IDs und tenant-/shop-scoped Correlation-IDs nutzen.
+- [ ] WF-CUST1-04 – Allowlist für Event-Payloads implementieren: Referenzen, Status, Menge und Kurs-/Produktcode; nie Gutscheinwerte, Linkcodes, Passwörter, unbestätigte E-Mail-/USt-Daten oder vollständige Lern-/Kontodaten versenden.
+- [ ] WF-CUST1-05 – Separaten Workflow-Vertrag und Credentials mit eigener Key-ID, HMAC, Zeitfenster, Nonce/Replay-Schutz, Rotation, Rate-Limits und Contract-Handshake entwickeln; bestehende Commerce-Keys und `/api/commerce/v1`-Scopes nicht wiederverwenden.
+- [ ] WF-CUST1-06 – Tenant-Scope serverseitig authentifizieren und RLS-Kontext pro Anfrage setzen; Tenant-IDs aus Ereignissen gelten nur als Referenz. Plattformweite Rechte als separaten, überprüfbaren Scope führen.
+- [ ] WF-CUST1-07 – Begrenzte App-Aktionen nur über öffentliche Services zulassen: tenant-scoped Schuladmin-Hinweis und optional Gruppenmitglied-Einladung mit Rollenprüfung, Sitzplatz-/Tageslimits und Command-Idempotenz. Account-Freigabe/-Verknüpfung, Codeausgabe/-widerruf und Kursrechte bleiben ausgeschlossen.
+- [ ] WF-CUST1-08 – BoatingSchool-Provider im WordPress-Connector/Workflow-Captain über Version, Status, Testevent, Payload-Mapping, Eventzustellung, Retry und Fehlerdiagnose sichtbar machen.
+- [ ] WF-CUST1-09 – Integrationstests für Tenant-Isolation, RLS, falsche/abgelaufene Signatur, Replay, doppelte Event-ID, HMAC-Key-Rotation, Timeout nach erfolgreichem Zielaufruf, Refund, Code-Redaktion und Outbox-Replay ergänzen.
+
+### Kundenconnector 2 – LearnBoating B2C / WordPress
+
+- [ ] WF-CUST2-01 – In LearnBoating einen öffentlichen, versionierten Workflow-Event-/Action-Vertrag ergänzen. Das Plugin bleibt ohne Workflow Captain eigenständig; keine direkten Tabellen-/Meta-Zugriffe des Workflow-Adapters.
+- [ ] WF-CUST2-02 – Separaten `LearnBoating Workflow Connector`-Adapter mit Providerregistrierung, Mindestversion, Status und Lizenz-/Capability-Prüfung bereitstellen.
+- [ ] WF-CUST2-03 – Idempotente, nachholbare Ereignisse aus OrderSync/EntitlementService für geänderte Zugänge, aus GroupService für Gruppenmitgliedsstatus, aus VoucherGrants für bestätigte Voucher-Zugänge und optional aus Ticket-Hooks publizieren; Event-ID muss Wiederholung und echten Statuswechsel unterscheiden.
+- [ ] WF-CUST2-04 – Ereignis `learning.entitlement.changed` als kanonische Quelle für Zugangs-Onboarding definieren; Order-, Voucher- und Auto-Reconcile-Wege korrelieren, damit ein entitlementspezifischer Workflow nicht zusätzlich auf dasselbe Woo-Zahlungsereignis reagiert.
+- [ ] WF-CUST2-05 – Prüfungssubmission höchstens als freigegebenen Zusammenfassungsstatus publizieren; keine Fragen, Antworten, Einzelversuche oder vollständigen Lern-/Leistungsprofile in Workflow-Payloads, Bedingungen oder Logs aufnehmen.
+- [ ] WF-CUST2-06 – Vorlagenbasierte transaktionale Lernnachricht nur mit serverseitiger Auflösung der Nutzerreferenz, zweckgebundenen Feldern und Datenschutz-/Abmeldeprüfung bereitstellen; keine freie Empfängeradresse aus einem Workflow-Token.
+- [ ] WF-CUST2-07 – Gruppenmitglied-Einladung optional als Action über GroupService anbieten; aktuellen Gruppeneigentümer/Capability verifizieren, Sitzplatz-/Tageslimits respektieren, stabile Idempotenz-ID ergänzen und Einladungs-Token aus Ausgabe/Logs ausschließen.
+- [ ] WF-CUST2-08 – Workflow Captain darf WooCommerce-Zahlungen/-Refunds, VoucherGrants, Lernzugangsstatus und Prüfungsergebnisse nicht selbst schreiben. Jeder bestehende Domainservice bleibt einzige zuständige Instanz.
+- [ ] WF-CUST2-09 – E2E-Matrix für Zahlung mit Zustimmung/ohne Zustimmung, Dispute, Voll-/Teilrefund, manuelle Zugangsentscheidung, Voucher-Grant/-Revoke, Auto-Reconcile, Gruppeninvite/-beitritt, Ticketstatus, doppelte Events, Lizenzende und Datenschutzexport ergänzen.
+- [ ] WF-CUST2-10 – Customer-Connector-Beispiele sowie WordPress-Admin-Diagnose für fehlendes LearnBoating, inkompatiblen Contract, abgeschaltete Ticket-Erweiterung, fehlende Berechtigung und wartende Workflow-Runs dokumentieren.
