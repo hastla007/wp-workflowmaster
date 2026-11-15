@@ -106,8 +106,8 @@ Externe App-Plattformen und Cloud-Runs sind nicht Teil von Version 1; Webhooks s
 - Produktschlüssel/Add-on-Ordner/Textdomain: `workflow-captain-pro`; Rechtepräfix: `workflow.`.
 - Pro nutzt den bestehenden WP-License-Client und Add-on-Kernel in `captain-pro`. Free enthält keinerlei Lizenzcode.
 - Die Pläne verwenden nur `sites.live_limit` und `support.level` als Tarifunterschiede; es gibt keine pro-Feature-Tiers, Run-Limits oder Task-Credits.
-- Premiumrechte: `workflow.suite_integrations`, `workflow.custom_connectors`, `workflow.webhooks`, `workflow.event_correlation`, `workflow.advanced_logic`, `workflow.recipe_templates`, `workflow.extended_logs`.
-- Alle Pro-Pläne erteilen dieselben sieben Rechte; Site-Limit/Support kommen aus dem Standardvertrag. Die Katalog-Entitlements müssen vor dem Verkauf angelegt werden.
+- Premiumrechte: `workflow.suite_integrations`, `workflow.custom_connectors`, `workflow.webhooks`, `workflow.event_correlation`, `workflow.advanced_logic`, `workflow.delays`, `workflow.multisite_network`, `workflow.recipe_templates`, `workflow.extended_logs`.
+- Alle Pro-Pläne erteilen dieselben neun Rechte; Site-Limit/Support kommen aus dem Standardvertrag. Die Katalog-Entitlements müssen vor dem Verkauf angelegt werden.
 - Bei Lizenzablauf bleiben Rezepte, Versionen, Logs und Export lesbar. Neue Pro-Runs starten nicht. Geplante Pro-Aktionen werden pausiert und nicht automatisch nach Lizenzverlängerung nachgeholt; Betreiber prüft eine Wiederaufnahme mit Vorschau.
 - In `captain-pro/README.md`, Architektur, Build, Übersetzungen und Release-Checkliste wird das Add-on nach dem bestehenden Produktmuster ergänzt.
 
@@ -186,7 +186,7 @@ V1 enthält damit ein SDK/Provider-Contract, Beispiel-Connector, lokale Projekta
 - `wp_workflow_runs`: Status, Rezeptversions-ID, Event-Referenz, Start-/Endzeit, Korrelations-/Idempotency-Key.
 - `wp_workflow_steps`: Schrittstatus, Retry-Zähler, Fehlerklasse, redigierte Ausgabe.
 - `wp_workflow_queue`: fällige Arbeit, Lease, Versuche, nächste Ausführung.
-- Tabellen haben eindeutige Schlüssel gegen Doppelausführung; Multisite bleibt je Site getrennt.
+- Tabellen haben eindeutige Schlüssel gegen Doppelausführung. Site-lokale Tabellen bleiben pro Blog getrennt. Netzwerkweite Flows nutzen getrennte Tabellen unter dem Netzwerk-Präfix: Registry/Versionen, opt-in Sites und Scopes, minimale Network-Inbox, Parent-Runs/Steps, Dispatch-Queue und Auditverweise. Netzwerktabellen speichern nur nötige Eventfelder, keine doppelten Vollobjekte; die Site-ID gehört in jeden Scope- und Idempotenzschlüssel.
 - Datenbank-Updates laufen kontrolliert im Admin, über WP-Cron oder WP-CLI und nicht bei jedem Frontend-Aufruf. Schemaänderungen werden versioniert.
 
 ## 6. Integrationskatalog und priorisierte Ereignisse
@@ -492,6 +492,7 @@ Mit Version 1 können Betreiber typische Geschäftsabläufe innerhalb von WordPr
 - Freigabeschritte, ereignisübergreifende Korrelation mit konfiguriertem Schlüssel und Timeout, erweiterte Condition-Gruppen sowie If/Else.
 - Warten bis Ereignis/Termin, Business-Statusprüfung vor Aktion und Abbruch geplanter Abläufe bei Refund, Storno, Widerruf oder Opt-out.
 - Ein- und ausgehende HMAC-signierte Webhooks mit Timestamp-/Replay-Schutz, Rate-Limit, Schlüsselrotation und Zustellprotokoll; HTTP-Ausgänge nur per HTTPS-Host-Allowlist, ohne Redirects zu internen Adressen.
+- Netzwerkweite Multisite-Workflows innerhalb derselben WordPress-Netzwerk-Installation: Site A als Ereignisquelle, eine oder mehrere ausdrücklich freigegebene Ziel-Sites, begrenzter Fan-out und zentrale Network-Admin-Steuerung. Erfordert das Entitlement workflow.multisite_network; unabhängige WP-Installationen bleiben Connector-/Webhook-Fälle.
 - Action Scheduler mit Retry/Backoff, Job-Leases, dedupliziertem Replay, Dead-letter-Status und Dashboard für überfällige Queue.
 - Versionshistorie, Export/Import mit Provider-Migrationsvorschau, Freigabe vor Veröffentlichung und konfigurierbare Rezeptvorlagen.
 - Detaillog bis 365 Tage (Standard 90 Tage), CSV-Export mit Formelschutz, Audit-Historie und Rollensteuerung.
@@ -625,16 +626,19 @@ Jede Vorlage zeigt beteiligte Plugins, Voraussetzungen, Seiteneffekte, betroffen
 
 **Persistenz:** Rezepte, immutable Rezeptversionen, Runs, Schritte, Queue/Lease, Providerfehler und Audit-Historie in eigenen tabellarischen Speicherstrukturen. IDs referenzieren Fachobjekte, duplizieren deren Fachdaten aber nicht. Keine dauerhafte Event-Payload über den für Retry/Retention notwendigen Zeitraum. Fremde Objekte werden beim Anzeigen live über deren öffentliche API geladen, soweit noch vorhanden.
 
-**Multisite:** Daten und Runs pro Site getrennt; Site-ID gehört in Idempotency-Key. Netzwerkweite Rezepte/Engine sind nicht Teil von Version 1, auch wenn eine Lizenz mehrere Site-Aktivierungen umfasst.
+**Multisite in Version 1:** normale Workflows bleiben pro Site isoliert. Zusätzlich bietet Workflow Captain Pro einen ausdrücklich netzwerkweiten Modus für Ereignis-zu-Aktion-Abläufe zwischen Sites derselben WordPress-Multisite-Installation. Beispiel: Auf Site A wird eine Bestellung bezahlt; auf Site B wird eine freigegebene Benachrichtigung ausgelöst. Netzwerkweite Workflows, Runs, Inbox und Koordination werden getrennt in Netzwerktabellen gespeichert, lokale Workflows bleiben in Site-Tabellen. Für Cross-Site-Runs werden alle beteiligten Blog-IDs in Identität, Berechtigung und Idempotenzschlüssel geführt. Das Feature benötigt netzwerkaktiviertes Workflow Captain Core und Pro; jeder Quell-/Ziel-Site-Adapter kann site-lokal aktiv sein. Site-übergreifende Abläufe zwischen unabhängigen WordPress-Installationen laufen über Connector/Webhook/n8n.
 
 ### 15.7 Admin-Seiten und v1-Inhalte
 
 - **Dashboard:** aktive Workflows; Warteschlange; fehlgeschlagene Runs; überfällige Jobs; Contract-/Pluginstatus; Aktionen „Erstellen“, „Vorlage prüfen“, „Fehler beheben“.
+- **Multisite Network Admin (nur bei Multisite + Pro):** Netzwerk-Workflows, Netzwerk-Runs, beteiligte Sites, Site-Freigaben, Queue-/Providerstatus und Lizenzverbrauch. Site-Admins verwalten ihre Teilnahmefreigabe im Site-Admin und sehen nur Runs, die ihre Site betreffen; lokale Workflows bleiben in der gewohnten Pluginseite.
+- **Editor im Netzwerkmodus:** Source-Site-/Eventauswahl und Ziel-Site-/Actionauswahl werden an Trigger und Steps sichtbar ausgewiesen. Auswahl standardmäßig fest und explizit; neue Sites werden nie automatisch eingeschlossen. Vor Veröffentlichung zeigt der Prüfer beide Site-Scopes, Zustimmungen, Site-Limits, Adapterversionen und Datenfelder.
 - **Workflows:** Suche/Filter nach Status und Plugin; Trigger-/Action-Zusammenfassung; Laufzahl; zuletzt ausgeführt; Version; Owner; pausieren/duplizieren/archivieren. Validierter Import/Export liegt als Listenaktion mit Vorschau hier, nicht unter globalen Einstellungen.
 - **Editor:** visueller Drag-&-Drop-Canvas mit Bausteinleiste, gerichteten Pfeilverbindungen und Auswahl „Wenn / Dann / Sonst“. Trigger, Eventfelder, Bedingungen, Aktionen, Verzögerung/Warten und Enden werden direkt am Knoten konfiguriert; der Einstellungsbereich zeigt Provider, Vertragsversion, Feldtypen, Tokenpicker, Schreibwirkung und nötige Capability. Testdaten, Dry Run, Validierung und Veröffentlichungsvorschau sind erreichbar, ohne den Graphen zu verlassen.
 - **Vorlagen:** vorgeprüfte Suite-Flows; Voraussetzungen und Datenfluss; Draft-Import mit Prüfung, kein automatisches Live-Schalten.
 - **Läufe:** Liste nach Status/Datum/Workflow/Provider; Detailansicht Schritt für Schritt, Fehlercode, Retry-Zähler, redigierte Ein-/Ausgabe, Correlation-ID; sicher wiederholen/abbrechen.
 - **Integrationen:** Suite-Provider und eigene Connectoren. Die Unterseite **Eigene Connectoren** zeigt lokale Adapter und externe Webhook-Verbindungen, Contract-Versionen, Trigger/Aktionen, Freigaben, Secret-Status, Testverbindung und letzte Fehler.
+- **Multisite-Netzwerk:** Network-Admin-Ansicht für Cross-Site-Flows und -Runs; Site-Admins erhalten lokale Teilnahmefreigaben und begrenzte Einsicht in eigene Site-Schritte.
 - **Einstellungen:** eigene WordPress-Unterseite mit Tabs Allgemein, Ausführung, Benachrichtigungen, Datenschutz & Aufbewahrung, Rollen & Rechte sowie eingeklapptem Erweitert-Bereich. Website-Zeitzone/-Mail werden geerbt; Queue- und Privacy-Defaults sind verständlich beschrieben.
 - **Systemstatus & Diagnose:** schreibgeschützte Queue-/Cron-Gesundheit, Provider- und Contract-Kompatibilität, letzte Fehler, Speicher-/Retentionstatus sowie redigierter Supportbericht. Globale Notfallpause mit Auswirkungen ist eine getrennte, bestätigungspflichtige Aktion.
 - **Pro-Lizenz:** nur das Add-on-Kernel-Menü; Lizenzstatus, Entitlements, Sites und Updates.
@@ -643,7 +647,7 @@ Jede Vorlage zeigt beteiligte Plugins, Voraussetzungen, Seiteneffekte, betroffen
 ### 15.8 Lizenz- und Upgradeverhalten für Version 1
 
 - Produktkey/Ordner/Textdomain: workflow-captain-pro. Rechtepräfix: workflow.
-- Entitlements als einzelne Fähigkeiten: workflow.suite_integrations, workflow.custom_connectors, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.delays, workflow.recipe_templates und workflow.extended_logs. Ein Recht je eigenem Feature im Captain-Pro-Kernel.
+- Entitlements als einzelne Fähigkeiten: workflow.suite_integrations, workflow.custom_connectors, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.delays, workflow.multisite_network, workflow.recipe_templates und workflow.extended_logs. Ein Recht je eigenem Feature im Captain-Pro-Kernel.
 - Free enthält keine Lizenzlogik. Pro-Lizenzclient, Updater und Feature-Registry liegen ausschließlich in captain-pro und nutzen den bestehenden vendorten Client/Kernel.
 - Site-Limits und Supportlevel folgen dem WP-License-Captain-Modell; keine neuen Lizenztypen, selbstgebauten Checks oder monatlichen Task-Credits.
 - Ohne gültige Lizenz bleiben Workflows, Snapshots, Logs und Exporte lesbar. Neue Pro-Ausführungen und geplante Premiumaktionen werden pausiert, mit Grund angezeigt und nicht stillschweigend in Free-Aktionen konvertiert.
@@ -657,7 +661,7 @@ Version 1.0 ist erst releasebereit, wenn:
 - alle oben aufgeführten Core-/Woo-/Suite-Provider reale versionierte Verträge besitzen;
 - jede Schreibaktion Capability, Nonce/Auth, Schema-Validierung, Idempotenz und Audit erfüllt;
 - doppelte Hooks, parallele Requests, Retries, Refunds, Statuswechsel und Lizenzablauf ohne doppelte Geschäftsaktionen verarbeitet werden;
-- HPOS, Classic-/Block-Checkout, fehlende WooCommerce-/Suite-Plugins, inkompatible Vertragversion, WP-Cron-Ausfall und Multisite Site-Isolation geprüft sind;
+- HPOS, Classic-/Block-Checkout, fehlende WooCommerce-/Suite-Plugins, inkompatible Vertragversion, WP-Cron-Ausfall, lokale Multisite-Isolation und Cross-Site-Ausführung mit Berechtigungs-/Site-Grenzen geprüft sind;
 - Rezept-/Schema-Upgrades, Import/Export, Datenschutzexport/-löschung und Wiederherstellung aus Backup dokumentiert sind;
 - Queue-Monitoring zeigt, ob Jobs ausstehen, überfällig, in Arbeit oder fehlgeschlagen sind;
 - jede Mailvorlage Empfänger, Anlass, Opt-out/Einwilligungsstatus und Absender nachvollziehbar macht;
@@ -682,6 +686,8 @@ Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punk
 | Nutzungslimits | Keine Task-Credits oder monatlichen Run-Limits. Nur Lizenz-Site-Limits und technische Queue-Schutzgrenzen. |
 | Integrationsemantik | Mehrere Einstiegsereignisse starten grundsätzlich je einen eigenen Lauf; Warten auf zusammengehörige Ereignisse erfolgt nur über einen expliziten Pro-Korrelationsknoten. |
 | Ausführungsbasis | Lokal auf der WordPress-Seite; Action Scheduler bei WooCommerce, WP-Cron-Fallback mit System-Cron-Empfehlung |
+| Multisite | Site-lokale Flows bleiben getrennt; netzwerkweite Cross-Site-Flows sind Pro v1, nur innerhalb derselben WP-Multisite und mit expliziter Teilnahme-/Ziel-Site-Freigabe |
+| Multisite-Sitelimit | Jede eindeutige beteiligte Blog-ID (Quell- oder Ziel-Site) zählt gegen den Plan-Sitelimit; Netzwerkmodus braucht mindestens zwei lizenzierte Sites; Fan-out bleibt auf lizenzierte und freigegebene Sites begrenzt |
 | Kompatibilität | WordPress 6.8+, PHP 8.3+; WooCommerce 8.0+ optional für Shop-Provider. Jeder Suite-Adapter verlangt zusätzlich die im Providervertrag definierte Kernplugin-Mindestversion. |
 | Externe Systeme | v1 enthält versionierte Connector-SDK/Providerverträge für kundenspezifische WordPress-Projekte sowie Pro-Webhooks für externe Systeme. Keine breite Bibliothek fertiger Drittanbieter-Apps. |
 | KI | Nicht in Version 1; keine automatische Veränderung oder Aktivierung ohne Betreiberfreigabe |
@@ -719,7 +725,8 @@ Diese Festlegung konkretisiert die Rollen von Workflow Captain und den Fachplugi
 ### 16.1 Produktrollen und Abhängigkeiten
 
 - Workflow Captain Core enthält Engine, Builder, Queue, WP-/WooCommerce-Provider, Laufprotokoll und Developer-Registry.
-- Workflow Captain Pro enthält Suite-Provider, kundenspezifische Connectoren, geschützte Webhooks und Pro-Steuerung. Der öffentliche Connector-Vertrag ist im Core dokumentiert; eigene Connector-Ausführung und externe Webhook-Verbindungen erfordern workflow.custom_connectors bzw. workflow.webhooks. Ein Adapter wird nur geladen, wenn sein Fachplugin aktiv ist und den erforderlichen Vertrag meldet.
+- Workflow Captain Pro enthält Suite-Provider, kundenspezifische Connectoren, geschützte Webhooks und Pro-Steuerung. Der öffentliche Connector-Vertrag ist im Core dokumentiert; eigene Connector-Ausführung und externe Webhook-Verbindungen erfordern workflow.custom_connectors bzw. workflow.webhooks. Ein Adapter wird nur geladen, wenn sein Fachplugin aktiv ist und den erforderlichen Vertrag meldet. V1-Netzwerkflüsse verlangen zusätzlich die explizite Network-Site-Freigabe des jeweiligen Providers.
+- Im Multisite-Netzwerkmodus ist Workflow Captain Core und Pro netzwerkaktiviert. Network-Control-Plane und Cross-Site-Koordination nutzen eigene Tabellen mit dem Netzwerk-Präfix; normale Site-Flows und deren Queue bleiben unter dem jeweiligen Site-Präfix getrennt. Site-lokale Suite-Plugins müssen nicht netzwerkaktiviert sein: Ziel-Actions werden als interne, persistente Site-Command-Aufgaben für die konkrete Ziel-Site eingeplant und dort durch den Site-Worker ausgeführt, sodass die dort aktiven Plugins tatsächlich geladen sind.
 - Jedes Fachplugin bleibt eigenständig lauffähig. Es darf Workflow Captain oder dessen Pro-Lizenz nicht benötigen, um Bestellungen, Gutscheine, Tickets, Provisionen, Formularantworten oder Reviews zu speichern und zu verwalten.
 - Fachplugins besitzen ihre Geschäftsobjekte und unverzichtbaren Zustandsübergänge. Workflow Captain koordiniert Abläufe, ersetzt aber kein System of Record.
 - Für eine Premiumfunktion eines Fachplugins braucht es gegebenenfalls zwei Rechte: das passende Workflow-Entitlement und das Entitlement des Fachplugins. Workflow Captain darf keine fremde Pro-Funktion freischalten.
@@ -772,6 +779,53 @@ Workflow-Aktionen laufen als typisierte Commands im Plugin, das die Daten besitz
 | Command nutzt ein Fachplugin-Pro-Feature | Workflow- und Fachplugin-Entitlement müssen beide gültig sein. |
 | Workflow-Pro-Lizenz endet | Keine neuen Pro-Commands; Logs bleiben lesbar; geplante Schritte pausieren und werden nach Erneuerung nicht ungeprüft nachgeholt. |
 | Contract-Major ist inkompatibel | Provider schließt sicher; nur betroffene Runs pausieren mit Migrationshinweis. Andere Provider laufen weiter. |
+
+### 16.5 Netzwerkweite Workflows in WordPress Multisite
+
+**Geltungsbereich und Lizenz**
+
+Cross-Site-Ausführung ist ein Pro-Feature der Version 1 innerhalb einer einzelnen WordPress-Multisite-Installation. Workflow Captain Core und Pro müssen netzwerkaktiviert sein, damit Network-Registry, Queue-Callbacks und REST-/Admin-Entry-Points in allen Site-Kontexten verfügbar sind. Suite-Plugins/Provider bleiben pro Site aktivierbar. Eine Quelle darf Events nur dann an Netzwerk-Workflows geben, wenn ihre Site ausdrücklich teilnimmt; eine Ziel-Site darf Actions nur dann ausführen, wenn der Site-Adapter verfügbar und die lokale Action-Gruppe freigegeben ist. Site-lokale Workflows bleiben mit den bestehenden Tabellen, Menüs, Berechtigungen und Ausführungsregeln vollständig unabhängig.
+
+Jede eindeutige beteiligte Blog-ID, ob Quelle oder Ziel, zählt als eine Live-Site gegen den Lizenzplan. Ein Cross-Site-Workflow benötigt mindestens zwei lizenzierte Sites. Sites mit gemappten Domains bleiben dieselbe Blog-ID und werden nicht doppelt gezählt. Vor Veröffentlichung wird der Sitelimit-Verbrauch über alle Quell-/Ziel-Sites geprüft; bei Überschreitung kann der Flow nicht live gehen. Lizenzablauf stoppt neue Netzwerkannahmen und geplante Netzwerk-Actions, behält Konfiguration/Logs lesbar und holt Läufe nach Erneuerung nur nach Vorschau und Betreiberfreigabe nach.
+
+**Datenmodell und Ereignisweg**
+
+- Netzwerkweite Workflow-Definition, Version, Site-Scopes, Zustimmungsnachweis, Inbox, Parent-Run, Stepstatus, Idempotenz und minimale Auditmetadaten liegen in separaten Tabellen unter dem Netzwerk-Präfix. Site-lokale Tabellen werden nicht zu Netzwerktabellen umfunktioniert.
+- Ein Site-Provider veröffentlicht Events nur nach fachlichem Commit mit network_id, source_site_id/blog_id, Event-ID, Provider-/Schema-Version, Korrelation und freigegebenem Payload. Der Netzwerk-Dispatcher matcht nur aktive, veröffentlichte Flows, die diese Quell-Site ausdrücklich auflisten.
+- Die Workflow-Konfiguration enthält eine unveränderliche Quell-Site-Auswahl und feste Ziel-Site-IDs oder explizit gespeicherte statische Site-Gruppen. Sie darf Ziel-Site nie aus Payload, URL oder frei eingegebenem Blog-ID-Wert wählen. Neu hinzugefügte Sites werden nie automatisch aufgenommen.
+- Für Folgeschritte notwendige Eventdaten werden minimal und mit definierter Netzwerk-Retention gespeichert. Payload-Allowlist und Privacy-Klassen des Quellproviders bleiben erhalten; Logs, Exporte und Tokenpicker leaken keine nicht freigegebenen Felder.
+
+**Ziel-Site-Worker: sichere Plugin-Ladung**
+
+Die Netzwerksteuerung darf den Site-Wechsel nicht als Mechanismus verwenden, um Plugin-Code einer nur site-lokal aktivierten Ziel-Site nachzuladen. WordPress dokumentiert switch_to_blog() als Wechsel des aktuellen Datenbank-/Site-Kontexts; bereits geladener PHP-Code wird dadurch nicht neu geladen. Deshalb plant der Network-Dispatcher für jede Ziel-Site eine persistente interne Site-Command-Aufgabe in deren eigenem Queue-Kontext (Action Scheduler, wenn dort verfügbar, sonst WP-Cron/System-Cron). Die Callback-Funktion kommt aus netzwerkaktiviertem Workflow Captain Core und läuft in einem WordPress-Request/Worker, der auf der echten Ziel-Site gestartet wurde. So werden deren site-lokale Plugins, Provider, Settings und Tabellen korrekt geladen.
+
+Wenn zum Einplanen einer Site-Aufgabe kurz switch_to_blog() nötig ist, wird die Site-ID vorher als gültige Site im selben Netzwerk validiert; jede Umschaltung hat restore_current_blog() in einem finally-Pfad, auch bei Fehlern. Der Site-Worker prüft vor Ausführung erneut Site-Status, Provider-/Contract-Version, Consent, Lizenz, Action-Allowlist, Credential-Verfügbarkeit und Idempotenz; kein stiller Fallback auf eine andere Site.
+
+**Berechtigungen und Zustimmung**
+
+- Version 1 beschränkt Erstellen, Veröffentlichen, Pausieren und Ändern der Netzwerk-Site-Scopes auf WordPress Super-Admins im Network Admin. Benutzerdefinierte delegierte Network-Admin-Rollen werden erst nach einer separaten Capability-/Core-Kompatibilitätsprüfung freigegeben. Ein Site-Admin darf nur die Teilnahme seiner Site steuern und die für die Site sichtbaren Runs prüfen.
+- Jede Quell-Site erhält einen lokalen Opt-in mit erlaubten Eventfamilien und exportierbaren Feldern. Jede Ziel-Site erhält eine separate Freigabe für erlaubte Provider-Actions, Datenfelder, Fan-out und gegebenenfalls Empfänger-/Objektbereiche. Site-Opt-in ist standardmäßig aus.
+- Änderung an Trigger-/Action-Scope, Quelle/Ziel oder Datenfeldern invalidiert die alte Freigabe und erfordert erneute Freigabe/Test. Site-Deaktivierung oder Opt-out pausiert wartende betroffene Schritte; abgeschlossene Side Effects bleiben erhalten und werden nicht zurückgerollt.
+- Benutzergesteuerte Änderungen prüfen Site-spezifische Fähigkeiten über user_can_for_site()/current_user_can_for_site(). Hintergrundläufe nutzen einen eng begrenzten, vom Ziel-Site-Admin genehmigten Provider-Service-Scope; sie verwenden weder zufälligen aktuellen User noch implizite Super-Admin-Impersonation. Core-Actions mit Benutzerkontext benötigen eine explizit ausgewählte Site-Benutzeridentität und prüfen deren Mitgliedschaft und Capability bei Ausführung erneut.
+- Network-Admin sieht zentrale technische Runmetadaten. Site-Admins sehen nur Runs, die ihre Site als Quelle/Ziel berühren; Quellpayload ist für Zieladmins standardmäßig nicht lesbar, sofern Felder nicht freigegeben sind.
+
+**Ausführung, Teilerfolg und Fehler**
+
+WordPress-Multisite bietet keine gemeinsame Transaktion über fachliche Aktionen mehrerer Sites. Netzwerk-Runs verwenden deshalb Saga-/Step-Semantik: Source-Annahme, jede Site-Action und jeder Folgeschritt werden einzeln dauerhaft protokolliert; Idempotenzschlüssel enthalten Network-ID, Workflow-Version, Event-ID, Ziel-Site und Node-ID. Es gibt keine Exactly-once-Garantie. Bei mehreren Ziel-Sites wird je Ziel ein Child-Step geführt; ein Retry für Site C führt erfolgreiche Steps auf Site B nicht erneut aus. Nicht-idempotente oder irreversible Actions sind für Cross-Site-Fan-out nur mit expliziter Fachproviderfreigabe und manueller Replay-Bestätigung erlaubt. Keine automatische Kompensation ohne sicheren, versionierten Undo-Command.
+
+Runzustände unterscheiden accepted, waiting_site_worker, running, succeeded, partial_failure, paused_site_consent, blocked_provider, retryable_failure, manual_review und cancelled. Eine Site mit deaktiviertem Plugin, fehlender Zustimmung, abgelaufener Lizenz, geänderter URL oder inkompatiblem Vertrag blockiert nur ihre Steps; erfolgreiche Steps auf anderen Sites bleiben sichtbar. Nach Wiederherstellung werden wartende Steps nur nach ihrer expliziten Replay-Regel fortgesetzt.
+
+**Administration und Diagnose**
+
+Network Admin erhält „Workflow Captain → Netzwerk“ mit Workflows, Site-Teilnahmen/Freigaben, Runs, Queue und Diagnose. Der Canvas zeigt an jedem Trigger Quelle und an jedem Action-Knoten Ziel. Auswahl per Site-Name/URL mit Blog-ID im Detail; Filter für Sites, Plugins, Contract, Lizenz und Consent. Ein Prüfpanel vor Veröffentlichung listet Quelle/Ziel, Rechte, Datenfelder, Provider-Version, Lizenz-Sitz, Ausführungsart und Nebenwirkung.
+
+Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte: Teilnahme, erlaubte Event-/Action-Scopes, letzte Kommunikation und lokale Pause. Site-Admins können Netzwerkflows nicht bearbeiten. Zentrale und lokale Ansichten verwenden denselben Parent-Run-/Correlation-Verweis, aber unterschiedliche Berechtigungsfilter und Payload-Redaktion. Health-Status warnt, wenn Site-Cron/Queue fällige Site-Commands nicht verarbeitet.
+
+**Beispiel:** Site A veröffentlicht WooCommerce.order.paid. Site A hat diesen Eventtyp für Netzwerk-Workflows freigegeben. Der Flow erlaubt als Ziel nur Site B und als Action eine interne Site-B-Benachrichtigung. Der Dispatcher legt dort einen Site-Command an; Site B prüft Provider-Version, Zustimmung, Lizenz und Idempotenz und führt die Benachrichtigung aus. Das Runprotokoll zeigt Quelle A, Ziel B und den Site-Worker-Status. Site C bekommt weder Event noch automatische Aufnahme als Ziel.
+
+**Abgrenzung:** Dieser Modus verbindet Blogs innerhalb desselben Multisite-Netzwerks. Zwei getrennte WordPress-Installationen oder Netzwerke verwenden weiterhin Connectoren, n8n oder signierte Webhooks; Netzwerk-Site-IDs werden nicht netzwerkübergreifend interpretiert.
+
+**WordPress-Technikreferenzen:** [switch_to_blog()](https://developer.wordpress.org/reference/functions/switch_to_blog/) und [restore_current_blog()](https://developer.wordpress.org/reference/functions/restore_current_blog/) wechseln/wiederherstellen den Site-Kontext; das Nachladen nur site-lokaler Plugin-Dateien ist keine Wirkung dieses Wechsels. [user_can_for_site()](https://developer.wordpress.org/reference/functions/user_can_for_site/) ermöglicht sitebezogene Capability-Prüfungen. Rollen und Site-Mitgliedschaft sind in der [Multisite-Administrationsdokumentation](https://developer.wordpress.org/advanced-administration/multisite/administration/) beschrieben.
 
 ## 17. Vollständige v1-Integrationsmatrix: Auslöser, Aktionen und Szenarien
 
@@ -948,6 +1002,23 @@ flowchart LR
 
 **Free/Pro:** Die Basisversion kann Installationsstatus und Dokumentation anzeigen. Ausgehende/inbound n8n-Verbindungen, Credentials, dauerhafte Zustellung, Retry/Replay und produktive Trigger sind Pro-Connector-Funktionen und folgen demselben Lizenz-/Site-Modell wie andere externe Connectoren.
 
+### 17.13 Multisite-Netzwerkabläufe: Site A → Site B
+
+Diese V1-Szenarien laufen nur innerhalb derselben Multisite und setzen lizenzierte, freigegebene Quell-/Ziel-Sites voraus.
+
+| Quell-Site / Ereignis | Ziel-Site / erlaubte Aktion | Guardrails |
+|---|---|---|
+| Site A: WooCommerce-Bestellung bezahlt | Site B: interne Adminbenachrichtigung oder freigegebene CRM-Übergabe | Nur ausgewählte Order-Referenzen/Positionen; keine Zahlungsdaten oder vollständige Adresse standardmäßig; keine zweite Zahlung/Voucher-Ausgabe |
+| Site A: Form Captain Submission genehmigt | Site B: Lead-/Onboarding-Aufgabe oder Nachricht über deren Form-/Core-Service | Consent, Feld-Allowlist und Zweck prüfen; Spam-/ungeprüfte Submissions blockieren |
+| Site A: Pass Captain Check-in oder Terminänderung | Site B: Veranstalter-/Supportbenachrichtigung | Ticket-Code und Teilnehmer-PII redigieren; Site A bleibt Owner von Check-in/Capacity |
+| Site A: Affiliate-Provision freigegeben | Site B: interne Partnerübersicht oder aggregierter Report | Keine doppelte Provision, Bankdaten oder Auszahlung; Zielbericht nur mit genehmigten IDs/Beträgen |
+| Site A: LearnBoating Zugang geändert | Site B: freigegebene Kurs-/Supportbenachrichtigung | Entitlement bleibt im LearnBoating-System of Record; keine direkte Kursfreischaltung auf Site B |
+| Site A: Workflow über Formular/REST durch n8n ausgelöst | Site B: eine vorher freigegebene Site-Action | Network-/Site-Allowlist, eigener Token-Scope und Idempotenz; kein dynamisches Target aus Request-Payload |
+
+**Weitere Szenarien:** gezieltes Event auf einer Schul-/Shop-Site löst eine administrative Meldung in einer getrennten Marken-Site aus; eine freigegebene Site-A-Formularbestätigung plant eine Site-B-Aktion mit Verzögerung; Änderungen an Site-B-Teilnahme pausieren nur deren Childsteps. Jede Rezeptvorlage nennt Quelle, Ziel, Datenfelder, Site-Freigabe, Sitelizenzbedarf, Run-Owner sowie Fehler-/Retryverhalten.
+
+**Nicht angeboten:** Schreibzugriffe auf nicht ausgewählte/freigegebene Sites; automatische Aufnahme neuer Sites; freie Blog-IDs aus Tokens; direkte Tabellenzugriffe in Site B; Fachaktionen außerhalb des verantwortlichen Providers; Cross-Network-/Multi-Installation ohne Connector; unbeschränkter Fan-out oder Cross-Site-Schleifen.
+
 ## 18. Wenn Workflow Captain installiert ist: Zentral steuern, Plugins eigenständig halten
 
 ### 18.1 Verbindliche Entscheidung: kein stiller globaler Takeover
@@ -1016,6 +1087,12 @@ Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native
 ### 18.7 Umsetzung und Abnahme
 
 Die detaillierten Arbeitspakete für Providerverträge, Lizenz-/Shoppläne, UI, Migration, Kompatibilität und Releaseprüfung stehen in [TODO.md](TODO.md), Abschnitt Suite-Provider. Abschnitt 18 beschreibt weiterhin die verbindliche Architektur und Ownership-Grenzen.
+### 18.8 Multisite-Netzwerkmodus und Site-Ownership
+
+Site-lokale Workflows bleiben unabhängig. Netzwerkweite Flows sind eine zusätzliche, bewusst aktivierte Pro-Ebene mit Network-Admin als Orchestrator und expliziten Quell-/Ziel-Site-Freigaben. Netzwerk-Admin darf nicht automatisch alle lokalen Datenfelder oder Aktionen jeder Site erhalten. Quell- und Ziel-Site können ihre Teilnahme und Scopes widerrufen; laufende Netzwerk-Runs stoppen nur die noch nicht ausgeführten betroffenen Steps. Erfolgreiche Side Effects bleiben als Child-Steps sichtbar.
+
+Jeder Cross-Site-Step wird auf der tatsächlichen Ziel-Site ausgeführt, damit site-lokal aktivierte Provider geladen sind. Ein bloßer Datenbank-/Blog-Kontextwechsel lädt keine Plugins der Ziel-Site nach. Site-spezifische Fachabläufe, Konfigurationen und Tabellen bleiben beim jeweiligen Fachplugin. Zwischen unterschiedlichen WordPress-Netzwerken bleibt ausschließlich der Connector-/Webhook-/n8n-Vertrag zuständig.
+
 ## 19. Screenshot-Mockups und visualisierte Abläufe
 
 Die folgenden Abbildungen sind **statische Konzept-Mockups**, keine Screenshots eines bereits implementierten Plugins. Sie konkretisieren die in den Abschnitten 15–18 festgelegten Abläufe und dienen als gemeinsame UI-/Produktgrundlage. Versionen, Zahlen und Beispieltexte sind illustrative Beispieldaten.
@@ -1170,3 +1247,9 @@ Yoast SEO bleibt allein für die SEO-Ausgabe öffentlicher WordPress-Inhalte zus
 Für V1 wird keine direkte Yoast-Abhängigkeit benötigt. Kein Plugin-internes API, keine internen Klassen/Indexables und keine undokumentierten Meta-Keys verwenden. Ein späterer Headless-Connector kann Yoasts dokumentierte REST-Ausgabe lesen. Schema-Graph- oder Content-Analyse-Erweiterungen sind nur relevant, falls Workflow Captain künftig selbst öffentliches Inhaltsmaterial mit eigenem semantischem Typ bereitstellt; das ist für V1 ausgeschlossen.
 
 Die Kompatibilitätsprüfung vergleicht Quellcode und gerenderte Frontend-Ausgabe mit Yoast aktiv/deaktiviert: keine doppelten SEO-Tags oder JSON-LD-Ausgaben, keine unbeabsichtigten Änderungen an Sitemap/Robots/Canonical, weiterhin geschützte Workflow-REST-Endpunkte und intakte Beitragsaktionen. Tests müssen auch Updates der unterstützten Yoast-Versionen abdecken.
+
+### 19.16 Multisite-Netzwerkworkflow: Quell-Site A und Ziel-Site B
+
+Die Konzeptansicht zeigt einen Netzwerk-Workflow im WordPress Network Admin. Der Builder macht Quelle und Ziel an jedem Knoten sichtbar; die Seitenleiste fasst lokale Freigaben, Site-IDs, Lizenzplätze und redigierte Datenfelder zusammen. Site-Admins können die Teilnahme ihrer Site freigeben oder widerrufen, sehen aber keine fremden Site-Payloads.
+
+![Multisite Netzwerk-Workflow im WordPress Network Admin – Site A löst einen Schritt auf Site B aus](docs/assets/workflow-captain/multisite-network-workflow.svg)
