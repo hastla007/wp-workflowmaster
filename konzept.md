@@ -304,50 +304,49 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 - Externe Requests nicht in Frontend-Hooks, keine unerwarteten Tracking-/Analytics-Skripte.
 - Keine Tests wurden hier ausgeführt; alle Kompatibilitätsaussagen müssen mit realen Integrations- und Migrationstests belegt werden.
 
-## 11. Roadmap und Abnahmepunkte
+## 11. Roadmap zur vollständigen Version 1.0
 
-### Phase 0 – Suite-Verträge festlegen
+Die folgenden Phasen sind die Reihenfolge der Umsetzung. **Alle Phasen 0–3 gehören zum vollständigen Produktrelease Version 1.0**; keine Captain-Suite-Integration wird stillschweigend auf eine spätere Produktgeneration verschoben.
 
-- Lizenzierungs-/Free-Pro-Verteilung mit Captain-Pro-Inhaber bestätigen.
-- Für jedes Quellplugin Providervertrag, stabile Event-IDs, minimalen Payload und Serviceaktionen definieren.
-- Ermitteln, welche bestehenden Hooks/Services stabil genug sind; Lücken in den Fachplugins zuerst ergänzen.
-- WordPress/WooCommerce-Kompatibilitätsfenster und PHP-Minimum vereinbaren.
-- Wettbewerbs-Tarife/WordPress.org-Richtlinien und Sicherheitsreview dokumentieren.
+### Phase 0 – Produkt- und Providerverträge
 
-**Abnahme:** kein Workflow-Ziel greift direkt auf fremde Tabellen oder unversionierte interne Funktionen zu.
+- Free/Pro-Abgrenzung, Lizenzpläne, Site-Limits, Datenaufbewahrung und kompatible Mindestversionen verbindlich festlegen.
+- Öffentliche Event-/Action-Schemas für WordPress, WooCommerce und alle Captain-Plugins verabschieden.
+- Bestehende Plugin-Hooks auf öffentliche stabile Verträge abbilden; fehlende Verträge zuerst in den jeweiligen Fachplugins entwickeln.
+- Data-ownership, Refund-/Stornoverhalten, PII/Secrets und Idempotency je Provider dokumentieren.
 
-### Phase 1 – Workflow Captain Free 1.0
+**Abnahme:** alle V1-Provider besitzen eine verantwortliche Quellkomponente, versioniertes Schema, Fehlercodes und Testspezifikation.
 
-- Plugin-Grundgerüst, Capability/Settings, Rezeptdatenmodell und Provider Registry.
-- Core-Events und einfache lineare Workflows; sichere E-Mail-Aktion.
-- WooCommerce Basis-Trigger, Bestellnotiz und erlaubtes CRUD-Meta, HPOS-/Blocks-kompatibel.
-- Workflow-Liste, Editor, Dry Run, Logs und Queue-/Fehlerdiagnose.
-- Datenschutzexport/-löschung und Aufbewahrung.
-- Entwicklerdokumentation für Provider.
+### Phase 1 – Engine und kostenloser Kern
 
-**Abnahme:** kein Duplicate Run bei wiederholtem Event; Fehler sind sichtbar; fehlende Provider verursachen keinen Fatal; Rezept lässt sich exportieren/archivieren, Daten bleiben ohne Pro erhalten.
+- Workflow-Schema, Recipe-Versionen, Provider Registry, Event-Inbox, Queue/Lease und Run-Log implementieren.
+- WordPress-Core- und WooCommerce-Provider für die V1-Trigger/Aktionen erstellen.
+- Editor, Conditions, Tokenpicker, Dry Run, Veröffentlichen, Aktivieren/Pausieren und Basisprotokoll bereitstellen.
+- Datenschutzwerkzeuge, Capabilities, Systemstatus und Cron-/Queue-Diagnose integrieren.
 
-### Phase 2 – Workflow Captain Pro & erste Suite-Provider
+**Abnahme:** Free läuft vollständig ohne Lizenzserverkontakt; HPOS, Classic/Blocks, Deduplizierung, Retention und sichere Fehleranzeige sind belegt.
 
-- Pro-Add-on in `captain-pro`, Produktkatalog-/Entitlement-Eintrag und Lizenzseite über gemeinsamen Kernel.
-- Verzögerung, erweiterte Conditions, Wiederholen, Rezeptvorlagen und erweiterte Logs.
-- Voucher Captain und Pass Captain nach Verfügbarkeit der Anbieter-Verträge.
-- Bestehende WooCommerce- und Suite-Fachprozesse auf Doppelereignisse testen.
+### Phase 2 – Workflow Captain Pro und Captain-Suite-Provider
 
-**Abnahme:** Lizenzverhalten wie bestehende Add-ons; abgelaufene Lizenz sperrt neue Premiumausführung und lässt Diagnose/Lesen intakt; keine Doppelbuchung.
+- Add-on workflow-captain-pro in captain-pro integrieren; Produktschlüssel, Features und Lizenzseite nach vorhandenem Kernel-Modell.
+- Verzögerungen, If/Else, AND/OR-Gruppen, Mehrschritt-Rezepte, Retry/Replay, Vorlagen und Pro-Logs umsetzen.
+- V1-Provider für WP License Captain, Pass Captain, Voucher Captain, Affiliate Captain, Form Captain und Review Captain implementieren.
+- Crossflow-Rezepte mit Eigentümerschaft und Consent-/Suppressionregeln bereitstellen.
 
-### Phase 3 – weitere Suite-Verbindungen
+**Abnahme:** alle Fachaktionen laufen über öffentliche APIs; kein direkter Tabellenzugriff, keine doppelte Provision, keine Veröffentlichung/Aktion an Review-Präferenzen vorbei.
 
-- Affiliate Captain und Form Captain Trigger/Aktionen nach vorhandenen Kern-Serviceverträgen.
-- Review Captain erst nach Abschluss des eigenständigen Review-Konzepts und dessen Providerverträgen.
-- Import/Export mit Schema-Migration, Vorlagen, Multisite und Rollenmodell.
-- Externe Webhooks in Pro nach Security Review.
+### Phase 3 – V1 Integrations- und Release-Abnahme
 
-### Phase 4 – Ausbau nach Nutzungsdaten
+- End-to-End-Flows mit echten Plugin-Kombinationen und realen WooCommerce-Zustandswechseln abnehmen.
+- Refunds, Stornos, Queue-Ausfall, Retries, Parallelität, Site-/Lizenzende, Wiederherstellung und Contract-Upgrades prüfen.
+- Dokumentation, Kompatibilitätsmatrix, WordPress.org-Readme, Pro-Release, Übersetzungen, Datenschutztexte und Supportdiagnose finalisieren.
 
-- Weitere externe Plattformen (z. B. CRM, Mail, Sheets) nur bei Nachfrage und klaren API-/Kosten-/Datenschutzbedingungen.
-- Workflow-Statistiken, Adminberichte und Entwickler-SDK-Verbesserungen.
-- Keine KI-Erstellung oder Agent-Ausführung in Version 1; falls später gewünscht, nur Vorschlagsmodus mit menschlicher Prüfung und separaten Berechtigungen.
+**Abnahme:** alle Releasekriterien aus Abschnitt 15.9 erfüllt; Free- und Pro-ZIP lassen sich getrennt bauen/aktualisieren; Support kann Runs ohne geheime oder unnötige personenbezogene Daten untersuchen.
+
+### Phase 4 – Nach Version 1.0
+
+- Externe SaaS-/CRM-/Messaging-Adapter, Webhooks/HTTP, zusätzliche Drittanbieter-Plugins, Loops/fortgeschrittene Graphen und KI-gestützte Vorschläge erst nach eigener Nachfrage-, Sicherheits- und API-Prüfung.
+- Neue Captain-Integrationen werden als versionierte Provider-Updates ergänzt; die V1-Engine bleibt abwärtskompatibel.
 
 ## 12. Detaillierte To-do-Liste
 
