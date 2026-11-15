@@ -663,3 +663,233 @@ Die Gratisversion muss dennoch glaubwürdig sein: Wettbewerber bieten zum Teil H
 - Uncanny Automator [Preise](https://automatorplugin.com/pricing/)
 - Recherche-/Preisstand: 15.11.2026; Wechselkursvergleich mit EZB-Referenzkurs 13.11.2026. Preise und Funktionsumfang sind veränderlich; diese Entscheidung ist eine Preispositionierung, keine Preisabfrage im Live-Shop. Quelle zum Wechselkurs: [EZB EUR/USD](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-usd.en.html).
 
+
+
+## 16. Technische Integrationsarchitektur für die Captain Suite
+
+Diese Festlegung konkretisiert die Rollen von Workflow Captain und den Fachplugins. Sie gilt für Version 1.0 und erhält die eigenständige Nutzbarkeit aller Plugins.
+
+### 16.1 Produktrollen und Abhängigkeiten
+
+- Workflow Captain Core enthält Engine, Builder, Queue, WP-/WooCommerce-Provider, Laufprotokoll und Developer-Registry.
+- Workflow Captain Pro enthält Suite-Provider, geschützte Webhooks und Pro-Steuerung. Ein Adapter wird nur geladen, wenn sein Fachplugin aktiv ist und den erforderlichen Vertrag meldet.
+- Jedes Fachplugin bleibt eigenständig lauffähig. Es darf Workflow Captain oder dessen Pro-Lizenz nicht benötigen, um Bestellungen, Gutscheine, Tickets, Provisionen, Formularantworten oder Reviews zu speichern und zu verwalten.
+- Fachplugins besitzen ihre Geschäftsobjekte und unverzichtbaren Zustandsübergänge. Workflow Captain koordiniert Abläufe, ersetzt aber kein System of Record.
+- Für eine Premiumfunktion eines Fachplugins braucht es gegebenenfalls zwei Rechte: das passende Workflow-Entitlement und das Entitlement des Fachplugins. Workflow Captain darf keine fremde Pro-Funktion freischalten.
+- Fehlendes oder inkompatibles Plugin blendet nur dessen Provider aus. Kein Fatal Error, keine Migration und kein Einfluss auf andere Provider.
+- Aktionen laufen über versionierte Serviceverträge des Datenbesitzers. Keine direkten Tabellen-/Meta-Änderungen, Reflection auf interne Klassen oder beliebigen PHP-Hooks.
+
+### 16.2 Ereignisvertrag: nach Commit veröffentlichen, dann dauerhaft übernehmen
+
+Jeder Anbieter veröffentlicht ein stabiles, typisiertes Ereignis. Workflow Captain normalisiert es zu einem Envelope:
+
+| Feld | Zweck |
+|---|---|
+| event_id | Vom Quellplugin vergebene stabile Deduplizierungs-ID |
+| event_key | Vertraglicher Schlüssel, z. B. pass.ticket.checked_in |
+| source_plugin / source_version / contract_version | Herkunft und kompatibler Providervertrag |
+| occurred_at_utc | Fachlicher UTC-Zeitpunkt |
+| object_type / object_ref | Referenz auf Bestellung, Ticket, Gutschein, Submission etc. |
+| correlation_id | Prozessverbindung, z. B. Order → Ticket → Check-in |
+| payload | Nur freigegebene typisierte Felder; keine rohen WP-/Woo-Objekte |
+| privacy_tags | Datenklasse, Zweck und Retention |
+| causal_run_id | Optionaler Workflowursprung zur Schleifenvermeidung |
+
+Vertragsregeln:
+
+- Dauerhafte Buchungsereignisse werden erst nach erfolgreichem Commit gesendet. Vor-Commit-Prüfungen sind eigene, ausdrücklich deklarierte Validierungsservices.
+- Keine Ticket-/Gutschein-Geheimcodes, Zahlungsdaten, Lizenzschlüssel, IBAN oder kompletten Formulareinsendungen im Standardpayload.
+- Workflow Captain speichert das Event in seiner Inbox, bevor es dessen Annahme bestätigt. Wiederholte Zustellung derselben Event-ID startet keine zweite Aktion.
+- Empfängerinformationen werden bei Bedarf zur Laufzeit über einen minimal berechtigten Resolver gelesen, nicht im Run-Log oder Eventpayload dupliziert.
+- Jeder Provider dokumentiert Schema, Contract-Major, Feldtypen, Consent-/Capability-Anforderung, Fehlercodes, Idempotenz und Seiteneffekte.
+- Für Ereignisse, deren Verlust nicht tolerierbar ist, braucht es Source-Outbox oder nachholbare Abfrage nach stabiler Event-/Objekt-ID. Ein einmaliger do_action-Aufruf ist allein keine Zustellgarantie.
+
+### 16.3 Aktionen und Befehlsübergabe
+
+Workflow-Aktionen laufen als typisierte Commands im Plugin, das die Daten besitzt. Der Service validiert Eingaben erneut und akzeptiert eine Idempotency-ID.
+
+- Erfolg wird erst verbucht, wenn die Ziel-API die Command-ID angenommen und ein Ergebnis geliefert hat.
+- Retryfähige Fehler laufen mit Backoff; Rechte-, Schema-, Objekt- und Vertragsfehler werden nicht erneut versucht.
+- Jede Aktion kennzeichnet Seiteneffektklasse, Idempotenz, Retryverhalten, erforderliche Capability und erforderliches Lizenz-Entitlement.
+- Finanzielle und irreversible Aktionen verlangen Extra-Capability und in v1 eine explizite Freigabestufe.
+- Lokale Suite-Events werden über PHP-Provider verarbeitet. Signierte Webhooks dienen externen Websites/Systemen; der interne Adapter baut keinen unnötigen HTTP-Loopback.
+
+### 16.4 Laufzeit und Lizenzverhalten
+
+| Installation/Zustand | Verhalten |
+|---|---|
+| Workflow Captain fehlt | Fachplugins arbeiten nativ wie bisher. |
+| Workflow Core aktiv, Pro fehlt | WP-/Woo-Workflows laufen; Suite-Pro-Aktionen sind nicht verfügbar. |
+| Workflow Pro aktiv, Fachplugin fehlt | Provider „Plugin nicht installiert“; Rezepte bleiben lesbar und nicht ausführbar. |
+| Fachplugin-Version passt | Nur die von diesem Vertrag freigegebenen Events und Commands werden angeboten. |
+| Command nutzt ein Fachplugin-Pro-Feature | Workflow- und Fachplugin-Entitlement müssen beide gültig sein. |
+| Workflow-Pro-Lizenz endet | Keine neuen Pro-Commands; Logs bleiben lesbar; geplante Schritte pausieren und werden nach Erneuerung nicht ungeprüft nachgeholt. |
+| Contract-Major ist inkompatibel | Provider schließt sicher; nur betroffene Runs pausieren mit Migrationshinweis. Andere Provider laufen weiter. |
+
+## 17. Vollständige v1-Integrationsmatrix: Auslöser, Aktionen und Szenarien
+
+### 17.1 WordPress Core
+
+**Auslöser:** Nutzer registriert, Rolle geändert oder Konto aktiviert; Beitrag/Seite veröffentlicht, aktualisiert oder zur Veröffentlichung geplant; Kommentar eingereicht, freigegeben oder abgelehnt. Kein Login-Trigger in v1.
+
+**Aktionen:** Admin-/Nutzer-E-Mail; Beitrag/Seite mit freigegebenen Feldern erstellen oder aktualisieren; Kommentar moderieren; Rolle mit Capability- und „letzter Administrator“-Schutz ändern. Kein Löschen von Nutzern, Setzen von Passwörtern oder Ändern von Dateien/Plugins.
+
+**Szenarien:** Neue Partnerbewerbung via Form Captain löst interne Benachrichtigung aus; neue Registrierung startet ein passendes Onboarding, sofern keine Marketingfreigabe fehlt.
+
+### 17.2 WooCommerce
+
+**Auslöser:** Bestellung erstellt, bezahlt, Status geändert, erfüllt, storniert; Teil-/Vollrefund mit stabiler Refund- und Positionsreferenz; Produkt erstellt/geändert, Bestand unterschreitet Schwellenwert; Coupon auf bezahlter Bestellung verwendet. Gast- und Konto-Bestellung bleiben getrennte Empfängerfälle.
+
+**Aktionen:** Bestellnotiz, sichere Statusänderung, Kunden-/Admin-Mail, CRUD-Meta, begrenzter Woo-Rabattcoupon mit festem Wert, Ablauf, Nutzungs- und Produktlimit. Gutscheine/Guthaben/Tickets werden nur über den Voucher-/Pass-Service erstellt. HPOS, Classic und Blocks liefern dieselbe normalisierte Semantik; Woo-Daten nur über CRUD lesen/schreiben.
+
+**Szenarien:** Order paid → Voucher Captain stellt nach eigener Produktregel idempotent aus; Workflow ergänzt eine Firmenbestellbenachrichtigung. Refund → Woo besitzt Refund, Voucher bucht Gutschein zurück, Pass widerruft betroffene nicht eingecheckte Tickets, Affiliate korrigiert Provision über seine Verkaufsquelle. Workflow informiert und überwacht, bucht aber kein zweites Refund.
+
+### 17.3 WP License Captain
+
+**Auslöser:** Lizenz erstellt/aktiviert/verlängert; Zahlung fehlgeschlagen; Grace-/Past-Due, gesperrt, widerrufen, abgelaufen; Site aktiviert/freigegeben; Paket veröffentlicht/withdrawn.
+
+**Aktionen:** interne Admin- oder Kundenbenachrichtigung über offiziellen Mailservice. Keine Lizenz verlängern, Zahlung belasten, Key ausgeben, Aktivierungsplatz erzwingen oder Lizenzstatus ändern.
+
+**Szenarien:** Verlängerungszahlung scheitert → Adminhinweis; baldiger Ablauf → Kundenhinweis nur, wenn die entsprechende native Erinnerung nicht parallel aktiv ist.
+
+### 17.4 Voucher Captain
+
+**Auslöser:** Gutschein ausgestellt, zugestellt/fehlgeschlagen, eingelöst, abgelaufen, gesperrt/storniert oder refundiert; Guthaben reserviert, bestätigt, freigegeben, zurückgebucht oder Schwellenwert erreicht.
+
+**Aktionen:** Voucher nach konkreter Order-Position/Produktkonfiguration ausstellen; erneut zustellen; Status/Saldo abfragen; sperren/stornieren nur mit Berechtigung; Ticketumtausch über die bestehende Voucher-to-Pass-Bridge. Keine direkte Saldoänderung; Ledgerbefehle nur mit Grund, Referenz und Idempotenz über die Voucher-API.
+
+**Szenarien:** bestätigte Serviceeinlösung → Review Captain kann eine Anfrage planen; Geschenk-/Rabattcodeverkauf allein ist keine Erfahrung. Refund → Voucher verwaltet Status und Ledger, Workflow koordiniert nur Folgekommunikation.
+
+### 17.5 Pass Captain
+
+**Auslöser:** Event/Termin veröffentlicht, geändert, verschoben, abgesagt; Ticket reserviert, ausgegeben, übertragen, eingecheckt/ausgecheckt, widerrufen; Wartelistenangebot erstellt/angenommen/abgelehnt/abgelaufen; Service-Slot gebucht/abgeschlossen/abgesagt; Refund mit Woo-Referenz.
+
+**Aktionen:** Nachricht über Pass-Mailservice, Event-/Bestellnotiz, sichere Voucher-Aktion, Review-Anfrage planen/abbrechen. Tickets nicht über generische Workflows verkaufen, reservieren, einchecken oder übertragen; nur dedizierte Pass-Services mit Kapazitäts-/Identitätsregeln.
+
+**Szenarien:** Ticket-Check-in → verzögerte Anfrage an den Teilnehmer; Eventabsage → Pass führt Absage aus, Workflow storniert offene Review-Anfragen und überwacht freigegebene Refunds; angenommenes Wartelistenangebot → Pass erzeugt die Bestellung, Workflow versendet Folgeinfos.
+
+### 17.6 Affiliate Captain
+
+**Auslöser:** Bewerbung, Freigabe, Ablehnung, Pause, Reaktivierung; Provision angelegt, Prüfung erforderlich, freigegeben, abgelehnt oder ausgezahlt; Refund-/Chargeback-/Wiederherstellungsbuchung; Auszahlung abgeschlossen/abgebrochen.
+
+**Aktionen:** Admin-/Partnerbenachrichtigung; Partnerstatus über Affiliate-Service ändern; begründete manuelle Provisionkorrektur über die API nur mit Extra-Capability und Freigabeschritt. Keine parallele Provisionserstellung aus demselben Woo-/Voucher-/Pass-Verkauf und keine automatische Auszahlung.
+
+**Szenarien:** Formular → Affiliate legt Partner auf „pending“ an; Affiliate verwaltet Freigabe, Code und Konditionen. Refund → Affiliate korrigiert seinen Ledger; Workflow meldet Ergebnis, schreibt keine Provision nach.
+
+### 17.7 Form Captain
+
+**Auslöser:** validierte Einsendung gespeichert; Spamentscheidung; Eintrag geprüft, freigegeben, abgelehnt oder archiviert. Tokens stammen nur aus ausgewählten Feld-IDs und enthalten Consent-/Feldstatus.
+
+**Aktionen:** interne E-Mail/Folgeaufgabe; Submission markieren; nach menschlicher Freigabe Voucher, Affiliate-Pending oder Review-Entwurf über Zielservice anlegen. Keine Zahlung, Partnerfreigabe oder öffentliche Reviewveröffentlichung.
+
+**Szenarien:** Firmenanfrage → Form speichert, Workflow informiert Vertrieb, nach Freigabe erstellt Voucher Service den Gutschein. Partnerformular → Affiliate-Pending. Feedbackformular → Review erhält ausdrücklich gemappte Felder zur Moderation, standardmäßig unverifiziert.
+
+### 17.8 Review Captain
+
+**Auslöser:** Anfrage geplant, unterdrückt, versandt, fehlgeschlagen oder abgebrochen; Review eingereicht, freigegeben, abgelehnt oder widerrufen; Plattform-Sync erfolgreich/fehlgeschlagen.
+
+**Aktionen:** zulässige Anfrage planen/abbrechen; Moderator benachrichtigen; lokale Review moderieren, wenn Capability dies erlaubt. Kein Review-Gating, kein Sterne-Routing, keine Belohnung, kein Umschreiben fremder Reviews.
+
+**Szenarien:** Pass-Check-in oder Voucher-Serviceeinlösung → genau eine Experience-ID und Anfrage; Review Captain prüft Consent, Empfänger, Opt-out und Frequenzlimit vor Versand.
+
+### 17.9 Suite-Rezeptbibliothek für v1
+
+| Ablauf | Workflow | Daten-/Buchungseigentümer |
+|---|---|---|
+| Kauf → Voucher → Einlösung → Review | Order paid beobachten; Voucher-Einlösung abwarten; Anfrage planen, bei Refund/Opt-out stoppen | Woo: Order; Voucher: Code/Saldo; Review: Anfrage |
+| Ticket → Einlass → Eventfeedback | Pass-Check-in; Verzögerung; Teilnehmerresolver; Review-Schedule; Absage/Refund unterdrücken | Pass: Ticket/Einlass; Review: Anfrage |
+| Event abgesagt | Teilnehmer informieren; offene Review-Anfrage stornieren; Refundstatus beobachten | Pass: Absage; Woo: Refund |
+| Formular → Freigabe → Gutschein/Partner | Interne Freigabe; Voucher ausstellen oder Affiliate-Pending erstellen | Form, Voucher bzw. Affiliate bleiben Besitzer |
+| Refund → Affiliatekorrektur | Dedupe nach Refund-ID; Affiliate-Ergebnis verknüpfen; Hinweis senden | Affiliate: Verkaufs-/Refundquelle und Ledger |
+| License/payment status | Admin-/Kundenhinweis; keine Lizenzstatusänderung | WP License: Vertrag, Lizenz und Zahlung |
+
+## 18. Wenn Workflow Captain installiert ist: Zentral steuern, Plugins eigenständig halten
+
+### 18.1 Verbindliche Entscheidung: kein stiller globaler Takeover
+
+Die Installation darf vorhandene Plugin-Abläufe nicht automatisch abschalten oder doppelt ausführen. Standard ist **Plugin-eigener Ablauf**. Der Einrichtungsassistent bietet für ausgewählte Eventfamilien:
+
+1. **Plugin-eigen:** Plugin führt seine Regeln und Nachrichten aus.
+2. **Ergänzend:** Workflow löst zusätzliche Aktionen aus; erkannte doppelte E-Mails/Reminder werden angezeigt.
+3. **Workflow übernimmt:** Nur optionale Automation wie Erinnerungen, Benachrichtigungen, Review-Anfragen und Folgeaktionen wird umgestellt.
+
+Der Assistent importiert vorhandene Einstellungen als Entwürfe, zeigt geplante/native Jobs und Duplikate und schaltet erst nach erfolgreichem Testlauf um. Keine automatische Umstellung beim bloßen Installieren.
+
+### 18.2 Kernabläufe bleiben im Fachplugin
+
+Auch wenn der Betreiber Workflow Captain als zentrale Oberfläche verwendet, bleiben diese Operationen im zuständigen Fachplugin:
+
+- WooCommerce-Zahlung, Steuer, Auftrag und Refund.
+- Voucher-Ausstellung nach der Bestellung, Gutschein-/Guthaben-Ledger, Reservierung, Commit, Rückbuchung und Geheimnislink.
+- Pass-Kapazität, Reservierung, Ticketausgabe nach Zahlung, Transfer, Check-in und Refund.
+- Affiliate-Verkaufsattribution, Provisionsbuchung/Korrektur, Haltefrist, Auszahlung sowie Steuer-/Bankdaten.
+- Form-Validierung, Spamprüfung, Submission-Speicherung und Consent-Nachweis.
+- Review-Quelltrennung, Moderation, Plattformsync, Suppression, Versandfreigabe und Anfragehistorie.
+- WP License Kauf, Verlängerung, Entitlement, Site-Aktivierung, Sperre und Download.
+
+Workflow Captain kann nachgelagerte Schritte planen und über autorisierte APIs Aktionen anfordern. Es ersetzt nicht das Fachledger oder die Transaktionslogik.
+
+### 18.3 Ownership-Handshake für optionale Aktionen
+
+Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native Automation und optionale Workflow-Übernahme:
+
+- Quelle publiziert ein fachliches Event und behält die native Aktion als Standard.
+- Workflow kann eine Event-Verarbeitung anfordern und speichert Event/Run zuerst dauerhaft.
+- Erst nach positiver Annahme mit Run-ID und explizitem Besitzerstatus „Workflow“ unterdrückt die Quelle genau die konfigurierte native Option.
+- Keine Annahme, Timeout oder fehlende Pro-Lizenz bedeutet „Plugin-eigen“. Im Ergänzungsmodus bleibt die native Aktion aktiv.
+- Event-ID/Run-ID binden Aktion und Wiederholung zusammen. Derselbe Reminder oder Request darf nicht doppelt versandt werden.
+- Suite-Konvention definieren für versionierte Event-Hooks und Ownership-Entscheid (vorgeschlagene Hookfamilien: captain_suite_event_v1 und captain_suite_automation_claim_v1). Jedes Plugin dokumentiert die Semantik.
+- Der Quellplugin kann die optionale native Aktion nur unterdrücken, wenn Workflow die dauerhafte Annahme bestätigt. Ein fire-and-forget Hook reicht dafür nicht.
+
+### 18.4 Fallback, Lizenzende und Migration zurück
+
+- Workflow fehlt/deaktiviert: unveränderte native Abläufe; ausgewählte optionale Workflow-Automationen fallen beim nächsten Ereignis auf Native zurück.
+- Pro-Lizenz fehlt/endet: keine neuen Pro-Annahmen; neue Ereignisse nutzen Native-Fallback, sofern der Administrator die Übernahme nicht ausdrücklich als „pausieren statt Fallback“ konfiguriert hat.
+- Bereits geplante Pro-Schritte werden pausiert/abgebrochen und sichtbar protokolliert. Nach Erneuerung kein automatisches Nachholen; Betreiber prüft fällige Läufe in einer Vorschau.
+- Beim Rückschalten zuerst Workflowjobs der betroffenen Eventfamilie pausieren und danach Native aktivieren. Bereits ausgeführte Aktionen bleiben sichtbar; stabile Idempotency-IDs verhindern Duplikate.
+- Restore/Rollback stellt vorige Besitzerkonfiguration und noch nicht ausgeführte Jobs kontrolliert wieder her.
+
+### 18.5 Gemeinsame Adminbedienung
+
+- Jedes Suite-Plugin zeigt Providerstatus, Contract-Version, aktive Workflows und Links zum passenden Workflow.
+- Workflow Captain zeigt Zielplugin, Quellplugin, Version, erforderliche Rechte, Seiteneffekt und Supportort pro Schritt.
+- Fehlendes Plugin, Contract-Major, Quellplugin-Pro-Recht oder Lizenzfehler wird konkret benannt.
+- Gemeinsame Correlation-/Run-ID dient Supportdiagnose; kein Plugin liest/ändert das fremde Protokoll.
+
+### 18.6 Tatsächliche Vertragslage aus der Repository-Prüfung
+
+| Plugin | Vorhandene Grundlage | Noch nötige Arbeit für Workflow |
+|---|---|---|
+| WP License Captain | REST API, Entitlementmodell und Lizenzzustände | Versionierte Read-only-Events nach Commit für relevante Lizenzübergänge; keine Keys oder Zahlungstoken |
+| WooCommerce | CRUD APIs, HPOS, Hook-Ökosystem | Normalisierte Event-ID/Refund-/Positionssemantik, Reconciliation/Outbox und Dedupe über Woo/Voucher/Pass/Affiliate |
+| Voucher Captain | PHP API v1; idempotente Redemption API; vcap_voucher_redeemed nach Commit genau einmal; Voucher-to-Pass Provider v1; order_lines() mit Positions-/Refunddaten | Providervertrag für Ausstellung/Zustellung/Expiry/Void/Refund; stabile Event-ID und redigierter Payload; sichere issue/resend/void Commands |
+| Pass Captain | interne Hooks, signierte Outbound-Webhooks mit Zustelljournal/Retry, Queue; Event-/Ticket-/Check-in-/Absageereignisse | Öffentliche PHP-Provider-API und gleiche Payloadsemantik wie Webhooks; Refund-Hooklücke schließen; ticket.issued als Einzel- oder Aggregatereignis eindeutig definieren; Geheimnisse entfernen |
+| Affiliate Captain | Integrationsvertrag 1.3, idempotente Verkaufs-/Refund-Quelle, Status-/Commission-APIs, Events nach Commit | Read-adapter und freigegebenes Eventpayload; eine kanonische Verkaufsquelle; adjustment nur mit Begründung/Freigabe; keine automatische Auszahlung |
+| Form Captain | Konzept für Submission- und Action-Registry; Review-Konzept schlägt form_captain_register_action_v1 vor | Öffentliche Core-Registry/Eventvertrag implementieren; Whitelist gemappter Felder, Consent/Spamstatus, Datenschutzlöschung und Idempotenz |
+| Review Captain | Konzept für Experience-/Request-/Widget-/Summary-Verträge und Review-Gating-Schutz | Request schedule/cancel, Empfängerresolver, Suppression/Frequenzlimit, IDs und Ergebnisstatus implementieren; dies ist noch kein bestätigter Codevertrag |
+
+### 18.7 Neue technische To-dos nach der Suite-Prüfung
+
+**P0 – Providerverträge**
+
+- [ ] Suite-weite SemVer-, Envelope-, Privacy- und Ownership-Konvention in allen Plugin-Repositories festlegen.
+- [ ] Für jeden Command Idempotency-ID, Seiteneffekt, Retryregeln, Capability/Entitlement und Auditformat dokumentieren.
+- [ ] Ownership-Handshake mit „Plugin-eigen“ als Default in den Core-Plugins implementieren.
+- [ ] Events nach Commit und Source-Outbox/Replay für kritische Ereignisquellen bereitstellen.
+- [ ] Woo/Refund-Verknüpfung zu Voucher, Pass und Affiliate als eine kanonische Quelle testen.
+- [ ] WP License, Woo, Voucher, Pass, Affiliate, Form und Review Provider mit Plugin-fehlt-, Lizenz-fehlt- und Contract-Major-Verhalten ergänzen.
+
+**P1 – Adapter und Workflow-Steuerung**
+
+- [ ] Adapter für alle v1-Trigger aus Abschnitt 17 umsetzen.
+- [ ] Actions pro Zielplugin ausschließlich über öffentliche Serviceverträge implementieren.
+- [ ] Installations-/Migrationsassistent für native Erinnerungen/Benachrichtigungen, Draftimport, Duplikaterkennung, Besitzerwechsel und Rollback bauen.
+- [ ] Providerstatus, aktive Workflowlinks und gemeinsame Run-/Correlation-IDs in Suite-Admins anzeigen.
+- [ ] Testmatrix für Workflow vorhanden/fehlend/deaktiviert, Free/Pro/abgelaufene Lizenz, Fachplugin-Pro-Recht, inkompatiblen Vertrag und doppelte Events ergänzen.
+
+**P2 – Betrieb**
+
+- [ ] Supportdiagnose-Export ohne PII/Secrets erstellen.
+- [ ] Source-Outbox-Replay und Workflow-Queue-Retry unterscheiden und idempotent machen.
+- [ ] Anonymisierung/Löschung über Source- und Workflow-Logs abstimmen, ohne Geschäftsledger zu löschen.
+- [ ] Aktivierung/Deaktivierung, Backup/Restore und Multisite pro Provider validieren.
