@@ -20,6 +20,18 @@
 - [ ] Produktkey und drei Jahrespläne im Shop/WP License Captain mit 1/5/25 Sites und oben festgelegten Preisen konfigurieren.
 - [ ] WordPress.org-Verfügbarkeit des Produktnamens/Slugs vor Einreichung prüfen.
 - [ ] UI-Entwürfe der Tabellen, Workflow-Canvas/Schrittfolge, Branching, Zeitplanung, Fehler-Replay und Lizenzablauf umsetzen.
+- [ ] WF-BUILDER-01 – Drag-&-Drop-Canvas mit Palette für Trigger, Aktion, If/Else, Delay/Wait und Ende implementieren; Knoten per Tastatur hinzufügen und verschieben können.
+- [ ] WF-BUILDER-02 – Graph-Datenmodell mit stabilen Node-/Edge-IDs, Positionen, Typen, Konfigurationen, Provider-ID und Contract-Version definieren; Drafts und unveränderliche veröffentlichte Snapshots versionieren.
+- [ ] WF-BUILDER-03 – Gerichtete Verbindungen mit Pfeilen und Anschluss-Punkten bereitstellen; If/Else-Ausgänge dauerhaft als „Dann“ und „Sonst“ beschriften und visuell getrennt führen.
+- [ ] WF-BUILDER-04 – Knoten-Konfigurator für Provider, Trigger/Ereignis, Aktion, Feld, Operator, Wert und Tokenpicker aus der maschinenlesbaren Providerregistry speisen; Datentypen und zulässige Payload-Felder anzeigen.
+- [ ] WF-BUILDER-05 – Bedingungseditor für einfache Vergleiche sowie begrenzte AND/OR-Gruppen umsetzen; fehlende Werte mit explizitem Verhalten (false/stop/error) behandeln.
+- [ ] WF-BUILDER-06 – Servervalidierung vor Speichern und Veröffentlichen implementieren: genau ein Startpunkt je Flow, Pflichtkonfiguration, ungültige/unverbundene Kanten, unerreichbare Knoten, offene Branches, unerreichbare Enden, Zyklen und Provider-/Lizenz-/Contract-Kompatibilität prüfen.
+- [ ] WF-BUILDER-07 – Ausführungsengine so anbinden, dass If/Else-Bedingungen genau einmal pro Step-Snapshot evaluiert und nur die ausgewählte Kante eingeplant wird; Run-Protokoll muss gewählten Ausgang, übersprungene Schritte und Bedingungsergebnis redigiert darstellen.
+- [ ] WF-BUILDER-08 – Canvas-Werkzeuge für Zoomen, Verschieben, automatische Anordnung, Undo/Redo und Speichern als Entwurf bereitstellen; veröffentlichte Runs bleiben an ihren Graph-Snapshot gebunden.
+- [ ] WF-BUILDER-09 – Responsives und barrierearmes Bedienen spezifizieren: Tastaturverbindungen/Node-Auswahl, Fokusführung, Screenreader-Beschriftungen, ausreichende Kontraste sowie alternative lineare Schrittansicht für kleine Displays.
+- [ ] WF-BUILDER-10 – Testlauf/Dry Run mit Beispieldaten im Canvas integrieren; ausgewählten Ablaufpfad hervorheben, Fehler am betroffenen Knoten zeigen und keine echten Seiteneffekte auslösen.
+- [ ] WF-BUILDER-11 – Provider-Verfügbarkeit im Canvas behandeln: fehlendes/deaktiviertes Plugin, fehlendes Fachplugin-Pro-Recht oder inkompatibler Major-Contract muss Knoten klar markieren und Veröffentlichung sicher blockieren.
+- [ ] WF-BUILDER-12 – Canvas-E2E-Abnahme für linearen Ablauf, Dann-/Sonst-Pfad, verschachtelte Bedingung im erlaubten Limit, Delay/Wait, Abbruch, Fehler/Retry, Draft/Publish und Wiederöffnung gespeicherter Workflows dokumentieren und ausführen.
 - [ ] Release-Readme, Entwickler-SDK, Anbieterübersicht, Datenschutz-Datenfluss und Support-Diagnose schreiben.
 
 **Abnahme und Betrieb**
