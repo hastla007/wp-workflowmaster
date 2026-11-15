@@ -168,7 +168,7 @@ Die folgende Liste ist Zielumfang. Vor Implementierung muss jedes Ereignis/Aktio
 
 **Trigger:** Benutzer registriert, Benutzer angemeldet (optional und sparsam), Rolle geändert, Beitrag/Seite veröffentlicht, Beitrag erstellt/aktualisiert, Kommentar eingereicht/freigegeben.  
 **Aktionen:** E-Mail versenden, Benutzerrolle ändern (mit Schutz für Administratoren), Beitrag erstellen/aktualisieren (nur explizite Felder und Berechtigung), Kommentar moderieren nur mit klarer Autorisierung.  
-**Nicht in MVP:** Datei-/Plugin-Änderungen, SQL, arbitrary PHP/Code, Benutzerpasswort aus Tokens, ungeprüfte Adminaktionen.
+**Grundsätzlich ausgeschlossen:** Datei-/Plugin-Änderungen, SQL, arbitrary PHP/Code, Benutzerpasswort aus Tokens und ungeprüfte Adminaktionen.
 
 ### WooCommerce (Free-Basis, Pro-Vertiefung)
 
@@ -404,7 +404,7 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 1. **Suite-Verträge sind möglicherweise unterschiedlich reif.** Integrationstiefe richtet sich nach öffentlichen, versionierten APIs; unklare Verträge werden nicht durch interne DB-Zugriffe umgangen.
 2. **Doppelte Geschäftsereignisse:** WooCommerce-Order und Voucher-/Affiliate-Service können dieselbe Verkaufssituation melden. Es braucht einen einzigen System-of-Record und idempotente Quelle.
 3. **Cron-Verlässlichkeit:** zeitverzögerte Workflows brauchen echten Cron oder Action Scheduler; UI zeigt ausstehende Jobs und einen Cronstatus.
-4. **Schreibaktionen mit Folgewirkung:** Rückerstattung, Einlass, Auszahlung und Provisionsbuchung sind im MVP entweder nicht verfügbar oder ausschließlich über autorisierte Fachplugin-Services.
+4. **Schreibaktionen mit Folgewirkung:** Rückerstattung, Einlass, Auszahlung und Provisionsbuchung sind in Version 1 ausschließlich über autorisierte Fachplugin-Services verfügbar.
 5. **Lizenzmodell/Free-Abgrenzung:** Captain-Pro bestätigt die Zahl-/Run-Limits und den Umgang mit bereits gespeicherten Premium-Rezepten.
 6. **Marktumfang:** Tausende Integrationen sind kein realistisches Versprechen für Version 1. Erweiterung folgt Nachfrage und stabilen Verträgen.
 
