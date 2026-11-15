@@ -3,13 +3,13 @@
 **Status:** Konzept zur Produktentscheidung und Umsetzung  
 **Stand:** 15. November 2026  
 **Produktname:** Workflow Captain  
-**Repository:** \`hastla007/wp-workflowmaster\`  
-**Kern-Plugin (kostenlos):** \`workflow-captain\`  
-**Premium-Add-on:** \`workflow-captain-pro\`  
-**Lizenzserver-Produktschlüssel:** \`workflow-captain-pro\` (im Katalog von WP License Captain anzulegen)  
-**Rechte-Präfix:** \`workflow.\`  
-**Kern-Plugin-Slug/Textdomain:** \`workflow-captain\`  
-**Vorgesehener Pro-Ort:** \`hastla007/captain-pro/addons/workflow-captain-pro/\`
+**Repository:** `hastla007/wp-workflowmaster`  
+**Kern-Plugin (kostenlos):** `workflow-captain`  
+**Premium-Add-on:** `workflow-captain-pro`  
+**Lizenzserver-Produktschlüssel:** `workflow-captain-pro` (im Katalog von WP License Captain anzulegen)  
+**Rechte-Präfix:** `workflow.`  
+**Kern-Plugin-Slug/Textdomain:** `workflow-captain`  
+**Vorgesehener Pro-Ort:** `hastla007/captain-pro/addons/workflow-captain-pro/`
 
 > Dieses Dokument ist die Produkt- und Umsetzungsgrundlage. Es beschreibt geplante Verträge und Funktionen, keine bereits vorhandenen Hooks, API-Rechte oder getestete Kompatibilität. Vor Releases sind Plattform-, Datenschutz-, Sicherheits- und Lizenzbedingungen erneut zu prüfen.
 
@@ -88,7 +88,7 @@ Das Free-Plugin muss ohne Lizenzserver und ohne Pro-Add-on nutzbar sein.
 
 ### Workflow Captain Pro (separates Add-on, lizenziert)
 
-Pro wird als separates Add-on nach dem etablierten Captain-Pro-Modell gebaut. Lizenzprüfung, Updater und Premiumfunktionen befinden sich in \`captain-pro\`; Workflow Captain Free kennt das Add-on nicht.
+Pro wird als separates Add-on nach dem etablierten Captain-Pro-Modell gebaut. Lizenzprüfung, Updater und Premiumfunktionen befinden sich in `captain-pro`; Workflow Captain Free kennt das Add-on nicht.
 
 - Suite-Adapter für Voucher, Pass, Affiliate, Form und Review Captain.
 - Erweiterte Conditions: AND/OR-Gruppen, numerische/Text-/Datumvergleiche, Produkt-/Kategorie-/Coupon-/Event-/Formularfilter sowie sichere Negation.
@@ -104,13 +104,13 @@ Pro wird als separates Add-on nach dem etablierten Captain-Pro-Modell gebaut. Li
 
 ### Lizenzvertrag
 
-- Produktschlüssel: \`workflow-captain-pro\`; Add-on-Ordner, Textdomain und Produktschlüssel folgen der Captain-Pro-Regel.
-- Rechtepräfix: \`workflow.\`; Schlüssel z. B. \`workflow.advanced_logic\`, \`workflow.delays\`, \`workflow.webhooks\`, \`workflow.suite_integrations\`, \`workflow.recipe_templates\`, \`workflow.extended_logs\`.
+- Produktschlüssel: `workflow-captain-pro`; Add-on-Ordner, Textdomain und Produktschlüssel folgen der Captain-Pro-Regel.
+- Rechtepräfix: `workflow.`; Schlüssel z. B. `workflow.advanced_logic`, `workflow.delays`, `workflow.webhooks`, `workflow.suite_integrations`, `workflow.recipe_templates`, `workflow.extended_logs`.
 - Kernplugin bleibt GPL-2.0-or-later und vollständig eigenständig. Keine Lizenzprüfung, Update-Client-Kopie oder Premiumklasse im WordPress.org-Kern.
-- Das Pro-Add-on verwendet den bestehenden WP-License-Client und Add-on-Kernel in \`captain-pro\`; öffentliche Ed25519-Schlüssel, Server-URL, Minimum-Kernversion und Produktkatalogeintrag sind Release-Voraussetzungen.
-- Jedes Premiumfeature erhält genau einen eindeutigen \`workflow.*\`-Entitlement-Schlüssel. Bei Lizenzablauf werden keine neuen Premium-Läufe gestartet; vorhandene Workflows bleiben sichtbar und lesbar, Logs und Export bleiben für Diagnose erhalten. Geplante Jobs werden sicher gestoppt/als „Pro-Lizenz erforderlich“ markiert. Es werden keine Daten gelöscht.
+- Das Pro-Add-on verwendet den bestehenden WP-License-Client und Add-on-Kernel in `captain-pro`; öffentliche Ed25519-Schlüssel, Server-URL, Minimum-Kernversion und Produktkatalogeintrag sind Release-Voraussetzungen.
+- Jedes Premiumfeature erhält genau einen eindeutigen `workflow.*`-Entitlement-Schlüssel. Bei Lizenzablauf werden keine neuen Premium-Läufe gestartet; vorhandene Workflows bleiben sichtbar und lesbar, Logs und Export bleiben für Diagnose erhalten. Geplante Jobs werden sicher gestoppt/als „Pro-Lizenz erforderlich“ markiert. Es werden keine Daten gelöscht.
 - Suite-Integrationen im Free-Kern sollten nur Basis-/Leseereignisse enthalten, falls dies Produktstrategie und Free-Limits zulassen. Erweiterte Suite-Aktionen und der Workflow-Umfang sind Pro. Die genaue Zuordnung ist eine Inhaberentscheidung vor Umsetzung, siehe To-do.
-- In \`captain-pro/README.md\` die neue Produktzeile ergänzen; \`docs/ARCHITECTURE.md\`, Build, Übersetzungen und Release-Dokumente nach bestehenden Mustern erweitern.
+- In `captain-pro/README.md` die neue Produktzeile ergänzen; `docs/ARCHITECTURE.md`, Build, Übersetzungen und Release-Dokumente nach bestehenden Mustern erweitern.
 
 ## 5. Integrationsmodell
 
@@ -130,9 +130,9 @@ Workflow Engine ruft Anbieter-Handler auf. Ein Provider darf nie interne Tabelle
 
 Vorgeschlagene öffentliche PHP-Schnittstelle (Namen sind Entwurf und müssen mit den Suite-Repositories abgestimmt werden):
 
-- \`workflow_captain_register_providers\` als Registry-Einstieg oder versionierte \`ProviderInterface\`.
-- Stabile Ereignis-IDs in der Form \`woocommerce.order.paid\`, \`voucher.voucher.issued\`, \`pass.ticket.checked_in\`.
-- Einheitlicher Envelope: \`event_id\`, \`event_key\`, \`occurred_at_utc\`, \`site_id\`, \`actor_user_id\` (falls vorhanden), \`object_type\`, \`object_id\`, \`schema_version\`, \`payload\`, \`privacy_tags\`.
+- `workflow_captain_register_providers` als Registry-Einstieg oder versionierte `ProviderInterface`.
+- Stabile Ereignis-IDs in der Form `woocommerce.order.paid`, `voucher.voucher.issued`, `pass.ticket.checked_in`.
+- Einheitlicher Envelope: `event_id`, `event_key`, `occurred_at_utc`, `site_id`, `actor_user_id` (falls vorhanden), `object_type`, `object_id`, `schema_version`, `payload`, `privacy_tags`.
 - Payload enthält nur benötigte Felder; sensible Daten standardmäßig minimieren. Tokens zeigen keine Auth-Secrets, Lizenzschlüssel, Zahlungskartendaten, vollständige Gutschein-/Einlasstokens oder Affiliate-Bankdaten.
 - Jeder Event wird mit stabiler Event-ID und Objektversion verarbeitet. Retry eines Events erhält denselben Idempotency-Key.
 
@@ -151,12 +151,12 @@ Vorgeschlagene öffentliche PHP-Schnittstelle (Namen sind Entwurf und müssen mi
 
 ### Datenmodell (Entwurf)
 
-- \`wp_workflow_recipes\`: Identität, Titel, Status, Eigentümer, aktuelle Version.
-- \`wp_workflow_recipe_versions\`: versionierter/validierter Graph oder einfacher Schrittplan, Trigger-, Condition- und Action-Konfiguration, Provider-Verträge.
-- \`wp_workflow_events\`: kurzlebiger Event-Puffer nur soweit für Verarbeitung erforderlich; keine dauerhafte Kopie vollständiger Bestell-/Kundendatensätze.
-- \`wp_workflow_runs\`: Status, Rezeptversions-ID, Event-Referenz, Start-/Endzeit, Korrelations-/Idempotency-Key.
-- \`wp_workflow_steps\`: Schrittstatus, Retry-Zähler, Fehlerklasse, redigierte Ausgabe.
-- \`wp_workflow_queue\`: fällige Arbeit, Lease, Versuche, nächste Ausführung.
+- `wp_workflow_recipes`: Identität, Titel, Status, Eigentümer, aktuelle Version.
+- `wp_workflow_recipe_versions`: versionierter/validierter Graph oder einfacher Schrittplan, Trigger-, Condition- und Action-Konfiguration, Provider-Verträge.
+- `wp_workflow_events`: kurzlebiger Event-Puffer nur soweit für Verarbeitung erforderlich; keine dauerhafte Kopie vollständiger Bestell-/Kundendatensätze.
+- `wp_workflow_runs`: Status, Rezeptversions-ID, Event-Referenz, Start-/Endzeit, Korrelations-/Idempotency-Key.
+- `wp_workflow_steps`: Schrittstatus, Retry-Zähler, Fehlerklasse, redigierte Ausgabe.
+- `wp_workflow_queue`: fällige Arbeit, Lease, Versuche, nächste Ausführung.
 - Tabellen haben eindeutige Schlüssel gegen Doppelausführung; Multisite bleibt je Site getrennt.
 - Datenbank-Updates laufen kontrolliert im Admin, über WP-Cron oder WP-CLI und nicht bei jedem Frontend-Aufruf. Schemaänderungen werden versioniert.
 
@@ -283,9 +283,9 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 
 ## 9. Rechte, Rollen und Datenschutz
 
-- Eigene Capabilities: \`manage_workflow_captain\`, \`edit_workflows\`, \`activate_workflows\`, \`view_workflow_logs\`, \`retry_workflow_runs\`, optional \`manage_workflow_integrations\`. Standardzuweisung an Administratoren; keine automatische Freigabe an Shop-Manager ohne bewusste Entscheidung.
+- Eigene Capabilities: `manage_workflow_captain`, `edit_workflows`, `activate_workflows`, `view_workflow_logs`, `retry_workflow_runs`, optional `manage_workflow_integrations`. Standardzuweisung an Administratoren; keine automatische Freigabe an Shop-Manager ohne bewusste Entscheidung.
 - Jede Admin-/REST-/AJAX-Aktion hat Capability, Nonce bzw. WordPress Auth, Schema-/Typvalidierung und Rate-Limit wo relevant.
-- WP REST API hat explizite \`permission_callback\`; Webhook-Eingänge nutzen signierte Secrets, Timestamp/Replay-Schutz und engen Event-Scope.
+- WP REST API hat explizite `permission_callback`; Webhook-Eingänge nutzen signierte Secrets, Timestamp/Replay-Schutz und engen Event-Scope.
 - Webhook-/HTTP-Features brauchen Allowlist, DNS/IP-Prüfung, Redirectkontrolle, Response-Limit und Timeout gegen SSRF/DoS.
 - Keine Ausführung dynamischen PHP, SQL, Shell, Dateizugriff oder arbitrary WordPress-Function-Namen.
 - Tokens tragen Datenklassifizierung: normal, personenbezogen, besonders sensibel, Geheimnis. Sensible Felder sind nicht in Logs/Exports und benötigen eine explizite Auswahl.
@@ -329,7 +329,7 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 
 ### Phase 2 – Workflow Captain Pro & erste Suite-Provider
 
-- Pro-Add-on in \`captain-pro\`, Produktkatalog-/Entitlement-Eintrag und Lizenzseite über gemeinsamen Kernel.
+- Pro-Add-on in `captain-pro`, Produktkatalog-/Entitlement-Eintrag und Lizenzseite über gemeinsamen Kernel.
 - Verzögerung, erweiterte Conditions, Wiederholen, Rezeptvorlagen und erweiterte Logs.
 - Voucher Captain und Pass Captain nach Verfügbarkeit der Anbieter-Verträge.
 - Bestehende WooCommerce- und Suite-Fachprozesse auf Doppelereignisse testen.
@@ -391,9 +391,9 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 
 ### Release & Vermarktung
 
-- [ ] \`workflow-captain-pro\` als Produkt im WP License Captain-Katalog anlegen.
-- [ ] Add-on-Konfiguration, Entitlements, Update URI, öffentliche Schlüssel/Server-URL im \`captain-pro\` nach Release-Entscheidungen setzen.
-- [ ] Plugin-Zeile, Build, Übersetzungen, ZIP-Allowlist und Release-Gates in \`captain-pro\` ergänzen.
+- [ ] `workflow-captain-pro` als Produkt im WP License Captain-Katalog anlegen.
+- [ ] Add-on-Konfiguration, Entitlements, Update URI, öffentliche Schlüssel/Server-URL im `captain-pro` nach Release-Entscheidungen setzen.
+- [ ] Plugin-Zeile, Build, Übersetzungen, ZIP-Allowlist und Release-Gates in `captain-pro` ergänzen.
 - [ ] Datenschutzerklärung/Datenflussbeschreibung sowie WordPress.org External Services prüfen.
 - [ ] Changelog, Installations- und Migrationsanleitung, Support-/Debugreport erstellen.
 - [ ] Beta mit WooCommerce-Shop und den installierten Captain-Plugins durchführen; HPOS/Classic/Blocks, Refunds, Cronausfall, Replay und abgelaufene Lizenz abdecken.
