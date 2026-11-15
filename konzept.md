@@ -49,16 +49,9 @@ Workflow Captain ist eine Orchestrierungsschicht. Jedes Fach-Plugin bleibt Eigen
 - Betreiber brauchen nachvollziehbare Ausführungsprotokolle, sichere Wiederholungen und eine Möglichkeit, Fehler gezielt zu reparieren.
 - Fremdautomationsdienste benötigen API-Schlüssel und externe Konten. Workflow Captain soll grundlegende lokale Abläufe direkt in WordPress ausführen und externe Übergaben später kontrolliert ergänzen.
 
-## 3. Wettbewerbsanalyse und Produktpositionierung
+## 3. Anonymisierte Marktanforderungen und Produktpositionierung
 
-Die sichtbaren Produktmuster wurden am 15.11.2026 anhand offizieller Produkt- bzw. WordPress.org-Seiten recherchiert. Tarife, Funktionsumfänge und Integrationszahlen ändern sich laufend; vor Preis- oder Launch-Entscheidungen ist ein aktueller Tarifvergleich erforderlich.
-
-| Produkt | Erkennbares Muster | Stärken | Chance für Workflow Captain |
-|---|---|---|---|
-| **Uncanny Automator** | „Recipes“ mit Triggern, Bedingungen/Tokens und Aktionen; viele WordPress- und App-Verbindungen; Pro ergänzt u. a. erweiterte Logik, Zeitsteuerung und weitere Integrationen. | Etablierte visuelle Trigger-Aktions-Logik und breite Plugin-Ökologie. | Captain Suite zuerst tief und vertraglich sauber integrieren; bei Datensouveränität, WooCommerce-Zuständen und Fehlerdiagnose auf WordPress-Nähe setzen. |
-| **AutomatorWP** | Trigger, Aktionen und Filter über Integrationen; Add-ons erweitern Dienste und Logik. | Große Auswahl an Integrationen; konfigurierbare Trigger und Aktionen. | Keine leere Plattform für hunderte Adapter versprechen. Lieber wenige hochwertige Core-/Woo-/Captain-Provider, klar dokumentiert und stabil versioniert. |
-| **WP Webhooks** | Webhooks, Datenübergabe und Pro-Flows für Folgeaktionen; Entwickler können eigene Hooks und Datenverbindungen abbilden. | Gut für technische Systemverbindungen und externe Endpunkte. | Visuelle, für Shopbetreiber verständliche Suite-Rezepte; Webhooks als optionaler, abgesicherter Adapter statt notwendiger Grundvoraussetzung. |
-| **SureTriggers / OttoKit** | Visueller Builder und Verbindungen über WordPress-Plugins und externe Apps; cloud- bzw. plattformorientierte Automatisierung. | Breite App-Verbindungen und visuelle Workflow-Erstellung. | Lokale First-Party-Abläufe ohne zusätzliche Cloud-Abhängigkeit, mit Pro-Ausbau für Webhooks/API und nachvollziehbarer Ausführung. |
+Die Marktbeobachtung wird ausschließlich funktionsbezogen dokumentiert, ohne fremde Automationsprodukte, Marken oder Anbieter-URLs. Anforderungen: visuelle Trigger/Aktionsketten, Bedingungen/Tokens, lokale Ausführung, zeitgesteuerte Aktionen, sichere Webhooks, optionale App-Adapter, Fehlerdiagnose und idempotente Wiederholung. Workflow Captain priorisiert stabile Suite-Provider, WordPress-Datensouveränität und einen produktiven Free-Kern.
 
 ### Differenzierung
 
@@ -447,14 +440,9 @@ Die Produkt-, Free/Pro-, Lizenz- und Preisentscheidungen stehen in Abschnitt 15.
 6. **Kompatibilität:** Provider-Versionen unterscheiden sich; die Registry blockiert inkompatible Vertrags-Majors sichtbar und fail-closed.
 7. **Integrationsbreite:** Version 1 liefert die sechs Suite-Provider plus sichere Webhooks. Eine große native App-Bibliothek ist bewusst Folgearbeit.
 
-## 14. Quellen zur Wettbewerbsbeobachtung
+## 14. Neutrale Marktvalidierung
 
-- Uncanny Automator: [WordPress.org Pluginseite](https://wordpress.org/plugins/uncanny-automator/), [Features/Automationen](https://automatorplugin.com/automations/), [FAQ](https://automatorplugin.com/faq/)
-- AutomatorWP: [WordPress.org Pluginseite](https://wordpress.org/plugins/automatorwp/), [Produktseite](https://automatorwp.com/)
-- WP Webhooks: [WordPress.org Pluginseite](https://wordpress.org/plugins/wp-webhooks/), [Features](https://wp-webhooks.com/features/)
-- SureTriggers / OttoKit: [WordPress.org Pluginseite](https://wordpress.org/plugins/suretriggers/)
-- Recherche-Stichtag: 15.11.2026. Wettbewerbsaussagen sind qualitative Beobachtungen aus Anbieter-/Pluginseiten; sie sind keine unabhängige Tarif- oder Benchmarkprüfung.
-
+Funktionsbedarf, Nutzerprobleme, Wartbarkeit, Datenschutz, Integrationsumfang und Preismodell ohne Wettbewerbernamen oder Fremdprodukt-URLs dokumentieren. Technische Referenzen für tatsächlich verwendete APIs bleiben zulässig.
 
 ## 15. Workflow Captain Version 1.0 – vollständiges Produktkonzept
 
@@ -693,30 +681,20 @@ Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punk
 | KI | Nicht in Version 1; keine automatische Veränderung oder Aktivierung ohne Betreiberfreigabe |
 | Supportzeit | Support-Level folgen dem Captain-Plan. Keine Antwortzeitgarantie, bevor Supportbetrieb dafür ausgestattet ist. |
 
-**Preisbegründung:** Die Wettbewerber zeigen für ihre Pro-Einstiegspläne ungefähr 149 USD/Jahr bei WP Webhooks (1 Site) und 199 USD/Jahr bei Uncanny Automator (1 Site). Zum EZB-Referenzkurs vom 13.11.2026 entsprechen 129 € ungefähr 143 USD; die Preisvergleiche sind vor Umsatzsteuerabgleich zu verstehen. AutomatorWP bietet darüber hinaus einen großen kostenlosen Integrationsumfang und wirbt auf seiner Preisseite mit befristeten Aktionspreisen. Workflow Captain kann diese Breite nicht versprechen und setzt daher auf eine günstigere Ein-Site-Einstiegslizenz, tiefe Captain-Suite-Integrationen und einen starken kostenlosen WP-/WooCommerce-Kern. 229 €/5 Sites und 399 €/25 Sites schließen an die bereits vorgeschlagene Voucher-Captain-Pro-Staffel an und halten die Suite-Preise einheitlich. Wechselkurse und Anbieterpreise müssen vor Veröffentlichung erneut geprüft werden.
+**Preisbegründung:** Die vorgeschlagene Staffelung 129 € für eine Site, 229 € für fünf Sites und 399 € für 25 Sites wird anhand eigener Kosten, Supportaufwand, Zielgruppenbedarf und Suite-Konsistenz bewertet. Externe Wettbewerberpreise, Marken und Quellen werden nicht in diesem Konzept dokumentiert.
 
-Die Gratisversion muss dennoch glaubwürdig sein: Wettbewerber bieten zum Teil Hunderte Integrationen, Mehrfachaktionen, Filter, Zeitplanung und unbegrenzte Ausführungen kostenlos. Workflow Captain Free erhält deshalb seine vollwertige lokale WP-/WooCommerce-Engine, ohne Task- oder Workflow-Cap. Das Pro-Upgrade wird durch die fachlich sicheren Captain-Integrationen, Webhooks und den Betriebs-/Diagnoseumfang begründet, nicht durch künstliche Runlimits.
+Die Gratisversion muss produktiv nutzbar sein: Workflow Captain Free erhält eine vollwertige lokale WordPress-/WooCommerce-Engine ohne Task- oder Workflow-Cap. Pro ergänzt sichere Suite-Integrationen, Webhooks und Diagnose, statt künstliche Runlimits einzuführen.
 
 ### 15.11 Umsetzungsliste
 
 Die vollständige, aus diesem Konzept übernommene Umsetzungsliste einschließlich Suite- und Releaseaufgaben steht in [TODO.md](TODO.md). Produktumfang und Verträge dieses Konzepts bleiben maßgeblich.
 
-### 15.12 Wettbewerbsvergleich und abgeleitete Entscheidungen (Stand 15.11.2026)
+### 15.12 Produktneutrale Marktanforderungen
 
-| Wettbewerber | Aktuell sichtbarer Ansatz | Konsequenz für Workflow Captain |
-|---|---|---|
-| **AutomatorWP** | Die WordPress.org-Seite bewirbt mehr als 600 Trigger/Aktionen/Filter aus über 300 Plugins, unbegrenzte Ausführungen, Mehrfachtrigger/-aktionen, Filter, Zeitpläne und Loops kostenlos. Die Preisseite zeigt jährliche Add-on-Pässe für 2/10/unbegrenzte Sites; dort angezeigte Aktionspreise sind als Einführungspreise gekennzeichnet. | Kein künstliches Runlimit. Free muss echte Rezepte mit mehreren Schritten, Conditions und Zeitsteuerung können. V1 muss keine Hunderte Drittanbieter-Adapter vortäuschen; Suite-Tiefe ist unsere Differenzierung. |
-| **WP Webhooks** | Starter 149 USD/Jahr für 1 Site, mit unbegrenzten Automationen/Webhooks/Triggern/Aktionen, Bedingungen, Verzögerung, Logs und 100+ Integrationen; höhere Pläne erhöhen Site-Limit und Support. | Eingehende/ausgehende sichere Webhooks gehören in Pro v1. Jahreslizenz nach Sites/Support ist ein verständliches Marktmodell. |
-| **Uncanny Automator** | Lite bewirbt Hunderte Trigger/Aktionen und Integrationen; Basic wird mit 199 USD/Jahr für 1 Site angeboten und wirbt mit Zeitplanung, Conditions, unbegrenzten Rezepten/Ausführungen, erweiterten Integrationen und Webhooks. | Free darf nicht nur ein Demo-Builder sein. Pro soll ohne Task-Credits auskommen und die bestehende Suite-Lizenzlogik nutzen. |
-
-**Recherchierte Anbieterquellen**
-
-- AutomatorWP [WordPress.org](https://wordpress.org/plugins/automatorwp/) und [Preise](https://automatorwp.com/pricing/)
-- WP Webhooks [Preise](https://wp-webhooks.com/pricing/)
-- Uncanny Automator [Preise](https://automatorplugin.com/pricing/)
-- Recherche-/Preisstand: 15.11.2026; Wechselkursvergleich mit EZB-Referenzkurs 13.11.2026. Preise und Funktionsumfang sind veränderlich; diese Entscheidung ist eine Preispositionierung, keine Preisabfrage im Live-Shop. Quelle zum Wechselkurs: [EZB EUR/USD](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-usd.en.html).
-
-
+- Free: mehrstufige Rezepte, Conditions und Zeitsteuerung ohne künstliche Runlimits.
+- Pro: abgesicherte eingehende/ausgehende Webhooks, Suite-Provider und Betriebsdiagnose.
+- Preis- und Lizenzentscheidungen: Site-Limits, Support und reale Wartungskosten statt fremder Preisanker.
+- Keine Namen, Domains oder Links zu externen Wettbewerbern in diesen Projektdateien.
 
 ## 16. Technische Integrationsarchitektur für die Captain Suite
 
