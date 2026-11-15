@@ -293,14 +293,25 @@ Kuratierte Startpunkte mit Beschreibung, Voraussetzungen, Preview und importiert
 
 Kacheln für WordPress, WooCommerce und erkannte Captain-Plugins. Status und Mindestversion, verfügbare Trigger/Aktionen, Vertragsversion, letzte Provider-Prüfung und Link zu Details. Fehlende Plugins bleiben als „nicht installiert“ erkennbar und blockieren nicht den Rest. Keine Zugangsdaten für interne Plugin-Integrationen erforderlich.
 
-### 8.7 Einstellungen
+### 8.7 Einstellungen und Sortierung im WordPress-Admin
 
-- Queue: Status, Batchgröße/Zeitbudget, letzter Lauf; Cronhinweis.
-- Sicherheit: Rolle/Capabilities, erlaubte HTTP-Ziele und Webhook-Schlüssel (Pro).
-- Datenschutz: Aufbewahrungsdauer, Payload-Minimierung, personenbezogene Felder, Export/Löschung.
-- E-Mail: Absender-/Admin-Standard, Vorlagen, Testadresse.
-- Diagnose: Versionsmatrix, Provider-Fehler, Systembericht ohne Secrets.
-- Developer: API-/Hook-Vertragsversion, Debugmodus (nur Admin; sensible Werte maskiert).
+Workflow Captain erhält eine eigene Unterseite **Workflow Captain → Einstellungen**, keinen Tab unter WooCommerce. Das Plugin steuert WordPress-, WooCommerce-, Suite- und kundenspezifische Connectoren zugleich. Die Gruppierung folgt dem Nutzerziel; sie übernimmt das WordPress-Tabmuster von Affiliate Captain und die fachlich getrennten Einstellungsgruppen von Pass Captain.
+
+**Tabs in empfohlener Reihenfolge**
+1. **Allgemein:** sichere Standardwerte für neu angelegte Workflows und Anzeigeverhalten. WordPress-Zeitzone, Datumsformat und Website-Grunddaten werden geerbt und als Quelle angezeigt; keine doppelten Felder, außer der Betreiber wählt ausdrücklich eine Workflow-Standardzeitzone.
+2. **Ausführung:** automatische Wahl von Action Scheduler bei WooCommerce, sonst WP-Cron; lesbarer System-Cron-Hinweis; begrenzte Standardwerte für Retry/Backoff, Queue-Batchgröße und Zeitbudget. Erweiterte technische Werte bleiben begrenzt und haben verständliche Auswirkungen. Einzelne Workflows können geeignete Defaults überschreiben.
+3. **Benachrichtigungen:** Standardempfänger für fehlgeschlagene Runs/Queue-Probleme, Benachrichtigungsarten, Absender aus WordPress/WooCommerce erben oder bewusst überschreiben und Testmail. Vorlagen bleiben unter „Vorlagen“.
+4. **Datenschutz & Aufbewahrung:** Aufbewahrung von Runs und Payload-Schnappschüssen getrennt einstellen; PII/Secrets standardmäßig aus Logs; WordPress-Privacy-Exporter/-Eraser; Datenexport-/Löschhinweise und Retention-Ausnahme für laufende Runs.
+5. **Rollen & Rechte:** Zuordnung der Workflow-Capabilities zu Rollen für Anzeigen, Entwerfen, Veröffentlichen, Retry/Abbruch und Connectorverwaltung. Hochwirksame Aktionen benötigen eine passende Capability und können eine zusätzliche Bestätigung verlangen.
+6. **Erweitert** (nur Administrator, standardmäßig eingeklappt): zeitlich begrenztes Diagnose-/Debugprotokoll mit automatischer Abschaltung und Maskierung; keine freien Hooks, HTTP-Hosts oder PHP-Aktionen.
+
+**Nicht in den globalen Einstellungen verstecken**
+- Connector-URLs, HMAC-Secrets, Freigaben und Feldzuordnungen liegen jeweils im Detail der Verbindung unter **Integrationen**. Secrets werden maskiert und dort rotiert/widerrufen.
+- Queue-/Providerzustand, Cron-Ausfälle, Kompatibilität und Systembericht liegen auf einer separaten, überwiegend schreibgeschützten Seite **Systemstatus & Diagnose**.
+- Workflow-Import/Export liegt in der Workflow-Liste mit Validierungsvorschau; Pro-Lizenzverwaltung bleibt im bestehenden Captain-Pro-Kernel.
+- **Alle Workflows pausieren** ist eine gut sichtbare Notfallaktion auf Dashboard/Systemstatus mit Auswirkungsübersicht und Bestätigung, keine normale Konfigurationsoption.
+
+**Bedienregeln:** Pro Tab separat speichern; WordPress-Notices und feldnahe Fehler zeigen, was gespeichert wurde; Wechsel mit ungespeicherten Änderungen warnen; „Standardwerte wiederherstellen“ nur für den aktuellen Tab nach Bestätigung. Globale Änderungen gelten für neue Workflows; veröffentlichte und laufende Versionen bleiben unverändert.
 
 ### 8.8 Pro-Lizenz (nur im Add-on)
 
@@ -605,12 +616,13 @@ Jede Vorlage zeigt beteiligte Plugins, Voraussetzungen, Seiteneffekte, betroffen
 ### 15.7 Admin-Seiten und v1-Inhalte
 
 - **Dashboard:** aktive Workflows; Warteschlange; fehlgeschlagene Runs; überfällige Jobs; Contract-/Pluginstatus; Aktionen „Erstellen“, „Vorlage prüfen“, „Fehler beheben“.
-- **Workflows:** Suche/Filter nach Status und Plugin; Trigger-/Action-Zusammenfassung; Laufzahl; zuletzt ausgeführt; Version; Owner; pausieren/duplizieren/archivieren.
+- **Workflows:** Suche/Filter nach Status und Plugin; Trigger-/Action-Zusammenfassung; Laufzahl; zuletzt ausgeführt; Version; Owner; pausieren/duplizieren/archivieren. Validierter Import/Export liegt als Listenaktion mit Vorschau hier, nicht unter globalen Einstellungen.
 - **Editor:** visueller Drag-&-Drop-Canvas mit Bausteinleiste, gerichteten Pfeilverbindungen und Auswahl „Wenn / Dann / Sonst“. Trigger, Eventfelder, Bedingungen, Aktionen, Verzögerung/Warten und Enden werden direkt am Knoten konfiguriert; der Einstellungsbereich zeigt Provider, Vertragsversion, Feldtypen, Tokenpicker, Schreibwirkung und nötige Capability. Testdaten, Dry Run, Validierung und Veröffentlichungsvorschau sind erreichbar, ohne den Graphen zu verlassen.
 - **Vorlagen:** vorgeprüfte Suite-Flows; Voraussetzungen und Datenfluss; Draft-Import mit Prüfung, kein automatisches Live-Schalten.
 - **Läufe:** Liste nach Status/Datum/Workflow/Provider; Detailansicht Schritt für Schritt, Fehlercode, Retry-Zähler, redigierte Ein-/Ausgabe, Correlation-ID; sicher wiederholen/abbrechen.
 - **Integrationen:** Suite-Provider und eigene Connectoren. Die Unterseite **Eigene Connectoren** zeigt lokale Adapter und externe Webhook-Verbindungen, Contract-Versionen, Trigger/Aktionen, Freigaben, Secret-Status, Testverbindung und letzte Fehler.
-- **Einstellungen:** Rollen, Retention, Zeitzone, Queue/cron, E-Mail, Datenschutz, Diagnose und Export/Import.
+- **Einstellungen:** eigene WordPress-Unterseite mit Tabs Allgemein, Ausführung, Benachrichtigungen, Datenschutz & Aufbewahrung, Rollen & Rechte sowie eingeklapptem Erweitert-Bereich. Website-Zeitzone/-Mail werden geerbt; Queue- und Privacy-Defaults sind verständlich beschrieben.
+- **Systemstatus & Diagnose:** schreibgeschützte Queue-/Cron-Gesundheit, Provider- und Contract-Kompatibilität, letzte Fehler, Speicher-/Retentionstatus sowie redigierter Supportbericht. Globale Notfallpause mit Auswirkungen ist eine getrennte, bestätigungspflichtige Aktion.
 - **Pro-Lizenz:** nur das Add-on-Kernel-Menü; Lizenzstatus, Entitlements, Sites und Updates.
 - **Hilfe:** Providerkatalog, Datenfluss, Trigger-/Tokenverzeichnis, Rezeptbeispiele, Problembehandlung und Entwicklervertrag.
 
@@ -1101,4 +1113,10 @@ Die Seite zeigt erkannte lokale Connector-Plugins und angelegte externe Webhook-
 Das Mockup zeigt die zwei unterschiedlichen Installationsarten: BoatingSchool als externe, tenant-scoped Laravel-Verbindung mit getrenntem Commerce- und Workflow-Vertrag; LearnBoating als lokaler WordPress-Provider. Die Statusangaben markieren die noch erforderliche Workflow-Adapterarbeit und behaupten keine bereits installierte Integration.
 
 ![BoatingSchool-B2B- und LearnBoating-B2C-Connectoren im Workflow-Captain-WordPress-Admin – Konzeptentwurf](docs/assets/workflow-captain/customer-connectors.svg)
+
+### 19.14 Einstellungen im WordPress-Admin
+
+Die Einstellungen folgen WordPress-nativen Tabs und trennen Bedienvorgaben von Verbindungen und Systemdiagnose. Der Mockup zeigt die vererbte WordPress-Zeitzone, speicherbare Standardwerte und den separaten Hinweis auf Connector- und Systemstatusseiten.
+
+![Workflow-Captain-Einstellungen mit WordPress-Admin-Tabs – Konzeptentwurf](docs/assets/workflow-captain/settings.svg)
 
