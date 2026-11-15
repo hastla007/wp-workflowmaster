@@ -864,7 +864,7 @@ Die folgenden Abbildungen sind **statische Konzept-Mockups**, keine Screenshots 
 
 ### 19.1 Dashboard und Integrationsstatus
 
-Das Dashboard zeigt operative Zustände statt nur Workflow-Anzahlen: letzte Läufe, Fehler zur Prüfung, Providerkompatibilität und installierte Suite-Plugins. Fehlende, inkompatible und Pro-geschützte Adapter müssen unterscheidbar sein.
+Alle Konzeptansichten sind als Seiten im WordPress-Admin gestaltet: mit WordPress-Adminleiste und linker Menüführung, darunter Captain Suite als Plugin-Menü mit den Suite-Plugins als Unterseiten. Workflow Captain verwendet die gewohnten WordPress-Formulare, Tabellen, Statushinweise und Aktionsbuttons. Die Screens zeigen damit die Bedienung innerhalb einer bestehenden WordPress-Installation, nicht ein separates SaaS-Dashboard. Die Ansichten sind Produkt-Mockups und keine pixelgenauen Screens eines installierten Builds.\n\nDas Dashboard zeigt operative Zustände statt nur Workflow-Anzahlen: letzte Läufe, Fehler zur Prüfung, Providerkompatibilität und installierte Suite-Plugins. Fehlende, inkompatible und Pro-geschützte Adapter müssen unterscheidbar sein.
 
 ![Workflow-Captain-Dashboard – Konzeptentwurf](docs/assets/workflow-captain/dashboard.svg)
 
