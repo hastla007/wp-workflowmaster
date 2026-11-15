@@ -102,8 +102,8 @@ Externe App-Plattformen und Cloud-Runs sind nicht Teil von Version 1; Webhooks s
 - Produktschlüssel/Add-on-Ordner/Textdomain: `workflow-captain-pro`; Rechtepräfix: `workflow.`.
 - Pro nutzt den bestehenden WP-License-Client und Add-on-Kernel in `captain-pro`. Free enthält keinerlei Lizenzcode.
 - Die Pläne verwenden nur `sites.live_limit` und `support.level` als Tarifunterschiede; es gibt keine pro-Feature-Tiers, Run-Limits oder Task-Credits.
-- Premiumrechte: `workflow.suite_integrations`, `workflow.webhooks`, `workflow.event_correlation`, `workflow.advanced_logic`, `workflow.recipe_templates`, `workflow.extended_logs`.
-- Alle Pro-Pläne erteilen dieselben sechs Rechte; Site-Limit/Support kommen aus dem Standardvertrag. Die Katalog-Entitlements müssen vor dem Verkauf angelegt werden.
+- Premiumrechte: `workflow.suite_integrations`, `workflow.custom_connectors`, `workflow.webhooks`, `workflow.event_correlation`, `workflow.advanced_logic`, `workflow.recipe_templates`, `workflow.extended_logs`.
+- Alle Pro-Pläne erteilen dieselben sieben Rechte; Site-Limit/Support kommen aus dem Standardvertrag. Die Katalog-Entitlements müssen vor dem Verkauf angelegt werden.
 - Bei Lizenzablauf bleiben Rezepte, Versionen, Logs und Export lesbar. Neue Pro-Runs starten nicht. Geplante Pro-Aktionen werden pausiert und nicht automatisch nach Lizenzverlängerung nachgeholt; Betreiber prüft eine Wiederaufnahme mit Vorschau.
 - In `captain-pro/README.md`, Architektur, Build, Übersetzungen und Release-Checkliste wird das Add-on nach dem bestehenden Produktmuster ergänzt.
 
@@ -130,6 +130,36 @@ Vorgeschlagene öffentliche PHP-Schnittstelle (Namen sind Entwurf und müssen mi
 - Einheitlicher Envelope: `event_id`, `event_key`, `occurred_at_utc`, `site_id`, `actor_user_id` (falls vorhanden), `object_type`, `object_id`, `schema_version`, `payload`, `privacy_tags`.
 - Payload enthält nur benötigte Felder; sensible Daten standardmäßig minimieren. Tokens zeigen keine Auth-Secrets, Lizenzschlüssel, Zahlungskartendaten, vollständige Gutschein-/Einlasstokens oder Affiliate-Bankdaten.
 - Jeder Event wird mit stabiler Event-ID und Objektversion verarbeitet. Retry eines Events erhält denselben Idempotency-Key.
+
+### Connectoren für kundenspezifische Projekte
+
+Die bestehenden Suite-Plugins lösen kundenspezifische Anbindungen über öffentliche Erweiterungspunkte und separate Adapter, damit der Fachkern generisch bleibt:
+
+- Voucher Captain dokumentiert eigene Connector-Plugins, die Typen und Einlöskanäle registrieren und die Reservierungs-/Einlöse-Services mit stabilen Idempotenzschlüsseln aufrufen. Der Voucher-Kern bleibt für Gutscheine zuständig, der Connector für den freigeschalteten Kurs, das Ticket oder den Zugang. Siehe [Voucher-Captain-Connectorvertrag](https://github.com/hastla007/wp-couponmaster/blob/main/CONNECTORS.md) und das [Beispiel-Connector-Plugin](https://github.com/hastla007/wp-couponmaster/tree/main/examples/vcap-example-connector).
+- Affiliate Captain stellt einen versionierten Verkaufsvertrag bereit. Ein separates Connector-Plugin übersetzt die Ereignisse eines kundenspezifischen Shops in kanonische Sale-/Refund-Aufrufe, meldet Version und Status und verwendet stabile Quell-IDs; es greift nicht auf Affiliate-Tabellen zu. Siehe [Affiliate-Integrationsvertrag](https://github.com/hastla007/wpaffiliatemaster/blob/main/docs/CONTRACT.md) und das [Connector-Starter-Plugin](https://github.com/hastla007/wpaffiliatemaster/tree/main/examples/connector-addon).
+- Pass Captain verwendet eine versionierte Connector-Schnittstelle mit expliziter Freigabe je Connector. Ausgehende Webhooks haben eigene Abonnements, HMAC-Signaturen, Zustellqueue, Deduplizierung und ein opt-in für personenbezogene Daten. Siehe [Pass-Captain-Connectorvertrag](https://github.com/hastla007/wp-passmaster/blob/main/src/Integrations/ConnectorInterface.php) und die [Webhook-Dokumentation](https://github.com/hastla007/wp-passmaster/blob/main/docs/WEBHOOKS.md).
+
+Workflow Captain übernimmt dieses Muster als allgemeine, versionierte Projekt-Connector-Schnittstelle:
+
+**Lokaler WordPress-Connector**
+- Ein kundenspezifisches Projekt wird über ein separates Connector-Plugin angebunden. Dieses Plugin passt vorhandene Projekt-Hooks oder öffentliche APIs an Workflow-Captain-Ereignisse an; kundenspezifische Felder und Geschäftsregeln kommen nicht in den Workflow-Captain-Kern.
+- Der Connector registriert einen stabilen Schlüssel, Name, eigene Version, Workflow-Contract-Major, Abhängigkeiten/Mindestversion, Trigger, Aktionen, typisierte Schemas, Datenklassen, nötige Capabilities/Entitlements, Idempotenz, Retryverhalten und Seiteneffekte über `workflow_captain_connectors_v1`.
+- Ein öffentlicher Event-Dispatcher übergibt Events erst nach dem fachlichen Commit mit stabiler Event-ID. Actions gehen als typisierte Commands zurück an den Connector; der Connector validiert erneut und ruft ausschließlich die API seines eigenen Projekts auf.
+- Es gibt ein Starter-Plugin mit minimalem Beispiel für Trigger, Action, Statusmeldung und Integrationstest. Die öffentliche Schnittstelle bleibt dokumentiert und versioniert; der Workflow-Ausführungszugriff auf eigene Connectoren ist Pro.
+
+**Externes oder kundenspezifisches System**
+- Ein Connector kann ein anderes WordPress-Projekt oder einen externen Dienst über eine benannte Webhook-Verbindung anbinden. Eingehende Webhooks starten typisierte Ereignisse; ausgehende Aktionen senden nur an vorher angelegte Verbindungen und deren festgelegte HTTPS-Ziele.
+- Jeder Connector erhält eigenes Secret und eigene Freigaben. Eingänge prüfen HMAC-SHA256 über den unveränderten Request-Body, Zeitstempel und Replay-Fenster; Event-IDs deduplizieren Wiederholungen. Secrets sind im Run-Log nie sichtbar, können rotiert und widerrufen werden und werden bei der Einrichtung nur einmal vollständig angezeigt.
+- Für ausgehende Ziele gelten HTTPS, Host-Allowlist, sichere HTTP-Aufrufe ohne Weiterleitungen sowie Blockierung lokaler/privater IP-Bereiche. URLs oder Hosts dürfen nicht aus Eventdaten oder Workflow-Tokens stammen.
+- Payloads werden aus einer expliziten Feld-Allowlist aufgebaut; PII ist standardmäßig ausgeschlossen. Contract-Version, Datentypen, Rate Limits, Laufzeit, Größenlimits, Timeout, Retry und Fehlerzustand sind pro Verbindung festgelegt.
+
+**Freigabe und Betrieb**
+- Eigene Connectoren erscheinen unter **Workflow Captain → Integrationen → Eigene Connectoren** mit Plugin-/Systemname, Typ, Version, Contract-Kompatibilität, verfügbaren Triggern/Aktionen, Berechtigungen, letzter Verbindung und Diagnose.
+- Lokale Connectoren werden erkannt, aber nicht ohne Betreiberfreigabe aktiviert. Externe Verbindungen werden mit Test, Secret-Erzeugung, Ereignisauswahl und Bestätigung eingerichtet. Fehlendes Zielplugin, widerrufenes Secret oder inkompatibler Contract sperrt nur diesen Connector und markiert betroffene Workflows.
+- Die Builder-Palette zeigt Connector-Trigger und -Aktionen neben Suite-Providern. Jeder Schritt zeigt Quelle/Ziel, Datenfelder, Seiteneffekte und Verbindung; Dry Run verwendet Beispieldaten und sendet keine echten externen Requests.
+- Installation oder Aktivierung eines Connectors übernimmt keine nativen Geschäftsabläufe automatisch. Native Projektlogik bleibt aktiv, bis ein Betreiber die optionale Übergabe im Migrationsassistenten ausdrücklich prüft und bestätigt.
+
+V1 enthält damit ein SDK/Provider-Contract, Beispiel-Connector, lokale Projektadapter sowie signierte Webhook-Verbindungen. Es enthält keine große Bibliothek fertiger Drittanbieter-Apps und führt keinen freien PHP-Code oder beliebige HTTP-URL-Ausführung im Builder ein.
 
 ### Ausführungsmodell
 
@@ -158,6 +188,10 @@ Vorgeschlagene öffentliche PHP-Schnittstelle (Namen sind Entwurf und müssen mi
 ## 6. Integrationskatalog und priorisierte Ereignisse
 
 Die folgende Liste ist Zielumfang. Vor Implementierung muss jedes Ereignis/Aktion gegen aktuelle öffentliche Hooks/APIs und Tests des Quellplugins verifiziert werden. Es werden keine internen Funktionsnamen als stabil versprochen.
+
+### Kundenspezifische Projekt-Connectoren (Pro)
+
+Eigene Connector-Plugins können projektbezogene Trigger und Aktionen bereitstellen, etwa „Buchung im Kundenportal bestätigt“, „Mitgliedschaft freischalten“, „CRM-Lead übernehmen“ oder „Projektzugang widerrufen“. Externe Systeme können dasselbe Ereignis-/Aktionsmodell über eine konfigurierte, signierte Webhook-Verbindung nutzen. Verfügbare Optionen kommen aus dem Contract-Schema; Workflow Captain bietet keine vorgetäuschte native App-Integration ohne Adapter. Der Connector verwaltet die fachliche Berechtigung und Datenhaltung seines Projekts.
 
 ### WordPress Core (Free zuerst)
 
@@ -575,7 +609,7 @@ Jede Vorlage zeigt beteiligte Plugins, Voraussetzungen, Seiteneffekte, betroffen
 - **Editor:** visueller Drag-&-Drop-Canvas mit Bausteinleiste, gerichteten Pfeilverbindungen und Auswahl „Wenn / Dann / Sonst“. Trigger, Eventfelder, Bedingungen, Aktionen, Verzögerung/Warten und Enden werden direkt am Knoten konfiguriert; der Einstellungsbereich zeigt Provider, Vertragsversion, Feldtypen, Tokenpicker, Schreibwirkung und nötige Capability. Testdaten, Dry Run, Validierung und Veröffentlichungsvorschau sind erreichbar, ohne den Graphen zu verlassen.
 - **Vorlagen:** vorgeprüfte Suite-Flows; Voraussetzungen und Datenfluss; Draft-Import mit Prüfung, kein automatisches Live-Schalten.
 - **Läufe:** Liste nach Status/Datum/Workflow/Provider; Detailansicht Schritt für Schritt, Fehlercode, Retry-Zähler, redigierte Ein-/Ausgabe, Correlation-ID; sicher wiederholen/abbrechen.
-- **Integrationen:** installierte Suite-Plugins, Versions-/Vertragsstatus, Providerfeatures, Diagnose und Dokumentationslinks.
+- **Integrationen:** Suite-Provider und eigene Connectoren. Die Unterseite **Eigene Connectoren** zeigt lokale Adapter und externe Webhook-Verbindungen, Contract-Versionen, Trigger/Aktionen, Freigaben, Secret-Status, Testverbindung und letzte Fehler.
 - **Einstellungen:** Rollen, Retention, Zeitzone, Queue/cron, E-Mail, Datenschutz, Diagnose und Export/Import.
 - **Pro-Lizenz:** nur das Add-on-Kernel-Menü; Lizenzstatus, Entitlements, Sites und Updates.
 - **Hilfe:** Providerkatalog, Datenfluss, Trigger-/Tokenverzeichnis, Rezeptbeispiele, Problembehandlung und Entwicklervertrag.
@@ -583,7 +617,7 @@ Jede Vorlage zeigt beteiligte Plugins, Voraussetzungen, Seiteneffekte, betroffen
 ### 15.8 Lizenz- und Upgradeverhalten für Version 1
 
 - Produktkey/Ordner/Textdomain: workflow-captain-pro. Rechtepräfix: workflow.
-- Entitlements als einzelne Fähigkeiten, zum Beispiel workflow.suite_integrations, workflow.advanced_logic, workflow.delays, workflow.extended_logs und workflow.recipe_templates. Ein Recht je eigenem Feature im Captain-Pro-Kernel.
+- Entitlements als einzelne Fähigkeiten: workflow.suite_integrations, workflow.custom_connectors, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.delays, workflow.recipe_templates und workflow.extended_logs. Ein Recht je eigenem Feature im Captain-Pro-Kernel.
 - Free enthält keine Lizenzlogik. Pro-Lizenzclient, Updater und Feature-Registry liegen ausschließlich in captain-pro und nutzen den bestehenden vendorten Client/Kernel.
 - Site-Limits und Supportlevel folgen dem WP-License-Captain-Modell; keine neuen Lizenztypen, selbstgebauten Checks oder monatlichen Task-Credits.
 - Ohne gültige Lizenz bleiben Workflows, Snapshots, Logs und Exporte lesbar. Neue Pro-Ausführungen und geplante Premiumaktionen werden pausiert, mit Grund angezeigt und nicht stillschweigend in Free-Aktionen konvertiert.
@@ -618,12 +652,12 @@ Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punk
 | Verlängerung | Gleicher gespeicherter Preis bei Verlängerung, keine Lockpreise oder nur im ersten Jahr gültigen Rabatte |
 | Keine Lifetime-/Monatslizenz zum Start | Der vorhandene Lizenzserver ist auf Monat/Jahr ausgelegt; v1 startet jährlich. Monatlich wird erst nach realer Nachfrage ergänzt; Lifetime wird ausgeschlossen. |
 | Free-Versprechen | Unbegrenzte Workflows und Ausführungen; WP Core + WooCommerce; mehrere Aktionen, einfache Bedingungen, Basis-Zeitplanung und 30-Tage-Logs |
-| Pro-Versprechen | Alle Captain-Provider, geschützte Webhooks, erweiterte Korrelation/Branches, Queue/Replay, Suite-Rezepte und erweitertes Protokoll |
+| Pro-Versprechen | Alle Captain-Provider, kundenspezifische Connectoren per SDK und signierte Webhooks, erweiterte Korrelation/Branches, Queue/Replay, Suite-Rezepte und erweitertes Protokoll |
 | Nutzungslimits | Keine Task-Credits oder monatlichen Run-Limits. Nur Lizenz-Site-Limits und technische Queue-Schutzgrenzen. |
 | Integrationsemantik | Mehrere Einstiegsereignisse starten grundsätzlich je einen eigenen Lauf; Warten auf zusammengehörige Ereignisse erfolgt nur über einen expliziten Pro-Korrelationsknoten. |
 | Ausführungsbasis | Lokal auf der WordPress-Seite; Action Scheduler bei WooCommerce, WP-Cron-Fallback mit System-Cron-Empfehlung |
 | Kompatibilität | WordPress 6.8+, PHP 8.3+; WooCommerce 8.0+ optional für Shop-Provider. Jeder Suite-Adapter verlangt zusätzlich die im Providervertrag definierte Kernplugin-Mindestversion. |
-| Externe Systeme | Keine native Drittanbieter-App-Bibliothek in v1. Pro-Webhooks sind der sichere generische Adapter. |
+| Externe Systeme | v1 enthält versionierte Connector-SDK/Providerverträge für kundenspezifische WordPress-Projekte sowie Pro-Webhooks für externe Systeme. Keine breite Bibliothek fertiger Drittanbieter-Apps. |
 | KI | Nicht in Version 1; keine automatische Veränderung oder Aktivierung ohne Betreiberfreigabe |
 | Supportzeit | Support-Level folgen dem Captain-Plan. Keine Antwortzeitgarantie, bevor Supportbetrieb dafür ausgestattet ist. |
 
@@ -659,7 +693,7 @@ Diese Festlegung konkretisiert die Rollen von Workflow Captain und den Fachplugi
 ### 16.1 Produktrollen und Abhängigkeiten
 
 - Workflow Captain Core enthält Engine, Builder, Queue, WP-/WooCommerce-Provider, Laufprotokoll und Developer-Registry.
-- Workflow Captain Pro enthält Suite-Provider, geschützte Webhooks und Pro-Steuerung. Ein Adapter wird nur geladen, wenn sein Fachplugin aktiv ist und den erforderlichen Vertrag meldet.
+- Workflow Captain Pro enthält Suite-Provider, kundenspezifische Connectoren, geschützte Webhooks und Pro-Steuerung. Der öffentliche Connector-Vertrag ist im Core dokumentiert; eigene Connector-Ausführung und externe Webhook-Verbindungen erfordern workflow.custom_connectors bzw. workflow.webhooks. Ein Adapter wird nur geladen, wenn sein Fachplugin aktiv ist und den erforderlichen Vertrag meldet.
 - Jedes Fachplugin bleibt eigenständig lauffähig. Es darf Workflow Captain oder dessen Pro-Lizenz nicht benötigen, um Bestellungen, Gutscheine, Tickets, Provisionen, Formularantworten oder Reviews zu speichern und zu verwalten.
 - Fachplugins besitzen ihre Geschäftsobjekte und unverzichtbaren Zustandsübergänge. Workflow Captain koordiniert Abläufe, ersetzt aber kein System of Record.
 - Für eine Premiumfunktion eines Fachplugins braucht es gegebenenfalls zwei Rechte: das passende Workflow-Entitlement und das Entitlement des Fachplugins. Workflow Captain darf keine fremde Pro-Funktion freischalten.
@@ -864,7 +898,9 @@ Die folgenden Abbildungen sind **statische Konzept-Mockups**, keine Screenshots 
 
 ### 19.1 Dashboard und Integrationsstatus
 
-Alle Konzeptansichten sind als Seiten im WordPress-Admin gestaltet: mit WordPress-Adminleiste und linker Menüführung, darunter Captain Suite als Plugin-Menü mit den Suite-Plugins als Unterseiten. Workflow Captain verwendet die gewohnten WordPress-Formulare, Tabellen, Statushinweise und Aktionsbuttons. Die Screens zeigen damit die Bedienung innerhalb einer bestehenden WordPress-Installation, nicht ein separates SaaS-Dashboard. Die Ansichten sind Produkt-Mockups und keine pixelgenauen Screens eines installierten Builds.\n\nDas Dashboard zeigt operative Zustände statt nur Workflow-Anzahlen: letzte Läufe, Fehler zur Prüfung, Providerkompatibilität und installierte Suite-Plugins. Fehlende, inkompatible und Pro-geschützte Adapter müssen unterscheidbar sein.
+Alle Konzeptansichten sind als Seiten im WordPress-Admin gestaltet: mit WordPress-Adminleiste und linker Menüführung, darunter Captain Suite als Plugin-Menü mit den Suite-Plugins als Unterseiten. Workflow Captain verwendet die gewohnten WordPress-Formulare, Tabellen, Statushinweise und Aktionsbuttons. Die Screens zeigen damit die Bedienung innerhalb einer bestehenden WordPress-Installation, nicht ein separates SaaS-Dashboard. Die Ansichten sind Produkt-Mockups und keine pixelgenauen Screens eines installierten Builds.
+
+Das Dashboard zeigt operative Zustände statt nur Workflow-Anzahlen: letzte Läufe, Fehler zur Prüfung, Providerkompatibilität und installierte Suite-Plugins. Fehlende, inkompatible und Pro-geschützte Adapter müssen unterscheidbar sein.
 
 ![Workflow-Captain-Dashboard – Konzeptentwurf](docs/assets/workflow-captain/dashboard.svg)
 
@@ -979,4 +1015,12 @@ Der Lizenzprovider ist read-only. Workflow Captain aktiviert, verlängert, sperr
 - Das Run-Protokoll schwärzt personenbezogene Daten und geheime Codes standardmäßig.
 - Der Übergabeassistent verändert keine Nativeinstellung vor Vorschau und ausdrücklicher Bestätigung.
 - Fehler können mit Ursache und sicherem Retrypfad behoben werden; native Kernabläufe bleiben bei Workflow-Ausfall verfügbar.
+
+
+
+### 19.11 Eigene Connectoren für kundenspezifische Projekte
+
+Die Seite zeigt erkannte lokale Connector-Plugins und angelegte externe Webhook-Verbindungen. Jede Zeile macht Herkunft, Version, Contract-Status, angebotene Trigger/Aktionen und Freigabe sichtbar. Secrets werden nicht dauerhaft im Klartext angezeigt; Test- und Diagnoseaktionen offenbaren keine Payload-Geheimnisse.
+
+![Eigene Workflow-Captain-Connectoren im WordPress-Admin – Konzeptentwurf](docs/assets/workflow-captain/custom-connectors.svg)
 
