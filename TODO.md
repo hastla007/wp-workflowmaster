@@ -16,7 +16,7 @@
 - [ ] WP License Captain: nur benachrichtigungsfähige Lizenzereignisse; keine generischen Lizenzänderungen als Workflow-Aktionen.
 
 **Produktumsetzung**
-- [ ] Die bestätigten Entitlements workflow.suite_integrations, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.recipe_templates und workflow.extended_logs in wp-license/captain-pro anlegen.
+- [ ] Die bestätigten Entitlements workflow.suite_integrations, workflow.custom_connectors, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.recipe_templates und workflow.extended_logs in wp-license/captain-pro anlegen.
 - [ ] Produktkey und drei Jahrespläne im Shop/WP License Captain mit 1/5/25 Sites und oben festgelegten Preisen konfigurieren.
 - [ ] WordPress.org-Verfügbarkeit des Produktnamens/Slugs vor Einreichung prüfen.
 - [ ] UI-Entwürfe der Tabellen, Workflow-Canvas/Schrittfolge, Branching, Zeitplanung, Fehler-Replay und Lizenzablauf umsetzen.
@@ -88,3 +88,20 @@
 - [ ] WF-INT-16 – Kompatibilitätsmatrix für WP, Woo HPOS/Classic, Checkout Blocks, Multisite, PHP, Action Scheduler/Cron und alle Suite Core/Pro-Kombinationen festlegen.
 - [ ] WF-INT-17 – Vertrags-/E2E-Matrix für Plugin fehlt/deaktiviert, Lizenz/Recht fehlt/abgelaufen, Contract Major, Timeout nach erfolgreichem Zielaufruf, Replay, Duplicate, Refund, Restore und Multisite ergänzen.
 - [ ] WF-INT-18 – Release-Gate für getestete ZIPs aller geänderten Plugins, WPLC-Shop-Sandbox, Kauf/Aktivierung/Entitlement/Update/Refund/Deaktivierung, Migration und Rollback definieren.
+
+### Kundenspezifische Connectoren – Umsetzung v1
+
+- [ ] WF-CONNECTOR-01 – Öffentlichen, versionierten `workflow_captain_connectors_v1`-Providervertrag festlegen: stabiler Connector-Schlüssel, Name, Version, Contract-Major, Abhängigkeiten, Trigger-/Action-Schemas, Datenklassen, Capabilities/Entitlements, Idempotenz, Retry und Seiteneffekte.
+- [ ] WF-CONNECTOR-02 – Öffentliche Event-Publish- und Action-Dispatch-API im Core definieren; Events nur nach Commit mit stabiler Event-ID und typisiertem Envelope annehmen, Actions als typisierte Commands an den registrierten Connector zurückgeben.
+- [ ] WF-CONNECTOR-03 – Registry/Discovery implementieren: Connector-Plugin-Status, Versionskompatibilität, fehlende Abhängigkeit und optionale Fähigkeiten erkennen; Provider isoliert deaktivieren, wenn Vertrag oder Zielplugin nicht passt.
+- [ ] WF-CONNECTOR-04 – Separate Connector-Plugins für kundenspezifische WordPress-Projekte ermöglichen; diese adaptieren nur deren öffentliche Hooks/API, schreiben keine Workflow- oder Fachplugin-Tabellen direkt und validieren ihre Commands im eigenen Domainservice erneut.
+- [ ] WF-CONNECTOR-05 – Starter-Connector mit Beispiel-Trigger, Beispiel-Action, Contract-Manifests, Fehlercodes, Idempotenz und Integrationstest bereitstellen; Entwicklerdokumentation mit End-to-End-Beispiel ergänzen.
+- [ ] WF-CONNECTOR-06 – Eingehende externe Webhooks implementieren: HTTPS, eigener Schlüssel/Secret je Verbindung, HMAC-SHA256 über den rohen Body, Zeitstempel-/Replay-Schutz, stabile Event-ID, Rate Limits und Deduplizierung vor Eventannahme.
+- [ ] WF-CONNECTOR-07 – Ausgehende Webhook-Aktion nur für vorher angelegte Ziele implementieren: HTTPS und Host-Allowlist, sichere HTTP-Funktionen, keine Weiterleitungen, DNS-/IP-Prüfung gegen localhost/private/reservierte Bereiche, keine URL-Werte aus Tokens, Timeout/Größenlimit sowie definierte Retryklassen.
+- [ ] WF-CONNECTOR-08 – Secrets geschützt speichern, bei Einrichtung nur einmal vollständig anzeigen, bei späteren Ansichten maskieren und mit Erneuern/Widerrufen verwaltbar machen; Secrets, Signaturen und sensible Antworten aus Run-Logs redigieren.
+- [ ] WF-CONNECTOR-09 – Admin-Unterseite „Eigene Connectoren“ bauen: lokal erkannte Plugins und externe Verbindungen, Typ/Name, Connector- und Contract-Version, Trigger/Aktionen, Berechtigungen, Kompatibilität, Freigabe, letzter erfolgreicher Kontakt, Testfunktion und Diagnose.
+- [ ] WF-CONNECTOR-10 – Eigene Connector-Trigger und -Aktionen in Providerkatalog, Drag-&-Drop-Builder, Tokenpicker, Validierung, Dry Run und Run-Details einbinden; unbekannte bzw. nicht mehr registrierte Felder müssen Veröffentlichungen blockieren und Migration verlangen.
+- [ ] WF-CONNECTOR-11 – Freigabe- und Datenschutzmodell umsetzen: Betreiber aktiviert jeden Connector ausdrücklich; Payload-Allowlist, PII-Default-off, Capability-Prüfung, Aufbewahrung, Export/Löschung und Datenfluss-Diagnose pro Verbindung dokumentieren.
+- [ ] WF-CONNECTOR-12 – Connectoren mit Entitlement `workflow.custom_connectors` und externe Webhook-Verbindungen mit `workflow.webhooks` absichern; Lizenzablauf pausiert neue Pro-Runs, erhält Konfiguration/Logs lesbar und zeigt betroffene Workflows.
+- [ ] WF-CONNECTOR-13 – Vertrags-/E2E-Abnahme für App fehlt/deaktiviert, falscher Contract-Major, fehlende Rechte, ungültige Signatur, Replay, Duplikat, Timeout nach erfolgreichem Zielaufruf, Secret-Rotation, Retry, PII-Redaktion und Lizenzablauf ergänzen.
+- [ ] WF-CONNECTOR-14 – Praxisbeispiele und Dokumentation für Kundenportal/CRM, kundenspezifische Buchung, Membership-Zugang nach Gutschein-Einlösung und benutzerdefinierte Benachrichtigung veröffentlichen; klarmachen, dass der Connector die Fachlogik besitzt und Workflow Captain nur koordiniert.
