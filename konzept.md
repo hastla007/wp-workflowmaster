@@ -622,31 +622,9 @@ Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punk
 
 Die Gratisversion muss dennoch glaubwürdig sein: Wettbewerber bieten zum Teil Hunderte Integrationen, Mehrfachaktionen, Filter, Zeitplanung und unbegrenzte Ausführungen kostenlos. Workflow Captain Free erhält deshalb seine vollwertige lokale WP-/WooCommerce-Engine, ohne Task- oder Workflow-Cap. Das Pro-Upgrade wird durch die fachlich sicheren Captain-Integrationen, Webhooks und den Betriebs-/Diagnoseumfang begründet, nicht durch künstliche Runlimits.
 
-### 15.11 Was noch fehlt – Umsetzungsaufgaben, keine offenen Produktentscheidungen
+### 15.11 Umsetzungsliste
 
-**Öffentliche Verträge**
-- [ ] Für jeden der sechs Captain-Provider Trigger-/Action-Schema, Vertragsversion, Berechtigung, Fehlercodes und minimale Payload in den Fachplugin-Repositories veröffentlichen.
-- [ ] Pass Captain: versionierte Brücke für Check-in, Ausgabe, Widerruf und Eventabsage statt direkter Abhängigkeit auf interne Hooks.
-- [ ] Voucher Captain: versionierte Events/Services für Ausstellung, Zustellung, Einlösung, Rückgabe und Geheimnisredaktion.
-- [ ] Review Captain: idempotente Request-/Cancel-API mit Suppression, Opt-out, Frequenzlimit und Statusrückgabe.
-- [ ] Form Captain: Feldklassen und Einwilligungs-/Übertragungsregeln je Feld festlegen und in den Submission-Service einbauen.
-- [ ] Affiliate Captain: Provision-/Refund-Aktionen ausschließlich über kanonischen Verkaufsvertrag; keine zweite Buchung aus Workflow Captain.
-- [ ] WP License Captain: nur benachrichtigungsfähige Lizenzereignisse; keine generischen Lizenzänderungen als Workflow-Aktionen.
-
-**Produktumsetzung**
-- [ ] Die bestätigten Entitlements workflow.suite_integrations, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.recipe_templates und workflow.extended_logs in wp-license/captain-pro anlegen.
-- [ ] Produktkey und drei Jahrespläne im Shop/WP License Captain mit 1/5/25 Sites und oben festgelegten Preisen konfigurieren.
-- [ ] WordPress.org-Verfügbarkeit des Produktnamens/Slugs vor Einreichung prüfen.
-- [ ] UI-Entwürfe der Tabellen, Workflow-Canvas/Schrittfolge, Branching, Zeitplanung, Fehler-Replay und Lizenzablauf umsetzen.
-- [ ] Release-Readme, Entwickler-SDK, Anbieterübersicht, Datenschutz-Datenfluss und Support-Diagnose schreiben.
-
-**Abnahme und Betrieb**
-- [ ] E2E-Matrix für HPOS, Classic/Blocks, Woo-Refunds, Suite-Event-Duplikate, Parallelität, Queue-Ausfall, Retry, Lizenzablauf, Backups und Plugin-Deaktivierung erstellen.
-- [ ] Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen.
-- [ ] Datenschutz-/Rechtsprüfung der E-Mail-, Review- und Webhook-Datenflüsse für Zielregionen durchführen.
-- [ ] Queue-Batchlimits und System-Cron-Empfehlungen gegen kleine und große Shops messen.
-- [ ] Supportkapazität für Standard/Priority einrichten; Responsezeiten erst danach veröffentlichen.
-- [ ] Lizenzclient/Updater und beide ZIPs (Free/Pro) in einer echten WooCommerce-Testinstallation freigeben.
+Die vollständige, aus diesem Konzept übernommene Umsetzungsliste einschließlich Suite- und Releaseaufgaben steht in [TODO.md](TODO.md). Produktumfang und Verträge dieses Konzepts bleiben maßgeblich.
 
 ### 15.12 Wettbewerbsvergleich und abgeleitete Entscheidungen (Stand 15.11.2026)
 
@@ -868,28 +846,6 @@ Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native
 | Form Captain | Konzept für Submission- und Action-Registry; Review-Konzept schlägt form_captain_register_action_v1 vor | Öffentliche Core-Registry/Eventvertrag implementieren; Whitelist gemappter Felder, Consent/Spamstatus, Datenschutzlöschung und Idempotenz |
 | Review Captain | Konzept für Experience-/Request-/Widget-/Summary-Verträge und Review-Gating-Schutz | Request schedule/cancel, Empfängerresolver, Suppression/Frequenzlimit, IDs und Ergebnisstatus implementieren; dies ist noch kein bestätigter Codevertrag |
 
-### 18.7 Neue technische To-dos nach der Suite-Prüfung
+### 18.7 Umsetzung und Abnahme
 
-**P0 – Providerverträge**
-
-- [ ] Suite-weite SemVer-, Envelope-, Privacy- und Ownership-Konvention in allen Plugin-Repositories festlegen.
-- [ ] Für jeden Command Idempotency-ID, Seiteneffekt, Retryregeln, Capability/Entitlement und Auditformat dokumentieren.
-- [ ] Ownership-Handshake mit „Plugin-eigen“ als Default in den Core-Plugins implementieren.
-- [ ] Events nach Commit und Source-Outbox/Replay für kritische Ereignisquellen bereitstellen.
-- [ ] Woo/Refund-Verknüpfung zu Voucher, Pass und Affiliate als eine kanonische Quelle testen.
-- [ ] WP License, Woo, Voucher, Pass, Affiliate, Form und Review Provider mit Plugin-fehlt-, Lizenz-fehlt- und Contract-Major-Verhalten ergänzen.
-
-**P1 – Adapter und Workflow-Steuerung**
-
-- [ ] Adapter für alle v1-Trigger aus Abschnitt 17 umsetzen.
-- [ ] Actions pro Zielplugin ausschließlich über öffentliche Serviceverträge implementieren.
-- [ ] Installations-/Migrationsassistent für native Erinnerungen/Benachrichtigungen, Draftimport, Duplikaterkennung, Besitzerwechsel und Rollback bauen.
-- [ ] Providerstatus, aktive Workflowlinks und gemeinsame Run-/Correlation-IDs in Suite-Admins anzeigen.
-- [ ] Testmatrix für Workflow vorhanden/fehlend/deaktiviert, Free/Pro/abgelaufene Lizenz, Fachplugin-Pro-Recht, inkompatiblen Vertrag und doppelte Events ergänzen.
-
-**P2 – Betrieb**
-
-- [ ] Supportdiagnose-Export ohne PII/Secrets erstellen.
-- [ ] Source-Outbox-Replay und Workflow-Queue-Retry unterscheiden und idempotent machen.
-- [ ] Anonymisierung/Löschung über Source- und Workflow-Logs abstimmen, ohne Geschäftsledger zu löschen.
-- [ ] Aktivierung/Deaktivierung, Backup/Restore und Multisite pro Provider validieren.
+Die detaillierten Arbeitspakete für Providerverträge, Lizenz-/Shoppläne, UI, Migration, Kompatibilität und Releaseprüfung stehen in [TODO.md](TODO.md), Abschnitt Suite-Provider. Abschnitt 18 beschreibt weiterhin die verbindliche Architektur und Ownership-Grenzen.
