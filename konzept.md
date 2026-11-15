@@ -208,7 +208,7 @@ Die folgende Liste ist Zielumfang. Vor Implementierung muss jedes Ereignis/Aktio
 
 ## 7. Anwendungsrezepte (Produktbeispiele)
 
-1. **Bestellung → Gutschein → Review-Anfrage:** Ereignis Bestellung bezahlt; Filter auf Gutscheinprodukt und gültigen Kontakt-/Kommunikationsstatus; Gutschein-Ausstellung durch Voucher Captain; nach 14 Tagen Review-Captain-Anfrage, wenn Auftrag nicht erstattet und keine jüngere Anfrage gesendet wurde.
+1. **Tatsächliches Erlebnis → Review-Anfrage:** Nach echtem Einlass über Pass Captain wird eine Anfrage geplant; ein bezahlter Auftrag oder eine bloße Gutscheinausstellung löst allein keine öffentliche Review-Anfrage aus. Der Review-Provider prüft vor Versand Einwilligungs-/Rechtsgrundlage, Opt-out, Refund/Storno und Frequenzlimit. Bei Erlebnisgutscheinen darf erst eine bestätigte Einlösung als Quelle dienen.
 2. **Ticket gekauft → Eventabsage:** bei Eventabsage alle zugehörigen Besteller über Pass Captain informieren; keine erneute Ticket- oder Erstattungsbuchung durch den Workflow.
 3. **Warteliste → Voucher:** angenommenes Angebot erzeugt Ticket über Pass Captain; danach optional Gutschein für eine separate Kampagne – nur, wenn Empfänger und Regeln festgelegt sind.
 4. **Formular → Partnerbewerbung:** bei freigegebenem Bewerbungsformular Partnerdatensatz im Status „pending“ über einen zukünftigen Affiliate-Servicevertrag anlegen; Annahme/Provisionsregeln bleiben beim Affiliate-Plugin.
@@ -415,3 +415,144 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 - WP Webhooks: [WordPress.org Pluginseite](https://wordpress.org/plugins/wp-webhooks/), [Features](https://wp-webhooks.com/features/)
 - SureTriggers / OttoKit: [WordPress.org Pluginseite](https://wordpress.org/plugins/suretriggers/)
 - Recherche-Stichtag: 15.11.2026. Wettbewerbsaussagen sind qualitative Beobachtungen aus Anbieter-/Pluginseiten; sie sind keine unabhängige Tarif- oder Benchmarkprüfung.
+
+
+## 15. V1-MVP-Spezifikation – verbindlicher Umsetzungsvorschlag
+
+Dieser Abschnitt konkretisiert die zuvor beschriebene Roadmap. Er setzt den ersten verkaufbaren Umfang auf einen vertikalen, überprüfbaren Suite-Ablauf. Er ersetzt breitere Beispiele, wo sie diesem Umfang widersprechen. Alle nachfolgend als „neu“ bezeichneten Provider-Verträge müssen vor Implementierung in den jeweiligen Kern-Repositories abgestimmt und versioniert werden.
+
+### 15.1 Produktgrenze für Version 1
+
+| Bereich | Free: Workflow Captain | Pro: Workflow Captain Pro v1 |
+|---|---|---|
+| Workflow-Aufbau | Beliebig viele lokale Entwürfe; ein Trigger, einfache UND-Bedingungen, eine sofortige Aktion; aktivieren/pausieren/duplizieren | Verzögerung und Folgeaktionen; Suite-Provider; sichere Wiederholungen; Vorlagen; Schrittprotokoll |
+| Trigger | WordPress: Beitrag veröffentlicht/aktualisiert, Benutzer registriert; WooCommerce: Bestellung bezahlt/Status geändert | Zusätzlich Pass Captain: Ticket eingecheckt/abgesagt; Voucher Captain: Gutschein-Serviceeinlösung bestätigt; Review Captain: Anfragezustand als Rückmeldung |
+| Aktionen | Admin-E-Mail und WooCommerce-Bestellnotiz | Review Captain: zulässige Anfrage planen; Pass/Voucher-Aktionen in v1 nur falls dafür konkrete, risikoarme öffentliche Serviceverträge freigegeben sind |
+| Ablaufsteuerung | Sofort, synchron nur für kurze lokale Aktionen | Action Scheduler / Queue, Verzögerung, Retry mit Backoff, Ereignis-Abbruch, manuelles Replay |
+| Protokoll | 7 Tage standardmäßig, einstellbar bis maximal 30 Tage; personenbezogene Werte maskiert | 30 Tage standardmäßig, einstellbar; detaillierte Schritte, Filter und CSV-Export |
+| Volumen | Kein nutzungsabhängiges Task-Credit-Modell. Server-Last wird über Queue-Batchgröße und harte Systemschutzgrenzen begrenzt. | Kein Task-Credit-Modell; Lizenzpläne unterscheiden Sites/Support wie andere Captain-Pro-Add-ons. Limits für Run-Anzahl nur dann, wenn WP License Captain dies als Produkt-Entitlement sauber trägt. |
+| Lizenz | Keine Lizenzabfrage, kein Lizenzclient und keine Lizenzpflicht | Separates Add-on mit Produktkey workflow-captain-pro und Entitlements workflow.* nach Captain-Pro-Kernel |
+
+**Produktentscheidung für die Planung:** Eine Workflow-Ausführung darf kein abrechenbarer Task-Credit sein. Es gibt keine monatlichen Run-Kontingente. Ein überlasteter Server muss Jobs kontrolliert drosseln/anzeigen, darf aber keine bezahlte Kundenaktion still verwerfen. Free enthält keine Suite-übergreifende Pro-Orchestrierung; gespeicherte Rezepte und Logs bleiben nach Pro-Ablauf lesbar/exportierbar. Eine Aktivierung mit Pro-Funktionen wird beim Lizenzende pausiert und dem Betreiber mit konkretem Grund angezeigt.
+
+**Nicht Teil des V1-Verkaufsversprechens:** Affiliate Captain, Form Captain, externe SaaS-Apps, ausgehende/eingehende Webhooks, HTTP-Request-Aktion, OR-/Else-Zweige, Schleifen, freie Codeausführung und umfassende Automatisierung jeder Plugin-Funktion. Provider-Architektur muss diese Erweiterungen erlauben, aber sie werden nicht zur MVP-Abnahme gezählt.
+
+### 15.2 Erster Referenzablauf: Pass Captain → Review Captain
+
+**Ziel:** Eine Anfrage nach einer tatsächlichen Teilnahme planen, nicht allein nach Zahlung oder Gutschein-Ausstellung.
+
+1. Ein Käufer bestellt ein Pass-Captain-Ticket im WooCommerce-Shop.
+2. WooCommerce bestätigt die Zahlung; Pass Captain reserviert und stellt das Ticket über seine bestehende Woo-Integration aus.
+3. Pass Captain meldet den späteren erfolgreichen Einlass. Workflow Captain startet nur für das eingecheckte Ticket einen Run.
+4. Workflow Captain plant einen Schritt 24 Stunden nach dem Einlass ein.
+5. Vor der Ausführung prüft es nochmals: Ist Ticket/Event nicht abgesagt, ist keine Rückerstattung/Stornierung gemeldet, besteht kein Opt-out und lässt der Review-Provider eine Anfrage nach den Betreiberregeln zu?
+6. Workflow Captain übergibt eine Anfragen-Absicht an Review Captain. Review Captain bleibt Eigentümer von Empfängerauflösung, Vorlagen, Frequenzlimit, Versand, Widerruf und Protokoll der Einladung.
+7. Ist die Anfrage bereits für dieselbe Erfahrung angelegt, liefert der Provider dieselbe Einladung zurück; es wird keine zweite versendet.
+
+**Wichtig:** Der Pass-Kern dokumentiert heute unter anderem wpcap_ticket_checked_in und wpcap_tickets_issued in docs/HOOKS.md. Die Doku stuft diese Hooks als interne Erweiterungspunkte ein, nicht als versionierte Drittanbieter-Verträge. Workflow Captain darf sie daher erst nach Bereitstellung eines versionierten Pass-Providervertrags abonnieren. Ticketcode und QR-Geheimnis dürfen nicht im Workflow-Payload landen.
+
+### 15.3 Zweiter Referenzablauf: Voucher Captain → Review Captain
+
+Für ein Voucher-Produkt, bei dem eine bestätigte Einlösung tatsächlich eine Dienstleistung/Erfahrung belegt:
+
+- Trigger ist ausschließlich eine idempotent bestätigte Serviceeinlösung, die der Betreiber als „für Review-Anfrage geeignet“ konfiguriert hat.
+- Allgemeine Gutscheine, Rabattcodes, Guthabenaufladungen und bloße Bestellung/Ausstellung sind nicht geeignet.
+- Voucher Captain liefert nur eine nicht geheimhaltende Einlösungsreferenz, Einlösungszeitpunkt, Erlebnis-/Produktreferenz und eine pseudonyme Bestell-/Kundenreferenz, soweit für die Einladung notwendig.
+- Review Captain prüft Einwilligungs-/Rechtsgrundlage, Opt-out, Frequenz- und Ausschlussregeln.
+- Refund/Storno oder ein ungültig gemachter Einlösevorgang vor Versand storniert die geplante Anfrage.
+- Für Voucher Captain ist im geprüften README idempotente Ausstellung und Action-Scheduler-Zustellung dokumentiert; ein versionierter, öffentlicher Workflow-Eventvertrag für Einlösung ist vor Implementierung erst festzulegen.
+
+### 15.4 Normativer Provider-Vertrag für V1 (Entwurf)
+
+Jeder Provider führt eine Contract-ID und Major-Version. Event-IDs bleiben stabil und werden nicht von sichtbaren Hooknamen abgeleitet. Vorschlag für IDs:
+
+| Provider | Event/Action-ID | Status im Konzept |
+|---|---|---|
+| WooCommerce | woocommerce.order.paid | Woo-Adapter muss Ereignisquelle/Refund-Reentrancy und HPOS klären; Orderdaten nur per Woo CRUD |
+| Pass Captain | pass.ticket.checked_in | Neu: versionierte öffentliche Brücke über internen Hook |
+| Pass Captain | pass.event.cancelled, pass.ticket.revoked | Neu: Payload- und Semantikprüfung; nur Abbruch/Suppression, keine doppelte Fachaktion |
+| Voucher Captain | voucher.experience.redeemed | Neu: nur bestätigte geeignete Serviceeinlösung; nicht bloßer Gutscheinverkauf oder Coupongebrauch |
+| Review Captain | review.request.schedule | Neu: idempotenter Anfragenservice, Einwilligungs-/Opt-out-/Frequenzprüfung und eigener Versand |
+| Review Captain | review.request.cancel | Neu: sichere Stornierung solange noch nicht gesendet; danach unveränderlicher Versandnachweis |
+
+Gemeinsames Event-Envelope:
+
+- event_id: stabiler, einmaliger ID-Wert des Quellplugins;
+- event_key: stabile Provider-Event-ID;
+- occurred_at_utc: UTC-Zeitpunkt;
+- object_type + object_id: fachliche Referenz (nie geheime Ticket-/Voucher-Codes);
+- correlation_id: Woo-Auftrag/Pass-Ticket/Voucher-Erlebnis über beteiligte Services hinweg;
+- schema_version: Payload-Major/Minor;
+- payload: minimale erlaubte Daten mit Feldtypen;
+- privacy_tags: Datenklassen und Aufbewahrungshinweise.
+
+Review-action request-schedule v1-Input (Vorschlag):
+
+- source_plugin: pass-captain oder voucher-captain;
+- source_event_id: ID des idempotenten Quellereignisses;
+- experience_ref: nicht erratbare interne Referenz, keine Berechtigung zum Abruf;
+- customer_ref: Review-Captain-eigene Empfängerreferenz oder sichere Empfängerauflösung durch die Review-API;
+- occurred_at_utc;
+- not_before_utc: frühester Versandzeitpunkt (standardmäßig Erlebniszeitpunkt + 24 Stunden);
+- locale und optional item_ref;
+- policy_context: Betreiberregeln, Opt-out-/Suppressionstatus werden serverseitig erneut geprüft.
+
+Die Schnittstelle gibt einen stabilen request_id und Status scheduled/suppressed/rejected zurück. Klare E-Mail, Gutschein-/Ticketcode, Kartendaten, Affiliate-Bankdaten und rohe Formulareingaben sind keine Workflow-Tokens. Review Captain speichert und redigiert den Einladungstext selbst. Ein Request darf niemals anhand einer Sternebewertung oder vermuteten Zufriedenheit geroutet werden.
+
+### 15.5 Run-, Retry- und Abbruchregeln
+
+- Unique Idempotency-Key: Site-ID + Provider-Event-ID + Recipe-ID + veröffentlichte Recipe-Version + Action-ID.
+- Derselbe Quell-Event erneut zugestellt: denselben Run aktualisieren/zurückgeben, keine zweite Aktion.
+- Maximal drei automatische Versuche bei vorübergehenden Fehlern: nach 1, 5 und 30 Minuten; danach Status „fehlgeschlagen“ und Adminhinweis. Endgültige Validierungs-/Berechtigungsfehler werden nicht wiederholt.
+- Run verwendet beim Start einen unveränderlichen Rezept-Snapshot. Eine spätere Rezeptänderung wirkt nur auf neue Events.
+- Geplante Anfrage ist bis zur Übergabe an Review Captain durch Workflow ID + experience_ref auffindbar und abbrechbar.
+- Pass Ticket storniert/widerrufen, Event abgesagt oder Voucher-Einlösung ungültig: wartenden Run abbrechen. Refund bei zugehörigem Woo-Auftrag vor Anfrageübergabe: Anfrage unterdrücken. Teilerstattung wird im V1 konservativ ebenfalls unterdrückt; die Oberfläche erklärt, dass der Betreiber einen neuen manuellen Run prüfen muss.
+- Wenn die Aktion bereits bei Review Captain angenommen wurde, wird der Abbruch über review.request.cancel angefragt. Wurde bereits versandt, wird nichts gelöscht; Run vermerkt „bereits versandt“, damit keine falsche Rücknahme behauptet wird.
+- Ein manuelles Replay erzeugt neue Run-ID, erfordert eine Warnung über mögliche externe Seiteneffekte und fragt den Zielprovider nach vorhandenem Idempotency-Key.
+
+### 15.6 V1-Abnahme (Given / When / Then)
+
+1. Pass Captain meldet dasselbe Check-in-Event zweimal. **Dann** existiert genau ein Workflow-Run und höchstens eine Review-Anfrage.
+2. Ein gültiger Check-in kommt an. **Dann** wird eine Anfrage frühestens 24 Stunden später geplant und vor der Übergabe erneut gegen Opt-out/Frequenz/Status geprüft.
+3. Das Ticket wird während der Wartezeit widerrufen oder das Event abgesagt. **Dann** wird der wartende Run abgebrochen und Review Captain erhält eine Abbruchanfrage.
+4. Der Woo-Auftrag wird vor dem Versand vollständig oder teilweise erstattet. **Dann** wird die Einladung gemäß konservativer V1-Regel unterdrückt; es erfolgt kein erneuter Versuch.
+5. Der Review-Service ist vorübergehend nicht erreichbar. **Dann** erfolgen genau drei begrenzte Retries, anschließend ist der Fehler mit Grund sichtbar und manuell bearbeitbar.
+6. Review Captain erkennt vorhandene Einladung oder Opt-out. **Dann** liefert er „suppressed“ mit maschinenlesbarem Grund; es wird nicht versucht, den Versand direkt aus Workflow Captain auszuführen.
+7. Pro-Lizenz endet. **Dann** sind Rezepte, Logs und Export lesbar; neue Pro-Runs und geplante Pro-Aktionen werden sicher angehalten, ohne Datenlöschung.
+8. Pass Captain fehlt oder Contract-Major ist inkompatibel. **Dann** wird der Provider als nicht verfügbar angezeigt; kein Fatal und keine stillschweigende Ausführung mit veralteter Payload.
+9. WP-Cron/Action Scheduler arbeitet nicht. **Dann** bleibt jeder fällige Job sichtbar als überfällig; nach Wiederherstellung läuft er höchstens einmal.
+10. Logs/CSV werden exportiert. **Dann** sind Geheimnisse und sensible Token maskiert; CSV-Formel-Injection ist abgewehrt.
+
+### 15.7 Vor Code-Start erforderliche konkrete Aufgaben
+
+**P0 – vor jeder MVP-Implementierung**
+
+- [ ] Workflow Captain v1-Umfang und ob Pass-/Review Provider Pro-only sind, als Inhaberentscheidung freigeben.
+- [ ] Mit Pass Captain einen versionierten, öffentlichen Providervertrag für ticket.checked_in und Ticket/Event-Abbruch festlegen; internes Hook nicht direkt als dauerhaft stabil behandeln.
+- [ ] Review Captain-Konzept um einen versionierten Schedule/Cancel-Request-Service mit Suppression-/Opt-out-/Frequenzantwort ergänzen.
+- [ ] Voucher Captain nur dann in die v1-Vermarktung aufnehmen, wenn es einen expliziten Serviceeinlösungs-Eventvertrag gibt; sonst Phase 2.
+- [ ] WooCommerce-Adapter: Order/Refund-Ereignisverknüpfung, HPOS, Classic/Blocks, Statuswechsel/Reentrancy und Teilerstattung als konkrete Testspezifikation definieren.
+- [ ] Free-/Pro-Zuordnung, Retention, Freemium-UX und Site-/Support-Lizenzpläne bestätigen.
+- [ ] Produktkey workflow-captain-pro, Rechtepräfix workflow. und konkrete Entitlements im License-Captain-/captain-pro-Arbeitsplan ergänzen.
+- [ ] Namensentscheidung festhalten: Workflow Captain als sichtbarer Produktname, wp-workflowmaster als bestehendes Repository; WordPress.org-Slug nach Verfügbarkeitsprüfung.
+
+**P1 – vor Pro-Beta**
+
+- [ ] Trigger-/Action-Feldschemas mit Datentyp, Token, Datenschutzklasse, Beispiel und Rückgabecode dokumentieren.
+- [ ] Review-Einladungsberechtigung und Kommunikationstexte fachlich/rechtlich prüfen.
+- [ ] Queue-Monitor, Retry-, Replay-, Abbruch- und Lizenzablauf-UX als Screens/Flows spezifizieren.
+- [ ] Restore-/Backup-, Rezeptimport/-export- und Schema-Migrationsverhalten festlegen.
+- [ ] Kompatibilitätsmatrix und End-to-End-Abnahmeumgebung mit den realen Captain-Plugins einrichten.
+
+**P2 – nach stabiler v1**
+
+- [ ] Voucher-Serviceeinlösung als alternativem tatsächlichem Erlebnis-Trigger ergänzen.
+- [ ] Form Captain, Affiliate Captain, weitere Pass-/Voucher-Events und Review-Rückmeldungen als separate Provider-Releases.
+- [ ] Webhooks/HTTP und externe Apps nach eigenständigem Threat Model und Nachfrage.
+
+### 15.8 Bekannte Vertragslage aus der Repository-Prüfung
+
+- Pass Captain dokumentiert bereits interne Hooks für Ticket-Check-in, Ticket-Ausgabe, Widerruf und Veranstaltungsabsage. Die vorhandene Hook-Dokumentation bezeichnet externe Systeme jedoch als Nutzer ausgehender Webhooks und markiert nicht alle PHP-Hooks als stabile versionierte Verträge. Vor direkter Workflow-Anbindung braucht es deshalb eine explizite öffentliche Provider-Schicht.
+- Affiliate Captain hat bereits einen versionierten Integrationsvertrag für Partner/Provisionen und ein nach Commit ausgelöstes Provisionsereignis. Affiliate Captain bleibt deshalb geeigneter Folgeprovider; er ist für den ersten Review-Ablauf nicht erforderlich.
+- Voucher Captain dokumentiert automatische idempotente Ausstellung und Action-Scheduler-Zustellung. Das ist keine Bestätigung eines vollständigen öffentlichen Workflow-Eventvertrags für Einlösungen.
+- Review Captain ist selbst noch ein Produktkonzept. Review Captain muss die Einladung behalten und eine explizite idempotente Schedule/Cancel-Schnittstelle definieren, ehe Workflow Captain diese Funktion anbieten kann.
