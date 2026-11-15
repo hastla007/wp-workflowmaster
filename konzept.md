@@ -824,6 +824,78 @@ Workflow-Aktionen laufen als typisierte Commands im Plugin, das die Daten besitz
 | Refund → Affiliatekorrektur | Dedupe nach Refund-ID; Affiliate-Ergebnis verknüpfen; Hinweis senden | Affiliate: Verkaufs-/Refundquelle und Ledger |
 | License/payment status | Admin-/Kundenhinweis; keine Lizenzstatusänderung | WP License: Vertrag, Lizenz und Zahlung |
 
+### 17.10 Kundenconnector 1: BoatingSchool B2B-Lernplattform (Laravel)
+
+**Repository-Befund:** [BoatingSchool](https://github.com/hastla007/boatingschool) ist eine mandantenfähige Laravel-/PostgreSQL-Plattform. Jede Bootsschule ist ein Tenant; tenantgebundene Daten sind mit PostgreSQL Row-Level Security geschützt. Die Shop-Anbindung läuft bereits über einen eigenen [WooCommerce-Connector](https://github.com/hastla007/boatingschool/tree/main/integrations/woocommerce-connector) und die [Commerce-API v1](https://github.com/hastla007/boatingschool/blob/main/docs/commerce/README.md).
+
+| Vorhandener Ablauf | Technische Grenze für Workflow Captain |
+|---|---|
+| Shop-Aufrufe an die App sind Server-zu-Server mit HMAC-SHA256, Key-ID, Zeitstempel, einmaliger Nonce und Signatur über Methode/Pfad/Body geschützt. Abweichung über 300 Sekunden und wiederverwendete Nonces werden abgelehnt. | Das ist eine Commerce-API für den Woo-Connector, kein generischer Workflow-Endpunkt. Separate Workflow-Credentials und eigene Scopes verwenden; Commerce-Key nicht wiederverwenden. |
+| Der Woo-Connector liefert nach bestätigter Zahlung je Bestellposition genau einen Batch. Idempotency-Referenz: Shop + Order-ID + Positions-ID; Action Scheduler wiederholt vorübergehende Fehler. Rückerstattung/Storno sperrt unbenutzte Codes nach der bestehenden Plattformregel. | Workflow Captain darf diese Zustellung und Sperrung nicht duplizieren oder im eigenen Run-Ledger nachbilden. |
+| Account-Verknüpfung nutzt einen einmaligen, 15 Minuten gültigen Code. E-Mail-Gleichheit verknüpft kein App-Konto; neue B2B-Konten brauchen Prüfung/Freigabe. | Workflows dürfen keine Bootsschule freigeben, Konten automatisch verknüpfen oder Linkcodes erzeugen/versenden. |
+| Gutscheincodes bleiben im Codebestand der Schule auf der Plattform. Antwort, E-Mail, Commerce-Log und Event dürfen keine Codewerte enthalten. | Connector-Payloads enthalten nur IDs/Status/Mengen, keine Couponwerte oder Zugangscodes. |
+| Die App hat eine App→Shop-Outbox für `tenant.provision`; Commerce-Vorgänge werden außerdem als `CommerceEvent` protokolliert. | Die bestehende Outbox ist auf Shopkonto-Provisionierung ausgerichtet und nicht der allgemeine Workflow-Eventversand. Dafür einen getrennten, dauerhaften Workflow-Outbox-Dispatcher nach erfolgreichem Commit ergänzen. |
+
+**Empfohlener Connector-Aufbau:** ein BoatingSchool-Workflow-Adapter auf der WordPress-/WooCommerce-Shopseite plus ein kleiner Publisher/Command-Adapter in der Laravel-App. Die Shopseite nutzt die vorhandene Workflow-Captain-Pro-Webhook-Verbindung; die App veröffentlicht nur freigegebene Events mit stabiler Event-ID. Der Adapter prüft Contract-Version und verbindet jeden Aufruf mit einer zugelassenen Tenant- oder Plattform-Scope. Zuerst bestehende, nach Commit protokollierte Ereignisse als Events verfügbar machen; neue Domainereignisse erst über dokumentierte Laravel-Services publizieren, nicht aus beliebigen Model-Hooks ableiten.
+
+**Sinnvolle Trigger und Aktionen**
+
+| Trigger (V1-Kandidat) | Nutzbarer Workflow-Schritt | Fachgrenze |
+|---|---|---|
+| B2B-Shopkonto registriert, verknüpft oder deaktiviert | zuständige Plattform-/Schuladmins informieren; Status im Run anzeigen | Registrierung bleibt „pending review“; keine automatische Freigabe oder Verknüpfung |
+| Shopkonto-Provisionierung im Woo-Shop erfolgreich/fehlgeschlagen | Support-/Superadmin-Hinweis, erneute Prüfung als manuelle Aufgabe | Die App-Outbox führt ihre eigene idempotente Wiederholung weiter aus |
+| Code-Batch aus einer Bestellposition geliefert oder teilweise/vollständig entwertet | Schuladmins über Batch-ID, Kurs/Produkt, Menge und Ergebnis informieren | Keine Ausgabe, Änderung oder Übermittlung von Codewerten |
+| Lerngruppenmitglied eingeladen/Beitritt bestätigt/entfernt | tenant-scoped Benachrichtigung oder begrenzte Folgeaufgabe | Einladungen nur über `LearningGroupService`, mit Tenant-Rolle, Platzlimit und Idempotenz |
+| Ablauf einer Berechtigung oder Prüfungs-/Praxisstatus | Folgekommunikation und interne Aufgaben | Erst verfügbar machen, wenn die App dafür einen versionierten, nach Commit publizierten Domain-Eventvertrag bereitstellt |
+
+**Neue API-Aktionen (nur nach schmaler Scope-Freigabe):** Benachrichtigung an Schuladmins über eine von der Plattform verwaltete Vorlage; Einladung in eine konkrete Lerngruppe nur unter einer identifizierten, berechtigten Tenant-Rolle. Kein generisches `POST`-Proxy, keine freie SQL-/PHP-Ausführung und keine Workflow-Aktionen zum Registrieren, Freigeben, Verknüpfen oder Deaktivieren von Shopkonten, Ausliefern/Entwerten von Codes oder Ändern von Tenant-Kursrechten.
+
+Jeder Laravel-Aufruf muss den Tenant serverseitig auflösen und dessen RLS-Kontext setzen. Eine Tenant-ID aus dem Workflow-Payload ist nur eine Referenz, keine Berechtigung. Plattformweite Aktionen erfordern eine eigene, ausdrücklich autorisierte Plattform-Scope. Eventfelder bleiben standardmäßig frei von E-Mail, Firmen-/Steuerdaten, Linkcodes, Couponwerten und Lernantworten.
+
+~~~mermaid
+flowchart TD
+    A[Woo-Bestellung bezahlt] --> B[Bestehender Bootsschul-Connector]
+    B --> C[Signierte Commerce-API]
+    C --> D[Code-Batch nach Plattformregel]
+    D --> E[Getrenntes Workflow-Outbox-Event nach Commit]
+    E --> F[Workflow: Adminmeldung oder scoped Einladung]
+~~~
+
+### 17.11 Kundenconnector 2: LearnBoating B2C-WP-Lernplattform
+
+**Repository-Befund:** [LearnBoating](https://github.com/hastla007/learnboating) ist ein WordPress-/WooCommerce-Plugin für Lernzugänge zu Bootsführerscheinkursen. Die Woo-Integration gleicht den vollständigen Bestellzustand idempotent ab; ein stündlicher Auto-Reconcile holt verpasste Bestell-Hooks nach. Digitale Zustimmung, Zahlung, Dispute, Teil-/Vollerstattung, Storno und manuelle Entscheidung beeinflussen den Zugang. Workflow Captain darf diese Logik nicht ersetzen.
+
+LearnBoating hat bereits einen klaren Erweiterungsvertrag für [Voucher Captain](https://github.com/hastla007/learnboating/blob/main/docs/kursgutscheine.md): `bootspruefung_voucher_grants_v1` prüft Ziele, vergibt/widerruft Grants idempotent und lässt Lernzugang, Dauer und Konflikte vom Lernplugin entscheiden. Außerdem gibt es optionale Ticket-Hooks; ihr gespeicherter Datensatz enthält nur Ticketstatus/-referenz, nicht die Kennung des Scanners. **Ein allgemeiner versionierter Workflow-Provider ist im Repository derzeit noch nicht vorhanden.**
+
+**Empfohlener Connector-Aufbau:** LearnBoating veröffentlicht im eigenständigen Core einen versionierten, dokumentierten Workflow-Event-/Action-Vertrag. Ein separates `LearnBoating Workflow Connector`-Plugin registriert ihn im Workflow-Captain-Provider-Contract, wenn beide Plugins aktiv und kompatibel sind. Ohne Workflow Captain bleibt LearnBoating voll funktionsfähig; es gibt keine direkte Tabellen-/Meta-Abhängigkeit. Für B2C braucht es keine entfernte API oder extern gespeicherten API-Secrets: die Verbindung ist lokal in derselben WordPress-Installation.
+
+**Sinnvolle Trigger und Aktionen**
+
+| Trigger (V1-Kandidat) | Quelle / Payload | Verwendbare Folgeaktion |
+|---|---|---|
+| `learning.entitlement.changed`: aktiv, ausstehend, ausgesetzt, widerrufen oder abgelaufen | nach OrderSync, VoucherGrants oder Gruppenänderung; stabile Entitlement-/Order-Positionsreferenz, Kurscode, Quelle, Status und Zeitgrenzen | Lernzugang-Onboarding/-Hinweis; wartende Nachrichten bei Suspendierung/Widerruf stoppen |
+| `learning.group.member.changed`: eingeladen, beigetreten, entfernt oder Einladung abgelaufen | GroupService nach Commit; Gruppen- und Mitgliedsreferenz, Kursumfang und Status; keine Einladungstokens | berechtigte Folgekommunikation oder Einladung über den Gruppenservice |
+| `learning.exam.completed` | nur abgeschlossene Prüfung und freigegebener Ergebnisstatus; kein Fragen-, Antwort- oder Detailleistungsdatensatz | neutraler Abschluss-/Lernhinweis; optional Review Captain, der eigene Consent-/Opt-out-/Frequenzregeln anwendet |
+| `learning.ticket.changed` (optional, wenn Ticket-Plugin aktiv) | vorhandene issued/redeemed/cancelled-Erweiterung; Ticket-ID, Kurs, Status, Datum | praktische Termin-/Serviceinformation oder Betreiberhinweis |
+| Kursfortschritt | **nicht** jedes beantwortete Item; Meilenstein-Event erst später, wenn eine stabile Abschlussdefinition und privacy-arme Zusammenfassung vereinbart ist | spätere, bewusst begrenzte Lern-Erinnerung |
+
+**V1-Aktionen:** eine LearnBoating-verwaltete transaktionale Nachricht anhand eines festen Vorlagenschlüssels und einer Nutzerreferenz; eine Gruppeneinladung nur über den offiziellen GroupService, mit Berechtigung des Gruppeneigentümers, Sitzplatzprüfung, Tageslimit und Command-Idempotenz. Marketing-/Bewertungsanfragen verlangen eigene Einwilligungs- und Opt-out-Prüfung; Review Captain führt diese Prüfung aus.
+
+**Nicht als Workflow-Aktion exponieren:** Woo-Bestellung bezahlen/ändern/erstatten; Lernzugang direkt anlegen, verlängern oder widerrufen; Voucher-Code erzeugen/einlösen; Prüfungsergebnis ändern; Antwort- oder Lernhistorie lesen; Gruppenzugang ohne Eigentümerrecht erteilen. Zugang bleibt bei OrderSync, Auto-Reconcile, EntitlementService bzw. VoucherGrants. Ein Voucher-Grant löst höchstens ein Zugangsereignis aus, nie eine zweite Freischaltung.
+
+Für OrderSync-basierte Zugänge wird das freigegebene Ereignis nach erfolgtem Abgleich protokolliert, mit stabiler Event-ID dedupliziert und nachholbar gemacht. Ein Workflow, der sowohl `woocommerce.payment_complete` als auch `learning.entitlement.changed` abonniert, muss explizite Korrelation/Deduplizierung aktivieren; für Zugangs-Onboarding ist das LearnBoating-Entitlement-Event die kanonische Quelle. PII und Antwortdaten bleiben standardmäßig aus Triggern, Bedingungen und Logs ausgeschlossen. E-Mail-Adressen werden nur bei einer erlaubten Mail-Aktion zur Ausführung aufgelöst und nicht im Run-Log gespeichert.
+
+~~~mermaid
+flowchart TD
+    A[Woo-Zahlung oder Voucher-Einlösung] --> B[LearnBoating OrderSync oder VoucherGrants]
+    B --> C[Entitlement wird fachlich festgelegt]
+    C --> D[Versioniertes Zugangsereignis]
+    D --> E[Workflow: Nachricht, Wartezeit oder Review-Anfrage]
+    C --> F[Refund oder Dispute]
+    F --> G[Zugang wird ausgesetzt oder widerrufen]
+    G --> H[Wartende Workflow-Aktion stoppen]
+~~~
+
 ## 18. Wenn Workflow Captain installiert ist: Zentral steuern, Plugins eigenständig halten
 
 ### 18.1 Verbindliche Entscheidung: kein stiller globaler Takeover
@@ -1018,9 +1090,15 @@ Der Lizenzprovider ist read-only. Workflow Captain aktiviert, verlängert, sperr
 
 
 
-### 19.11 Eigene Connectoren für kundenspezifische Projekte
+### 19.12 Eigene Connectoren für kundenspezifische Projekte
 
 Die Seite zeigt erkannte lokale Connector-Plugins und angelegte externe Webhook-Verbindungen. Jede Zeile macht Herkunft, Version, Contract-Status, angebotene Trigger/Aktionen und Freigabe sichtbar. Secrets werden nicht dauerhaft im Klartext angezeigt; Test- und Diagnoseaktionen offenbaren keine Payload-Geheimnisse.
 
 ![Eigene Workflow-Captain-Connectoren im WordPress-Admin – Konzeptentwurf](docs/assets/workflow-captain/custom-connectors.svg)
+
+### 19.13 Die zwei Kundenconnectoren
+
+Das Mockup zeigt die zwei unterschiedlichen Installationsarten: BoatingSchool als externe, tenant-scoped Laravel-Verbindung mit getrenntem Commerce- und Workflow-Vertrag; LearnBoating als lokaler WordPress-Provider. Die Statusangaben markieren die noch erforderliche Workflow-Adapterarbeit und behaupten keine bereits installierte Integration.
+
+![BoatingSchool-B2B- und LearnBoating-B2C-Connectoren im Workflow-Captain-WordPress-Admin – Konzeptentwurf](docs/assets/workflow-captain/customer-connectors.svg)
 
