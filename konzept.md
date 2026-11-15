@@ -618,7 +618,7 @@ Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punk
 | KI | Nicht in Version 1; keine automatische Veränderung oder Aktivierung ohne Betreiberfreigabe |
 | Supportzeit | Support-Level folgen dem Captain-Plan. Keine Antwortzeitgarantie, bevor Supportbetrieb dafür ausgestattet ist. |
 
-**Preisbegründung:** Die Wettbewerber setzen für ihre Pro-Einstiegspläne aktuell etwa 149 USD/Jahr (WP Webhooks, 1 Site) und 199 USD/Jahr (Uncanny Automator, 1 Site) an. AutomatorWP wirbt mit deutlich größeren kostenlosen Integrationsumfängen und rabattierten Jahrespässen. Workflow Captain kann diese Integrationsbreite nicht zum Start versprechen. Deshalb liegt der empfohlene Ein-Site-Preis bei 129 €/Jahr unter WP Webhooks und dem Uncanny-Einstiegsplan. 229 €/5 Sites und 399 €/25 Sites passen zur bestehenden Voucher-Captain-Pro-Preisstruktur und halten die Lizenzstaffel in der Suite einheitlich.
+**Preisbegründung:** Die Wettbewerber zeigen für ihre Pro-Einstiegspläne ungefähr 149 USD/Jahr bei WP Webhooks (1 Site) und 199 USD/Jahr bei Uncanny Automator (1 Site). Zum EZB-Referenzkurs vom 13.11.2026 entsprechen 129 € ungefähr 143 USD; die Preisvergleiche sind vor Umsatzsteuerabgleich zu verstehen. AutomatorWP bietet darüber hinaus einen großen kostenlosen Integrationsumfang und wirbt auf seiner Preisseite mit befristeten Aktionspreisen. Workflow Captain kann diese Breite nicht versprechen und setzt daher auf eine günstigere Ein-Site-Einstiegslizenz, tiefe Captain-Suite-Integrationen und einen starken kostenlosen WP-/WooCommerce-Kern. 229 €/5 Sites und 399 €/25 Sites schließen an die bereits vorgeschlagene Voucher-Captain-Pro-Staffel an und halten die Suite-Preise einheitlich. Wechselkurse und Anbieterpreise müssen vor Veröffentlichung erneut geprüft werden.
 
 Die Gratisversion muss dennoch glaubwürdig sein: Wettbewerber bieten zum Teil Hunderte Integrationen, Mehrfachaktionen, Filter, Zeitplanung und unbegrenzte Ausführungen kostenlos. Workflow Captain Free erhält deshalb seine vollwertige lokale WP-/WooCommerce-Engine, ohne Task- oder Workflow-Cap. Das Pro-Upgrade wird durch die fachlich sicheren Captain-Integrationen, Webhooks und den Betriebs-/Diagnoseumfang begründet, nicht durch künstliche Runlimits.
 
@@ -661,5 +661,5 @@ Die Gratisversion muss dennoch glaubwürdig sein: Wettbewerber bieten zum Teil H
 - AutomatorWP [WordPress.org](https://wordpress.org/plugins/automatorwp/) und [Preise](https://automatorwp.com/pricing/)
 - WP Webhooks [Preise](https://wp-webhooks.com/pricing/)
 - Uncanny Automator [Preise](https://automatorplugin.com/pricing/)
-- Recherche-/Preisstand: 15.11.2026. Preise und Funktionsumfang sind veränderlich; diese Entscheidung ist eine Preispositionierung, keine Preisabfrage im Live-Shop.
+- Recherche-/Preisstand: 15.11.2026; Wechselkursvergleich mit EZB-Referenzkurs 13.11.2026. Preise und Funktionsumfang sind veränderlich; diese Entscheidung ist eine Preispositionierung, keine Preisabfrage im Live-Shop. Quelle zum Wechselkurs: [EZB EUR/USD](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-usd.en.html).
 
