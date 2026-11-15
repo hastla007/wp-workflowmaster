@@ -301,106 +301,92 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 
 ## 11. Roadmap zur vollständigen Version 1.0
 
-Die folgenden Phasen sind die Reihenfolge der Umsetzung. **Alle Phasen 0–3 gehören zum vollständigen Produktrelease Version 1.0**; keine Captain-Suite-Integration wird stillschweigend auf eine spätere Produktgeneration verschoben.
+Die folgenden Phasen beschreiben die Umsetzungsreihenfolge. **Alle Phasen 0–3 gehören zu Version 1.0**, einschließlich der Provider für alle Captain-Suite-Produkte.
 
-### Phase 0 – Produkt- und Providerverträge
+### Phase 0 – Verträge und technische Vorbereitung
 
-- Free/Pro-Abgrenzung, Lizenzpläne, Site-Limits, Datenaufbewahrung und kompatible Mindestversionen verbindlich festlegen.
+- Die in Abschnitt 15.10 festgelegten Free-/Pro-, Lizenz-, Preis- und Kompatibilitätsentscheidungen bilden die Vorgabe.
 - Öffentliche Event-/Action-Schemas für WordPress, WooCommerce und alle Captain-Plugins verabschieden.
-- Bestehende Plugin-Hooks auf öffentliche stabile Verträge abbilden; fehlende Verträge zuerst in den jeweiligen Fachplugins entwickeln.
-- Data-ownership, Refund-/Stornoverhalten, PII/Secrets und Idempotency je Provider dokumentieren.
+- Bestehende Plugin-Hooks auf öffentliche, stabile Verträge abbilden; fehlende Verträge zuerst in den jeweiligen Fachplugins ergänzen.
+- Data ownership, Refund-/Stornoverhalten, PII/Secrets und Idempotency je Provider dokumentieren.
 
-**Abnahme:** alle V1-Provider besitzen eine verantwortliche Quellkomponente, versioniertes Schema, Fehlercodes und Testspezifikation.
+**Abnahme:** jeder V1-Provider besitzt eine verantwortliche Quellkomponente, versioniertes Schema, Fehlercodes und Testspezifikation.
 
 ### Phase 1 – Engine und kostenloser Kern
 
-- Workflow-Schema, Recipe-Versionen, Provider Registry, Event-Inbox, Queue/Lease und Run-Log implementieren.
-- WordPress-Core- und WooCommerce-Provider für die V1-Trigger/Aktionen erstellen.
+- Workflow-Schema, Rezeptversionen, Provider-Registry, Event-Inbox, Queue/Lease und Run-Log implementieren.
+- WordPress-Core- und WooCommerce-Provider für den festgelegten Katalog erstellen.
 - Editor, Conditions, Tokenpicker, Dry Run, Veröffentlichen, Aktivieren/Pausieren und Basisprotokoll bereitstellen.
 - Datenschutzwerkzeuge, Capabilities, Systemstatus und Cron-/Queue-Diagnose integrieren.
 
-**Abnahme:** Free läuft vollständig ohne Lizenzserverkontakt; HPOS, Classic/Blocks, Deduplizierung, Retention und sichere Fehleranzeige sind belegt.
+**Abnahme:** Free läuft ohne Lizenzserverkontakt; HPOS, Classic/Blocks, Deduplizierung, Retention und sichere Fehleranzeige sind belegt.
 
-### Phase 2 – Workflow Captain Pro und Captain-Suite-Provider
+### Phase 2 – Workflow Captain Pro und Suite-Provider
 
-- Add-on workflow-captain-pro in captain-pro integrieren; Produktschlüssel, Features und Lizenzseite nach vorhandenem Kernel-Modell.
-- Verzögerungen, If/Else, AND/OR-Gruppen, Mehrschritt-Rezepte, Retry/Replay, Vorlagen und Pro-Logs umsetzen.
-- V1-Provider für WP License Captain, Pass Captain, Voucher Captain, Affiliate Captain, Form Captain und Review Captain implementieren.
-- Crossflow-Rezepte mit Eigentümerschaft und Consent-/Suppressionregeln bereitstellen.
+- Add-on workflow-captain-pro in captain-pro integrieren; Produktkey, Entitlements und Lizenzseite nach bestehendem Kernel-Modell.
+- Eventkorrelation, If/Else, Queue-Retry/Replay, Webhooks, Vorlagen und Pro-Protokolle umsetzen.
+- V1-Provider für WP License Captain, Pass, Voucher, Affiliate, Form und Review Captain implementieren.
+- Crossflow-Rezepte mit Datenhoheit, Einwilligung/Suppression und Seiteneffektbeschreibung bereitstellen.
 
-**Abnahme:** alle Fachaktionen laufen über öffentliche APIs; kein direkter Tabellenzugriff, keine doppelte Provision, keine Veröffentlichung/Aktion an Review-Präferenzen vorbei.
+**Abnahme:** alle Fachaktionen laufen über öffentliche APIs; keine direkten Tabellenzugriffe, doppelten Buchungen oder Review-Gating.
 
 ### Phase 3 – V1 Integrations- und Release-Abnahme
 
-- End-to-End-Flows mit echten Plugin-Kombinationen und realen WooCommerce-Zustandswechseln abnehmen.
-- Refunds, Stornos, Queue-Ausfall, Retries, Parallelität, Site-/Lizenzende, Wiederherstellung und Contract-Upgrades prüfen.
+- End-to-End-Flows mit echten Plugin-Kombinationen und WooCommerce-Zustandswechseln abnehmen.
+- Refunds, Stornos, Queue-Ausfall, Retries, Parallelität, Site-/Lizenzende, Backup und Contract-Upgrades prüfen.
 - Dokumentation, Kompatibilitätsmatrix, WordPress.org-Readme, Pro-Release, Übersetzungen, Datenschutztexte und Supportdiagnose finalisieren.
 
-**Abnahme:** alle Releasekriterien aus Abschnitt 15.9 erfüllt; Free- und Pro-ZIP lassen sich getrennt bauen/aktualisieren; Support kann Runs ohne geheime oder unnötige personenbezogene Daten untersuchen.
+**Abnahme:** alle Releasekriterien aus Abschnitt 15.9 erfüllt; Free- und Pro-ZIP lassen sich getrennt bauen/aktualisieren.
 
 ### Phase 4 – Nach Version 1.0
 
-- Externe SaaS-/CRM-/Messaging-Adapter, Webhooks/HTTP, zusätzliche Drittanbieter-Plugins, Loops/fortgeschrittene Graphen und KI-gestützte Vorschläge erst nach eigener Nachfrage-, Sicherheits- und API-Prüfung.
-- Neue Captain-Integrationen werden als versionierte Provider-Updates ergänzt; die V1-Engine bleibt abwärtskompatibel.
+- Native CRM-/Mail-/Social-App-Adapter, externe Cloud-Runs, Schleifen und KI-Vorschläge erst nach eigener Nachfrage-, Sicherheits- und API-Prüfung.
+- Neue Captain-Integrationen werden als versionierte Providerupdates ergänzt; der V1-Enginevertrag bleibt abwärtskompatibel.
 
-## 12. Detaillierte To-do-Liste
+## 12. Umsetzungsliste für Version 1.0
 
-### Produktentscheidungen
+Die Produkt-, Free/Pro-, Lizenz- und Preisentscheidungen stehen in Abschnitt 15.10. Diese Liste enthält nur Arbeiten, die in Code, Verträgen, Design und Release noch erledigt werden müssen.
 
-- [ ] Free-Limit und Pro-Limit definieren: Anzahl Workflows, Run-Volumen und Sites; keine künstliche Sperre für bereits gespeicherte Workflows.
-- [ ] Entscheidung: einzelne Captain-Basis-Trigger im Free oder sämtliche Suite-Adapter Pro.
-- [ ] Verbindliche Mindestversionen der Captain-Plugins und WooCommerce festlegen.
-- [ ] Welche Aktionen dürfen automatisiert schreiben? Risikoabstufung und Admin-Schutz definieren.
-- [ ] Festlegen, ob der Login-Trigger aus Datenschutz- und Volumengründen später ergänzt wird; Benutzerregistrierung ist für Version 1 vorgesehen.
-- [ ] Bestätigen, ob Pro komplett offline/self-hosted läuft; Webhook/HTTP ist optional und klar als externe Übertragung ausgewiesen.
-- [ ] Namen/Marken/WordPress.org-Slug und Supportkanal bestätigen.
+### P0 – Providerverträge
 
-### Quellplugin-Verträge
+- [ ] Workflow Event-Envelope, SemVer-Regel und Provider-Registry implementieren und dokumentieren.
+- [ ] WooCommerce: Bestell-, Status-, Refund-, Produkt-/Lager- und Coupon-Events auf stabile Quellereignisse abbilden.
+- [ ] Pass Captain: versionierte Brücke für Ticketcheck-in/-ausgabe/-widerruf und Eventabsage schaffen.
+- [ ] Voucher Captain: versionierte Services für Ausgabe, Zustellung, bestätigte Serviceeinlösung, Refund und Geheimnisredaktion definieren.
+- [ ] Review Captain: idempotente Schedule-/Cancel-API mit Opt-out, Suppression, Frequenzlimit und Statuscodes bereitstellen.
+- [ ] Affiliate Captain: Partner- und Provisionsereignisse über den bestehenden Integrationsvertrag anbinden; Affiliate bleibt alleiniger Verkaufs-/Refund-System-of-Record.
+- [ ] Form Captain: Einsendungsereignis und Feldklassen/Consent-Flags über eine versionierte API bereitstellen.
+- [ ] WP License Captain: nur sichere Status-/Updatebenachrichtigungen als Provider-Events freigeben.
+- [ ] Jede Schnittstelle mit Contract-Version, Beispielpayload, Mindestversion, Capability, Fehlercodes und Idempotenztests dokumentieren.
 
-- [ ] Workflow-Event-Contract und SemVer-Regel definieren.
-- [ ] WP Core Provider und Standardtokenliste dokumentieren.
-- [ ] WooCommerce-Events für Zahlung, Status, Refund, Storno, HPOS, Classic/Blocks verifizieren.
-- [ ] Voucher Captain Ereignisse/Aktionen über Servicevertrag ergänzen; Ausgabe-/Einlösungs-Deduplizierung festlegen.
-- [ ] Pass Captain Ticket-/Event-/Wartelistenverträge festlegen; Ticketgeheimnisse aus Payload ausschließen.
-- [ ] Affiliate Captain Ereignisse gegen Vertrag 1.3+ ergänzen; keine Provisionen neu berechnen.
-- [ ] Form Captain sichere Submission- und Statusprovider definieren.
-- [ ] Review Captain Trigger und Grenzen nach Review Captain Freigabe spezifizieren.
-- [ ] Alle Provider-Dokumente mit Payload-Beispielen und Privacy Tags versionieren.
+### P1 – Produktimplementierung
 
-### Technik & UX
+- [ ] Free-Engine für WP/Woo, Mehrfachaktionen, Filter, Zeitplanung, Eventverarbeitung und 30-Tage-Logs bauen.
+- [ ] Pro-Add-on mit Site-Lizenz, sechs Suite-Providern, Webhooks, erweiterter Logik und Rezeptimport/-export in captain-pro bauen.
+- [ ] Editor-, Dashboard-, Run-Detail-, Integrations- und Lizenzablaufansichten nach Abschnitt 15.7 umsetzen.
+- [ ] Queue-Leases, Retry/Backoff, Dead-letter, Replay, Abbruch, Eventkorrelation und Recipe-Version-Snapshot implementieren.
+- [ ] Capabilities, REST permission callbacks, Webhook-Signaturen/Replay-Schutz, HTTPS-Allowlist und Secret-Rotation umsetzen.
+- [ ] Privacy export/erase, Logredaktion, Retention, CSV-Formelschutz, Backup und Restore-Verhalten implementieren.
+- [ ] Entwickler-SDK, Beispielprovider und dokumentierte Action/Tokenreferenz veröffentlichen.
 
-- [ ] Engine-/Registry-Schnittstellen und Rezept-Schema versionieren.
-- [ ] Recipe/Version/Run/Step/Queue Schema, Indizes, Sperrstrategie und Migration entwerfen.
-- [ ] Idempotency-/Correlation-/Loop-Prevention-Strategie implementieren.
-- [ ] Provider-Discovery, fehlendes Plugin und Vertragsmigration in UX spezifizieren.
-- [ ] Editor mit Tastaturbedienbarkeit, Dry Run und Tokenvorschau gestalten.
-- [ ] Queue mit Action Scheduler und WP-Cron-Fallback implementieren.
-- [ ] Retry-/Abbruch-/Dead-letter-Verhalten und manuellen Replay spezifizieren.
-- [ ] Log-Redaktion, Aufbewahrung, Export und personenbezogene Löschung implementieren.
-- [ ] REST-/Webhook Auth, SSRF-Abwehr und Secret-Rotation entwerfen.
-- [ ] Multisite-Speicherung und Lizenzaktivierungen mit WP License Captain abgleichen.
-- [ ] Workflow-Datenexport/-Import mit Version und Preview/Validierung spezifizieren.
-- [ ] Rollen, Fähigkeiten, E-Mail-Absender und Systemstatusseiten entwerfen.
-- [ ] Entwickler-SDK, Beispielprovider und Hook-Dokumentation erstellen.
+### P2 – Releasevorbereitung
 
-### Release & Vermarktung
+- [ ] Name/Slug workflow-captain bei WordPress.org prüfen und reservieren/einreichen; Produktschlüssel und Core-Slug aneinander angleichen.
+- [ ] Drei Pro-Pläne und sechs Entitlements in WP License Captain/Captain Pro eintragen; Shopprodukte mit den festgelegten Preisen anlegen.
+- [ ] Supportbetrieb für Standard/Priority einrichten; Responsezeiten nur veröffentlichen, wenn sie eingehalten werden können.
+- [ ] Kompatibilitätsmatrix der konkreten Mindestversionen je Captain-Provider veröffentlichen.
+- [ ] End-to-End-Prüfungen für HPOS, Classic/Blocks, Refunds, Cronausfall, Retries, Lizenzablauf, Providerfehler, Plugin-Deaktivierung und Migration ausführen.
+- [ ] Datenschutzhinweise/Datenfluss, E-Mail-/Review-Consent, Webhook-Information, externe Services, Readme, Handbuch, Changelog und Supportdiagnose finalisieren.
 
-- [ ] `workflow-captain-pro` als Produkt im WP License Captain-Katalog anlegen.
-- [ ] Add-on-Konfiguration, Entitlements, Update URI, öffentliche Schlüssel/Server-URL im `captain-pro` nach Release-Entscheidungen setzen.
-- [ ] Plugin-Zeile, Build, Übersetzungen, ZIP-Allowlist und Release-Gates in `captain-pro` ergänzen.
-- [ ] Datenschutzerklärung/Datenflussbeschreibung sowie WordPress.org External Services prüfen.
-- [ ] Changelog, Installations- und Migrationsanleitung, Support-/Debugreport erstellen.
-- [ ] Beta mit WooCommerce-Shop und den installierten Captain-Plugins durchführen; HPOS/Classic/Blocks, Refunds, Cronausfall, Replay und abgelaufene Lizenz abdecken.
-- [ ] Vor Verkaufsstart Lizenz, Updates, reale UI, echte WooCommerce-Zahlungsstatus und Restore/Backup-Verhalten end-to-end freigeben.
+## 13. Technische Risiken und Gegenmaßnahmen
 
-## 13. Offene Entscheidungen / Risiken
-
-1. **Suite-Verträge sind möglicherweise unterschiedlich reif.** Integrationstiefe richtet sich nach öffentlichen, versionierten APIs; unklare Verträge werden nicht durch interne DB-Zugriffe umgangen.
-2. **Doppelte Geschäftsereignisse:** WooCommerce-Order und Voucher-/Affiliate-Service können dieselbe Verkaufssituation melden. Es braucht einen einzigen System-of-Record und idempotente Quelle.
-3. **Cron-Verlässlichkeit:** zeitverzögerte Workflows brauchen echten Cron oder Action Scheduler; UI zeigt ausstehende Jobs und einen Cronstatus.
-4. **Schreibaktionen mit Folgewirkung:** Rückerstattung, Einlass, Auszahlung und Provisionsbuchung sind in Version 1 ausschließlich über autorisierte Fachplugin-Services verfügbar.
-5. **Lizenzmodell/Free-Abgrenzung:** Captain-Pro bestätigt die Zahl-/Run-Limits und den Umgang mit bereits gespeicherten Premium-Rezepten.
-6. **Marktumfang:** Tausende Integrationen sind kein realistisches Versprechen für Version 1. Erweiterung folgt Nachfrage und stabilen Verträgen.
+1. **Unterschiedliche Vertragsreife:** Ein Provider wird erst aktiviert, wenn sein öffentliches versioniertes Schema und seine Tests vorliegen; Tabellenzugriffe sind ausgeschlossen.
+2. **Doppelte Geschäftsereignisse:** WooCommerce, Voucher und Affiliate können Teile derselben Kaufkette melden. Pro fachlichem Vorgang gilt ein klarer System-of-Record plus Idempotency-Key.
+3. **Cron-Verlässlichkeit:** Verzögerungen brauchen Action Scheduler oder verlässlichen System-Cron; Dashboard weist überfällige Läufe aus.
+4. **Nebenwirkungen:** Refunds, Einlass, Auszahlungen und Provisionen werden nur über zuständige Fachplugin-Services ausgelöst und auditiert.
+5. **Datenminimierung:** Event-Payloads können personenbezogene Daten enthalten; Standardpayloads und Logs enthalten nur minimale, redigierte Daten.
+6. **Kompatibilität:** Provider-Versionen unterscheiden sich; die Registry blockiert inkompatible Vertrags-Majors sichtbar und fail-closed.
+7. **Integrationsbreite:** Version 1 liefert die sechs Suite-Provider plus sichere Webhooks. Eine große native App-Bibliothek ist bewusst Folgearbeit.
 
 ## 14. Quellen zur Wettbewerbsbeobachtung
 
@@ -505,7 +491,7 @@ Die folgende Liste ist verbindlicher Zielumfang. Die PHP-Eventnamen sind nicht a
 
 #### WooCommerce
 
-**Trigger:** Bestellung erstellt, Zahlung abgeschlossen, Status geändert, Versand-/Erfüllungsstatus geändert, teilweise/vollständig erstattet, storniert; Bestellung von Gast oder Konto. Produkt-/Lagerereignisse können bei bestätigtem Bedarf als V1.1 ergänzt werden.  
+**Trigger:** Bestellung erstellt, Zahlung abgeschlossen, Status geändert, Versand-/Erfüllungsstatus geändert, teilweise/vollständig erstattet, storniert; Bestellung von Gast oder Konto. Produkt erstellt/aktualisiert und Bestand unterschreitet einen konfigurierten Schwellenwert; Lagerereignisse werden nach WooCommerce-Produkt-/CRUD-Events dedupliziert.  
 **Bedingungen/Tokens:** Bestell-ID, Status, Währung, Summen, Positionsprodukt/Kategorie/Variation/Menge, Versandart, Coupon-Referenz, User-Referenz und E-Mail nur dann, wenn eine dafür vorgesehene Kommunikation ausgeführt wird. Kartendaten und Gateway-Secrets nie verfügbar.  
 **Aktionen:** Bestellnotiz; E-Mail; kontrollierte Statusänderung; Order-Meta über WooCommerce CRUD; Suite-Aktion über den Zielprovider. Kein eigenes Gutscheinausstellen oder Provisionsbuchen als Ersatz der jeweiligen Suite-Integration.  
 **Refund-Regel:** jede Refund-ID wird höchstens einmal verarbeitet. Teilrefund-Payload enthält Positionsreferenz, Menge und Betrag, soweit WooCommerce sie stabil bereitstellt; wenn der Quellprovider keinen eindeutigen Zusammenhang liefert, gibt es ein Review-/Adminereignis statt stiller Zuordnung. HPOS, Classic und Blocks sind Release-Gates.
