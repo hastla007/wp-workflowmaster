@@ -849,7 +849,7 @@ Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native
 ### 18.7 Umsetzung und Abnahme
 
 Die detaillierten Arbeitspakete für Providerverträge, Lizenz-/Shoppläne, UI, Migration, Kompatibilität und Releaseprüfung stehen in [TODO.md](TODO.md), Abschnitt Suite-Provider. Abschnitt 18 beschreibt weiterhin die verbindliche Architektur und Ownership-Grenzen.
-## 19. Visualisierte Abläufe und Oberflächenentwürfe
+## 19. Screenshot-Mockups und visualisierte Abläufe
 
 Die folgenden Abbildungen sind **statische Konzept-Mockups**, keine Screenshots eines bereits implementierten Plugins. Sie konkretisieren die in den Abschnitten 15–18 festgelegten Abläufe und dienen als gemeinsame UI-/Produktgrundlage. Versionen, Zahlen und Beispieltexte sind illustrative Beispieldaten.
 
@@ -892,9 +892,10 @@ flowchart TD
     C -->|Ja| D[Workflow stoppt geplante Folgeaktionen]
     C -->|Nein| E[Voucher Captain stellt Gutschein über Service aus]
     E --> F{Gutschein eingelöst?}
-    F -->|Nein| G[Warten bis Frist oder Ablauf]
-    F -->|Ja| H[Review Captain prüft Erfahrung, Consent und Opt-out]
-    G --> H
+    F -->|Nein| G[Auf Voucher-Einlösung warten]
+    G -->|Frist endet| L[Run ohne Review-Anfrage abschließen]
+    G -->|Einlösung bestätigt| H[Review Captain prüft Erlebnis, Consent und Opt-out]
+    F -->|Ja| H
     H --> I{Review-Richtlinien erlauben Anfrage?}
     I -->|Nein| J[Run mit Skip-Grund abschließen]
     I -->|Ja| K[Review Captain plant Anfrage dedupliziert]
