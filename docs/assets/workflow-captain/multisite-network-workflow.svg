@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<rect width="1440" height="900" fill="#f0f0f1"/>
+<rect width="1440" height="32" fill="#1d2327"/>
+<text x="18" y="21" fill="#f0f0f1" font-family="Arial,sans-serif" font-size="13" font-weight="700">W</text>
+<text x="42" y="21" fill="#f0f0f1" font-family="Arial,sans-serif" font-size="12">Captain Network</text>
+<text x="1190" y="21" fill="#dcdcde" font-family="Arial,sans-serif" font-size="12">My Sites</text>
+<text x="1280" y="21" fill="#dcdcde" font-family="Arial,sans-serif" font-size="12">Willkommen, Super Admin</text>
+<rect x="0" y="32" width="240" height="868" fill="#1d2327"/>
+<text x="24" y="63" fill="#dcdcde" font-family="Arial,sans-serif" font-size="13">Dashboard</text>
+<text x="24" y="97" fill="#dcdcde" font-family="Arial,sans-serif" font-size="13">Sites</text>
+<text x="24" y="131" fill="#dcdcde" font-family="Arial,sans-serif" font-size="13">Benutzer</text>
+<text x="24" y="165" fill="#dcdcde" font-family="Arial,sans-serif" font-size="13">Plugins</text>
+<text x="24" y="199" fill="#dcdcde" font-family="Arial,sans-serif" font-size="13">Einstellungen</text>
+<rect x="0" y="221" width="240" height="34" fill="#2271b1"/>
+<text x="24" y="243" fill="#fff" font-family="Arial,sans-serif" font-size="13" font-weight="600">Workflow Captain</text>
+<text x="42" y="278" fill="#fff" font-family="Arial,sans-serif" font-size="12">Netzwerk-Workflows</text>
+<text x="42" y="308" fill="#dcdcde" font-family="Arial,sans-serif" font-size="12">Site-Freigaben</text>
+<text x="42" y="338" fill="#dcdcde" font-family="Arial,sans-serif" font-size="12">Netzwerk-Runs</text>
+<text x="276" y="75" fill="#1d2327" font-family="Arial,sans-serif" font-size="24" font-weight="600">Netzwerk-Workflows</text>
+<rect x="276" y="96" width="1115" height="42" fill="#fff" stroke="#c3c4c7"/>
+<rect x="290" y="108" width="14" height="14" rx="7" fill="#00a32a"/>
+<text x="314" y="124" fill="#1d2327" font-family="Arial,sans-serif" font-size="13">Captain Multisite Netzwerk · 5 aktive Sites · 4/5 Lizenzplätze belegt</text>
+<rect x="276" y="154" width="1115" height="54" fill="#f0f6fc" stroke="#72aee6"/>
+<text x="296" y="177" fill="#1d2327" font-family="Arial,sans-serif" font-size="13" font-weight="600">Netzwerkmodus: explizite Freigabe erforderlich</text>
+<text x="296" y="195" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Nur ausgewählte Quell- und Ziel-Sites. Neue Sites werden nicht automatisch aufgenommen.</text>
+<rect x="276" y="224" width="750" height="555" fill="#fff" stroke="#c3c4c7"/>
+<text x="300" y="258" fill="#1d2327" font-family="Arial,sans-serif" font-size="17" font-weight="600">Workflow: Bestellung auf Site A → Meldung auf Site B</text>
+<text x="300" y="283" fill="#646970" font-family="Arial,sans-serif" font-size="12">Veröffentlicht · Version 3 · Netzwerk-ID 1 · Zuletzt ausgeführt vor 4 Min.</text>
+<rect x="307" y="324" width="205" height="150" rx="5" fill="#f6f7f7" stroke="#8c8f94"/>
+<text x="327" y="354" fill="#1d2327" font-family="Arial,sans-serif" font-size="14" font-weight="600">Auslöser</text>
+<text x="327" y="380" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Site A · Bootsschule Wien</text>
+<text x="327" y="405" fill="#1d2327" font-family="Arial,sans-serif" font-size="13">WooCommerce</text>
+<text x="327" y="429" fill="#1d2327" font-family="Arial,sans-serif" font-size="13">Bestellung bezahlt</text>
+<text x="327" y="454" fill="#008a20" font-family="Arial,sans-serif" font-size="11">Site-Freigabe aktiv</text>
+<line x1="512" y1="399" x2="583" y2="399" stroke="#2271b1" stroke-width="3"/>
+<polygon points="583,393 596,399 583,405" fill="#2271b1"/>
+<rect x="601" y="348" width="160" height="102" rx="5" fill="#fff" stroke="#2271b1" stroke-width="2"/>
+<text x="621" y="378" fill="#1d2327" font-family="Arial,sans-serif" font-size="13" font-weight="600">Wenn / Dann</text>
+<text x="621" y="402" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Bestellwert &gt; 0</text>
+<text x="621" y="427" fill="#646970" font-family="Arial,sans-serif" font-size="11">1 Ziel-Site</text>
+<line x1="761" y1="399" x2="819" y2="399" stroke="#2271b1" stroke-width="3"/>
+<polygon points="819,393 832,399 819,405" fill="#2271b1"/>
+<rect x="839" y="324" width="165" height="150" rx="5" fill="#f6f7f7" stroke="#8c8f94"/>
+<text x="859" y="354" fill="#1d2327" font-family="Arial,sans-serif" font-size="14" font-weight="600">Aktion</text>
+<text x="859" y="380" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Site B · Support</text>
+<text x="859" y="405" fill="#1d2327" font-family="Arial,sans-serif" font-size="13">Admin-Hinweis</text>
+<text x="859" y="429" fill="#008a20" font-family="Arial,sans-serif" font-size="11">Ziel-Freigabe aktiv</text>
+<text x="859" y="453" fill="#646970" font-family="Arial,sans-serif" font-size="11">Daten: Bestell-ID</text>
+<line x1="300" y1="500" x2="1001" y2="500" stroke="#dcdcde"/>
+<text x="300" y="532" fill="#1d2327" font-family="Arial,sans-serif" font-size="14" font-weight="600">Letzter Netzwerk-Run</text>
+<rect x="300" y="549" width="702" height="42" fill="#f6f7f7" stroke="#dcdcde"/>
+<circle cx="319" cy="570" r="6" fill="#00a32a"/>
+<text x="338" y="575" fill="#1d2327" font-family="Arial,sans-serif" font-size="12">Quelle Site A · Event angenommen</text>
+<text x="586" y="575" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Ziel Site B · erfolgreich</text>
+<text x="850" y="575" fill="#646970" font-family="Arial,sans-serif" font-size="12">Run #8421</text>
+<text x="300" y="635" fill="#646970" font-family="Arial,sans-serif" font-size="12">Cross-Site-Aktionen werden je Ziel-Site separat ausgeführt und protokolliert.</text>
+<text x="300" y="656" fill="#646970" font-family="Arial,sans-serif" font-size="12">Erfolgreiche Ziele werden bei einem Retry fehlgeschlagener Ziele nicht erneut ausgeführt.</text>
+<rect x="1050" y="224" width="341" height="257" fill="#fff" stroke="#c3c4c7"/>
+<text x="1074" y="258" fill="#1d2327" font-family="Arial,sans-serif" font-size="15" font-weight="600">Veröffentlichungsprüfung</text>
+<circle cx="1079" cy="293" r="5" fill="#00a32a"/>
+<text x="1093" y="297" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Quelle A freigegeben</text>
+<circle cx="1079" cy="322" r="5" fill="#00a32a"/>
+<text x="1093" y="326" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Ziel B freigegeben</text>
+<circle cx="1079" cy="351" r="5" fill="#00a32a"/>
+<text x="1093" y="355" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Providervertrag kompatibel</text>
+<circle cx="1079" cy="380" r="5" fill="#00a32a"/>
+<text x="1093" y="384" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Lizenzplätze verfügbar</text>
+<circle cx="1079" cy="409" r="5" fill="#00a32a"/>
+<text x="1093" y="413" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Payload minimiert</text>
+<rect x="1074" y="431" width="279" height="31" rx="3" fill="#2271b1"/>
+<text x="1151" y="451" fill="#fff" font-family="Arial,sans-serif" font-size="12" font-weight="600">Workflow bearbeiten</text>
+<rect x="1050" y="500" width="341" height="188" fill="#fff" stroke="#c3c4c7"/>
+<text x="1074" y="534" fill="#1d2327" font-family="Arial,sans-serif" font-size="15" font-weight="600">Site B Freigabe</text>
+<text x="1074" y="565" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Aktion: interne Admin-Hinweise</text>
+<text x="1074" y="589" fill="#50575e" font-family="Arial,sans-serif" font-size="12">Felder: Bestell-ID, Status</text>
+<text x="1074" y="613" fill="#646970" font-family="Arial,sans-serif" font-size="12">Freigegeben durch Site-Admin</text>
+<text x="1074" y="651" fill="#2271b1" font-family="Arial,sans-serif" font-size="12">Freigabe verwalten →</text>
+<text x="276" y="820" fill="#646970" font-family="Arial,sans-serif" font-size="12">Konzept-Mockup im WordPress Network Admin · cross-site nur innerhalb dieses Netzwerks</text>
+</svg>
