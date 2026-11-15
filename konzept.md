@@ -849,3 +849,124 @@ Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native
 ### 18.7 Umsetzung und Abnahme
 
 Die detaillierten Arbeitspakete für Providerverträge, Lizenz-/Shoppläne, UI, Migration, Kompatibilität und Releaseprüfung stehen in [TODO.md](TODO.md), Abschnitt Suite-Provider. Abschnitt 18 beschreibt weiterhin die verbindliche Architektur und Ownership-Grenzen.
+## 19. Visualisierte Abläufe und Oberflächenentwürfe
+
+Die folgenden Abbildungen sind **statische Konzept-Mockups**, keine Screenshots eines bereits implementierten Plugins. Sie konkretisieren die in den Abschnitten 15–18 festgelegten Abläufe und dienen als gemeinsame UI-/Produktgrundlage. Versionen, Zahlen und Beispieltexte sind illustrative Beispieldaten.
+
+### 19.1 Dashboard und Integrationsstatus
+
+Das Dashboard zeigt operative Zustände statt nur Workflow-Anzahlen: letzte Läufe, Fehler zur Prüfung, Providerkompatibilität und installierte Suite-Plugins. Fehlende, inkompatible und Pro-geschützte Adapter müssen unterscheidbar sein.
+
+![Workflow-Captain-Dashboard – Konzeptentwurf](docs/assets/workflow-captain/dashboard.svg)
+
+### 19.2 Visueller Workflow-Builder
+
+Der Builder zeigt Trigger, Bedingungen, Fachaktionen, Warte-/Ereignisschritte und Datenübergaben. Jeder Knoten benennt Fachplugin, Vertragsversion und Seiteneffekt. Im Beispiel erstellt Voucher Captain den Gutschein; Review Captain entscheidet weiterhin über Anfrageberechtigung und Versand.
+
+![Workflow-Captain-Builder mit WooCommerce, Voucher Captain und Review Captain – Konzeptentwurf](docs/assets/workflow-captain/workflow-builder.svg)
+
+### 19.3 Captain-Suite-Provider
+
+Der Integrationsbereich erfasst WP Core, WooCommerce, WP License Captain, Voucher Captain, Pass Captain, Affiliate Captain, Form Captain und Review Captain. Pro Provider werden Vertragsversion, verfügbare Trigger/Aktionen, benötigtes Recht, Verbindung und konkrete Fehlerursache sichtbar.
+
+![Workflow-Captain-Integrationsseite für Captain-Suite-Plugins – Konzeptentwurf](docs/assets/workflow-captain/integrations.svg)
+
+### 19.4 Run-Protokoll und Wiederholung
+
+Ein Run zeigt das auslösende Ereignis, die einzelnen Schritte, Idempotency-/Correlation-IDs, redigierte Daten und Retry-Grund. Ein Wiederholen nutzt dieselbe fachliche Idempotenz-ID; der zuständige Provider prüft, ob der Befehl sicher wiederholt werden kann.
+
+![Workflow-Captain-Ausführungsprotokoll mit redigierten Daten – Konzeptentwurf](docs/assets/workflow-captain/run-details.svg)
+
+### 19.5 Übergabe optionaler Native-Abläufe
+
+Die Installation allein übernimmt keine Plugin-Abläufe. Der Assistent zeigt Native-Einstellungen, geplante Jobs, Duplikate und Ziel-Workflows; der Betreiber bestätigt eine optionale Übergabe. Verkauf, Zahlung, Ticket-/Gutscheinledger, Refund, Affiliate-Provision und Review-Einwilligung bleiben beim zuständigen Fachplugin.
+
+![Workflow-Captain-Übergabeassistent mit Vorschau und Rückweg – Konzeptentwurf](docs/assets/workflow-captain/ownership-handover.svg)
+
+### 19.6 Ablauf: WooCommerce-Bestellung bis bestätigtes Erlebnis
+
+~~~mermaid
+flowchart TD
+    A[WooCommerce Bestellung bezahlt] --> B[Woo Provider bestätigt Commit und Event-ID]
+    B --> C{Refund oder Storno?}
+    C -->|Ja| D[Workflow stoppt geplante Folgeaktionen]
+    C -->|Nein| E[Voucher Captain stellt Gutschein über Service aus]
+    E --> F{Gutschein eingelöst?}
+    F -->|Nein| G[Warten bis Frist oder Ablauf]
+    F -->|Ja| H[Review Captain prüft Erfahrung, Consent und Opt-out]
+    G --> H
+    H --> I{Review-Richtlinien erlauben Anfrage?}
+    I -->|Nein| J[Run mit Skip-Grund abschließen]
+    I -->|Ja| K[Review Captain plant Anfrage dedupliziert]
+~~~
+
+**Fachgrenze:** Der Workflow plant den Ablauf. Gutscheinstatus, Einlösung, Empfängerauflösung, Einladungsberechtigung und Versand bleiben Voucher bzw. Review Captain zugeordnet.
+
+### 19.7 Ablauf: Ticketkauf, Check-in und Eventabsage
+
+~~~mermaid
+flowchart TD
+    A[WooCommerce bezahlt] --> B[Pass Captain gibt Ticket aus]
+    B --> C[Pass Captain verwaltet Ticket und Check-in]
+    C --> D{Event abgesagt oder Refund?}
+    D -->|Nein, Check-in bestätigt| E[Workflow erhält Teilnahmeereignis]
+    E --> F[Review Captain prüft Consent und Duplikate]
+    F --> G[Zulässige Anfrage planen]
+    D -->|Ja| H[Pass Captain ändert Event-/Ticketstatus]
+    H --> I[Workflow sendet freigegebene Service-Nachricht]
+    H --> J[Wartende Review-Aktion abbrechen]
+~~~
+
+**Fachgrenze:** Pass Captain entscheidet über Ticket, Einlass, Absage und Refund. Workflow löst nur erlaubte Kommunikation und nachgelagerte Aktionen aus.
+
+### 19.8 Ablauf: Formular und Affiliate-Bewerbung
+
+~~~mermaid
+flowchart TD
+    A[Formular eingesendet] --> B[Form Captain validiert und speichert Entry]
+    B --> C{Consent und Pflichtdaten gültig?}
+    C -->|Nein| D[Workflow protokolliert Skip-Grund]
+    C -->|Ja| E[Workflow sendet interne Benachrichtigung]
+    E --> F{Betreiber fordert Übergabe an Affiliate an?}
+    F -->|Nein| G[Entry bleibt bei Form Captain]
+    F -->|Ja| H[Affiliate Captain legt Bewerbung als pending an]
+    H --> I[Affiliate Captain prüft und entscheidet Freigabe]
+~~~
+
+**Fachgrenze:** Ein Form-Entry gibt keinen Partner automatisch frei, erzeugt keine Provision und löst keine Auszahlung aus. Die Übergabe enthält nur freigegebene Felder und eine stabile Entry-Referenz.
+
+### 19.9 Ablauf: Lizenzstatus beobachten
+
+~~~mermaid
+flowchart TD
+    A[WP License Captain ändert Lizenzstatus] --> B[Workflow empfängt read-only Statusereignis]
+    B --> C{Status aktiv und benötigtes Recht vorhanden?}
+    C -->|Ja| D[Workflow führt erlaubte Diagnose oder Betreiberhinweis aus]
+    C -->|Nein| E[Betreiber/Admin wird informiert]
+    D --> F[Workflow verändert keine Lizenz oder Zahlung]
+    E --> F
+~~~
+
+Der Lizenzprovider ist read-only. Workflow Captain aktiviert, verlängert, sperrt oder bezahlt keine Lizenz und darf durch seine eigene Lizenz keinen Ereignis-Loop erzeugen.
+
+### 19.10 Szenarioübersicht pro Captain-Plugin
+
+| Quelle/Ziel | Beispielereignis | Workflow-Schritt | Fachplugin bleibt zuständig für |
+|---|---|---|---|
+| WordPress Core | Nutzer registriert; Beitrag veröffentlicht; Kommentar freigegeben | Benachrichtigung, Bedingung, Folgejob | Benutzer-, Rollen- und Inhaltsrechte |
+| WooCommerce | Bestellung bezahlt, Status geändert, Refund | Suite-Aktion, Kommunikation, Verzögerung abbrechen | Bestellung, Bestand, Zahlung, Steuer und Refund |
+| WP License Captain | Lizenz aktiviert, läuft ab, Recht geändert | read-only Benachrichtigung oder Adminaufgabe | Lizenz, Abrechnung, Aktivierung und Entitlements |
+| Voucher Captain | Gutschein ausgestellt, zugestellt, eingelöst, erstattet | Follow-up, Reminder, Review-Planung anfragen | Gutschein-Code, Guthaben, Einlösung und Refund |
+| Pass Captain | Ticket ausgegeben, Check-in, Termin geändert/abgesagt | Käuferhinweis, Erinnerung, Teilnahmefolge | Ticket, Platz/Kapazität, Einlass, Eventstatus und Refund |
+| Affiliate Captain | Bewerbung, Provision, Auszahlungsstatus | interne Benachrichtigung oder Report | Freigabe, Provisionsledger, Refund und Auszahlung |
+| Form Captain | Entry eingegangen, validiert oder gelöscht | interne Benachrichtigung, genehmigte Übergabe | Entry, Spamstatus, Consent, Export und Löschung |
+| Review Captain | Erfahrung bestätigt, Anfrage gesendet, Opt-out | zulässige Anfrage planen/abbrechen | Einladungsrecht, Zielplattform, Moderation und Versand |
+
+### 19.11 UI-Abnahmekriterien aus den Mockups
+
+- Jede Ansicht benennt klar, welches Plugin ein Ereignis oder einen Seiteneffekt besitzt.
+- Der Builder zeigt vor dem Aktivieren fehlende Plugins, inkompatible Vertragsversionen, Lizenzrechte und nicht verfügbare Aktionen.
+- Das Run-Protokoll schwärzt personenbezogene Daten und geheime Codes standardmäßig.
+- Der Übergabeassistent verändert keine Nativeinstellung vor Vorschau und ausdrücklicher Bestätigung.
+- Fehler können mit Ursache und sicherem Retrypfad behoben werden; native Kernabläufe bleiben bei Workflow-Ausfall verfügbar.
+
