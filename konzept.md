@@ -465,6 +465,15 @@ Ein Workflow besteht aus einem Einstieg (ein Event oder alternative Events), Bed
 - PII- und Geheimnisfelder erscheinen nicht in Bedingungen, außer der Provider markiert sie explizit zulässig und der Betreiber hat die Capability.
 - Bedingungen besitzen einen sichtbaren „wenn Feld fehlt“-Modus (false/stop/error), kein stilles Casting.
 
+**Visueller Workflow-Builder**
+- Der Editor ist eine visuelle Arbeitsfläche mit einer Elementleiste, Canvas und kontextabhängigem Einstellungsbereich. Trigger-, Bedingungs-, Aktions-, Warte-/Ereignis- und Endelemente lassen sich per Drag & Drop auf den Canvas ziehen, verschieben, konfigurieren und über sichtbare Anschlusspunkte mit gerichteten Pfeilen verbinden.
+- Ein neuer Workflow beginnt mit mindestens einem Trigger. Für v1 werden Trigger, Action, Delay/Wait, If/Else und End als verständliche Bausteine angeboten. Der If/Else-Baustein hat einen Eingang und zwei beschriftete Ausgänge „Dann (wenn erfüllt)“ und „Sonst (wenn nicht erfüllt)“; beide Pfade lassen sich separat mit Aktionen, weiteren Bedingungen, Wartezeiten oder einem Ende belegen.
+- Beim Verbinden zeigen Pfeile die Ausführungsrichtung. Verzweigungsausgänge sind dauerhaft mit „Dann“ und „Sonst“ markiert. Ein Pfad darf bewusst am Ende-Element enden; ein nicht verbundener Ausgang bleibt im Entwurf sichtbar als unvollständig und blockiert die Veröffentlichung.
+- Die Auswahl eines Bausteins öffnet den passenden Konfigurator: Provider (WordPress, WooCommerce oder Captain-Plugin), Ereignis/Aktion, Felder, Operator und Werte. Die Feldauswahl wird aus dem versionierten Providervertrag geladen, zeigt Datentyp und Beispiel, und blendet nicht freigegebene PII-/Geheimnisfelder aus. Dynamische Werte können über einen Tokenpicker aus Triggerdaten oder vorherigen Schritten eingesetzt werden.
+- Der Editor validiert beim Bearbeiten und vor Veröffentlichung fehlende Konfiguration, inkompatible Provider/Verträge, unverbundene Schritte, unerreichbare Enden, doppelte/ungültige Kanten und Schleifen. Hinweise verlinken direkt auf den betroffenen Knoten. Graph-Zyklen sind in v1 unzulässig; Wiederholung erfolgt über explizite Warte-/Ereignisbausteine mit Limits.
+- Canvas-Bedienung umfasst Zoomen, Verschieben, automatische Anordnung, Rückgängig/Wiederholen und Tastaturbedienung. Änderungen werden als Entwurf gespeichert; Aktivieren veröffentlicht einen unveränderlichen Graph-Snapshot, damit laufende Runs exakt ihre verwendete Version behalten.
+- Der Canvas ist eine Bedienoberfläche, nicht die Ausführungslogik: der Server validiert und speichert einen typisierten Graphen aus Knoten, Kanten, Provider-IDs, Vertragsversionen und Konfiguration. Die Engine wertet an einem If/Else-Knoten die Bedingung einmal aus und plant ausschließlich den passenden Ausgangspfad.
+
 **Queue, Verzögerung und Wiederholung**
 - Action Scheduler bei WooCommerce, ansonsten kompatible interne Queue mit WP-Cron-Fallback und klarer System-Cron-Diagnose.
 - Verzögerungen werden mit UTC-Zielzeit und Website-Zeitzone gespeichert. Sommerzeitumstellung und Änderung der Site-Zeitzone sind definiert: bestehende Jobs behalten den absoluten UTC-Zeitpunkt; Oberfläche zeigt den neu umgerechneten lokalen Wert.
@@ -563,7 +572,7 @@ Jede Vorlage zeigt beteiligte Plugins, Voraussetzungen, Seiteneffekte, betroffen
 
 - **Dashboard:** aktive Workflows; Warteschlange; fehlgeschlagene Runs; überfällige Jobs; Contract-/Pluginstatus; Aktionen „Erstellen“, „Vorlage prüfen“, „Fehler beheben“.
 - **Workflows:** Suche/Filter nach Status und Plugin; Trigger-/Action-Zusammenfassung; Laufzahl; zuletzt ausgeführt; Version; Owner; pausieren/duplizieren/archivieren.
-- **Editor:** Triggerauswahl, Eventfelder, Bedingungen, Aktionen, Verzweigung und Verzögerung, Tokenpicker, Testdaten, Dry Run und Veröffentlichungsvorschau. Jede Action zeigt Schreibwirkung und nötige Capability.
+- **Editor:** visueller Drag-&-Drop-Canvas mit Bausteinleiste, gerichteten Pfeilverbindungen und Auswahl „Wenn / Dann / Sonst“. Trigger, Eventfelder, Bedingungen, Aktionen, Verzögerung/Warten und Enden werden direkt am Knoten konfiguriert; der Einstellungsbereich zeigt Provider, Vertragsversion, Feldtypen, Tokenpicker, Schreibwirkung und nötige Capability. Testdaten, Dry Run, Validierung und Veröffentlichungsvorschau sind erreichbar, ohne den Graphen zu verlassen.
 - **Vorlagen:** vorgeprüfte Suite-Flows; Voraussetzungen und Datenfluss; Draft-Import mit Prüfung, kein automatisches Live-Schalten.
 - **Läufe:** Liste nach Status/Datum/Workflow/Provider; Detailansicht Schritt für Schritt, Fehlercode, Retry-Zähler, redigierte Ein-/Ausgabe, Correlation-ID; sicher wiederholen/abbrechen.
 - **Integrationen:** installierte Suite-Plugins, Versions-/Vertragsstatus, Providerfeatures, Diagnose und Dokumentationslinks.
@@ -861,7 +870,7 @@ Das Dashboard zeigt operative Zustände statt nur Workflow-Anzahlen: letzte Läu
 
 ### 19.2 Visueller Workflow-Builder
 
-Der Builder zeigt Trigger, Bedingungen, Fachaktionen, Warte-/Ereignisschritte und Datenübergaben. Jeder Knoten benennt Fachplugin, Vertragsversion und Seiteneffekt. Im Beispiel erstellt Voucher Captain den Gutschein; Review Captain entscheidet weiterhin über Anfrageberechtigung und Versand.
+Der Builder-Mockup zeigt den v1-Canvas mit Drag-&-Drop-Bausteinen und einem echten If/Else-Split: WooCommerce löst den Ablauf bei bezahlter Bestellung aus; „Bestellung nicht erstattet?“ führt über den Pfeil „Dann“ zu Voucher Captain, während „Sonst“ zu einer Prüfung/Benachrichtigung führt. Jeder Knoten benennt Fachplugin, Vertragsversion und Seiteneffekt. Voucher Captain erstellt den Gutschein; Review Captain bleibt für Anfrageberechtigung und Versand zuständig. Der rechte Einstellungsbereich zeigt die Auswahl der Bedingung und ihrer Werte.
 
 ![Workflow-Captain-Builder mit WooCommerce, Voucher Captain und Review Captain – Konzeptentwurf](docs/assets/workflow-captain/workflow-builder.svg)
 
