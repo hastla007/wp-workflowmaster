@@ -342,6 +342,16 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 - WooCommerce HPOS, Classic- und Block-Checkout. Orders nur über Woo CRUD APIs lesen/schreiben.
 - Keine großen Abfragen im Frontend; Admin-Listen paginiert; Queue-Batches begrenzt und beobachtbar.
 - Externe Requests nicht in Frontend-Hooks, keine unerwarteten Tracking-/Analytics-Skripte.
+
+### Yoast SEO-Kompatibilität
+
+Workflow Captain ist ein Automatisierungs- und Admin-Plugin, kein SEO-Plugin. Workflows, Runs, interne Vorlagen und Connector-Konfigurationen sind private Betriebsdaten. Sie werden nicht als öffentliches Custom Post Type, Archiv, öffentliche REST-Ressource, Sitemap-Eintrag oder Schema.org-Entität registriert. Adminseiten und Run-Details bleiben durch WordPress-Capabilities und Authentifizierung geschützt; REST-Endpunkte bekommen jeweils eine restriktive `permission_callback`. Die Sicherheit privater Daten hängt nie allein von `noindex` oder robots-Angaben ab.
+
+Workflow Captain gibt keine eigenen Seitentitel, Meta-Descriptions, Canonicals, Robots-Direktiven, Open-Graph-/Social-Tags oder JSON-LD-Schema-Blöcke aus und verändert Yoasts Sitemap- oder Frontend-Presenter-Ausgabe nicht. Es soll keinen direkten Zugriff auf Yoast-Tabellen, Indexables, interne Klassen oder nicht dokumentierte Meta-Keys geben. Wenn später öffentlich sichtbare Inhalte aus Workflows erzeugt werden, ist dafür WordPress zuständig; Yoast verarbeitet diese Inhalte anhand der normalen Post-/Taxonomie-Einstellungen. Workflow-Aktionen verwenden die WordPress-CRUD-/REST-Schnittstellen und überschreiben keine Yoast-Felder oder SEO-Einstellungen ohne explizite Nutzerzuordnung über eine dokumentierte, unterstützte Schnittstelle.
+
+Eine spätere optionale Yoast-Funktion für Headless-Ausgabe darf Yoasts dokumentierte, lesende REST-Antwort (`yoast_head`/`yoast_head_json` oder URL-Endpunkt) konsumieren, sofern ein konkreter Anwendungsfall dies verlangt. Sie darf nicht behaupten, Yoast-SEO-Werte über diese API schreiben zu können. Eine Erweiterung von Yoasts Content-Analyse oder Schema-Graph ist nur für ein eigenes öffentliches Inhaltselement sinnvoll und muss über Yoasts dokumentierte APIs erfolgen; beides gehört nicht zum V1-Umfang von Workflow Captain.
+
+Abnahmekriterium: Bei aktivem und deaktiviertem Yoast verhält sich Workflow Captain funktional korrekt. Mit Yoast aktiv bleiben Titel, Description, Canonical, Robots, Open Graph, strukturierte Daten und Sitemap für bestehende Website-Inhalte unverändert; interne Workflow-Daten sind weder öffentlich abrufbar noch in Suchmaschinen-Sitemaps enthalten.
 - Keine Tests wurden hier ausgeführt; alle Kompatibilitätsaussagen müssen mit realen Integrations- und Migrationstests belegt werden.
 
 ## 11. Roadmap zur vollständigen Version 1.0
@@ -1120,3 +1130,13 @@ Die Einstellungen folgen WordPress-nativen Tabs und trennen Bedienvorgaben von V
 
 ![Workflow-Captain-Einstellungen mit WordPress-Admin-Tabs – Konzeptentwurf](docs/assets/workflow-captain/settings.svg)
 
+
+### 19.15 Yoast SEO: klare Zuständigkeit und Kompatibilitätsgrenzen
+
+Workflow Captain registriert keine indexierbaren Frontend-Inhalte. Sämtliche Workflow-Objekte, Runs, Vorlagen und Connector-Einstellungen bleiben interne, zugriffsgeschützte Betriebsdaten. Die WordPress-Adminoberfläche braucht keine Yoast-Metadaten; sie wird über WordPress-Zugriffsrechte geschützt und gibt keine SEO-Ausgabe aus.
+
+Yoast SEO bleibt allein für die SEO-Ausgabe öffentlicher WordPress-Inhalte zuständig. Workflow Captain verändert keine Titel, Beschreibungen, Canonicals, Robots-Tags, Social-Metadaten, Schema.org-Graphen oder XML-Sitemaps. Bei automatischem Erstellen oder Aktualisieren von Beiträgen nutzt ein Workflow die WordPress-Schnittstellen und überlässt Yoast die Verarbeitung. Eine Änderung einzelner SEO-Felder wäre eine ausdrücklich konfigurierte Sonderaktion und darf nur nach Prüfung einer dokumentierten, unterstützten Schreibschnittstelle geplant werden; Yoasts SEO-REST-API ist laut Dokumentation lesend.
+
+Für V1 wird keine direkte Yoast-Abhängigkeit benötigt. Kein Plugin-internes API, keine internen Klassen/Indexables und keine undokumentierten Meta-Keys verwenden. Ein späterer Headless-Connector kann Yoasts dokumentierte REST-Ausgabe lesen. Schema-Graph- oder Content-Analyse-Erweiterungen sind nur relevant, falls Workflow Captain künftig selbst öffentliches Inhaltsmaterial mit eigenem semantischem Typ bereitstellt; das ist für V1 ausgeschlossen.
+
+Die Kompatibilitätsprüfung vergleicht Quellcode und gerenderte Frontend-Ausgabe mit Yoast aktiv/deaktiviert: keine doppelten SEO-Tags oder JSON-LD-Ausgaben, keine unbeabsichtigten Änderungen an Sitemap/Robots/Canonical, weiterhin geschützte Workflow-REST-Endpunkte und intakte Beitragsaktionen. Tests müssen auch Updates der unterstützten Yoast-Versionen abdecken.
