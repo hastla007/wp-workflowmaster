@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<rect width="1440" height="900" fill="#f0f0f1"/>
+<rect width="1440" height="32" fill="#1d2327"/>
+<text x="18" y="21" fill="#f0f0f1" font-family="Arial,sans-serif" font-size="13" font-weight="700">W</text>
+<text x="42" y="21" fill="#f0f0f1" font-family="Arial,sans-serif" font-size="12">Captain Suite Shop</text>
+<text x="1280" y="21" fill="#dcdcde" font-family="Arial,sans-serif" font-size="12">Willkommen, Admin</text>
+<rect x="0" y="32" width="240" height="868" fill="#1d2327"/>
+<text x="24" y="64" fill="#f0f0f1" font-family="Arial,sans-serif" font-size="14">Dashboard</text>
+<text x="24" y="102" fill="#dcdcde" font-family="Arial,sans-serif" font-size="14">WooCommerce</text>
+<rect x="0" y="118" width="240" height="34" fill="#2c3338"/>
+<text x="24" y="141" fill="#fff" font-family="Arial,sans-serif" font-size="14">Captain Suite</text>
+<rect x="0" y="152" width="240" height="32" fill="#2271b1"/>
+<text x="42" y="173" fill="#fff" font-family="Arial,sans-serif" font-size="13">Workflow Captain</text>
+<text x="42" y="207" fill="#dcdcde" font-family="Arial,sans-serif" font-size="13">Workflows</text>
+<text x="42" y="237" fill="#dcdcde" font-family="Arial,sans-serif" font-size="13">Runs</text>
+<text x="42" y="267" fill="#dcdcde" font-family="Arial,sans-serif" font-size="13">Integrationen</text>
+<text x="42" y="297" fill="#fff" font-family="Arial,sans-serif" font-size="13" font-weight="700">Einstellungen</text>
+<text x="276" y="76" fill="#1d2327" font-family="Arial,sans-serif" font-size="24" font-weight="600">Einstellungen</text>
+<rect x="276" y="95" width="1120" height="1" fill="#c3c4c7"/>
+<rect x="276" y="111" width="117" height="38" rx="2" fill="#fff" stroke="#c3c4c7"/>
+<text x="294" y="135" fill="#1d2327" font-family="Arial,sans-serif" font-size="13" font-weight="600">Allgemein</text>
+<text x="410" y="135" fill="#50575e" font-family="Arial,sans-serif" font-size="13">Ausführung</text>
+<text x="525" y="135" fill="#50575e" font-family="Arial,sans-serif" font-size="13">Benachrichtigungen</text>
+<text x="705" y="135" fill="#50575e" font-family="Arial,sans-serif" font-size="13">Datenschutz &amp; Aufbewahrung</text>
+<text x="950" y="135" fill="#50575e" font-family="Arial,sans-serif" font-size="13">Rollen &amp; Rechte</text>
+<rect x="276" y="166" width="760" height="570" fill="#fff" stroke="#c3c4c7"/>
+<text x="300" y="200" fill="#1d2327" font-family="Arial,sans-serif" font-size="17" font-weight="600">Allgemeine Vorgaben</text>
+<text x="300" y="241" fill="#1d2327" font-family="Arial,sans-serif" font-size="13" font-weight="600">Zeitzone</text>
+<rect x="300" y="253" width="690" height="38" rx="3" fill="#f6f7f7" stroke="#8c8f94"/>
+<text x="314" y="277" fill="#50575e" font-family="Arial,sans-serif" font-size="13">Europe/Vienna (von WordPress übernommen)</text>
+<text x="300" y="313" fill="#646970" font-family="Arial,sans-serif" font-size="12">Wird in Zeitplänen und Laufprotokollen verwendet. Änderung unter Einstellungen → Allgemein.</text>
+<text x="300" y="357" fill="#1d2327" font-family="Arial,sans-serif" font-size="13" font-weight="600">Standardstatus für neue Workflows</text>
+<rect x="300" y="369" width="690" height="38" rx="3" fill="#fff" stroke="#8c8f94"/>
+<text x="314" y="393" fill="#1d2327" font-family="Arial,sans-serif" font-size="13">Entwurf</text>
+<text x="300" y="449" fill="#1d2327" font-family="Arial,sans-serif" font-size="13" font-weight="600">Fehlgeschlagene Läufe erneut versuchen</text>
+<rect x="300" y="463" width="17" height="17" rx="2" fill="#fff" stroke="#8c8f94"/>
+<path d="M304 471l4 4 7-8" fill="none" stroke="#2271b1" stroke-width="2"/>
+<text x="327" y="477" fill="#1d2327" font-family="Arial,sans-serif" font-size="13">Automatisch mit wachsendem Zeitabstand wiederholen</text>
+<text x="300" y="520" fill="#1d2327" font-family="Arial,sans-serif" font-size="13" font-weight="600">Maximale Versuche</text>
+<rect x="300" y="532" width="150" height="38" rx="3" fill="#fff" stroke="#8c8f94"/>
+<text x="314" y="556" fill="#1d2327" font-family="Arial,sans-serif" font-size="13">3</text>
+<text x="300" y="609" fill="#646970" font-family="Arial,sans-serif" font-size="12">Globale Vorgaben gelten für neue Workflows. Bestehende Versionen bleiben nachvollziehbar.</text>
+<rect x="300" y="663" width="173" height="38" rx="3" fill="#2271b1"/>
+<text x="323" y="687" fill="#fff" font-family="Arial,sans-serif" font-size="13" font-weight="600">Einstellungen speichern</text>
+<rect x="485" y="663" width="127" height="38" rx="3" fill="#f6f7f7" stroke="#8c8f94"/>
+<text x="506" y="687" fill="#1d2327" font-family="Arial,sans-serif" font-size="13">Zurücksetzen</text>
+<rect x="1056" y="166" width="340" height="220" fill="#fff" stroke="#c3c4c7"/>
+<text x="1080" y="200" fill="#1d2327" font-family="Arial,sans-serif" font-size="15" font-weight="600">Geerbte Einstellungen</text>
+<text x="1080" y="235" fill="#50575e" font-family="Arial,sans-serif" font-size="13">WordPress-Zeitzone</text>
+<text x="1080" y="258" fill="#646970" font-family="Arial,sans-serif" font-size="12">E-Mail-Absender und Site-URL</text>
+<text x="1080" y="281" fill="#646970" font-family="Arial,sans-serif" font-size="12">WooCommerce Action Scheduler</text>
+<text x="1080" y="326" fill="#2271b1" font-family="Arial,sans-serif" font-size="13">Systemstatus öffnen →</text>
+<rect x="1056" y="405" width="340" height="158" fill="#fff" stroke="#c3c4c7"/>
+<text x="1080" y="439" fill="#1d2327" font-family="Arial,sans-serif" font-size="15" font-weight="600">Integrationen</text>
+<text x="1080" y="474" fill="#50575e" font-family="Arial,sans-serif" font-size="13">Connector-Zugangsdaten werden</text>
+<text x="1080" y="496" fill="#50575e" font-family="Arial,sans-serif" font-size="13">je Verbindung verwaltet und maskiert.</text>
+<text x="1080" y="532" fill="#2271b1" font-family="Arial,sans-serif" font-size="13">Integrationen verwalten →</text>
+<text x="276" y="788" fill="#646970" font-family="Arial,sans-serif" font-size="12">Konzeptansicht – WordPress-Admin-Stil, Details und Optionen abhängig von aktivierten Modulen</text>
+</svg>
