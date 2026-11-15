@@ -71,46 +71,41 @@ Workflow Captain soll nicht mit der größten Zahl von Integrationen starten. Di
 
 ### Workflow Captain (Free, eigenständiger Kern)
 
-Das Free-Plugin muss ohne Lizenzserver und ohne Pro-Add-on nutzbar sein.
+Free soll im Wettbewerb sofort benutzbar sein. Es enthält keine Lizenzprüfung und keine Nutzungs- oder Task-Credit-Grenzen.
 
-- Einfache visuelle Rezepte aus einem Ereignis und einer oder mehreren Aktionen (lineare Folge).
-- WordPress-Core-Provider für Benutzer- und Inhaltsereignisse.
-- WooCommerce-Basisereignisse und sichere Grundaktionen, sofern WooCommerce aktiv ist.
-- Aktivieren, pausieren, duplizieren und manuell testen.
-- Einfache statische Bedingungen (z. B. Rolle, Post-Typ, Bestellstatus), sofern das Feld vom Event bereitgestellt wird.
-- Sofortausführung mit begrenztem Ausführungsprotokoll und Detailansicht.
-- Grundlegende Tokens/Platzhalter aus dem Event-Payload, mit Vorschau und kontextgerechtem Escaping.
-- E-Mail-Aktion an Website-Admin bzw. konfigurierte Empfänger, mit sicheren Standardvorlagen.
-- Admin-Menü, Hilfetexte, Rezeptübersicht, Konnektorstatus und einfache Diagnose.
-- Datenschutz: Aufbewahrungsdauer für Logs, Personenexport/-löschung, keine Übertragung externer Daten standardmäßig.
-- Developer-API/Provider-Registry und Dokumentation für Drittautoren.
-- Kostenloser Kern funktioniert ohne Lizenzcode, Pro-Hinweise nur kontextuell und ohne harte Sperren vorhandener Daten.
+- Unbegrenzte Workflows und Ausführungen auf einer WordPress-Website; kein externer Account erforderlich.
+- Visueller Editor mit mehreren Auslösern, mehreren Aktionen, geordneter Schrittfolge, einfachen Bedingungen, Verzögerung und Datum/Zeitplanung.
+- WordPress-Core- und WooCommerce-Provider für die gängigen Inhalts-, Benutzer-, Bestell-, Refund-, Produkt- und Coupon-Ereignisse.
+- Einfacher AND/OR-Filter auf Ereignisfeldern, dynamische Tokens und sichere E-Mail-/Adminaktionen.
+- WooCommerce-Aktionen: Bestellnotiz, zulässige Statusänderung, Kunden-/Adminbenachrichtigung und CRUD-Meta.
+- Einfaches Ausführungsprotokoll für 30 Tage, Test-/Dry-Run, pausieren/aktivieren, duplizieren und Fehlerstatus.
+- Entwickler-Registry für Drittanbieterprovider mit dokumentiertem Contract.
+- Queue-Schutz gegen Lastspitzen; Systemlimits dürfen verzögern oder verständlich ablehnen, erzeugen aber niemals Task-Kosten.
+
+Free umfasst keine Captain-Suite-Provider oder externen Serviceverbindungen. Premiumintegrationen sind ein legitimer Add-on-Mehrwert. Das kostenlose Kernplugin bleibt eigenständig und ohne Lizenzclient.
 
 ### Workflow Captain Pro (separates Add-on, lizenziert)
 
-Pro wird als separates Add-on nach dem etablierten Captain-Pro-Modell gebaut. Lizenzprüfung, Updater und Premiumfunktionen befinden sich in `captain-pro`; Workflow Captain Free kennt das Add-on nicht.
+- Alle sechs Captain-Provider: WP License Captain, WooCommerce (erweiterte Suite-Aktionen), Pass, Voucher, Affiliate, Form und Review Captain.
+- Sichere, signierte Ein-/Ausgangswebhooks als Brücke zu Fremdsystemen und anderen WordPress-Websites. V1 enthält keine native App-Bibliothek für Hunderte Drittanbieter.
+- Erweiterte Event-Korrelation, If/Else-Verzweigung, Bedingungsgruppen und Freigabeschritte.
+- Geplante Queue-Aktionen mit Geschäftslogik zur Stornierung bei Refund/Storno oder Statusänderung.
+- Idempotente Aktionen, begrenzte Retry-Strategie, kontrolliertes Replay, Audit-Historie und vollständige Einzelschritt-Protokolle.
+- Suite-Rezeptvorlagen, Versionierung sowie schema-geprüfter Export/Import.
+- Erweitertes Rollen-/Capability-Modell, Protokollexport und bis zu 365 Tage einstellbare Pro-Aufbewahrung.
+- Alle Pro-Funktionen in jedem Lizenzplan; Tarife unterscheiden sich ausschließlich über Live-Sites und Support.
 
-- Suite-Adapter für Voucher, Pass, Affiliate, Form und Review Captain.
-- Erweiterte Conditions: AND/OR-Gruppen, numerische/Text-/Datumvergleiche, Produkt-/Kategorie-/Coupon-/Event-/Formularfilter sowie sichere Negation.
-- Mehrere Trigger für ein Rezept (UND-Semantik und unabhängig gestartete Runs klar unterscheidbar).
-- Verzögerungen, geplante Schritte, Warteschlange und kontrollierte Wiederholungen.
-- Abzweigungen (If/Else), Stop-/Abbruchpfade und Schritt-für-Schritt-Ausführung.
-- Erweiterte WooCommerce- und Suite-Aktionen über Anbieter-Serviceverträge.
-- Webhooks als Trigger und Aktion; HTTP-Request-Aktion mit erlaubten Domains, Secrets, Timeout, Größenlimit und SSRF-Schutz.
-- Rezeptvorlagen, Export/Import mit Schema-Validierung, Ablaufprotokolle mit konfigurierbarer Aufbewahrung.
-- Filter, Suche, Logs-Export, Ausführungsdetails und manuelle Wiederholung fehlgeschlagener Runs.
-- Zeit-/Volumenlimits nach Lizenzplan als Entitlements (z. B. Websites und Supportlevel nach WP License Captain-Konfiguration); konkrete Tarifgrenzen noch festzulegen.
-- Externe App-Plattformen und Cloud-Runs sind nicht Teil von Version 1; interne WordPress-/WooCommerce-/Captain-Suite-Verbindungen haben Vorrang.
+Externe App-Plattformen und Cloud-Runs sind nicht Teil von Version 1; Webhooks sind der ausdrücklich begrenzte Interoperabilitätsweg.
 
 ### Lizenzvertrag
 
-- Produktschlüssel: `workflow-captain-pro`; Add-on-Ordner, Textdomain und Produktschlüssel folgen der Captain-Pro-Regel.
-- Rechtepräfix: `workflow.`; Schlüssel z. B. `workflow.advanced_logic`, `workflow.delays`, `workflow.webhooks`, `workflow.suite_integrations`, `workflow.recipe_templates`, `workflow.extended_logs`.
-- Kernplugin bleibt GPL-2.0-or-later und vollständig eigenständig. Keine Lizenzprüfung, Update-Client-Kopie oder Premiumklasse im WordPress.org-Kern.
-- Das Pro-Add-on verwendet den bestehenden WP-License-Client und Add-on-Kernel in `captain-pro`; öffentliche Ed25519-Schlüssel, Server-URL, Minimum-Kernversion und Produktkatalogeintrag sind Release-Voraussetzungen.
-- Jedes Premiumfeature erhält genau einen eindeutigen `workflow.*`-Entitlement-Schlüssel. Bei Lizenzablauf werden keine neuen Premium-Läufe gestartet; vorhandene Workflows bleiben sichtbar und lesbar, Logs und Export bleiben für Diagnose erhalten. Geplante Jobs werden sicher gestoppt/als „Pro-Lizenz erforderlich“ markiert. Es werden keine Daten gelöscht.
-- Suite-Integrationen im Free-Kern sollten nur Basis-/Leseereignisse enthalten, falls dies Produktstrategie und Free-Limits zulassen. Erweiterte Suite-Aktionen und der Workflow-Umfang sind Pro. Die genaue Zuordnung ist eine Inhaberentscheidung vor Umsetzung, siehe To-do.
-- In `captain-pro/README.md` die neue Produktzeile ergänzen; `docs/ARCHITECTURE.md`, Build, Übersetzungen und Release-Dokumente nach bestehenden Mustern erweitern.
+- Produktschlüssel/Add-on-Ordner/Textdomain: `workflow-captain-pro`; Rechtepräfix: `workflow.`.
+- Pro nutzt den bestehenden WP-License-Client und Add-on-Kernel in `captain-pro`. Free enthält keinerlei Lizenzcode.
+- Die Pläne verwenden nur `sites.live_limit` und `support.level` als Tarifunterschiede; es gibt keine pro-Feature-Tiers, Run-Limits oder Task-Credits.
+- Premiumrechte: `workflow.suite_integrations`, `workflow.webhooks`, `workflow.event_correlation`, `workflow.advanced_logic`, `workflow.recipe_templates`, `workflow.extended_logs`.
+- Alle Pro-Pläne erteilen dieselben sechs Rechte; Site-Limit/Support kommen aus dem Standardvertrag. Die Katalog-Entitlements müssen vor dem Verkauf angelegt werden.
+- Bei Lizenzablauf bleiben Rezepte, Versionen, Logs und Export lesbar. Neue Pro-Runs starten nicht. Geplante Pro-Aktionen werden pausiert und nicht automatisch nach Lizenzverlängerung nachgeholt; Betreiber prüft eine Wiederaufnahme mit Vorschau.
+- In `captain-pro/README.md`, Architektur, Build, Übersetzungen und Release-Checkliste wird das Add-on nach dem bestehenden Produktmuster ergänzt.
 
 ## 5. Integrationsmodell
 
@@ -435,39 +430,36 @@ Mit Version 1 können Betreiber typische Geschäftsabläufe innerhalb von WordPr
 
 #### Workflow Captain Free 1.0
 
-- Uneingeschränkt nutzbarer Kern ohne Aktivierungszwang, Lizenzcode, Updateclient oder externe Konten.
-- WordPress-Core-Trigger: Benutzer registriert, Rolle geändert, Beitrag/Seite veröffentlicht oder aktualisiert, Kommentar eingereicht/freigegeben.
-- WooCommerce-Trigger: Bestellung erstellt, bezahlt, Status geändert, teilweise/vollständig erstattet und storniert.
-- Ein Trigger oder alternative Einstiegsereignisse; pro Ereignis startet ein eigener Run. AND-Bedingungen zu verfügbaren Eventfeldern.
-- Einfache lineare Rezepte mit sofortigen Aktionen: Admin-/Kunden-E-Mail und Bestellnotiz; klar begrenzte WordPress-Aktionen nach Capability.
-- Tokenpicker mit Datentyp, Quelle, Verfügbarkeit und Datenschutzmarkierung; Testvorschau mit Beispieldaten.
-- Editor, Aktivieren/Pausieren, Testlauf, Rezeptduplikat, Listen-/Suchansicht und Fehlerstatus.
-- Basislaufprotokoll für 30 Tage mit redigierten Werten; Aufbewahrungszeit einstellbar, Export/Löschung über WordPress-Datenschutzwerkzeuge.
-- WooCommerce HPOS sowie Classic- und Block-Checkout. Keine direkten Abfragen oder Updates an WooCommerce-Bestelltabellen.
-
-Free soll dauerhaft nützlich bleiben: ohne künstliche Anzahlbegrenzung von Workflows oder Ausführungen, ohne Task-Credits und ohne willkürliches Entziehen bereits gespeicherter Inhalte. Systemschutzgrenzen drosseln Last kontrolliert und melden Überlastung sichtbar.
+- Coreplugin: WordPress 6.8+, PHP 8.3+; WooCommerce-Adapter optional ab WooCommerce 8.0. HPOS sowie Classic- und Blocks-Bestellungen werden unterstützt, sobald die Adapterversion dies deklariert.
+- Unbegrenzte Workflows und Ausführungen, ohne Task-Credits oder externen Account.
+- Mehrere alternative Start-Trigger, mehrere geordnete Actions pro Lauf, einfache AND/OR-Filter und Tokens aus dem jeweiligen Event-Schema.
+- Grundlegende Zeitplanung: „sofort“, „nach Dauer“ und „zu Zeitpunkt“ für Aktionen. Trigger sind vor allem WordPress-Core und WooCommerce.
+- WordPress: Registrierung, Rollenänderung, Inhaltsveröffentlichung/-änderung, Kommentarereignisse.
+- WooCommerce: Bestellung erstellt/bezahlt/Status geändert, Erstattung/Storno, Produktstatus/Lagerwarnung und Coupon im Auftrag verwendet.
+- Aktionen: E-Mail, Bestellnotiz, sichere Änderung des Bestellstatus, eingeschränkte Core-Post-/Benutzeraktion und WooCommerce-CRUD-Meta.
+- Dashboard, Editor, Dry Run, Aktivieren/Pausieren, Versionsentwurf, Fehlerliste und redigierte 30-Tage-Protokolle.
+- Datenschutzexport/-löschung und Developer-Provider-Registry.
 
 #### Workflow Captain Pro 1.0
 
-- Eigenständiges Add-on im Repository captain-pro, lizenziert nach dessen Produktschlüssel-, Entitlement-, Updater- und Site-Limit-Modell.
-- Vollständiger Suite-Provider für WP License Captain, Pass Captain, Voucher Captain, Affiliate Captain, Form Captain und Review Captain. Für jede Integration werden die in 15.4 festgelegten Ereignisse und sicheren Aktionen implementiert.
-- WooCommerce-Ausbau: Produkt-/Kategorie-/Coupon-/Zahlartbedingungen, Zeilenpositionsfilter, Versand-/Erfüllungsstatus, Auftragsnotizen und freigegebene Statusaktionen per Woo CRUD.
-- Mehrschrittige Abläufe mit mehreren Aktionen, Verzögerungen, geplantem Datum, If/Else, AND-/OR-Bedingungsgruppen, Stop-/Abbruchpfad und manueller Freigabe.
-- Alternative Starttrigger („eines dieser Ereignisse“); jeder eingehende Event startet separat und dedupliziert. Synchrones „auf ein zweites, späteres Ereignis warten“ ist kein implizites Verhalten; korrelierte Ereignis-Joins brauchen eigene explizite Knotenkonfiguration.
-- Sichere Wiederholungen, Warteschlange, manuelle Wiederholung, Abbruch, Replay-Vorschau, Rezeptversionierung und Ausführungsberichte.
-- Rezeptbibliothek der Captain Suite (Entwurf, nicht automatisch aktiviert), Export/Import mit Versionsprüfung, Schema-/Provider-Migration und Validierungsvorschau.
-- Rollen-/Capability-Steuerung für Erstellen, Veröffentlichen, Retry und Einsicht in sensible Prozessdaten; Pro-Lizenzseite über den Add-on-Kernel.
-- Lokale Zeitpläne, Zeitzonenwahl, Ausführung nach Website-Zeit und Anzeige des entsprechenden UTC-Werts.
-- Keine Task-Credits. Pläne unterscheiden Site-Limit und Support wie in der bestehenden Suite. Konkrete Entitlements müssen vor Shop-Anlage bestätigt werden.
+- Alle Premiumfunktionen sind in allen Plänen enthalten; es gibt nur Site-Limit und Supportstufe.
+- Alle Captain-Suite-Provider, sichere Business-Aktionen und Rezeptvorlagen wie unter 15.4/15.5 spezifiziert.
+- Freigabeschritte, ereignisübergreifende Korrelation mit konfiguriertem Schlüssel und Timeout, erweiterte Condition-Gruppen sowie If/Else.
+- Warten bis Ereignis/Termin, Business-Statusprüfung vor Aktion und Abbruch geplanter Abläufe bei Refund, Storno, Widerruf oder Opt-out.
+- Ein- und ausgehende HMAC-signierte Webhooks mit Timestamp-/Replay-Schutz, Rate-Limit, Schlüsselrotation und Zustellprotokoll; HTTP-Ausgänge nur per HTTPS-Host-Allowlist, ohne Redirects zu internen Adressen.
+- Action Scheduler mit Retry/Backoff, Job-Leases, dedupliziertem Replay, Dead-letter-Status und Dashboard für überfällige Queue.
+- Versionshistorie, Export/Import mit Provider-Migrationsvorschau, Freigabe vor Veröffentlichung und konfigurierbare Rezeptvorlagen.
+- Detaillog bis 365 Tage (Standard 90 Tage), CSV-Export mit Formelschutz, Audit-Historie und Rollensteuerung.
+- Keine nativen CRM-/Mail-/Social-App-Connectoren in v1; Webhooks decken generische externe Übergaben.
 
 #### Nicht Teil von Version 1
 
-- Beliebiger PHP-/SQL-/Shell-Code, freie Funktionsaufrufe, Dateisystemoperationen und Datenbankänderungen.
-- Ungeprüfte externe HTTP-Aufrufe, beliebige ausgehende/inbound Webhooks oder Automationen über eine fremde Cloud.
-- Endlosschleifen, freie Graphen mit unbeschränkten Zyklen, parallele unbegrenzte Fan-outs und dynamische Skripte.
-- Automatische Auszahlung, Provisionsberechnung, Zahlungsrückerstattung, Ticket-Einlass-/Codeerzeugung oder irreversible Buchhaltungsschritte ohne autorisierten Fachplugin-Service und separate Freigaberegel.
-- KI-generierte Rezepte/Aktionen und automatische Entscheidungen über Kunden anhand Review-Sterne oder sensibler Merkmale.
-- Automatisierung beliebiger Drittanbieter-Plugins durch Erraten ihrer internen Hooks. Neue Plugins benötigen eigene, versionierte Provider.
+- Beliebiger PHP-/SQL-/Shell-Code, freie Funktionsaufrufe, Dateisystemoperationen und unkontrollierte Datenbankänderungen.
+- Native App-Bibliothek zu Hunderten Drittanbietern, Cloud-Ausführung und taskbasierte Abrechnung.
+- Unbeschränkte Schleifen, parallele Fan-outs ohne feste Obergrenze und freie dynamische Skripte.
+- Automatische Auszahlung, Provisionsberechnung, Zahlungsrückerstattung, Ticket-Einlass-/Codeerzeugung oder irreversible Buchhaltungsschritte ohne autorisierten Fachplugin-Service.
+- KI-generierte Workflows und autonome Aktionen.
+- Integration beliebiger Drittanbieter-Plugins ohne dokumentierten und versionierten Provider.
 
 ### 15.3 Workflow-Modell und Ausführungsregeln
 
@@ -619,34 +611,69 @@ Version 1.0 ist erst releasebereit, wenn:
 
 Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punkte sind Abnahmekriterien für die spätere Implementierung.
 
-### 15.10 Was für V1 noch fehlt
+### 15.10 Festgelegte Produktentscheidungen
 
-Die Produktspezifikation ist jetzt festgelegt, aber folgende Voraussetzungen fehlen noch, bevor die Entwicklung als vollständig definiert beginnen kann:
+| Thema | Festlegung für Version 1 |
+|---|---|
+| Produktname | Workflow Captain |
+| Kostenloses Plugin | workflow-captain, WordPress.org-Slug nach gleichnamigem Namenscheck |
+| Pro-Add-on/Produktschlüssel | workflow-captain-pro, im Captain-Pro-Repository |
+| Lizenzmodell | Jahreslizenz über WP License Captain; 1/5/25 Live-Sites; Standard-Support bei Single/Business, Priority bei Agency; alle Premiumfunktionen in allen Plänen |
+| Preise | Single 129 €/Jahr für 1 Site; Business 229 €/Jahr für 5 Sites; Agency 399 €/Jahr für 25 Sites. Preise im Woo-Shop gemäß dessen Steuerkonfiguration. |
+| Verlängerung | Gleicher gespeicherter Preis bei Verlängerung, keine Lockpreise oder nur im ersten Jahr gültigen Rabatte |
+| Keine Lifetime-/Monatslizenz zum Start | Der vorhandene Lizenzserver ist auf Monat/Jahr ausgelegt; v1 startet jährlich. Monatlich wird erst nach realer Nachfrage ergänzt; Lifetime wird ausgeschlossen. |
+| Free-Versprechen | Unbegrenzte Workflows und Ausführungen; WP Core + WooCommerce; mehrere Aktionen, einfache Bedingungen, Basis-Zeitplanung und 30-Tage-Logs |
+| Pro-Versprechen | Alle Captain-Provider, geschützte Webhooks, erweiterte Korrelation/Branches, Queue/Replay, Suite-Rezepte und erweitertes Protokoll |
+| Nutzungslimits | Keine Task-Credits oder monatlichen Run-Limits. Nur Lizenz-Site-Limits und technische Queue-Schutzgrenzen. |
+| Integrationsemantik | Mehrere Einstiegsereignisse starten grundsätzlich je einen eigenen Lauf; Warten auf zusammengehörige Ereignisse erfolgt nur über einen expliziten Pro-Korrelationsknoten. |
+| Ausführungsbasis | Lokal auf der WordPress-Seite; Action Scheduler bei WooCommerce, WP-Cron-Fallback mit System-Cron-Empfehlung |
+| Kompatibilität | WordPress 6.8+, PHP 8.3+; WooCommerce 8.0+ optional für Shop-Provider. Jeder Suite-Adapter verlangt zusätzlich die im Providervertrag definierte Kernplugin-Mindestversion. |
+| Externe Systeme | Keine native Drittanbieter-App-Bibliothek in v1. Pro-Webhooks sind der sichere generische Adapter. |
+| KI | Nicht in Version 1; keine automatische Veränderung oder Aktivierung ohne Betreiberfreigabe |
+| Supportzeit | Support-Level folgen dem Captain-Plan. Keine Antwortzeitgarantie, bevor Supportbetrieb dafür ausgestattet ist. |
 
-**Providerverträge (kritischer Pfad)**
-- [ ] Für WP License Captain, WooCommerce, Pass, Voucher, Affiliate, Form und Review je ein konkretes versioniertes Event-/Action-Schema in deren Repository erstellen.
-- [ ] Bestehende Hooklisten mit den geplanten Provider-Events abgleichen. In Pass Captain sind z. B. Ticket-Check-in-/Ausgabe-/Widerrufhooks dokumentiert, aber nicht alle sind versionierte Drittanbieter-Verträge.
-- [ ] Für Voucher Captain und Review Captain die öffentlichen Schedule-/Cancel-/Einlösungs-Services spezifizieren; bestehende Produktkonzepte allein sind noch kein ausführbares API.
-- [ ] Affiliate- und WooCommerce-Refund-Eigentümerschaft je Bestellpfad so festlegen, dass jede Rückbuchung genau einmal läuft.
-- [ ] Form-Captain-Felder nach Einwilligung, PII-Klasse und Übertragungszweck kennzeichnen.
+**Preisbegründung:** Die Wettbewerber setzen für ihre Pro-Einstiegspläne aktuell etwa 149 USD/Jahr (WP Webhooks, 1 Site) und 199 USD/Jahr (Uncanny Automator, 1 Site) an. AutomatorWP wirbt mit deutlich größeren kostenlosen Integrationsumfängen und rabattierten Jahrespässen. Workflow Captain kann diese Integrationsbreite nicht zum Start versprechen. Deshalb liegt der empfohlene Ein-Site-Preis bei 129 €/Jahr unter WP Webhooks und dem Uncanny-Einstiegsplan. 229 €/5 Sites und 399 €/25 Sites passen zur bestehenden Voucher-Captain-Pro-Preisstruktur und halten die Lizenzstaffel in der Suite einheitlich.
 
-**Produktentscheidungen**
-- [ ] V1-Entitlements und Site-/Supportpläne mit WP License Captain/Captain Pro bestätigen und anlegen.
-- [ ] Sichtbare Produktbezeichnung „Workflow Captain“ und WordPress.org-Slug nach Verfügbarkeitsprüfung festlegen; Repository-Name wp-workflowmaster kann bleiben.
-- [ ] Standards für Default-Retention, Rollen und externe E-Mails bestätigen.
-- [ ] Ob technische Admins alternative Trigger und Freigaben selbst konfigurieren dürfen, in Rollenmodell abbilden.
+Die Gratisversion muss dennoch glaubwürdig sein: Wettbewerber bieten zum Teil Hunderte Integrationen, Mehrfachaktionen, Filter, Zeitplanung und unbegrenzte Ausführungen kostenlos. Workflow Captain Free erhält deshalb seine vollwertige lokale WP-/WooCommerce-Engine, ohne Task- oder Workflow-Cap. Das Pro-Upgrade wird durch die fachlich sicheren Captain-Integrationen, Webhooks und den Betriebs-/Diagnoseumfang begründet, nicht durch künstliche Runlimits.
 
-**UX und Betrieb**
-- [ ] UI-Entwürfe für Editor, If/Else, verzögerte Aktion, Retry/Replay, überfällige Queue und abgelaufene Pro-Lizenz erstellen.
-- [ ] Seiteneffekte und Warntexte für Aktionen verbindlich festlegen.
-- [ ] Support-Diagnosebericht ohne PII/Secrets, Installationshandbuch und Upgrade-/Rollbackablauf erstellen.
-- [ ] System-Cron-Voraussetzungen und Queue-SLO für kleine/große Shops dokumentieren.
+### 15.11 Was noch fehlt – Umsetzungsaufgaben, keine offenen Produktentscheidungen
 
-**Releaseprüfung**
-- [ ] Kompatibilitätsmatrix mit konkreten Mindestversionen (WP, PHP, WooCommerce und Captain-Plugins) beschließen.
-- [ ] End-to-End-Prüfplan und kompatible reale Testinstallation bereitstellen.
-- [ ] Datenschutz-/Rechtsprüfung der Kundenkommunikation und Review-Anfragen für relevante Zielregionen durchführen.
-- [ ] License-Captain-Produktkey, Add-on-Featureklassen, ZIP-Build, Signatur/Updater und Verlängerungspfad gemeinsam abnehmen.
-- [ ] V1.0-Rezeptbibliothek kuratieren; jedes Rezept mit Quell-/Zielplugin, Voraussetzungen und Datenschutzbeschreibung liefern.
+**Öffentliche Verträge**
+- [ ] Für jeden der sechs Captain-Provider Trigger-/Action-Schema, Vertragsversion, Berechtigung, Fehlercodes und minimale Payload in den Fachplugin-Repositories veröffentlichen.
+- [ ] Pass Captain: versionierte Brücke für Check-in, Ausgabe, Widerruf und Eventabsage statt direkter Abhängigkeit auf interne Hooks.
+- [ ] Voucher Captain: versionierte Events/Services für Ausstellung, Zustellung, Einlösung, Rückgabe und Geheimnisredaktion.
+- [ ] Review Captain: idempotente Request-/Cancel-API mit Suppression, Opt-out, Frequenzlimit und Statusrückgabe.
+- [ ] Form Captain: Feldklassen und Einwilligungs-/Übertragungsregeln je Feld festlegen und in den Submission-Service einbauen.
+- [ ] Affiliate Captain: Provision-/Refund-Aktionen ausschließlich über kanonischen Verkaufsvertrag; keine zweite Buchung aus Workflow Captain.
+- [ ] WP License Captain: nur benachrichtigungsfähige Lizenzereignisse; keine generischen Lizenzänderungen als Workflow-Aktionen.
 
-Diese Punkte sind keine Einschränkung auf ein Minimalprodukt. Sie sind die noch offenen Verträge, Entscheidungen und Releasearbeiten, die ein vollständiges Version-1-Produkt benötigt.
+**Produktumsetzung**
+- [ ] Die bestätigten Entitlements workflow.suite_integrations, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.recipe_templates und workflow.extended_logs in wp-license/captain-pro anlegen.
+- [ ] Produktkey und drei Jahrespläne im Shop/WP License Captain mit 1/5/25 Sites und oben festgelegten Preisen konfigurieren.
+- [ ] WordPress.org-Verfügbarkeit des Produktnamens/Slugs vor Einreichung prüfen.
+- [ ] UI-Entwürfe der Tabellen, Workflow-Canvas/Schrittfolge, Branching, Zeitplanung, Fehler-Replay und Lizenzablauf umsetzen.
+- [ ] Release-Readme, Entwickler-SDK, Anbieterübersicht, Datenschutz-Datenfluss und Support-Diagnose schreiben.
+
+**Abnahme und Betrieb**
+- [ ] E2E-Matrix für HPOS, Classic/Blocks, Woo-Refunds, Suite-Event-Duplikate, Parallelität, Queue-Ausfall, Retry, Lizenzablauf, Backups und Plugin-Deaktivierung erstellen.
+- [ ] Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen.
+- [ ] Datenschutz-/Rechtsprüfung der E-Mail-, Review- und Webhook-Datenflüsse für Zielregionen durchführen.
+- [ ] Queue-Batchlimits und System-Cron-Empfehlungen gegen kleine und große Shops messen.
+- [ ] Supportkapazität für Standard/Priority einrichten; Responsezeiten erst danach veröffentlichen.
+- [ ] Lizenzclient/Updater und beide ZIPs (Free/Pro) in einer echten WooCommerce-Testinstallation freigeben.
+
+### 15.12 Wettbewerbsvergleich und abgeleitete Entscheidungen (Stand 15.11.2026)
+
+| Wettbewerber | Aktuell sichtbarer Ansatz | Konsequenz für Workflow Captain |
+|---|---|---|
+| **AutomatorWP** | Die WordPress.org-Seite bewirbt mehr als 600 Trigger/Aktionen/Filter aus über 300 Plugins, unbegrenzte Ausführungen, Mehrfachtrigger/-aktionen, Filter, Zeitpläne und Loops kostenlos. Die Preisseite zeigt jährliche Add-on-Pässe für 2/10/unbegrenzte Sites; dort angezeigte Aktionspreise sind als Einführungspreise gekennzeichnet. | Kein künstliches Runlimit. Free muss echte Rezepte mit mehreren Schritten, Conditions und Zeitsteuerung können. V1 muss keine Hunderte Drittanbieter-Adapter vortäuschen; Suite-Tiefe ist unsere Differenzierung. |
+| **WP Webhooks** | Starter 149 USD/Jahr für 1 Site, mit unbegrenzten Automationen/Webhooks/Triggern/Aktionen, Bedingungen, Verzögerung, Logs und 100+ Integrationen; höhere Pläne erhöhen Site-Limit und Support. | Eingehende/ausgehende sichere Webhooks gehören in Pro v1. Jahreslizenz nach Sites/Support ist ein verständliches Marktmodell. |
+| **Uncanny Automator** | Lite bewirbt Hunderte Trigger/Aktionen und Integrationen; Basic wird mit 199 USD/Jahr für 1 Site angeboten und wirbt mit Zeitplanung, Conditions, unbegrenzten Rezepten/Ausführungen, erweiterten Integrationen und Webhooks. | Free darf nicht nur ein Demo-Builder sein. Pro soll ohne Task-Credits auskommen und die bestehende Suite-Lizenzlogik nutzen. |
+
+**Recherchierte Anbieterquellen**
+
+- AutomatorWP [WordPress.org](https://wordpress.org/plugins/automatorwp/) und [Preise](https://automatorwp.com/pricing/)
+- WP Webhooks [Preise](https://wp-webhooks.com/pricing/)
+- Uncanny Automator [Preise](https://automatorplugin.com/pricing/)
+- Recherche-/Preisstand: 15.11.2026. Preise und Funktionsumfang sind veränderlich; diese Entscheidung ist eine Preispositionierung, keine Preisabfrage im Live-Shop.
+
