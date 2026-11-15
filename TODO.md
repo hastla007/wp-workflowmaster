@@ -16,7 +16,7 @@
 - [ ] WP License Captain: nur benachrichtigungsfähige Lizenzereignisse; keine generischen Lizenzänderungen als Workflow-Aktionen.
 
 **Produktumsetzung**
-- [ ] Die bestätigten Entitlements workflow.suite_integrations, workflow.custom_connectors, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.recipe_templates und workflow.extended_logs in wp-license/captain-pro anlegen.
+- [ ] Die bestätigten Entitlements workflow.suite_integrations, workflow.custom_connectors, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.delays, workflow.multisite_network, workflow.recipe_templates und workflow.extended_logs in wp-license/captain-pro anlegen.
 - [ ] Produktkey und drei Jahrespläne im Shop/WP License Captain mit 1/5/25 Sites und oben festgelegten Preisen konfigurieren.
 - [ ] WordPress.org-Verfügbarkeit des Produktnamens/Slugs vor Einreichung prüfen.
 - [ ] UI-Entwürfe der Tabellen, Workflow-Canvas/Schrittfolge, Branching, Zeitplanung, Fehler-Replay und Lizenzablauf umsetzen.
@@ -35,7 +35,7 @@
 - [ ] Release-Readme, Entwickler-SDK, Anbieterübersicht, Datenschutz-Datenfluss und Support-Diagnose schreiben.
 
 **Abnahme und Betrieb**
-- [ ] E2E-Matrix für HPOS, Classic/Blocks, Woo-Refunds, Suite-Event-Duplikate, Parallelität, Queue-Ausfall, Retry, Lizenzablauf, Backups und Plugin-Deaktivierung erstellen.
+- [ ] E2E-Matrix für HPOS, Classic/Blocks, Woo-Refunds, Suite-Event-Duplikate, Parallelität, Queue-Ausfall, Retry, Lizenzablauf, Backups, Plugin-Deaktivierung und lokale sowie netzwerkweite Multisite-Ausführung erstellen.
 - [ ] Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen.
 - [ ] Datenschutz-/Rechtsprüfung der E-Mail-, Review- und Webhook-Datenflüsse für Zielregionen durchführen.
 - [ ] Queue-Batchlimits und System-Cron-Empfehlungen gegen kleine und große Shops messen.
@@ -66,7 +66,7 @@
 - [ ] Supportdiagnose-Export ohne PII/Secrets erstellen.
 - [ ] Source-Outbox-Replay und Workflow-Queue-Retry unterscheiden und idempotent machen.
 - [ ] Anonymisierung/Löschung über Source- und Workflow-Logs abstimmen, ohne Geschäftsledger zu löschen.
-- [ ] Aktivierung/Deaktivierung, Backup/Restore und Multisite pro Provider validieren.
+- [ ] Aktivierung/Deaktivierung, Backup/Restore, per-Site-Isolation und Site-A-zu-Site-B-Routing in Multisite pro Provider validieren.
 
 ### Suite-Provider: verbindliche Implementierungsaufgaben
 
@@ -85,8 +85,8 @@
 - [ ] WF-INT-13 – WPLC-Katalog/Shop verbindlich abgleichen: workflow-captain-pro; workflow.*; Single 129 EUR/1 Site, Business 229 EUR/5 Sites, Agency 399 EUR/25 Sites pro Jahr; gleiche Pro-Funktionen in allen Plänen.
 - [ ] WF-INT-14 – Adminseiten für Provider, Vertragsversion, Verfügbarkeit, Testevent, Ownership, aktive Workflows, Fehler, Retry und Diagnoseexport bauen.
 - [ ] WF-INT-15 – Migrationsassistent zeigt Vorschau, sichert Nativeinstellungen, erkennt Duplikate, verlangt Bestätigung und erlaubt Besitzerwechsel/Rollback.
-- [ ] WF-INT-16 – Kompatibilitätsmatrix für WP, Woo HPOS/Classic, Checkout Blocks, Multisite, PHP, Action Scheduler/Cron und alle Suite Core/Pro-Kombinationen festlegen.
-- [ ] WF-INT-17 – Vertrags-/E2E-Matrix für Plugin fehlt/deaktiviert, Lizenz/Recht fehlt/abgelaufen, Contract Major, Timeout nach erfolgreichem Zielaufruf, Replay, Duplicate, Refund, Restore und Multisite ergänzen.
+- [ ] WF-INT-16 – Kompatibilitätsmatrix für WP, Woo HPOS/Classic, Checkout Blocks, lokale und netzwerkweite Multisite, PHP, Action Scheduler/Cron und alle Suite Core/Pro-Kombinationen festlegen.
+- [ ] WF-INT-17 – Vertrags-/E2E-Matrix für Plugin fehlt/deaktiviert, Lizenz/Recht fehlt/abgelaufen, Contract Major, Timeout nach erfolgreichem Zielaufruf, Replay, Duplicate, Refund, Restore, lokale Site-Isolation und Cross-Site-Permissions in Multisite ergänzen.
 - [ ] WF-INT-18 – Release-Gate für getestete ZIPs aller geänderten Plugins, WPLC-Shop-Sandbox, Kauf/Aktivierung/Entitlement/Update/Refund/Deaktivierung, Migration und Rollback definieren.
 
 ### Kundenspezifische Connectoren – Umsetzung v1
@@ -190,7 +190,7 @@
 - [ ] WF-CORE-06 – Queue-Claim-/Lease- und Crashverhalten festlegen und belegen: atomare Claims, Lease-Ablauf, Prozessabbruch vor/nach Side Effect, Heartbeat/Timeout, stale-run-Recovery, abgebrochene Deployments und konkurrierende Worker ohne Doppelbuchung behandeln.
 - [ ] WF-CORE-07 – Datenbankschema- und Workflow-Migrationen versionsgeführt implementieren: sichere Wiederaufnahme nach abgebrochenem Upgrade, Kompatibilität bei Plugin-Downgrade, Backup-/Restore-Konsistenz zwischen Definitionen, Queue und Runs, keine stillschweigende Löschung historischer Logs; dokumentierte Admin-/WP-CLI-Migrationsstatus.
 - [ ] WF-CORE-08 – Ausführungskontext und Berechtigungsentzug klären: Hintergrundläufe dürfen nicht versehentlich mit zufälligem aktuellem Administrator-Kontext laufen; Ausführer-/Serviceidentität, benötigte Capabilities je Action und Verhalten bei gelöschtem Ersteller oder entzogenen Rechten bei Veröffentlichung und Ausführung erneut prüfen.
-- [ ] WF-CORE-09 – Multisite-Isolation technisch abnehmen: Workflow-/Queue-/Credential-/Run-Daten standardmäßig pro Site trennen, Blog-Kontext beim Workerwechsel korrekt setzen und Netzwerkaktivierung, Site-Erstellung/-Löschung, Domainwechsel, Backup/Restore sowie Site-Deaktivierung dokumentieren.
+- [ ] WF-CORE-09 – Site-lokale Workflow-/Queue-/Credential-/Run-Daten isoliert halten; Netzwerkmodus und seine Control-Plane separat speichern und ausführen. Umfassende Cross-Site-Regeln stehen in „Multisite-Netzwerk-Workflows – Umsetzung v1“.
 - [ ] WF-CORE-10 – Betriebswerkzeuge und Runbooks ergänzen: read-only Diagnose von Provider/Queue/Schema, kontrollierter Retry/Replay nach Auswahl und Bestätigung, Warteschlangen-Reconciliation, Export redigierter Diagnose sowie dokumentierte WP-CLI-Batch-/Cron-Wiederherstellung; destructive Aktionen capability-geschützt und auditierbar.
 
 ### Querschnittssicherheit für Connectoren und Secrets
@@ -199,3 +199,31 @@
 - [ ] WF-SEC-02 – Secret-At-rest-/Key-Management festlegen und implementieren: Verschlüsselungsschlüsselquelle, Site-/Multisite-Scope, Rotation, Wiederherstellung nach Salt-/Key-Wechsel, fehlender Schlüssel und Backup-/Restore dokumentieren; Klartext nur im Requestspeicher, nie in Datenbanklogs, Exporten, Fehlermeldungen oder Workflow-Snapshots.
 - [ ] WF-SEC-03 – Capability- und Rate-Limit-Modell über alle REST-/Webhook-Einstiege vereinheitlichen; widerrufene Tokens sofort sperren, Trigger-Allowlist je Connector erzwingen, Authentifizierungsfehler begrenzen und sicher auditieren, ohne Token/Signatur zu speichern.
 - [ ] WF-SEC-04 – End-to-End-Datenflussprüfung für Trigger→Queue→Run→Action→Retry/Export/Löschung ergänzen: PII-/Secret-Klassen an jedem Übergang erhalten, Tokenpicker nur freigegebene Felder anbieten und redigierte Payloads in Logs/Diagnose durchsetzen.
+
+### Multisite-Netzwerk-Workflows – Umsetzung Version 1
+
+- [ ] WF-MS-01 – Umfang verbindlich spezifizieren: Pro-Workflows dürfen ein Event einer ausdrücklich ausgewählten Site einer oder mehreren vorab freigegebenen Sites derselben Multisite-Installation zustellen; unabhängige WP-Installationen und netzwerkübergreifendes Routing bleiben Connector-/Webhook-/n8n-Fälle.
+- [ ] WF-MS-02 – WPLC-/Captain-Pro-Katalog um workflow.multisite_network erweitern; Entitlement, Site-Limit, Aktivierung, Verlängerung und Ablaufverhalten dokumentieren. Jede eindeutige Quell- oder Ziel-Blog-ID zählt als Live-Site; Cross-Site benötigt mindestens zwei Sitelizenzen; gemappte Domains derselben Blog-ID zählen einmal.
+- [ ] WF-MS-03 – Netzwerk-Control-Plane nur bei Multisite und gültigem Pro-Recht aktivieren; Workflow Captain Core und Pro müssen netzwerkaktiviert sein. Site-lokale Provider müssen nicht network-aktiviert sein und bleiben unabhängig nutzbar.
+- [ ] WF-MS-04 – Eigenes, versionsgeführtes Netzwerk-Datenmodell unter base_prefix entwickeln: Netzwerk-Workflow/Versionen, feste Site-Scopes, Consent-Nachweis, minimale Event-Inbox, Parent-Runs, Child-Steps, Network-Dispatch und Auditverweise; site-lokale Tabellen/Queues nicht umfunktionieren.
+- [ ] WF-MS-05 – Versionierten Event-Routing-Vertrag erweitern: network_id, source_site_id/blog_id, Event-ID, Source-Provider-/Schema-Version, Korrelation und privacy-klassifizierter Payload. Provider müssen explizit network-publishable deklarieren; Site darf nur freigegebene Events exportieren.
+- [ ] WF-MS-06 – Quell- und Ziel-Site-Auswahl im Graphmodell speichern und veröffentlichte Versionen unveränderlich halten. Ziel-Sites dürfen nur aus fixen IDs oder gespeicherten statischen Site-Gruppen kommen; nie aus Tokens, URL, freiem Payload oder beliebiger Blog-ID.
+- [ ] WF-MS-07 – Teilnehmerfreigaben je Site implementieren: Quell-Site wählt Eventfamilien und exportierbare Felder; Ziel-Site erlaubt Provider-Actions, Datenfelder und Empfänger-/Objektbereiche. Default aus; neue Netzwerk-Sites werden nicht automatisch eingeschlossen.
+- [ ] WF-MS-08 – Network-Admin-Menü, Netzwerkworkflowliste, Editor-Quell/Zielauswahl, Freigabeseite, Network-Runs und Statusdiagnose bauen; vor Publish eine Vorschau zu Source, Targets, Provider, Contract, Consent, Payload, Side Effects, Lizenzplätzen und Cronstatus anzeigen.
+- [ ] WF-MS-09 – Site-Admin-Seite für Teilnahme/Opt-out implementieren: nur eigene Site freigeben/widerrufen, Event-/Action-Scopes einsehen, eigene Child-Steps nachvollziehen und lokale Pause setzen; keine Bearbeitung netzwerkweiter Workflowdefinitionen oder Einsicht in nicht freigegebene fremde Payloads.
+- [ ] WF-MS-10 – Sichere Ziel-Site-Ausführung implementieren: persistente interne Site-Command-Job in der lokalen Ziel-Site-Queue planen; Callback in einem WP-Request/Worker der Ziel-Site ausführen, damit deren site-lokale Plugins/Provider geladen sind. switch_to_blog() allein darf nicht als Plugin-Lader behandelt werden.
+- [ ] WF-MS-11 – Falls switch_to_blog() zum Enqueue oder zur Datenoperation genutzt wird, Site-ID im selben Netzwerk verifizieren und jeden Sitewechsel in try/finally mit restore_current_blog() schließen; Fehler-, Cache-, URL-, Uploadpfad- und verschachtelte Switch-Fälle testen.
+- [ ] WF-MS-12 – Für jede Action einen Netzwerkfähigkeitsvertrag erfordern: network_safe, Mindest-/Major-Contract, erlaubte Sitekontexte, Side Effects, Datenklassen, Idempotenz, Retry-/Replay-Verhalten, nötige Fachplugin-Version und Provider-Service-Handler. Keine direkten Fremdtabellen oder beliebigen Hooks.
+- [ ] WF-MS-13 – Capabilitymodell einführen: WordPress Super-Admin im Network Admin zum Erstellen/Publishen; lokale Site-Admins verwalten Teilnahme und ihre Site-Scopes. Delegierte Network-Admin-Rollen erst nach separatem Capability-Test. Bei User-Aktionen user_can_for_site()/current_user_can_for_site() nutzen; Hintergrundaktionen laufen mit eng genehmigtem Provider-Scope und nie implizit als Super-Admin.
+- [ ] WF-MS-14 – Ausführungskontext für Core-Actions festlegen: notwendige Autor-/User-Identität explizit pro Action mappen, Ziel-Site-Mitgliedschaft und Berechtigung bei Dispatch erneut prüfen; bei fehlendem User, entzogenem Recht oder deaktivierter Site blockieren und keinen Benutzerkontext erfinden.
+- [ ] WF-MS-15 – Netzwerk-Saga statt verteilter Transaktion umsetzen: Parent-Run plus Child-Step pro Ziel-Site, persistente Übergänge, Idempotency-Key aus Network/Workflow-Version/Event/Target-Site/Node, Retry nur für fehlgeschlagene Targets; Erfolg anderer Sites nicht wiederholen und keine automatische Kompensation ohne autorisierten Undo-Service.
+- [ ] WF-MS-16 – Zustandsautomat festlegen und UI abbilden: accepted, waiting_site_worker, running, succeeded, partial_failure, paused_site_consent, blocked_provider, retryable_failure, manual_review und cancelled; Run-Metadaten in Network Admin und erlaubte Child-Step-Details lokal anzeigen.
+- [ ] WF-MS-17 – Lifecycleverhalten spezifizieren und implementieren: Site-Opt-out, Site-Archivierung/Löschung, Blog-ID-Wiederverwendung, Domainwechsel, Providerdeaktivierung, Credentialwiderruf und Site-Cron-Ausfall pausieren nur betroffene Schritte; kein automatischer Wechsel auf eine andere Site.
+- [ ] WF-MS-18 – Datenschutz über Sitegrenzen umsetzen: minimale explizite Feld-Allowlist, Network-Retention, siteweise Zugriff auf Runs, Export/Löschung bei Betroffenenanfragen, Payloadredaktion in Logs/Diagnose, Source- und Target-Owner getrennt ausweisen.
+- [ ] WF-MS-19 – Import/Export für Netzwerkrezepte mit stabilen Site-Referenzen und Zielmapping bauen; fremde Netzwerk-Blog-IDs nicht automatisch übernehmen; Import bleibt Draft bis Quell-/Ziel-Site-Opt-ins, Lizenz und Providerkompatibilität neu bestätigt sind.
+- [ ] WF-MS-20 – Queue-/Cronbetrieb je Ziel-Site überwachen: Action Scheduler verwenden, wenn auf der Ziel-Site vorhanden und initialisiert, sonst WP-Cron/System-Cron mit Verspätungsanzeige; Betriebsdokumentation für pro-Site wp-cron.php/WP-CLI und schwach besuchte Sites ergänzen.
+- [ ] WF-MS-21 – Cross-Site-Schleifenschutz im Causation-Chain ergänzen: Network-ID, source/target Blog-ID, Network-Workflow-/Run-ID und Hop-Limit; durch eine Site-Action ausgelöste Events dürfen nicht unbegrenzt erneut denselben Netzwerkflow starten.
+- [ ] WF-MS-22 – Lizenz-/Entitlementwechsel testen: überschrittene Site-Limits verhindern Publish/Target-Ausführung; Lizenzablauf stoppt neue Network-Runs und pausiert geplante Child-Steps; Verlängerung nimmt Steps nicht ungeprüft nach, sondern verlangt Vorschau und Bestätigung.
+- [ ] WF-MS-23 – Komplette E2E-/Security-Matrix definieren und ausführen: Site A Event → Site B Action; 3-Site-Fan-out; nicht freigegebene Source/Target; Site-Admin vs Network-Admin; Capabilityentzug; Site B Plugin fehlt/deaktiviert; inkompatibler Contract; Timeout nach Side Effect; Duplicate/Replay; Ziel-Site-Cron-Ausfall; Partial Failure; Opt-out während Run; Site-Löschung/Restore; Lizenzablauf; PII-Leak- und Blog-Switch/Cache-Isolation.
+- [ ] WF-MS-24 – Release- und Supportmaterial erstellen: Netzwerkaktivierung, Site-Teilnahme, Sitelizenzrechnung, lokaler Cron, Debuggen von Partial Failure und sicheres Wiederaufnehmen; WordPress-Network-Admin-UI-Mockup und Rezeptbeispiele abnehmen.
+- [ ] WF-MS-25 – Mit WP License Captain/captain-pro den versionierten Lizenzvertrag für Multisite-Subsite-Sitze abgleichen und implementieren: eindeutige Blog-ID-Teilnahme statt nur Network-Root-URL zählen, Sitzfreigabe/-entzug, Domain-Mapping ohne Doppelzählung und Lizenzreaktion bei Netzwerkmigration belegen.
