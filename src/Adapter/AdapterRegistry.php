@@ -1,0 +1,70 @@
+<?php
+/**
+ * Registration of adapters (WF-SPEC-06). Add-ons register on the action "workflow_captain_register_adapters_v1":
+ *
+ *     add_action( 'workflow_captain_register_adapters_v1', function ( $registry ) {
+ *         $registry->add( new My_Adapter() );
+ *     } );
+ *
+ * One adapter per provider. The registry checks only the form of what an adapter says about itself; it checks no
+ * license and knows no product key (C-1, R-2.4).
+ *
+ * @package WorkflowCaptain
+ */
+
+namespace WorkflowCaptain\Adapter;
+
+use WorkflowCaptain\Envelope\Validator;
+
+defined( 'ABSPATH' ) || exit;
+
+final class AdapterRegistry {
+
+	/** @var array<string,Adapter> */
+	private array $adapters = array();
+
+	/** @var array<string,string> Reason per product an adapter was refused. */
+	private array $refused = array();
+
+	public function add( Adapter $adapter ): bool {
+		$product = $adapter->product();
+		if ( ! in_array( $product, Validator::PRODUCTS, true ) || 'workflow-captain' === $product ) {
+			$this->refused[ $product ] = 'unknown_product';
+			return false;
+		}
+		if ( isset( $this->adapters[ $product ] ) ) {
+			$this->refused[ $product ] = 'already_registered';
+			return false;
+		}
+		if ( ! preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$/', $adapter->core_version() ) ) {
+			$this->refused[ $product ] = 'invalid_core_version';
+			return false;
+		}
+		$contract = $adapter->contract_version();
+		if ( null !== $contract && ! preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+$/', $contract ) ) {
+			$this->refused[ $product ] = 'invalid_contract_version';
+			return false;
+		}
+		$this->adapters[ $product ] = $adapter;
+		unset( $this->refused[ $product ] );
+		return true;
+	}
+
+	public function remove( string $product ): void {
+		unset( $this->adapters[ $product ] );
+	}
+
+	public function get( string $product ): ?Adapter {
+		return $this->adapters[ $product ] ?? null;
+	}
+
+	/** @return string[] Products with a registered adapter. */
+	public function products(): array {
+		return array_keys( $this->adapters );
+	}
+
+	/** @return array<string,string> */
+	public function refused(): array {
+		return $this->refused;
+	}
+}
