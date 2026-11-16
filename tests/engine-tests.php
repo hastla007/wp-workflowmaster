@@ -884,3 +884,38 @@ $wf_before = count( $e->store->list_workflows( 1000, 0 ) );
 $imported  = \WorkflowCaptain\Engine\Transfer::import( (string) file_get_contents( $tpl['einlass-hinweis']['file'] ), $e->workflows );
 check( 'WF-SET-02 templates: a template imports as a draft', $imported['ok'] && $wf_before + 1 === count( $e->store->list_workflows( 1000, 0 ) ) );
 check( 'WF-SET-02 help: four sections with text', 4 === count( \WorkflowCaptain\Admin\HelpPage::sections() ) );
+
+// ----- WF-CORE-02: run snapshot holds the contract version of each provider
+final class PassWriteAction implements \WorkflowCaptain\Engine\Action {
+	public int $runs = 0;
+	public function key(): string { return 'pass.test_write'; }
+	public function label(): string { return 'test'; }
+	public function capability(): ?string { return null; }
+	public function idempotent(): bool { return true; }
+	public function validate_config( array $config ): array { return array(); }
+	public function execute( \WorkflowCaptain\Engine\ActionContext $context ): array { ++$this->runs; return array( 'ok' => 1 ); }
+}
+$contracts_now = array( 'pass-captain' => '1.1.0', 'voucher-captain' => '1.0.0' );
+$contracts     = static function () use ( &$contracts_now ) { return $contracts_now; };
+$e             = engine_site();
+$pass_action   = new PassWriteAction();
+$e->actions->add( $pass_action );
+$e->workflows = new Workflows( $e->store, $e->actions, $e->dir, $e->clock, null, $contracts );
+$e->engine->set_provider_contracts( $contracts );
+$g             = sample_graph();
+$g['nodes'][3] = array( 'id' => 'tag', 'type' => 'action', 'action' => 'pass.test_write', 'config' => array() );
+check( 'WF-CORE-02 snapshot: trigger and action providers with their contract, core actions left out', array( 'pass-captain' => '1.1.0' ) === $e->workflows->provider_snapshot( $g ) );
+$wid = publish( $e, $g );
+$ver = $e->store->get_version( (int) $e->store->get_workflow( $wid )['published_version_id'] );
+check( 'WF-CORE-02 snapshot: stored in the published version', array( 'pass-captain' => '1.1.0' ) === ( $ver['graph']['providers'] ?? null ) );
+$contracts_now['pass-captain'] = '1.4.0';
+$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'minor', array( 'checkin_source' => 'scanner' ) ) );
+drain( $e );
+check( 'WF-CORE-02 a MINOR change of the provider keeps the run going', 1 === $pass_action->runs );
+$contracts_now['pass-captain'] = '2.0.0';
+$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'major', array( 'checkin_source' => 'scanner' ) ) );
+drain( $e );
+$paused = $e->store->find_runs( array( 'state' => \WorkflowCaptain\Engine\EngineStore::RUN_PAUSED ), 10, 0 );
+check( 'WF-CORE-02 a MAJOR change pauses the run before the provider action, with a reason', 1 === $pass_action->runs && 1 === count( $paused ) && 'provider_contract_changed' === $paused[0]['last_error'] );
+unset( $contracts_now['pass-captain'] );
+check( 'WF-CORE-02 helper: product of a prefix, connectors included', 'woocommerce' === \WorkflowCaptain\Envelope\Validator::product_for_prefix( 'woocommerce' ) && 'starter-connector' === \WorkflowCaptain\Envelope\Validator::product_for_prefix( 'xstarterconnector', array( 'starter-connector' ) ) && null === \WorkflowCaptain\Envelope\Validator::product_for_prefix( 'workflow' ) );

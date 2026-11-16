@@ -22,8 +22,42 @@ final class Workflows {
 	/** @var callable():string[]|null Event types offered by registered adapters; null = not checked (tests). */
 	private $available_types;
 
-	public function __construct( private EngineStore $store, private ActionRegistry $actions, private Directory $directory, private Clock $clock, ?callable $available_types = null ) {
+	/** @var callable():array<string,?string>|null Contract version per registered provider (WF-CORE-02). */
+	private $contracts;
+
+	public function __construct( private EngineStore $store, private ActionRegistry $actions, private Directory $directory, private Clock $clock, ?callable $available_types = null, ?callable $contracts = null ) {
 		$this->available_types = $available_types;
+		$this->contracts       = $contracts;
+	}
+
+	/**
+	 * Providers a graph depends on (trigger prefix, action prefixes) with their current contract version. Stored in
+	 * the published version as "providers"; the engine pauses a run when a provider's MAJOR changes (WF-CORE-02).
+	 *
+	 * @return array<string,?string>
+	 */
+	public function provider_snapshot( array $graph ): array {
+		if ( null === $this->contracts ) {
+			return array();
+		}
+		$current  = (array) ( $this->contracts )();
+		$prefixes = array();
+		$trigger  = Graph::trigger( $graph );
+		if ( null !== $trigger ) {
+			$prefixes[] = (string) strstr( (string) ( $trigger['event'] ?? '' ) . '.', '.', true );
+		}
+		foreach ( Graph::action_keys( $graph ) as $key ) {
+			$prefixes[] = (string) strstr( $key . '.', '.', true );
+		}
+		$out = array();
+		foreach ( array_unique( $prefixes ) as $prefix ) {
+			$product = \WorkflowCaptain\Envelope\Validator::product_for_prefix( $prefix, array_keys( $current ) );
+			if ( null !== $product && array_key_exists( $product, $current ) ) {
+				$out[ $product ] = $current[ $product ];
+			}
+		}
+		ksort( $out );
+		return $out;
 	}
 
 	/**
@@ -90,6 +124,7 @@ final class Workflows {
 			return $v;
 		}
 		$trigger = Graph::trigger( $graph );
+		$graph['providers'] = $this->provider_snapshot( $graph );
 		$this->store->add_version( $id, $graph, (string) $trigger['event'], $user_id, $this->clock->mysql() );
 		return array();
 	}

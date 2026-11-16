@@ -32,6 +32,37 @@ final class Validator {
 		return 'x' . str_replace( '-', '', $key );
 	}
 
+	/** Type prefixes of the products (R-4.1). */
+	const PREFIX_PRODUCT = array(
+		'voucher'     => 'voucher-captain',
+		'pass'        => 'pass-captain',
+		'affiliate'   => 'affiliate-captain',
+		'license'     => 'wp-license',
+		'form'        => 'form-captain',
+		'review'      => 'review-captain',
+		'course'      => 'course-captain',
+		'wordpress'   => 'wordpress',
+		'woocommerce' => 'woocommerce',
+	);
+
+	/**
+	 * Product that owns a type prefix or action prefix ("pass", "xstarterconnector"); null for the core itself
+	 * ("workflow", "notify") or an unknown connector.
+	 *
+	 * @param string[] $connectors Known connector keys.
+	 */
+	public static function product_for_prefix( string $prefix, array $connectors = array() ): ?string {
+		if ( isset( self::PREFIX_PRODUCT[ $prefix ] ) ) {
+			return self::PREFIX_PRODUCT[ $prefix ];
+		}
+		foreach ( $connectors as $key ) {
+			if ( self::is_connector( $key ) && self::connector_prefix( $key ) === $prefix ) {
+				return $key;
+			}
+		}
+		return null;
+	}
+
 	/** Whether a product key names an own connector rather than a Captain product, WordPress or WooCommerce. */
 	public static function is_connector( string $product ): bool {
 		return ! in_array( $product, self::PRODUCTS, true ) && 1 === preg_match( self::CONNECTOR_KEY, $product ) && strlen( self::connector_prefix( $product ) ) <= 40;

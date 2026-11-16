@@ -57,6 +57,32 @@ final class Engine implements Dispatcher {
 		}
 	}
 
+	/** @var callable():array<string,?string>|null */
+	private $contracts = null;
+
+	/** Current contract version per registered provider, for the run snapshot check (WF-CORE-02). */
+	public function set_provider_contracts( callable $contracts ): void {
+		$this->contracts = $contracts;
+	}
+
+	/** Whether the provider of an action still has the MAJOR the version was published with. */
+	private function provider_compatible( array $version, string $action_key ): bool {
+		$snapshot = (array) ( $version['graph']['providers'] ?? array() );
+		if ( null === $this->contracts || array() === $snapshot ) {
+			return true;
+		}
+		$product = \WorkflowCaptain\Envelope\Validator::product_for_prefix( (string) strstr( $action_key . '.', '.', true ), array_keys( $snapshot ) );
+		if ( null === $product || ! array_key_exists( $product, $snapshot ) ) {
+			return true;
+		}
+		$current = (array) ( $this->contracts )();
+		if ( ! array_key_exists( $product, $current ) ) {
+			return false;
+		}
+		$major = static fn( $v ) => null === $v ? null : (int) $v;
+		return $major( $snapshot[ $product ] ) === $major( $current[ $product ] );
+	}
+
 	public function set_paused( bool $paused ): void {
 		$this->paused = $paused;
 	}
@@ -283,6 +309,11 @@ final class Engine implements Dispatcher {
 		if ( null === $action ) {
 			// Provider or action gone: pause safely, never switch to another action (WF-CORE-02).
 			$this->stop( $step, $owner, $run, EngineStore::STEP_PAUSED, EngineStore::RUN_PAUSED, 'action_unavailable', $attempts );
+			return;
+		}
+		if ( ! $this->provider_compatible( $version, (string) $node['action'] ) ) {
+			// The provider of this action changed its MAJOR since publishing (or is gone): never run on a new contract.
+			$this->stop( $step, $owner, $run, EngineStore::STEP_PAUSED, EngineStore::RUN_PAUSED, 'provider_contract_changed', $attempts );
 			return;
 		}
 		$authorized_by = (int) $version['authorized_by_user_id'];

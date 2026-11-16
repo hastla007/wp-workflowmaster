@@ -147,6 +147,7 @@ final class Plugin {
 			do_action( 'workflow_captain_actions_v1', $actions );
 			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, wp_timezone_string(), Settings::engine_limits( Settings::get() ) );
 			$this->engine->set_paused( EmergencyPause::active() );
+			$this->engine->set_provider_contracts( array( $this, 'provider_contracts' ) );
 		}
 		return $this->engine;
 	}
@@ -157,7 +158,16 @@ final class Plugin {
 
 	public function workflows(): \WorkflowCaptain\Engine\Workflows {
 		$engine = $this->engine();
-		return new \WorkflowCaptain\Engine\Workflows( $engine->store(), $engine->actions(), new \WorkflowCaptain\Engine\WpDirectory(), new Clock(), array( $this, 'available_event_types' ) );
+		return new \WorkflowCaptain\Engine\Workflows( $engine->store(), $engine->actions(), new \WorkflowCaptain\Engine\WpDirectory(), new Clock(), array( $this, 'available_event_types' ), array( $this, 'provider_contracts' ) );
+	}
+
+	/** @return array<string,?string> Contract version per registered provider (WF-CORE-02). */
+	public function provider_contracts(): array {
+		$out = array();
+		foreach ( $this->adapters->products() as $product ) {
+			$out[ $product ] = $this->adapters->get( $product )?->contract_version();
+		}
+		return $out;
 	}
 
 	/** @return string[] Event types the registered adapters deliver. */
