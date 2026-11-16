@@ -67,4 +67,14 @@ Ein Adapter, der gegen `main` dieser Kerne läuft, meldet sich nach R-3.3 und R-
 
 ## Laufzeitumgebung
 
-Die Matrix für WordPress, PHP, WooCommerce (HPOS, Classic, Checkout Blocks), Action Scheduler und Multisite ist WF-INT-16 und folgt, sobald es Code gibt.
+Geprüft auf echten Installationen (WF-INT-16; Einzelheiten in [`E2E-RESULTS.md`](E2E-RESULTS.md)). `readme.txt`: „Requires at least: 6.4“, „Tested up to: 7.1“, „Requires PHP: 8.1“.
+
+| WordPress | WooCommerce | Yoast SEO | PHP | Datenbank | Bestellungen | Checkout | Multisite | Herkunft der Pakete | Ergebnis |
+|---|---|---|---|---|---|---|---|---|---|
+| 7.1.4 | 11.3.0 | 28.8 (mit JS) | 8.3.6 | MariaDB 10.11 | HPOS und klassisch | Checkout-Block (Überweisung, Nachnahme, Gratisbestellung) und Shortcode | Unterverzeichnisse, Netzwerkaktivierung, neue und gelöschte Website, Pro netzwerkweit | wordpress.org, Workflow Captain als Release-ZIP | alle Läufe bestanden (908 von 910; offen nur die Lizenzseite von Pro im Netzwerk-Admin) |
+| 6.9.11 | 9.9.5 | 28.7 (ohne JS-Build) | 8.3.6 | MariaDB 10.11 | HPOS und klassisch | nur CRUD-API (kein JS-Build) | wie oben | Git-Quellen | bestanden (erster bis dritter Lauf) |
+| 6.4.5 | 8.9.0 | – | 8.3.6 | MariaDB 10.11 | HPOS und klassisch | nur CRUD-API | – | wordpress.org, Release-ZIP | Aktivierung, Provider, Bestellabläufe, Admin-Seiten bestanden (Mindestversionen) |
+
+Action Scheduler (aus WooCommerce) und System-Cron (`wp workflow-captain process`, `DISABLE_WP_CRON`) sind auf allen drei Ständen geprüft. Nicht geprüft: PHP 8.1/8.2/8.4/8.5 (nur 8.3 im Prüfcontainer; die Workflows der Schwester-Plugins nutzen 8.1–8.5), MySQL, Subdomain-Multisite.
+
+Hinweise aus dem Checkout-Test: `woocommerce.order.paid` hängt an `woocommerce_payment_complete`; Überweisung und Nachnahme lösen es in WooCommerce nie aus (auch nicht beim manuellen Wechsel auf „In Bearbeitung“), Workflows für diese Zahlarten nutzen den Statuswechsel. Der Block-Checkout erzeugt zusätzlich einen Statuswechsel `checkout-draft` → `pending`, der beim Gegenlesen verworfen wird (R-7.4).

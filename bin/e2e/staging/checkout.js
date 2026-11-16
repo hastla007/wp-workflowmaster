@@ -139,6 +139,9 @@ async function adminProcessing( browser, id ) {
 	// 1. Checkout block, bank transfer: on-hold; the manager marks it received (processing). No payment_complete().
 	st( 'co_mode', 'blocks' );
 	const o1 = await blockOrder( browser, state.product, 'bacs', '', 'bacs' );
+	// The worker runs before the manager acts (system cron every minute; the transfer arrives days later). Without
+	// this pass the "on-hold" event is discarded on re-read when the status changes first (R-7.4, finding 3).
+	wp( 'workflow-captain', 'process' );
 	const a1 = await adminProcessing( browser, o1 );
 	check( 'co-blocks-bacs-0', 'Checkout block, bank transfer: order placed (order-received page), manager sets "processing" on the order screen', !! o1 && a1.saved, { order: o1, ...a1 } );
 	st( 'co_check', o1, 'blocks-bacs', 'bacs', 'store-api', 'on-hold,processing', 0 );

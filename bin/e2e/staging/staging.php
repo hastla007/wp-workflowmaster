@@ -157,7 +157,12 @@ switch ( $st_section ) {
 		}
 		e2e_check( "co-{$label}-2", "{$label}: events " . implode( ', ', $want ) . ' (each once)', array() === $missing && count( $extra ) === count( $extra_ok ) && count( $types ) === count( array_unique( $types ) ), array( 'events' => $types, 'discarded_on_reread' => $extra_ok ) );
 		e2e_check( "co-{$label}-3", "{$label}: order.created envelope valid, with status, items, total and channel of the placed order, no customer data", $env && \WorkflowCaptain\Envelope\Validator::is_valid( $env ) && (int) $env['data']['item_count'] >= 1 && (int) round( (float) $order->get_total() * 100 ) === (int) $env['data']['total_minor'] && $via === $env['data']['created_via'], $env['data'] ?? array() );
-		$bad = array_values( array_filter( $events, static fn( $e ) => 'done' !== $e['state'] && ! ( 'discarded' === $e['state'] && 'reread_mismatch' === $e['last_error'] && in_array( 'woocommerce.order.status_changed:pending', $extra_ok, true ) ) ) );
+		$bad = array();
+		foreach ( $events as $i => $e ) {
+			if ( 'done' !== $e['state'] && ! ( 'woocommerce.order.status_changed:pending' === $types[ $i ] && 'discarded' === $e['state'] && 'reread_mismatch' === $e['last_error'] ) ) {
+				$bad[] = $e;
+			}
+		}
 		e2e_check( "co-{$label}-4", "{$label}: every expected event processed to done", array() === $bad, array_map( static fn( $e ) => $e['type'] . ' ' . $e['state'] . ' ' . $e['last_error'], $bad ) );
 		$runs = st_order_runs( $state['workflows'], (string) $oid );
 		$ok   = array( 'succeeded' ) === $runs['created'] && count( $runs['status'] ) === count( array_filter( explode( ',', $statuses ) ) ) && ! in_array( false, array_map( static fn( $s ) => 'succeeded' === $s, $runs['status'] ), true ) && ( $paid ? array( 'succeeded' ) === $runs['paid'] : array() === $runs['paid'] );
