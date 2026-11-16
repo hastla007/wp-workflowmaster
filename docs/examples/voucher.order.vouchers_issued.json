@@ -1,0 +1,28 @@
+{
+  "id": "e66374bd-b078-4fc7-82b5-c7e7664a62eb",
+  "type": "voucher.order.vouchers_issued",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T10:24:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "9031",
+    "id_kind": "record"
+  },
+  "data": {
+    "order_id": 9031,
+    "voucher_count": 3,
+    "background": false
+  },
+  "idempotency_key": "140f80853ddece24975903b6ef3a4aae48861c19c4eca17112fa54676ba83589",
+  "correlation_id": "e66374bd-b078-4fc7-82b5-c7e7664a62eb",
+  "causation_id": null,
+  "chain_depth": 0
+}

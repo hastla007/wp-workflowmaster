@@ -1,0 +1,31 @@
+{
+  "id": "13da8037-2b40-46b9-9aec-f08479c72cb8",
+  "type": "voucher.store_credit.changed",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T12:48:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "store_credit",
+    "id": "512",
+    "id_kind": "record"
+  },
+  "actor_user_id": 512,
+  "data": {
+    "amount_minor": -1500,
+    "balance_minor": 3500,
+    "currency": "EUR",
+    "credit_event": "debit",
+    "order_id": 9051
+  },
+  "idempotency_key": "58496d8fd273abed7cd5fa8dcc6bc36de1a4438261dcf1d181f2d3e08e324c62",
+  "correlation_id": "13da8037-2b40-46b9-9aec-f08479c72cb8",
+  "causation_id": null,
+  "chain_depth": 0
+}

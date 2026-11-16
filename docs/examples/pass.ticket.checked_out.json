@@ -1,0 +1,32 @@
+{
+  "id": "8363d3b9-9601-4b03-9040-6ee84b437141",
+  "type": "pass.ticket.checked_out",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T09:49:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "ticket",
+    "id": "83f1535f99ab0bf4e9d02dfd85d3e3f7",
+    "id_kind": "public"
+  },
+  "actor_user_id": 17,
+  "data": {
+    "checkin_source": "scanner",
+    "device_id": 4,
+    "area_id": 0,
+    "occurrence_id": 311,
+    "event_id": 42,
+    "ticket_type_id": 7
+  },
+  "idempotency_key": "53d8294060c297200a171f1903701e91ab36033b08f74cab783f76d3ce05f137",
+  "correlation_id": "8363d3b9-9601-4b03-9040-6ee84b437141",
+  "causation_id": null,
+  "chain_depth": 0
+}

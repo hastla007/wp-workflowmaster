@@ -1,0 +1,31 @@
+{
+  "id": "849c27e6-fea3-484a-96bc-abe2302d4554",
+  "type": "pass.invoice.created",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T09:17:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "invoice",
+    "id": "2207",
+    "id_kind": "record"
+  },
+  "data": {
+    "document_type": "invoice",
+    "document_number": "RE-2026-002207",
+    "order_id": 1204,
+    "currency": "EUR",
+    "total_minor": 4800,
+    "tax_minor": 766
+  },
+  "idempotency_key": "fbfbf105bb05b4600385c2ee204905b33954a74eb4bc4c0d167e168fd58b578f",
+  "correlation_id": "849c27e6-fea3-484a-96bc-abe2302d4554",
+  "causation_id": null,
+  "chain_depth": 0
+}

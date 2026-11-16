@@ -1,0 +1,26 @@
+{
+  "id": "7e908e28-3f2c-4dc9-86e2-cbd27b3fc1ad",
+  "type": "voucher.voucher.delivery_failed",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T10:38:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "voucher",
+    "id": "4823",
+    "id_kind": "record"
+  },
+  "data": {
+    "failures": 5
+  },
+  "idempotency_key": "f11a37bb7a0863ad42844710417679e19ff5babbfce56fb8e4cd3d4206403746",
+  "correlation_id": "7e908e28-3f2c-4dc9-86e2-cbd27b3fc1ad",
+  "causation_id": null,
+  "chain_depth": 0
+}

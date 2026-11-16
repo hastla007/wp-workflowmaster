@@ -1,0 +1,30 @@
+{
+  "id": "9b25160c-5090-4457-aa38-6c8a4d7a841a",
+  "type": "voucher.voucher.reactivated",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T11:41:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "voucher",
+    "id": "4830",
+    "id_kind": "record"
+  },
+  "actor_user_id": 233,
+  "data": {
+    "balance_minor": 5000,
+    "currency": "EUR",
+    "order_id": 9040,
+    "change_source": "admin"
+  },
+  "idempotency_key": "473fc3b9958688bcff72220dc600247732d39140801a4dbb453560bea17a16ce",
+  "correlation_id": "9b25160c-5090-4457-aa38-6c8a4d7a841a",
+  "causation_id": null,
+  "chain_depth": 0
+}

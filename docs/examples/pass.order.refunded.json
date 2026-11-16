@@ -1,0 +1,32 @@
+{
+  "id": "dfb33926-b38a-49fe-a43a-e72ae5450662",
+  "type": "pass.order.refunded",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T08:14:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "417c4fa3b4135a6c64e05f8d35f71648",
+    "id_kind": "public"
+  },
+  "data": {
+    "status": "refunded",
+    "payment_status": "refunded",
+    "currency": "EUR",
+    "total_minor": 4800,
+    "refunded_minor": 4800,
+    "reason_class": "refund",
+    "refund_id": 88
+  },
+  "idempotency_key": "2f760e097f9f5c41e0b582794290ab38489dde270c854be69cb52cf8d6fa6fdf",
+  "correlation_id": "dfb33926-b38a-49fe-a43a-e72ae5450662",
+  "causation_id": null,
+  "chain_depth": 0
+}

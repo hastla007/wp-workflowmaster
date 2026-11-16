@@ -116,11 +116,11 @@ Die drei vorhandenen Kerne erfüllen R-3.1. Für Review Captain, Course Captain 
 | Provider | Tabelle | Test |
 |---|---|---|
 | Voucher Captain | `VC:docs/HOOKS.md` (220 Hooks, Spalte „Since“, aus dem Code erzeugt, `VC:docs/HOOKS.md:3-9`) | CI prüft mit `php bin/hooks.php --check` (`VC:docs/HOOKS.md:4`) |
-| Pass Captain | `PC:docs/EXTENSIONS.md:52` ff. für die 54 versionierten Punkte (`wp_pass_captain_*_v1`). Für die `wpcap_*`-Actions des Katalogs unten gibt es **keine** Angabe je Hook | `PC:tests/integration/modules/zzzzzzzz_r16_contract.php` (`PC:docs/EXTENSIONS.md:49-50`) |
+| Pass Captain | `PC:docs/EXTENSIONS.md:52` ff. für die 54 versionierten Punkte (`wp_pass_captain_*_v1`). Für die `wpcap_*`-Actions des Katalogs unten gibt es **keine** Angabe je Hook; ermittelt am 16.11.2026 aus dem Git-Verlauf und in 4.2 eingetragen (Z-01), im Kern nachzutragen | `PC:tests/integration/modules/zzzzzzzz_r16_contract.php` (`PC:docs/EXTENSIONS.md:49-50`) |
 | Affiliate Captain | keine Tabelle; „seit“ steht im Fließtext und im Änderungsabsatz (`AC:docs/CONTRACT.md:7`) | zu prüfen |
 | Lizenzserver | `LIC:docs/EXTENSION-POINTS.md` (36 Actions und 94 Filter, zusammen 130 Zeilen; ohne „seit“) | `tests/Contract/ExtensionPointsDocTest.php` (`LIC:docs/EXTENSION-POINTS.md:3`) |
 
-Lücken gegenüber R-3.4: „seit“ je `wpcap_*`-Action in Pass Captain, eine Tabelle in Affiliate Captain, „seit“ im Lizenzserver.
+Lücken gegenüber R-3.4: „seit“ je `wpcap_*`-Action in Pass Captain (Werte in 4.2 ermittelt, im Kern noch nicht eingetragen), eine Tabelle in Affiliate Captain, „seit“ im Lizenzserver.
 
 ### 3.3 Abkündigung
 
@@ -157,23 +157,23 @@ Lesehilfe für die Tabellen: „Argumente heute“ ist die Signatur der PHP-Acti
 
 ### 4.2 Pass Captain (`source.product` = `pass-captain`, 13 Ereignisse)
 
-Alle Actions übergeben interne Datenbank-IDs; öffentliche IDs (`public_id`) lädt der Empfänger über die Klassen des Kerns (`PC:docs/SUITE-EVENTS.md:24-25`). „Seit“ ist für die `wpcap_*`-Actions nirgends je Hook ausgewiesen (zu prüfen); sie gehören zum Vertrag 1.0.0 oder 1.1.0.
+Alle Actions übergeben interne Datenbank-IDs; öffentliche IDs (`public_id`) lädt der Empfänger über die Klassen des Kerns (`PC:docs/SUITE-EVENTS.md:24-25`). „Seit“ ist für die `wpcap_*`-Actions im Kern nirgends je Hook ausgewiesen; die Spalte unten ist am 16.11.2026 aus dem Git-Verlauf und den Release-Tags ermittelt (Z-01): erste Plugin-Version, in der die Action vorkommt, und Vertragsversion nach der Regel in `PC:docs/EXTENSIONS.md:29-41` (Vertrag 1.0.0 = Plugin bis 1.4.0, Vertrag 1.1.0 = Plugin 1.5.0). Gelesen an `dd32087` (Nachfolger von `bca8d85a`, nur `TODO.md` geändert). Der Stand auf `main` (Plugin 1.4.0) hat weder `WPCAP_CONTRACT_VERSION` noch `wpcap_event_cancelled` noch `wp_pass_captain_invoice_created_v1`.
 
 | Suite-Ereignis | PHP-Action | Seit | Argumente heute | Nicht weiterreichen | Nach Commit |
 |---|---|---|---|---|---|
-| `pass.order.paid` | `wpcap_order_paid` | zu prüfen | `int $order_id` | – | ja (`PC:src/Orders.php:1346-1348`; kostenlose Bestellung `:410`, `:456`) |
-| `pass.order.cancelled` | `wpcap_order_cancelled` | zu prüfen | `int $order_id, string $reason, string $previous_payment_status`; beim Ablauf einer Reservierung nur `$order_id` | `$reason` (Freitext möglich, zu prüfen) | ja (`PC:src/Orders.php:1440-1445`); Ablauf einer Reservierung `:1805` zu prüfen |
-| `pass.order.refunded` | `wpcap_order_refunded` | zu prüfen | `int $order_id, string $reason` | `$reason` | ja (`PC:src/Orders.php:1501-1506`) |
-| `pass.order.tickets_issued` | `wpcap_tickets_issued` | zu prüfen | `int $order_id, int $count` | – | ja (`PC:src/Orders.php:2044-2046`) |
-| `pass.refund.completed` | `wpcap_refund_completed` | zu prüfen | `int $refund_id, int $order_id` | – | ja (`PC:src/Refunds.php:344-357`, `:671-681`) |
-| `pass.refund.rejected` | `wpcap_refund_rejected` | zu prüfen | `int $refund_id, int $order_id` | – | zu prüfen (`PC:src/Refunds.php:160`) |
-| `pass.ticket.revoked` | `wpcap_ticket_revoked` | zu prüfen | `int $ticket_id, string $reason` | `$reason`, soweit kein fester Schlüssel | zu prüfen (`PC:src/Orders.php:702`, `PC:src/Admin/TicketsPage.php:56`) |
-| `pass.ticket.checked_in` | `wpcap_ticket_checked_in` | zu prüfen | `int $ticket_id, array $context` (`source`, `device_id`, `area_id`, `idempotency_key`) | alle weiteren Schlüssel von `$context` | ja (`PC:src/Checkin.php:191-193`, `:252-259`) |
-| `pass.ticket.checked_out` | `wpcap_ticket_checked_out` | zu prüfen | `int $ticket_id, array $context` | wie oben | ja (`PC:src/Checkin.php:308-310`) |
-| `pass.occurrence.rescheduled` | `wpcap_occurrence_rescheduled` | zu prüfen | `int $occurrence_id, string $old_starts_at, string $new_starts_at` (UTC) | – | zu prüfen (`PC:src/Admin/EventsPage.php:212`) |
-| `pass.occurrence.cancelled` | `wpcap_occurrence_cancelled` | zu prüfen | `int $occurrence_id, int $issued` | – | bei Event-Absage ja (`PC:src/Orders.php:1672-1680`); Admin-Absage eines Termins zu prüfen (`PC:src/Admin/EventsPage.php:218`, `:245`) |
-| `pass.event.cancelled` | `wpcap_event_cancelled` | zu prüfen | `int $event_id` | – | ja (`PC:src/Orders.php:1672-1720`) |
-| `pass.invoice.created` | `wp_pass_captain_invoice_created_v1` | 1.5.0 (`PC:docs/EXTENSIONS.md:75`) | `int $id, string $type, array $context` | `$context` bis auf IDs und Belegnummer | ja laut `PC:docs/SUITE-EVENTS.md:44`; am Code zu prüfen (`PC:src/Api/Invoices.php:107`) |
+| `pass.order.paid` | `wpcap_order_paid` | 0.9.0 / 1.0.0 | `int $order_id` | – | ja (`PC:src/Orders.php:1346-1348`; kostenlose Bestellung `:410`, `:456`) |
+| `pass.order.cancelled` | `wpcap_order_cancelled` | 0.9.0 / 1.0.0 mit nur `$order_id`; die drei Argumente seit 1.5.0 / 1.1.0 (`b6ef0b4`, nicht im CHANGELOG) | `int $order_id, string $reason, string $previous_payment_status`; beim Ablauf einer Reservierung nur `$order_id` | `$reason` (Freitext, Z-03) | ja (`PC:src/Orders.php:1440-1445`); Ablauf einer Reservierung ja, nach dem COMMIT von `expire_order()` (`:1853`, `:1805`); der Status ist dann `expired`, nicht `cancelled`, und `$reason` fehlt |
+| `pass.order.refunded` | `wpcap_order_refunded` | 0.9.0 / 1.0.0 | `int $order_id, string $reason` | `$reason` (fester Schlüssel mit Datensatznummern und Anbieterteilen, Z-03) | ja (`PC:src/Orders.php:1501-1506`) |
+| `pass.order.tickets_issued` | `wpcap_tickets_issued` | 0.9.0 / 1.0.0 | `int $order_id, int $count` | – | ja (`PC:src/Orders.php:2044-2046`) |
+| `pass.refund.completed` | `wpcap_refund_completed` | 0.9.0 / 1.0.0 | `int $refund_id, int $order_id` | – | ja (`PC:src/Refunds.php:344-357`, `:671-681`) |
+| `pass.refund.rejected` | `wpcap_refund_rejected` | 0.9.0 / 1.0.0 | `int $refund_id, int $order_id` | Grund und Fehlermeldung der Erstattung (Freitext, `PC:src/Refunds.php:106`, `:155`) | ja: einzelnes UPDATE im Autocommit, Action nur bei Erfolg (`PC:src/Refunds.php:150-161`) |
+| `pass.ticket.revoked` | `wpcap_ticket_revoked` | 0.9.0 / 1.0.0 | `int $ticket_id, string $reason` | `$reason` (Freitext im Admin, Z-03) | ja: alle Wege nach COMMIT oder im Autocommit (`PC:src/Admin/TicketsPage.php:53-56`, `PC:src/Orders.php:701-703` und Aufrufer) |
+| `pass.ticket.checked_in` | `wpcap_ticket_checked_in` | 0.9.0 / 1.0.0 | `int $ticket_id, array $context` (`source`, `device_id`, `area_id`, `idempotency_key`) | alle weiteren Schlüssel von `$context` | ja (`PC:src/Checkin.php:191-193`, `:252-259`) |
+| `pass.ticket.checked_out` | `wpcap_ticket_checked_out` | 0.9.0 / 1.0.0 | `int $ticket_id, array $context` | wie oben | ja (`PC:src/Checkin.php:308-310`) |
+| `pass.occurrence.rescheduled` | `wpcap_occurrence_rescheduled` | 0.9.0 / 1.0.0 | `int $occurrence_id, string $old_starts_at, string $new_starts_at` (UTC) | `location` (Freitext) | ja, UPDATE im Autocommit; **das Ergebnis des UPDATE wird nicht geprüft**, die Action feuert auch bei einem Fehlschlag (`PC:src/Admin/EventsPage.php:207-212`). Gegenlesen nach R-7.4 |
+| `pass.occurrence.cancelled` | `wpcap_occurrence_cancelled` | 0.9.0 / 1.0.0 | `int $occurrence_id, int $issued` | – | bei Event-Absage ja (`PC:src/Orders.php:1672-1680`); Admin-Absage eines Termins im Autocommit, Ergebnis des UPDATE ungeprüft (`PC:src/Admin/EventsPage.php:207-218`, `:242-245`); Gegenlesen nach R-7.4 |
+| `pass.event.cancelled` | `wpcap_event_cancelled` | 1.5.0 / 1.1.0 | `int $event_id` | – | ja (`PC:src/Orders.php:1672-1720`) |
+| `pass.invoice.created` | `wp_pass_captain_invoice_created_v1` | 1.5.0 / 1.1.0 (`PC:docs/EXTENSIONS.md:75`) | `int $id, string $type, array $context` | `$context` bis auf IDs und Belegnummer | ja, für alle drei Belegarten nach COMMIT (`PC:src/Api/Invoices.php:88-90`, `:146-150`, `PC:src/Partners/Settlements.php:493-495`) |
 
 **Ausdrücklich kein Suite-Ereignis** (Action enthält einen Code oder personenbezogene Daten, oder feuert innerhalb der Transaktion; `PC:docs/SUITE-EVENTS.md:34-46`):
 
@@ -187,7 +187,27 @@ Alle Actions übergeben interne Datenbank-IDs; öffentliche IDs (`public_id`) l�
 
 Es gibt kein Ereignis „Teilnahme bestätigt“ oder „Termin beendet“ (`PC:docs/SUITE-EVENTS.md:48-49`). Der Nachweis für eine Review-Einladung ist `pass.ticket.checked_in` (D7).
 
-`subject`: Bestellung und Ticket mit `public_id` (`id_kind` = `public`). Für Erstattung, Termin, Event und Beleg ist zu prüfen, ob es eine öffentliche ID gibt; sonst `id_kind` = `record` (F-02).
+`subject`: Bestellung und Ticket mit `public_id` (`id_kind` = `public`): 32 Kleinbuchstaben-Hex aus `bin2hex(random_bytes(16))` (`PC:src/Orders.php:330`, `:1995`), eindeutig je Tabelle (`PC:src/Installer.php:120`, `:148`, `:189`, `:199`). Die `public_id` einer Bestellung allein gewährt keinen Zugriff; dafür braucht es zusätzlich ein Zugangstoken (`PC:src/Rest/Controller.php:455-461`). Erstattung, Termin, Event und Beleg haben keine `public_id` (Z-04, geprüft 16.11.2026): `id_kind` = `record` mit `refund_id`, `occurrence_id`, `event_id` (der `slug` ist öffentlich, aber änderbar) und der Belegnummer des jeweiligen Typs (`subject.type` = `invoice`, `credit_note` oder `settlement`).
+
+`$reason` (Z-03, geprüft 16.11.2026) ist bei `wpcap_order_cancelled` und `wpcap_ticket_revoked` Freitext, wenn er aus dem Admin kommt (`PC:src/Admin/OrdersPage.php:69`, `PC:src/Admin/TicketsPage.php:40`), und bei `wpcap_order_cancelled` ein beliebiger Text eines anderen Plugins über `wp_pass_captain_ticket_service_v1` (`PC:src/Integrations/Vouchers/TicketService.php:171`). Sonst sind es feste Schlüssel, oft mit Datensatznummern oder Anbieterteilen (`native_refund_{id}`, `{provider}_payment_failed`). Der Adapter bildet daraus nach dem Präfix einen festen Wert `reason_class`: `admin`, `refund`, `order_cancelled`, `occurrence_cancelled`, `event_cancelled`, `privacy_erasure`, `service_booking`, `woocommerce`, `payment_failed`, `expired`, `voucher`, `pos`, sonst `other`. Der Rohwert wird nie weitergereicht.
+
+**Erlaubte Felder in `data` und Bedeutung von `actor_user_id` (WF-SPEC-03, 16.11.2026).** Positivliste nach R-5.2; Beträge als `*_minor` mit `currency`; Zeitpunkte in RFC 3339 mit `Z`. Werte, die nicht in den Argumenten stehen, liest der Adapter über die Lesefunktionen (8.1). „nicht gesetzt“ heißt: Das Feld `actor_user_id` fehlt.
+
+| Suite-Ereignis | Erlaubte Felder in `data` | `actor_user_id` |
+|---|---|---|
+| `pass.order.paid` | `status`, `payment_status`, `payment_provider` (Schlüssel), `currency`, `total_minor`, `refunded_minor`, `ticket_count`, `customer_user_id` (wenn größer 0) | nicht gesetzt (Kunde, Personal oder Webhook je nach Weg) |
+| `pass.order.cancelled` | `status` (`cancelled` oder `expired`), `previous_payment_status`, `reason_class`, `currency`, `total_minor` | nicht gesetzt |
+| `pass.order.refunded` | `status`, `payment_status`, `currency`, `total_minor`, `refunded_minor`, `reason_class`, `refund_id` (wenn aus dem Schlüssel ablesbar) | nicht gesetzt |
+| `pass.order.tickets_issued` | `issued_count`, `currency`, `total_minor` | nicht gesetzt |
+| `pass.refund.completed` | `order_id`, `amount_minor`, `tax_minor`, `deducted_minor`, `currency`, `ticket_count`, `refund_source` (`native` oder Schlüssel des Anbieters) | nicht gesetzt |
+| `pass.refund.rejected` | `order_id`, `amount_minor`, `currency` | das Personal, das ablehnt (`approved_by`, `PC:src/Refunds.php:152-155`) |
+| `pass.ticket.revoked` | `order_id`, `ticket_type_id`, `occurrence_id`, `event_id`, `reason_class` | nur auf dem Weg über den Admin das Personal, sonst nicht gesetzt |
+| `pass.ticket.checked_in` | `checkin_source`, `device_id`, `area_id`, `occurrence_id`, `event_id`, `ticket_type_id`, `reentry` (Boolean) | das Personal am Scanner (`PC:src/Checkin.php:153`) |
+| `pass.ticket.checked_out` | wie `checked_in`, ohne `reentry` | das Personal am Scanner (`PC:src/Checkin.php:277`) |
+| `pass.occurrence.rescheduled` | `event_id`, `old_starts_at`, `new_starts_at`, `timezone`, `issued_tickets` | das Personal im Admin |
+| `pass.occurrence.cancelled` | `event_id`, `issued_tickets`, `starts_at`, `scope` (`occurrence` oder `event`) | das Personal im Admin |
+| `pass.event.cancelled` | `occurrence_count`, `revoked_tickets`, `cancelled_orders` (alle drei optional, nur wenn gelesen) | das Personal im Admin |
+| `pass.invoice.created` | `document_type` (`invoice`, `correction`, `settlement`), `document_number`, `order_id`, `invoice_id`, `refund_id`, `partner_id`, `period`, `currency`, `total_minor`, `tax_minor` | nicht gesetzt |
 
 ### 4.3 Voucher Captain (`source.product` = `voucher-captain`, 15 Actions, 16 Ereignisse)
 
@@ -197,23 +217,48 @@ Ein `Voucher`-Objekt enthält immer Code, Token sowie Daten von Käufer und Empf
 
 | Suite-Ereignis | PHP-Action | Seit | Argumente heute | Nicht weiterreichen | Nach Commit |
 |---|---|---|---|---|---|
-| `voucher.order.vouchers_issued` | `vcap_vouchers_issued` | 1.0.0 | `Voucher[] $created, WC_Order $order` | **beide Objekte.** Übrig: Bestell-ID, Anzahl; je Gutschein ein eigenes Ereignis ist nicht vorgesehen | zu prüfen (kein Vermerk; `VC:src/Issuer.php:282`, `:640`) |
-| `voucher.voucher.issued_standalone` | `vcap_voucher_issued_standalone` | 1.2.0 | `Voucher $voucher, array $args` | **`Voucher`-Objekt; aus `$args` Namen, E-Mail-Adressen, `message`, `code`** | zu prüfen (kein Vermerk; `VC:src/Issuer.php:1076`) |
-| `voucher.voucher.delivered` | `vcap_voucher_delivered` | 1.0.0 | `Voucher $voucher, string[] $addresses` | **`Voucher`-Objekt, alle Adressen** | zu prüfen (kein Vermerk) |
-| `voucher.voucher.delivery_failed` | `vcap_voucher_delivery_given_up` | 1.2.0 | `Voucher`, Zahl der Fehlversuche (`VC:README.md:119`) | **`Voucher`-Objekt** | zu prüfen |
-| `voucher.voucher.bounced` | `vcap_voucher_bounced` | 1.2.0 | `Voucher`, Rolle (`recipient`/`buyer`), Grund | **`Voucher`-Objekt**, Grund | zu prüfen |
+| `voucher.order.vouchers_issued` | `vcap_vouchers_issued` | 1.0.0 | `Voucher[] $created, WC_Order $order` | **beide Objekte.** Übrig: Bestell-ID, Anzahl; je Gutschein ein eigenes Ereignis ist nicht vorgesehen | kein Puffer bis COMMIT, aber auch keine eigene Transaktion: feuert nach Schreibvorgängen im Autocommit (geprüft 16.11.2026, Z-05). Gegenlesen nach R-7.4 bleibt (`VC:src/Issuer.php:282`, `:640`) |
+| `voucher.voucher.issued_standalone` | `vcap_voucher_issued_standalone` | 1.2.0 | `Voucher $voucher, array $args` | **`Voucher`-Objekt; aus `$args` Namen, E-Mail-Adressen, `message`, `code`** | kein Puffer bis COMMIT, aber auch keine eigene Transaktion: feuert nach Schreibvorgängen im Autocommit (geprüft 16.11.2026, Z-05). Gegenlesen nach R-7.4 bleibt (`VC:src/Issuer.php:1076`) |
+| `voucher.voucher.delivered` | `vcap_voucher_delivered` | 1.0.0 | `Voucher $voucher, string[] $addresses` | **`Voucher`-Objekt, alle Adressen** | kein Puffer bis COMMIT, aber auch keine eigene Transaktion: feuert nach Schreibvorgängen im Autocommit (geprüft 16.11.2026, Z-05). Gegenlesen nach R-7.4 bleibt; läuft unter einer MySQL-Sperre `GET_LOCK`, nicht in einer Transaktion (`VC:src/Delivery.php:404`, `:618`) |
+| `voucher.voucher.delivery_failed` | `vcap_voucher_delivery_given_up` | 1.2.0 | `Voucher`, Zahl der Fehlversuche (`VC:README.md:119`) | **`Voucher`-Objekt** | kein Puffer bis COMMIT, aber auch keine eigene Transaktion: feuert nach Schreibvorgängen im Autocommit (geprüft 16.11.2026, Z-05). Gegenlesen nach R-7.4 bleibt (`VC:src/Delivery.php:950`) |
+| `voucher.voucher.bounced` | `vcap_voucher_bounced` | 1.2.0 | `Voucher`, Rolle (`recipient`/`buyer`), Grund (Freitext des Mailsystems) | **`Voucher`-Objekt**, Grund | kein Puffer bis COMMIT, aber auch keine eigene Transaktion: feuert nach Schreibvorgängen im Autocommit (geprüft 16.11.2026, Z-05). Gegenlesen nach R-7.4 bleibt (`VC:src/Delivery.php:1047`) |
 | `voucher.voucher.redeemed` | `vcap_voucher_redeemed` | 1.1.0 | Array: `voucher_id`, `code`, `user_id`, `amount`, `currency`, `order_id`, `channel`, `committed_at`, `source`, `redemption_key`, `target`; am Schalter `till`, `receipt`; über die Einlöse-API `state`, `balance_after`, `expires_at`, `created_at`, `meta` (`VC:README.md:121`, `VC:src/VoucherRepository.php:776-795`) | **`code`**, `meta`, `receipt`, `till`, `target` | ja |
 | `voucher.redemption.reserved` | `vcap_redemption_reserved` | 1.1.0 | Array wie bei der Einlöse-API, mit `code` und `user_id` (`VC:README.md:122`) | **`code`**, `meta`, `target` | ja |
 | `voucher.redemption.released` | `vcap_redemption_released` | 1.1.0 | dasselbe Array, `bool $expired` | **`code`**, `meta`, `target` | ja |
 | `voucher.redemption.refunded` | `vcap_redemption_refunded` | 1.1.0 | dasselbe Array, zurückgebuchter Betrag | **`code`**, `meta`, `target` | ja |
-| `voucher.redemption.reversed` | `vcap_redemption_reversed` | 1.2.0 | Gutschein-ID, Journal-ID, Betrag, Grund (`VC:README.md:125`) | Grund | ja |
+| `voucher.redemption.reversed` | `vcap_redemption_reversed` | 1.2.0 | Gutschein-ID, Journal-ID, Betrag, Grund als Freitext (`VC:README.md:125`, `VC:src/Tickets.php:1417`) | Grund | ja |
 | `voucher.voucher.expired` | `vcap_voucher_expired` | 1.2.0 | `Voucher[]` je Stapel der täglichen Wartung | **alle Objekte.** Der Adapter erzeugt je Gutschein ein Ereignis mit der ID | ja |
-| `voucher.voucher.reissued` | `vcap_voucher_reissued` | 1.2.0 | `Voucher`, alter Code (`VC:README.md:128`) | **`Voucher`-Objekt, alter Code** | zu prüfen |
+| `voucher.voucher.reissued` | `vcap_voucher_reissued` | 1.2.0 | `Voucher`, alter Code (`VC:README.md:128`) | **`Voucher`-Objekt, alter Code** | kein Puffer bis COMMIT, aber auch keine eigene Transaktion: feuert nach Schreibvorgängen im Autocommit (geprüft 16.11.2026, Z-05). Gegenlesen nach R-7.4 bleibt (`VC:src/Reissue.php:157`) |
 | `voucher.voucher.voided`, `voucher.voucher.reactivated` | `vcap_voucher_event` mit Ereignis `voided` bzw. `reactivated` (`VC:README.md:126`, `:132`) | 1.0.0 | Gutschein-ID, Ereignis, Betrag, Restwert, Notiz als Text, Bestell-ID, Quelle, Benutzer-ID (die letzten beiden nur mit 8 angenommenen Argumenten, `VC:docs/HOOKS.md:50`) | Notiz. Alle anderen Journalereignisse DARF der Adapter nicht weiterreichen | ja |
 | `voucher.store_credit.changed` | `vcap_store_credit_changed` | 1.1.0 | Benutzer-ID, Betrag, Saldo, Ereignis, Grund, Bestell-ID | Grund | ja |
 | `voucher.gift_card.topped_up` | `vcap_gift_card_topped_up` | 1.2.0 | `Voucher $card, float $amount, WC_Order $order`, Bestellposition | **beide Objekte**, Bestellposition | ja |
 
-Nicht im Katalog: `vcap_voucher_created`, `vcap_voucher_updated`, `vcap_voucher_deleted` (Zwischenzustände der Ausstellung; ein angelegter Gutschein kann wieder entfernt werden, `VC:docs/HOOKS.md:45-46`), `vcap_card_moved_to_credit`, `vcap_ticket_checked_in` (ohne Beschreibung, `VC:docs/HOOKS.md:40`) und alle Actions der Oberfläche.
+Nicht im Katalog: `vcap_voucher_created`, `vcap_voucher_updated`, `vcap_voucher_deleted` (Zwischenzustände der Ausstellung; ein angelegter Gutschein kann wieder entfernt werden, `VC:docs/HOOKS.md:45-46`), `vcap_card_moved_to_credit`, `vcap_ticket_checked_in` und alle Actions der Oberfläche.
+
+`vcap_ticket_checked_in` (geprüft 16.11.2026, Z-06): `Db::action( 'vcap_ticket_checked_in', Voucher $fresh, int $count )` in `Tickets::checkin()` (`VC:src/Tickets.php:574`), gepuffert bis COMMIT. Es meldet den Einlass mit einem Gutschein des Typs `ticket` von Voucher Captain (nicht ein Ticket von Pass Captain), nach der atomaren Erhöhung der Einlässe; `$count` ist die Zahl der Einlässe dieses Vorgangs. Auslöser sind die REST-Route `vcap/v1/checkin` und das Formular der Einlassseite, beide mit Berechtigung `vcap_scan_tickets` oder `manage_woocommerce` (`VC:src/Tickets.php:30-31`). Ein Zurücknehmen des Einlasses (`undo_checkin`, `:578`) meldet nichts. Kandidat für eine MINOR-Version als `voucher.ticket.checked_in`; `actor_user_id` wäre das Personal am Einlass.
+
+**Erlaubte Felder in `data` und Bedeutung von `actor_user_id` (WF-SPEC-03, 16.11.2026).** Positivliste nach R-5.2. Beträge als `*_minor` mit `currency` (R-5.1a); Feldnamen in Schlangenschreibweise wie im Schema. `subject` ist der Gutschein (`voucher_id`, `id_kind` = `record`), außer wo anders genannt. „nicht gesetzt“ heißt: Das Feld `actor_user_id` fehlt.
+
+| Suite-Ereignis | Erlaubte Felder in `data` | `actor_user_id` |
+|---|---|---|
+| `voucher.order.vouchers_issued` | `order_id`, `voucher_count`, `background` (Boolean: Ausstellung im Hintergrund fertig); `subject` ist die Bestellung (`type` = `order`, `id_kind` = `record`) | nicht gesetzt (Zahlung, Hintergrundaufgabe) |
+| `voucher.voucher.issued_standalone` | `amount_minor`, `currency`, `voucher_type` (`voucher`, `giftcard`, `ticket`), `usage_mode`, `status` (`active`, `scheduled`), `paid` (Boolean), `issue_source` (fester Schlüssel: `admin`, `cli`, `import`, `refund-credit`, `remaining-value`, `workflow`; sonst `other`), `send` (Boolean) | der angemeldete Benutzer, der ausstellt (Admin, CLI); im Hintergrund nicht gesetzt |
+| `voucher.voucher.delivered` | `address_count`, `roles` (`recipient`, `buyer` oder `recipient,buyer`), `bundled` (Boolean) | nicht gesetzt |
+| `voucher.voucher.delivery_failed` | `failures` | nicht gesetzt |
+| `voucher.voucher.bounced` | `role` (`recipient`, `buyer`) | nicht gesetzt |
+| `voucher.voucher.redeemed` | `amount_minor`, `currency`, `order_id`, `channel`, `redemption_source` (fester Schlüssel), `committed_at`, `balance_after_minor` | `user_id` aus dem Array, wenn größer 0: im Shop und am Schalter der zur Zeit angemeldete Benutzer (Kunde oder Personal), über die Einlöse-API der reservierende Benutzer; bei einem Zahlungs-Webhook 0, dann nicht gesetzt |
+| `voucher.redemption.reserved` | `amount_minor`, `currency`, `balance_after_minor`, `expires_at`, `state` | `user_id` aus dem Array, wenn größer 0 |
+| `voucher.redemption.released` | wie `reserved`, dazu `expired` (Boolean) | wie `reserved` |
+| `voucher.redemption.refunded` | `refunded_minor` (dieser Vorgang), `refunded_total_minor`, `currency` | wie `reserved` |
+| `voucher.redemption.reversed` | `reversed_event_id`, `amount_minor`, `currency` (Währung des Gutscheins) | der angemeldete Benutzer (Personal), sonst nicht gesetzt |
+| `voucher.voucher.expired` | je Gutschein ein Ereignis: `balance_minor`, `currency`, `voucher_type` | nicht gesetzt (tägliche Wartung) |
+| `voucher.voucher.reissued` | `status` | der angemeldete Benutzer (Personal) |
+| `voucher.voucher.voided` | `balance_minor`, `currency`, `order_id`, `change_source` (fester Schlüssel: `admin`, `cron`, `rest`, `scanner`, `checkout`, `cli`, `web`), `void_reason` (`refund` oder `manual`, ermittelt über `Issuer::voided_after_refund()`, nie aus der Notiz) | Argument `$user_id`, wenn größer 0 (Personal) |
+| `voucher.voucher.reactivated` | `balance_minor`, `currency`, `order_id`, `change_source` | wie `voided` |
+| `voucher.store_credit.changed` | `amount_minor` (mit Vorzeichen), `balance_minor`, `currency` (Basiswährung des Shops), `credit_event` (`credit`, `debit`, `refund_credit`, `refund_credit_reversed`), `order_id`; `subject` ist das Guthabenkonto (`type` = `store_credit`, `id` = Benutzer-ID, `id_kind` = `record`) | der Kunde, dem das Guthaben gehört |
+| `voucher.gift_card.topped_up` | `amount_minor`, `currency`, `order_id`, `balance_minor` | nicht gesetzt |
+
+- R-4.7 `reference` (Idempotenzreferenz von `issue_standalone`) und `redemption_key` werden nicht weitergereicht. Beide wählt der Aufrufer frei; der Kartenimport bildet die Referenz aus einem Hash des Codes (`VC:src/Admin/CardImport.php:92-94`), aus dem sich ein schwacher Code zurückrechnen ließe. `source` und alle Gründe sind Freitext und gehen nur als fester Schlüssel des Adapters weiter (R-5.1).
 
 Auslöser einer Review-Einladung ist `voucher.voucher.redeemed` (D7), und nur für Gutscheine, die der Betreiber als Leistung oder Erlebnis eingestuft hat (`VC:README.md:98`). Diese Einstufung trifft der Adapter, nicht der Kern.
 
@@ -369,7 +414,7 @@ Der Gast eines Tickets und der Empfänger eines Gutscheins haben oft kein WordPr
 
 Die Listen aller übrigen Ereignistypen sind eine Aufgabe dieses Repositorys vor Version 1.0.0 (siehe `TODO.md`, WF-SPEC-03).
 
-Beispiele: [`pass.ticket.checked_in.json`](examples/pass.ticket.checked_in.json), [`voucher.voucher.redeemed.json`](examples/voucher.voucher.redeemed.json), [`voucher.voucher.issued_standalone.json`](examples/voucher.voucher.issued_standalone.json) (durch einen Workflow ausgelöst), [`license.license.status_changed.json`](examples/license.license.status_changed.json). Die Werte sind erfunden; das Format der `public_id` eines Tickets ist zu prüfen. [`affiliate.code_request.approved.json`](examples/affiliate.code_request.approved.json) zeigt den erlaubten Partnercode, [`affiliate.commission.approved.json`](examples/affiliate.commission.approved.json) einen Geldbetrag (D8b). `python3 bin/validate-spec-examples.py` prüft Schema und Beispiele gegeneinander.
+Beispiele: [`pass.ticket.checked_in.json`](examples/pass.ticket.checked_in.json), [`voucher.voucher.redeemed.json`](examples/voucher.voucher.redeemed.json), [`voucher.voucher.issued_standalone.json`](examples/voucher.voucher.issued_standalone.json) (durch einen Workflow ausgelöst), [`license.license.status_changed.json`](examples/license.license.status_changed.json). Seit dem 16.11.2026 liegt für jeden Ereignistyp von Pass Captain (13) und Voucher Captain (16) ein Beispiel unter [`examples/`](examples/), aufgebaut nach den Feldtabellen in 4.2 und 4.3. Die Werte sind erfunden; die `public_id` hat das Format des Kerns (32 Hex, 4.2). [`affiliate.code_request.approved.json`](examples/affiliate.code_request.approved.json) zeigt den erlaubten Partnercode, [`affiliate.commission.approved.json`](examples/affiliate.commission.approved.json) einen Geldbetrag (D8b). `python3 bin/validate-spec-examples.py` prüft Schema und Beispiele gegeneinander.
 
 ## 7. Zustellung
 
@@ -392,8 +437,8 @@ Stand je Provider:
 
 | Provider | Actions feuern nach dem Commit | Beleg |
 |---|---|---|
-| Voucher Captain | ja für alle Actions mit Vermerk „after COMMIT“ (9 der 15 Actions in 4.3); für die sechs ohne Vermerk zu prüfen (Z-05) | `VC:docs/HOOKS.md:5-6`, `VC:CONNECTORS.md:39` |
-| Pass Captain | ja für 9 der 13 Actions in 4.2 (zum Teil nur für einen von mehreren Auslöseorten); 4 zu prüfen | Fundstellen in 4.2 |
+| Voucher Captain | ja für alle Actions mit Vermerk „after COMMIT“ (9 der 15 Actions in 4.3); die sechs ohne Vermerk feuern nach Schreibvorgängen im Autocommit, ohne Puffer bis COMMIT (Z-05, geprüft 16.11.2026); für sie gilt Gegenlesen | `VC:docs/HOOKS.md:5-6`, `VC:CONNECTORS.md:39` |
+| Pass Captain | ja für alle 13 Actions in 4.2, an allen Auslöseorten nach COMMIT oder im Autocommit (Z-02, geprüft 16.11.2026); bei `wpcap_occurrence_rescheduled` und der Admin-Absage eines Termins feuert die Action auch, wenn das UPDATE fehlschlug, daher dort Gegenlesen | Fundstellen in 4.2 |
 | Affiliate Captain | ja für alle 21. Der Kern feuert nur diese fachlichen Actions; eine zusätzliche Workflow-Action gibt es seit der Entfernung nach D13 nicht mehr | `AC:docs/CONTRACT.md:210` |
 | Lizenzserver | zu prüfen für alle 3; der Lizenzserver sagt selbst „keine Garantie nach dem Commit“ | `LIC:docs/TODO.md`, Abschnitt 12 |
 
@@ -472,7 +517,23 @@ Mit Wirkung im Provider, genau vier, alle im Voucher-Kern (D11b):
 | `voucher.reactivate` | einen gesperrten Gutschein reaktivieren |
 | `voucher.redeem` | einen Gutschein ganz oder teilweise einlösen |
 
-Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`); `wpac_workflow_read()` gibt es nicht mehr (R-4.6). Für Voucher Captain (`VC:API.md`) und Pass Captain (Klassen des Kerns, `PC:docs/SUITE-EVENTS.md:24-25`) sind die genauen Funktionen zu prüfen (Z-07). Im Lizenzserver fehlt eine Lesefassade (`LIC:docs/TODO.md`, WFC-LIC-05). Die Liste der anerkannten Lesefunktionen je Provider ist eine offene Aufgabe dieses Repositorys (`TODO.md`, WF-SPEC-15).
+Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`); `wpac_workflow_read()` gibt es nicht mehr (R-4.6). Im Lizenzserver fehlt eine Lesefassade (`LIC:docs/TODO.md`, WFC-LIC-05).
+
+**Anerkannte Lesefunktionen für Voucher Captain und Pass Captain (WF-SPEC-15, geprüft am 16.11.2026, Z-07).** „Vertrag“ heißt: im Kern als öffentliche Schnittstelle dokumentiert. Eine Funktion ohne Vertrag DARF ein Adapter nur bis zu einer dokumentierten Lesefassade nutzen, nur lesend und nur mit Positivliste (R-5.2, R-5.3); jede Nutzung nennt er in seiner Kompatibilitätsangabe (R-13.4).
+
+| Provider | Zweck | Funktion | Vertrag | Hinweis |
+|---|---|---|---|---|
+| Voucher Captain | Zustand eines Gutscheins über die `voucher_id` | `vcap()->vouchers->get( int $id )` (`VC:src/VoucherRepository.php:175`) | **nein**, nur erwähnt (`VC:ADAPTERS.md:79`, `VC:CONNECTORS.md:35`) | liefert das ganze `Voucher`-Objekt mit Code |
+| Voucher Captain | Gutscheine einer Bestellung | `vcap()->api_v1->order_lines( WC_Order )` (`VC:src/API/V1/VoucherService.php:122`) | ja (`VC:CONNECTORS.md`) | liefert je Position auch den Code |
+| Voucher Captain | Zustand über den Code | `vcap()->api_v1->lookup()`, `vcap()->redemptions->check()`, `get()` (`VC:API.md:7`, `:58-63`) | ja | für Workflows **unbrauchbar**: ein Workflow kennt keinen Code (R-5.1) |
+| Voucher Captain | Kontakt und Einwilligung des Empfängers | – | – | **fehlt.** Empfänger haben meist kein Benutzerkonto; ein Einwilligungsfeld gibt es nicht (`VC:src/Voucher.php:20-48`). `Workflow\Services::contact()` auf dem Branch von Pull Request 16 entfällt mit D13 |
+| Pass Captain | Beleg | `wpcap_get_invoice( $id, $type )`, `PassCaptain\Api\Invoices::get()` (`PC:src/functions.php:11-19`, `PC:docs/EXTENSIONS.md:103`, `:141`), seit 1.5.0 | ja | einzige vertraglich zugesagte Lesefunktion |
+| Pass Captain | Bestellung | `PassCaptain\Orders::get( $order_id )` (`PC:src/Orders.php:1544-1547`) | **nein** | liefert die ganze Zeile mit `customer_email`, Name und Zugangshash |
+| Pass Captain | Tickets einer Bestellung | `PassCaptain\Orders::tickets_for_order( $order_id )` (`PC:src/Orders.php:1516`) | **nein** | mit `public_id`, Status, Ticketart und Namen, ohne Ticketcode |
+| Pass Captain | Erstattung | `PassCaptain\Refunds::get( $refund_id )` (`PC:src/Refunds.php:744`) | **nein** | enthält Freitext `reason` |
+| Pass Captain | Kontakt und Einwilligung zu einem Ticket | `PassCaptain\Sales\Consents::for_order()`, `missing_for_ticket()` (`PC:src/Sales/Consents.php:262`, `:140`); Spalte `attendee_email` | **nein** | eine Lesefunktion „Kontakt zu diesem Ticket“ gibt es nicht |
+
+Folge: Für beide Kerne fehlt eine dokumentierte Lesefassade für Zustand, Kontakt und Einwilligung (F-13, W-2; Anforderungen VC-7 und PC-4 in [`ANFORDERUNGEN-andere-repos.md`](ANFORDERUNGEN-andere-repos.md)). Bis dahin gilt die Tabelle oben.
 
 Markierungen und Notizen liegen in Version 1 nur im Consumer. Eine Notiz im Provider ist kein Befehl der Version 1.
 
@@ -553,7 +614,16 @@ Der neue Einstiegspunkt MUSS zusätzlich einen eigenen Code des Aufrufers, `allo
 
 Grenzen: siehe Tabelle in 8.3.1. `voucher.void` löst **keine** Erstattung aus und bucht nichts zurück (8.2); `voucher.reactivate` gilt nur für Gutscheine, die nicht wegen einer Erstattung gesperrt wurden.
 
-Stand im Kern heute: `Issuer::void( Voucher $voucher, string $note = '', bool $refund = false ): bool` (`VC:src/Issuer.php:2012`) und `Issuer::reactivate( Voucher $voucher, bool $after_refund = false ): bool` (`VC:src/Issuer.php:2072`). Beide nehmen ein `Voucher`-Objekt, eine freie Notiz und einen Schalter für den Erstattungsfall. Ob sie eine Berechtigung prüfen, einen Idempotenzschlüssel kennen und was `$refund = true` bucht, ist zu prüfen (Z-15). Tageszähler fehlen. Der Branch von Pull Request 16 soll eigene Dienste für Sperren und Reaktivieren enthalten; das war im gelesenen Stand nicht prüfbar (Z-15).
+Stand im Kern heute: `Issuer::void( Voucher $voucher, string $note = '', bool $refund = false ): bool` (`VC:src/Issuer.php:2012`) und `Issuer::reactivate( Voucher $voucher, bool $after_refund = false ): bool` (`VC:src/Issuer.php:2072`). Beide nehmen ein `Voucher`-Objekt, eine freie Notiz und einen Schalter für den Erstattungsfall. Geprüft am 16.11.2026 (Z-15):
+
+| Eigenschaft | `void()` | `reactivate()` |
+|---|---|---|
+| Berechtigung | keine Prüfung | `vcap_increase_balance` oder `manage_woocommerce` (`Admin\VoucherAdmin::can_increase()`), **nur wenn ein Benutzer angemeldet ist**; Cron und CLI ohne Prüfung (`VC:src/Issuer.php:2077`) |
+| Idempotenz | kein Schlüssel; ein schon gesperrter Gutschein liefert `true` und schreibt nichts, außer bei `$refund` auf einen wegen Zahlung ausgesetzten Gutschein | kein Schlüssel; ein nicht gesperrter Gutschein liefert `false` |
+| Wirkung des Schalters | `$refund = true` bucht **kein Geld**; es speichert nur die Notiz `voided_refund`, die später `reactivate()` blockiert (`VC:src/Issuer.php:77`, `:2042-2063`). Erstattungen laufen über `void_purchase()`/`void_or_retry()` (`:1918-1981`) | `$after_refund = true` umgeht nur diese Sperre |
+| Ereignisse | `vcap_voucher_updated`, `vcap_voucher_event` mit `voided`, beide bis COMMIT gepuffert | `vcap_voucher_event` mit `reactivated` |
+
+Tageszähler und Höchstwerte fehlen in beiden. Der Branch von Pull Request 16 (`hvollo-refactors`, `82145ed`) enthält eigene Dienste `Workflow\Services::void()` und `reactivate()` mit Idempotenzschlüssel, Protokolleintrag `workflow_command` und Berechtigungen (`vcap_manage_vouchers` für Sperren, `vcap_increase_balance` für Reaktivieren); sie gehören zum vorläufigen Provider, der nach D13 entfernt wird (Z-16), und haben weder Höchstwerte noch Tageszähler.
 
 Der neue Einstiegspunkt MUSS `$refund` beziehungsweise `$after_refund` fest auf `false` setzen und statt der freien Notiz nur `reason` als festen Schlüssel annehmen.
 
@@ -567,7 +637,7 @@ Der neue Einstiegspunkt MUSS `$refund` beziehungsweise `$after_refund` fest auf 
 
 Grenzen: siehe Tabelle in 8.3.1. Eingelöst wird nie mehr als der Restwert des Gutscheins.
 
-Stand im Kern heute: Die Einlöse-API `API\V1\RedemptionService` arbeitet in zwei Schritten und **über den Code**: `reserve( string $code, array $args )` (`VC:src/API/V1/RedemptionService.php:150`), danach `commit( string $key, array $args )` (`:378`); dazu `release()` (`:389`) und `refund()` (`:408`). Sie hat einen Idempotenzschlüssel (`redemption_key`) und feuert `vcap_voucher_redeemed` genau einmal nach dem Commit (`VC:docs/HOOKS.md:53`). Einen Weg über die `voucher_id`, Tageszähler und einen Höchstbetrag gibt es nicht; ob die API eine Berechtigung prüft, ist zu prüfen (Z-15).
+Stand im Kern heute: Die Einlöse-API `API\V1\RedemptionService` arbeitet in zwei Schritten und **über den Code**: `reserve( string $code, array $args )` (`VC:src/API/V1/RedemptionService.php:150`), danach `commit( string $key, array $args )` (`:378`); dazu `release()` (`:389`) und `refund()` (`:408`). Sie hat einen Idempotenzschlüssel (`redemption_key`) und feuert `vcap_voucher_redeemed` genau einmal nach dem Commit (`VC:docs/HOOKS.md:53`). Einen Weg über die `voucher_id`, Tageszähler und einen Höchstbetrag gibt es nicht. Geprüft am 16.11.2026 (Z-15): Die PHP-Klasse prüft keine Berechtigung, nur den Besitz, wenn `user_id` übergeben wird (`VC:src/API/V1/RedemptionService.php:428`, `:635`); die Berechtigung sitzt allein in der REST-Schicht (angemeldet plus Filter `vcap_rest_can_redeem`, Ziele nur für Manager oder `vcap_redeem_api`, `VC:src/API/V1/RestController.php:151`, `:168-179`, `:234`). Der Dienst `Workflow\Services::redeem()` auf dem Branch von Pull Request 16 nimmt weiterhin einen **Code**.
 
 Der neue Einstiegspunkt MUSS den Gutschein über die `voucher_id` annehmen, Reservieren und Bestätigen in einem Aufruf erledigen und DARF `refund()` nicht erreichbar machen.
 
@@ -579,7 +649,7 @@ Ein Workflow läuft meist ohne angemeldeten Benutzer (Cron, Action Scheduler).
 
 - R-8.4 Jeder Befehl trägt einen Idempotenzschlüssel aus Workflow, Version des Workflows, `id` des auslösenden Ereignisses und Schritt. Eine Wiederholung desselben Schritts nutzt denselben Schlüssel.
 - R-8.5 Der Consumer DARF NICHT `wp_set_current_user()` aufrufen, um einem Lauf die Rechte eines Administrators zu geben.
-- R-8.6 Jeder schreibende Befehl nennt die Berechtigung, die ein Mensch für dieselbe Handlung bräuchte. Für `voucher.issue` ist das `vcap_manage_vouchers` (`VC:src/Issuer.php:940-942`); für Sperren, Reaktivieren und Einlösen ist die Berechtigung des Kerns zu prüfen (Z-15).
+- R-8.6 Jeder schreibende Befehl nennt die Berechtigung, die ein Mensch für dieselbe Handlung bräuchte. Für `voucher.issue` ist das `vcap_manage_vouchers` (`VC:src/Issuer.php:940-942`); für Sperren `vcap_manage_vouchers`, für Reaktivieren `vcap_increase_balance` (die Prüfung des Kerns in `reactivate()`, `VC:src/Issuer.php:2077`), für Einlösen `vcap_redeem_api` (die Berechtigung der Einlöse-Ziele, `VC:src/API/V1/RestController.php:151`). Der Kern prüft beim Sperren und Einlösen in PHP heute nichts (Z-15, geklärt am 16.11.2026); die Prüfung leistet der Adapter nach R-8.8.
 - R-8.7 Beim Veröffentlichen eines Workflows MUSS der veröffentlichende Benutzer jede dieser Berechtigungen haben. Seine Benutzer-ID wird als `authorized_by_user_id` am Workflow gespeichert.
 - R-8.8 Bei jeder Ausführung prüft der Adapter mit `user_can( $authorized_by_user_id, … )`, ob dieser Benutzer noch existiert und die Berechtigung noch hat. Wenn nicht, wird der Schritt nicht ausgeführt und der Workflow pausiert mit Grund.
 - R-8.9 Lesende Abfragen und Befehle, die nur im Consumer schreiben, brauchen die Berechtigungen des Consumers beim Veröffentlichen, aber keine Prüfung bei jeder Ausführung.
@@ -597,9 +667,9 @@ Diese Tabelle fasst für jeden Befehl der Version 1 zusammen, was 8.1 bis 8.4, 7
 | `workflow.tag.set`, `workflow.tag.remove` | nach R-8.4 | Markierung im Speicher des Consumers; von Natur aus idempotent | ja | `activate_workflows` (Consumer) | wie das auslösende Ereignis | Laufprotokoll nach R-8.10 mit Markierung und `subject` |
 | `workflow.note.add` | nach R-8.4; eindeutig im Speicher des Consumers | Notiz im Speicher des Consumers; ein zweiter Aufruf legt keine zweite Notiz an | ja | `activate_workflows` (Consumer) | wie das auslösende Ereignis | Laufprotokoll nach R-8.10; die Notiz enthält keine verbotenen Werte (Abschnitt 5) |
 | `voucher.issue` | nach R-8.4, an den Kern als `idempotency_key` (R-8.3, R-8.3a) | stellt einen Gutschein aus; der Kern versendet seine Mail (R-8.3e) | ja, mit demselben Schlüssel; Ablehnungen wegen Grenze, Schalter oder Berechtigung sind endgültig (R-8.13) | `vcap_manage_vouchers` (R-8.6) | Workflow Captain Pro und Voucher Captain Pro; im Kern eingeschaltet (R-8.3d) | Laufprotokoll nach R-8.10 und Protokoll des Kerns (R-8.3c) |
-| `voucher.void` | wie `voucher.issue` | sperrt einen Gutschein, ohne Erstattung | wie `voucher.issue` | Berechtigung des Kerns, zu prüfen (Z-15) | wie `voucher.issue` | wie `voucher.issue` |
-| `voucher.reactivate` | wie `voucher.issue` | reaktiviert einen gesperrten Gutschein | wie `voucher.issue` | Berechtigung des Kerns, zu prüfen (Z-15) | wie `voucher.issue` | wie `voucher.issue` |
-| `voucher.redeem` | wie `voucher.issue` | löst einen Gutschein ganz oder teilweise ein | wie `voucher.issue` | Berechtigung des Kerns, zu prüfen (Z-15) | wie `voucher.issue` | wie `voucher.issue` |
+| `voucher.void` | wie `voucher.issue` | sperrt einen Gutschein, ohne Erstattung | wie `voucher.issue` | `vcap_manage_vouchers` (R-8.6) | wie `voucher.issue` | wie `voucher.issue` |
+| `voucher.reactivate` | wie `voucher.issue` | reaktiviert einen gesperrten Gutschein | wie `voucher.issue` | `vcap_increase_balance` (R-8.6) | wie `voucher.issue` | wie `voucher.issue` |
+| `voucher.redeem` | wie `voucher.issue` | löst einen Gutschein ganz oder teilweise ein | wie `voucher.issue` | `vcap_redeem_api` (R-8.6) | wie `voucher.issue` | wie `voucher.issue` |
 
 „Wie das auslösende Ereignis“ heißt: Kommt das Ereignis aus einem Captain-Produkt, gilt R-10.1; kommt es aus WordPress oder WooCommerce, ist die Lizenz offen (D3, F-10).
 
@@ -789,21 +859,21 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 
 | Nr. | Was | Wo zu prüfen |
 |---|---|---|
-| Z-01 | „Seit“ je `wpcap_*`-Action des Katalogs (12 Actions) | Pass Captain: Git-Verlauf, `CHANGELOG.md`; danach in `docs/HOOKS.md` nachtragen |
-| Z-02 | „Nach Commit“ für `wpcap_refund_rejected`, `wpcap_ticket_revoked`, `wpcap_occurrence_rescheduled`, die Admin-Absage eines Termins (`wpcap_occurrence_cancelled`), den Ablauf einer Reservierung (`wpcap_order_cancelled`) und `wp_pass_captain_invoice_created_v1` | Pass Captain: `src/Refunds.php:160`, `src/Orders.php:702`, `:1805`, `src/Admin/TicketsPage.php:56`, `src/Admin/EventsPage.php:212-245`, `src/Api/Invoices.php:107` |
-| Z-03 | Ob `$reason` bei `wpcap_order_cancelled`, `wpcap_order_refunded` und `wpcap_ticket_revoked` Freitext sein kann | Pass Captain: Aufrufer der drei Actions |
-| Z-04 | Öffentliche Kennungen für Erstattung, Termin, Event und Beleg in Pass Captain; Format der `public_id` | Pass Captain: Tabellen und Klassen des Kerns |
-| Z-05 | „Nach Commit“ für `vcap_vouchers_issued`, `vcap_voucher_issued_standalone`, `vcap_voucher_delivered`, `vcap_voucher_delivery_given_up`, `vcap_voucher_bounced`, `vcap_voucher_reissued` (ohne Vermerk in der Hook-Tabelle) | Voucher Captain: `src/Issuer.php`, `src/Delivery.php`, `src/Reissue.php` |
-| Z-06 | Was `vcap_ticket_checked_in` meldet | Voucher Captain: `src/Tickets.php` |
-| Z-07 | Genaue Lesefunktionen für Voucher Captain, Pass Captain und Affiliate Captain (für Gegenlesen und Empfängerauflösung); `wpac_workflow_read()` entfällt (D13) | `VC:API.md`, `PC:docs/EXTENSIONS.md` |
+| Z-01 | „Seit“ je `wpcap_*`-Action des Katalogs (12 Actions) | Pass Captain: Git-Verlauf, `CHANGELOG.md`; danach in `docs/HOOKS.md` nachtragen — **Geklärt am 16.11.2026 aus Git-Verlauf und Tags: Werte in 4.2; Eintrag in `docs/HOOKS.md` bleibt Aufgabe von Pass Captain (PC-1)** |
+| Z-02 | „Nach Commit“ für `wpcap_refund_rejected`, `wpcap_ticket_revoked`, `wpcap_occurrence_rescheduled`, die Admin-Absage eines Termins (`wpcap_occurrence_cancelled`), den Ablauf einer Reservierung (`wpcap_order_cancelled`) und `wp_pass_captain_invoice_created_v1` | Pass Captain: `src/Refunds.php:160`, `src/Orders.php:702`, `:1805`, `src/Admin/TicketsPage.php:56`, `src/Admin/EventsPage.php:212-245`, `src/Api/Invoices.php:107` — **Geklärt am 16.11.2026: alle nach COMMIT oder im Autocommit; zwei Admin-Wege ohne Prüfung des UPDATE (4.2, 7.2)** |
+| Z-03 | Ob `$reason` bei `wpcap_order_cancelled`, `wpcap_order_refunded` und `wpcap_ticket_revoked` Freitext sein kann | Pass Captain: Aufrufer der drei Actions — **Geklärt am 16.11.2026: Freitext bei `wpcap_order_cancelled` und `wpcap_ticket_revoked` möglich; Abbildung auf `reason_class` (4.2)** |
+| Z-04 | Öffentliche Kennungen für Erstattung, Termin, Event und Beleg in Pass Captain; Format der `public_id` | Pass Captain: Tabellen und Klassen des Kerns — **Geklärt am 16.11.2026: nur Bestellung und Ticket haben `public_id` (32 Hex); sonst `record` (4.2)** |
+| Z-05 | „Nach Commit“ für `vcap_vouchers_issued`, `vcap_voucher_issued_standalone`, `vcap_voucher_delivered`, `vcap_voucher_delivery_given_up`, `vcap_voucher_bounced`, `vcap_voucher_reissued` (ohne Vermerk in der Hook-Tabelle) | Voucher Captain: `src/Issuer.php`, `src/Delivery.php`, `src/Reissue.php` — **Geklärt am 16.11.2026: keine der sechs Actions ist bis COMMIT gepuffert, keine läuft in einer eigenen Transaktion; sie feuern nach Schreibvorgängen im Autocommit (Tabelle 4.3). Gegenlesen nach R-7.4 bleibt** |
+| Z-06 | Was `vcap_ticket_checked_in` meldet | Voucher Captain: `src/Tickets.php` — **Geklärt am 16.11.2026: siehe Absatz unter der Tabelle 4.3** |
+| Z-07 | Genaue Lesefunktionen für Voucher Captain, Pass Captain und Affiliate Captain (für Gegenlesen und Empfängerauflösung); `wpac_workflow_read()` entfällt (D13) | `VC:API.md`, `PC:docs/EXTENSIONS.md` — **Für Voucher und Pass geklärt am 16.11.2026: Tabelle in 8.1; für Affiliate offen (kein Zugriff)** |
 | Z-08 | „Seit“ (Vertragsversion) der Affiliate-Actions ohne Angabe in 4.4 (13 Actions) | Affiliate Captain: Git-Verlauf; danach als Tabelle in `docs/CONTRACT.md` |
 | Z-09 | Ob Affiliate Captain einen Test hat, der die dokumentierten Actions gegen den Code prüft | Affiliate Captain: `tests/` |
 | Z-10 | „Seit“ und „nach Commit“ für die drei Lizenz-Actions des Katalogs | Lizenzserver: `src/License/LicenseLifecycle.php`, `LicenseIssuer.php`, `PlanChange.php` |
 | Z-11 | Ob der Code von Form Captain die sechs dokumentierten Actions auslöst | Form Captain: `src/` |
 | Z-12 | Ob der Code von Review Captain die Actions für Anfragen auslöst, die sein Workflow-Vertrag nennt | Review Captain: `src/`, `docs/hooks.md` |
 | Z-13 | Der Stand von `captain-pro` wurde im Arbeitsverzeichnis gelesen, das uncommittete Änderungen enthielt; in Affiliate Captain war während des Lesens zeitweise eine Datei uncommittet | **Für `captain-pro` geklärt am 16.11.2026:** Die Fundstellen `CoreRequirement.php:60-64`, `Feature.php:41-52`, `CoreCapabilities.php:35-36` und `:92` stimmen im committeten Stand `07b5365` und auf `main` (`2f23da7`); der Kernel kennt weiterhin keine Prüfung der Lizenz eines anderen Add-ons (F-06 bleibt offen). Für Affiliate Captain offen (kein Zugriff aus dieser Sitzung). |
-| Z-15 | Für Sperren, Reaktivieren und Einlösen im Voucher-Kern: Berechtigungsprüfung, Idempotenz, Wirkung von `$refund`/`$after_refund`; ob der Branch von Pull Request 16 dafür eigene Dienste enthält | Voucher Captain: `src/Issuer.php:2012-2110`, `src/API/V1/RedemptionService.php`, Branch `hvollo-refactors` |
-| Z-16 | Ob der vorläufige Workflow-Provider aus Pull Request 16 im Voucher-Kern schon entfernt ist (D13) | Voucher Captain: Branches `hvollo-refactors` und `main` |
+| Z-15 | Für Sperren, Reaktivieren und Einlösen im Voucher-Kern: Berechtigungsprüfung, Idempotenz, Wirkung von `$refund`/`$after_refund`; ob der Branch von Pull Request 16 dafür eigene Dienste enthält | Voucher Captain: `src/Issuer.php:2012-2110`, `src/API/V1/RedemptionService.php`, Branch `hvollo-refactors` — **Geklärt am 16.11.2026: siehe 8.3.3, 8.3.4 und R-8.6** |
+| Z-16 | Ob der vorläufige Workflow-Provider aus Pull Request 16 im Voucher-Kern schon entfernt ist (D13) | Voucher Captain: Branches `hvollo-refactors` und `main` — **Geklärt am 16.11.2026: auf `main` nie vorhanden; auf `hvollo-refactors` (`82145ed`) noch vorhanden (`src/Workflow/Provider.php`, `Services.php`, `Handover.php`, Hook `vcap_workflow_event`); Entfernen bleibt Aufgabe des Voucher-Kerns (dort VOUCH-WF-10)** |
 | Z-14 | Die Aufgabenstellung nennt 129 Hooks im Lizenzserver; gezählt wurden 36 Actions und 94 Filter, zusammen 130 | Lizenzserver: `docs/EXTENSION-POINTS.md` |
 
 ## 16. Änderungsverlauf

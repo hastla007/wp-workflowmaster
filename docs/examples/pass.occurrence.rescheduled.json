@@ -1,0 +1,31 @@
+{
+  "id": "e83be318-43d4-4521-b752-e5b45db5201d",
+  "type": "pass.occurrence.rescheduled",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T09:56:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "occurrence",
+    "id": "311",
+    "id_kind": "record"
+  },
+  "actor_user_id": 3,
+  "data": {
+    "event_id": 42,
+    "old_starts_at": "2026-12-05T18:00:00Z",
+    "new_starts_at": "2026-12-12T18:00:00Z",
+    "timezone": "Europe/Vienna",
+    "issued_tickets": 57
+  },
+  "idempotency_key": "afb4c361e3d3b99e376e38d04fd56a40df0066e19c15a37f0b0c60d32f3f2d19",
+  "correlation_id": "e83be318-43d4-4521-b752-e5b45db5201d",
+  "causation_id": null,
+  "chain_depth": 0
+}

@@ -1,0 +1,29 @@
+{
+  "id": "520696d1-86e3-4b8b-b971-a008fd1448b0",
+  "type": "pass.refund.rejected",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T08:35:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "refund",
+    "id": "91",
+    "id_kind": "record"
+  },
+  "actor_user_id": 17,
+  "data": {
+    "order_id": 1210,
+    "amount_minor": 2400,
+    "currency": "EUR"
+  },
+  "idempotency_key": "e9d9094627e9ab88f2b5236f4a15ceb1dabab567938dac05156899cbddb713b5",
+  "correlation_id": "520696d1-86e3-4b8b-b971-a008fd1448b0",
+  "causation_id": null,
+  "chain_depth": 0
+}

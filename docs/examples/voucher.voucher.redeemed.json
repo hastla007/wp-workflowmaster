@@ -24,7 +24,7 @@
     "channel": "counter",
     "redemption_source": "scanner",
     "committed_at": "2026-11-16T10:15:42Z",
-    "redemption_key": ""
+    "balance_after_minor": 0
   },
   "idempotency_key": "a3c1e5d7f9b20416385a7c9e0b2d4f60718293a4b5c6d7e8f9012a3b4c5d6e7f",
   "correlation_id": "0b9d6f52-3c1a-4e7f-8a44-9c2e1d0f3b5a",

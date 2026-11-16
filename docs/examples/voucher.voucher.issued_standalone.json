@@ -21,7 +21,8 @@
     "amount_minor": 2500,
     "currency": "EUR",
     "issue_source": "workflow",
-    "reference": "wf-12-run-3391-step-2"
+    "voucher_type": "voucher",
+    "send": true
   },
   "idempotency_key": "5b6c7d8e9f00112233445566778899aabbccddeeff00112233445566778899aa",
   "correlation_id": "5f0c2a1e-7b3d-4c8a-9e21-3d4f5a6b7c8d",

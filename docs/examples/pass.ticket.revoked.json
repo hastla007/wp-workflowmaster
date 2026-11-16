@@ -1,0 +1,31 @@
+{
+  "id": "1657077f-d73e-42d9-aaf2-e9867259fa5c",
+  "type": "pass.ticket.revoked",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T09:42:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "ticket",
+    "id": "0f826a89cf68c399c5f4cf320c1a5842",
+    "id_kind": "public"
+  },
+  "actor_user_id": 17,
+  "data": {
+    "order_id": 1204,
+    "ticket_type_id": 7,
+    "occurrence_id": 311,
+    "event_id": 42,
+    "reason_class": "admin"
+  },
+  "idempotency_key": "8b33c7d26e0f650e5f3daeb2127e2ac9fc5762574dc0a815ffd97dd9ce813f0c",
+  "correlation_id": "1657077f-d73e-42d9-aaf2-e9867259fa5c",
+  "causation_id": null,
+  "chain_depth": 0
+}
