@@ -22,6 +22,7 @@ final class Settings {
 		'max_workflow'       => array( 2, 1, 10 ),
 		'retention_finished' => array( 30, 1, 30 ),
 		'retention_stuck'    => array( 90, 1, 90 ),
+		'notify_daily'       => array( 1, 0, 1 ),
 	);
 
 	/** @return array<string,int> */

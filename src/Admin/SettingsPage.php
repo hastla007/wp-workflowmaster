@@ -23,6 +23,7 @@ final class SettingsPage {
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'menu' ), 30 );
 		add_action( 'admin_init', array( $this, 'register_setting' ) );
+		add_action( 'admin_post_workflow_captain_roles', array( $this, 'handle_roles' ) );
 	}
 
 	public function register_setting(): void {
@@ -37,13 +38,16 @@ final class SettingsPage {
 		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
 			return;
 		}
-		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'execution'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- tab switch only.
+		$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- tab switch only.
 		$tabs = array(
+			'general'   => __( 'Allgemein', 'workflow-captain' ),
 			'execution' => __( 'Ausführung', 'workflow-captain' ),
+			'notify'    => __( 'Benachrichtigungen', 'workflow-captain' ),
 			'privacy'   => __( 'Datenschutz & Aufbewahrung', 'workflow-captain' ),
+			'roles'     => __( 'Rollen & Rechte', 'workflow-captain' ),
 			'status'    => __( 'Status', 'workflow-captain' ),
 		);
-		$tab  = isset( $tabs[ $tab ] ) ? $tab : 'execution';
+		$tab  = isset( $tabs[ $tab ] ) ? $tab : 'general';
 		echo '<div class="wrap"><h1>' . esc_html__( 'Einstellungen', 'workflow-captain' ) . '</h1><nav class="nav-tab-wrapper">';
 		foreach ( $tabs as $key => $label ) {
 			echo '<a class="nav-tab' . ( $tab === $key ? ' nav-tab-active' : '' ) . '" href="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => $key ), admin_url( 'admin.php' ) ) ) . '">' . esc_html( $label ) . '</a>';
@@ -54,8 +58,22 @@ final class SettingsPage {
 			echo '</div>';
 			return;
 		}
+		if ( 'general' === $tab ) {
+			$this->general();
+			echo '</div>';
+			return;
+		}
+		if ( 'roles' === $tab ) {
+			$this->roles();
+			echo '</div>';
+			return;
+		}
 		$s      = Settings::get();
-		$fields = 'execution' === $tab
+		$fields = 'notify' === $tab
+			? array(
+				'notify_daily' => array( __( 'Tägliche Hinweis-Mail an die Betreiber-Adresse (1 = an, 0 = aus)', 'workflow-captain' ), __( 'Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen.', 'workflow-captain' ) ),
+			)
+			: ( 'execution' === $tab
 			? array(
 				'batch'          => array( __( 'Ereignisse und Schritte je Worker-Durchlauf', 'workflow-captain' ), '' ),
 				'max_site'       => array( __( 'Höchstens gleichzeitig laufende Schritte auf dieser Website', 'workflow-captain' ), '' ),
@@ -65,7 +83,7 @@ final class SettingsPage {
 			: array(
 				'retention_finished' => array( __( 'Erledigte Ereignisse und Läufe löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 30 Tage; nur kürzer möglich.', 'workflow-captain' ) ),
 				'retention_stuck'    => array( __( 'Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 90 Tage; nur kürzer möglich. Die Fristen sind ein Vorschlag bis zur Rechtsprüfung.', 'workflow-captain' ) ),
-			);
+			) );
 		echo '<form method="post" action="options.php">';
 		settings_fields( 'workflow_captain' );
 		// Keep the values of the other tab: the option holds all fields.
@@ -87,6 +105,68 @@ final class SettingsPage {
 		echo '</table>';
 		submit_button();
 		echo '</form>';
+	}
+
+	/** Time zone and date format come from WordPress; the source is shown (WF-SET-04). */
+	private function general(): void {
+		$rows = array(
+			__( 'Zeitzone', 'workflow-captain' )     => wp_timezone_string() . ' – ' . __( 'aus Einstellungen → Allgemein von WordPress', 'workflow-captain' ),
+			__( 'Datumsformat', 'workflow-captain' ) => (string) get_option( 'date_format' ) . ' – ' . __( 'aus Einstellungen → Allgemein von WordPress', 'workflow-captain' ),
+			__( 'Speicherung', 'workflow-captain' )  => __( 'Alle Zeitpunkte werden in UTC gespeichert; Wartezeiten in Tagen richten sich nach der Zeitzone der Website.', 'workflow-captain' ),
+		);
+		echo '<table class="form-table" role="presentation">';
+		foreach ( $rows as $label => $value ) {
+			echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>' . esc_html( $value ) . '</td></tr>';
+		}
+		echo '</table><p><a href="' . esc_url( admin_url( 'options-general.php' ) ) . '">' . esc_html__( 'Zeitzone und Datumsformat in WordPress ändern', 'workflow-captain' ) . '</a></p>';
+	}
+
+	/** Capabilities per role (WF-SET-08). Administrators always keep all of them. */
+	private function roles(): void {
+		$labels = array(
+			'view_workflow_logs'      => __( 'Läufe und Ereignisse ansehen', 'workflow-captain' ),
+			'edit_workflows'          => __( 'Workflows entwerfen', 'workflow-captain' ),
+			'activate_workflows'      => __( 'Workflows veröffentlichen und pausieren', 'workflow-captain' ),
+			'retry_workflow_runs'     => __( 'Wiederholen, fortsetzen, abbrechen', 'workflow-captain' ),
+			'manage_workflow_captain' => __( 'Einstellungen, Notfallpause, Diagnose', 'workflow-captain' ),
+		);
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_roles">';
+		wp_nonce_field( 'workflow_captain_roles' );
+		echo '<table class="widefat striped" style="max-width:900px"><thead><tr><th scope="col">' . esc_html__( 'Rolle', 'workflow-captain' ) . '</th>';
+		foreach ( $labels as $label ) {
+			echo '<th scope="col">' . esc_html( $label ) . '</th>';
+		}
+		echo '</tr></thead><tbody>';
+		foreach ( wp_roles()->role_objects as $key => $role ) {
+			$admin = 'administrator' === $key;
+			echo '<tr><th scope="row">' . esc_html( translate_user_role( wp_roles()->role_names[ $key ] ?? $key ) ) . '</th>';
+			foreach ( array_keys( $labels ) as $cap ) {
+				echo '<td><input type="checkbox" name="caps[' . esc_attr( $key ) . '][]" value="' . esc_attr( $cap ) . '"' . ( $role->has_cap( $cap ) ? ' checked' : '' ) . ( $admin ? ' disabled' : '' ) . ' aria-label="' . esc_attr( $cap ) . '"></td>';
+			}
+			echo '</tr>';
+		}
+		echo '</tbody></table><p class="description">' . esc_html__( 'Administratoren haben immer alle Rechte. Shop-Manager bekommen keine Rechte automatisch.', 'workflow-captain' ) . '</p>';
+		submit_button();
+		echo '</form>';
+	}
+
+	public function handle_roles(): void {
+		if ( ! current_user_can( 'manage_workflow_captain' ) || ! current_user_can( 'promote_users' ) ) {
+			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		check_admin_referer( 'workflow_captain_roles' );
+		$wanted = isset( $_POST['caps'] ) && is_array( $_POST['caps'] ) ? wp_unslash( $_POST['caps'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- keys and values checked against fixed lists below.
+		foreach ( wp_roles()->role_objects as $key => $role ) {
+			if ( 'administrator' === $key ) {
+				continue;
+			}
+			$given = array_intersect( (array) ( $wanted[ $key ] ?? array() ), Install::CAPS );
+			foreach ( Install::CAPS as $cap ) {
+				in_array( $cap, $given, true ) ? $role->add_cap( $cap ) : $role->remove_cap( $cap );
+			}
+		}
+		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'roles', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	private function status(): void {

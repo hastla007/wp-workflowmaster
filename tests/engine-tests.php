@@ -792,3 +792,11 @@ check( 'archive: archived workflow starts no new run', 1 === count( $e->store->f
 drain( $e );
 check( 'archive: the open run still finishes', EngineStore::RUN_SUCCEEDED === $e->store->find_runs( array( 'workflow_id' => $id ), 10, 0 )[0]['state'] );
 check( 'restore: published workflow comes back paused', $e->workflows->restore( $id ) && EngineStore::WF_PAUSED === $e->store->get_workflow( $id )['status'] );
+
+// ----- WF-SET-06: daily notice ---------------------------------------------------------------------------------
+
+use WorkflowCaptain\Notifications;
+check( 'notice: nothing open, no mail', null === Notifications::digest( array( 'runs' => array(), 'events' => array(), 'stuck' => array(), 'environment' => array() ), 'https://x/wp-admin/' ) );
+$mail = Notifications::digest( array( 'runs' => array( 'action_required' => 2 ), 'events' => array( 'dead_letter' => 1 ), 'stuck' => array(), 'environment' => array( 'emergency_pause' => true ) ), 'https://x/wp-admin/admin.php?page=workflow-captain' );
+check( 'notice: lists counts, pause and link, no event content', str_contains( $mail['message'], '- 2 Läufe brauchen eine Entscheidung' ) && str_contains( $mail['message'], '- 1 Ereignisse sind fehlgeschlagen' ) && str_contains( $mail['message'], 'Notfallpause' ) && str_contains( $mail['message'], 'page=workflow-captain' ) );
+check( 'settings: notify_daily is 0 or 1, default on', 1 === Settings::defaults()['notify_daily'] && 1 === Settings::sanitize( array( 'notify_daily' => 5 ) )['notify_daily'] && 0 === Settings::sanitize( array( 'notify_daily' => 0 ) )['notify_daily'] );
