@@ -290,6 +290,28 @@ final class WpdbEngineStore implements EngineStore {
 		return (int) $this->db->get_var( array() === $args ? $sql : $this->db->prepare( $sql, $args ) );
 	}
 
+	public function workflow_run_summary( array $workflow_ids, string $since ): array {
+		$ids = array_values( array_unique( array_filter( array_map( 'intval', $workflow_ids ) ) ) );
+		if ( array() === $ids ) {
+			return array();
+		}
+		$in   = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		$runs = $this->t( 'runs' );
+		$out  = array();
+		$last = $this->db->get_results( $this->db->prepare( "SELECT r.workflow_id, r.id, r.state, r.created_at FROM {$runs} r JOIN (SELECT workflow_id, MAX(id) AS m FROM {$runs} WHERE workflow_id IN ({$in}) GROUP BY workflow_id) x ON r.id = x.m", $ids ), ARRAY_A );
+		foreach ( (array) $last as $row ) {
+			$out[ (int) $row['workflow_id'] ] = array( 'last_run_id' => (int) $row['id'], 'last_state' => (string) $row['state'], 'last_at' => (string) $row['created_at'], 'errors' => 0 );
+		}
+		$args   = array_merge( $ids, array( self::RUN_FAILED, self::RUN_ACTION_REQUIRED, $since ) );
+		$errors = $this->db->get_results( $this->db->prepare( "SELECT workflow_id, COUNT(*) AS n FROM {$runs} WHERE workflow_id IN ({$in}) AND state IN (%s, %s) AND created_at >= %s GROUP BY workflow_id", $args ), ARRAY_A );
+		foreach ( (array) $errors as $row ) {
+			if ( isset( $out[ (int) $row['workflow_id'] ] ) ) {
+				$out[ (int) $row['workflow_id'] ]['errors'] = (int) $row['n'];
+			}
+		}
+		return $out;
+	}
+
 	/**
 	 * WHERE clause of find_runs() and count_runs(). A correlation ID that is no UUID matches nothing.
 	 *

@@ -993,8 +993,40 @@ check( 'WF-CORE-04 schedule: missed times fire at most once (only the latest)', 
 check( 'WF-CORE-04 schedule: 08:00 local stays 08:00 across the DST change', $ts( '2026-10-26 08:00' ) - $ts( '2026-10-24 08:00' ) === 2 * 86400 + 3600 && $ts( '2026-10-26 08:00' ) === Schedule::last_due( $daily, $ts( '2026-10-26 08:01' ), $ts( '2026-10-25 09:00' ), 'Europe/Berlin' ) );
 $gap = Schedule::last_due( array( 'frequency' => 'daily', 'time' => '02:30' ), $ts( '2026-03-29 12:00' ), $ts( '2026-03-28 12:00' ), 'Europe/Berlin' );
 check( 'WF-CORE-04 schedule: a time in the spring gap moves forward (02:30 → 03:30)', '03:30' === ( new DateTimeImmutable( '@' . $gap ) )->setTimezone( new DateTimeZone( 'Europe/Berlin' ) )->format( 'H:i' ) );
+$dup = Schedule::last_due( array( 'frequency' => 'daily', 'time' => '02:30' ), $ts( '2026-10-25 12:00' ), $ts( '2026-10-24 12:00' ), 'Europe/Berlin' );
+check( 'WF-CORE-04 schedule: a time in the repeated hour counts at its first occurrence (02:30 CEST, R-4.15)', gmmktime( 0, 30, 0, 10, 25, 2026 ) === $dup );
+check( 'WF-CORE-04 schedule: first occurrence west of UTC too (01:30 EDT in New York)', gmmktime( 5, 30, 0, 11, 1, 2026 ) === Schedule::local_time( '2026-11-01', 1, 30, new DateTimeZone( 'America/New_York' ) ) );
+check( 'WF-CORE-04 schedule: half-hour shift (Lord Howe) also takes the first occurrence (01:45 at +11:00)', gmmktime( 14, 45, 0, 4, 4, 2026 ) === Schedule::local_time( '2026-04-05', 1, 45, new DateTimeZone( 'Australia/Lord_Howe' ) ) );
 check( 'WF-CORE-04 schedule: weekly on Monday', $ts( '2026-11-16 08:00' ) === Schedule::last_due( array( 'frequency' => 'weekly', 'time' => '08:00', 'weekday' => 1 ), $ts( '2026-11-18 10:00' ), $ts( '2026-11-10 00:00' ), 'Europe/Berlin' ) );
 check( 'WF-CORE-04 schedule: monthly on the 1st', $ts( '2026-11-01 08:00' ) === Schedule::last_due( array( 'frequency' => 'monthly', 'time' => '08:00', 'day' => 1 ), $ts( '2026-11-18 10:00' ), $ts( '2026-10-15 00:00' ), 'Europe/Berlin' ) );
+
+// Preview of the next due times (docs/UI-ENTWUERFE.md, section 4). The same cases are in tests/builder.test.js, so the
+// JavaScript preview in the editor and the engine agree, daylight saving included.
+$preview_cases = array(
+	array( array( 'frequency' => 'daily', 'time' => '02:30' ), '2026-03-27T12:00:00Z', 'Europe/Berlin', array( '2026-03-28T01:30:00Z', '2026-03-29T01:30:00Z', '2026-03-30T00:30:00Z' ) ),
+	array( array( 'frequency' => 'daily', 'time' => '02:30' ), '2026-10-24T12:00:00Z', 'Europe/Berlin', array( '2026-10-25T00:30:00Z', '2026-10-26T01:30:00Z', '2026-10-27T01:30:00Z' ) ),
+	array( array( 'frequency' => 'weekly', 'time' => '07:30', 'weekday' => 1 ), '2026-11-16T08:00:00Z', 'Europe/Berlin', array( '2026-11-23T06:30:00Z', '2026-11-30T06:30:00Z', '2026-12-07T06:30:00Z' ) ),
+	array( array( 'frequency' => 'monthly', 'time' => '23:15', 'day' => 28 ), '2026-01-30T00:00:00Z', 'America/New_York', array( '2026-03-01T04:15:00Z', '2026-03-29T03:15:00Z', '2026-04-29T03:15:00Z' ) ),
+	array( array( 'frequency' => 'daily', 'time' => '02:30' ), '2026-03-07T12:00:00Z', 'America/New_York', array( '2026-03-08T07:30:00Z', '2026-03-09T06:30:00Z', '2026-03-10T06:30:00Z' ) ),
+	array( array( 'frequency' => 'daily', 'time' => '01:30' ), '2026-10-31T12:00:00Z', 'America/New_York', array( '2026-11-01T05:30:00Z', '2026-11-02T06:30:00Z', '2026-11-03T06:30:00Z' ) ),
+	array( array( 'frequency' => 'weekly', 'time' => '00:00', 'weekday' => 7 ), '2026-04-03T12:00:00Z', 'Australia/Sydney', array( '2026-04-04T13:00:00Z', '2026-04-11T14:00:00Z', '2026-04-18T14:00:00Z' ) ),
+	array( array( 'frequency' => 'daily', 'time' => '09:00' ), '2026-11-16T08:00:00Z', 'UTC', array( '2026-11-16T09:00:00Z', '2026-11-17T09:00:00Z', '2026-11-18T09:00:00Z' ) ),
+	array( array( 'frequency' => 'daily', 'time' => '09:00' ), '2026-11-16T08:00:00Z', '+05:30', array( '2026-11-17T03:30:00Z', '2026-11-18T03:30:00Z', '2026-11-19T03:30:00Z' ) ),
+	array( array( 'frequency' => 'weekly', 'time' => '07:30' ), '2026-11-16T08:00:00Z', 'Europe/Berlin', array() ),
+);
+foreach ( $preview_cases as list( $sched, $from, $zone, $want ) ) {
+	$got = Schedule::upcoming( $sched, strtotime( $from ), $zone, 3 );
+	check( 'WF-CORE-04 schedule preview ' . $zone . ' ' . json_encode( $sched ) . ' from ' . $from, $want === array_map( static fn( $t ) => gmdate( 'Y-m-d\TH:i:s\Z', $t ), $got ) );
+	// Each previewed time is exactly the time the engine fires at (last_due at that moment, after the previous one).
+	$prev = strtotime( $from );
+	foreach ( $got as $t ) {
+		if ( Schedule::last_due( $sched, $t, $prev, $zone ) !== $t ) {
+			check( 'WF-CORE-04 schedule preview matches last_due at ' . gmdate( 'c', $t ) . ' ' . $zone, false );
+		}
+		$prev = $t;
+	}
+}
+check( 'WF-CORE-04 schedule preview: count is honoured', 5 === count( Schedule::upcoming( array( 'frequency' => 'monthly', 'time' => '08:00', 'day' => 28 ), $ts( '2026-11-16 09:00' ), 'Europe/Berlin', 5 ) ) );
 
 $e  = engine_site();
 $e->registry->add_core( new \WorkflowCaptain\Providers\ScheduleAdapter() );

@@ -92,10 +92,11 @@ final class Plugin {
 			( new \WorkflowCaptain\Admin\SiteHealth( $this ) )->register();
 			( new \WorkflowCaptain\Admin\TemplatesPage( $this ) )->register();
 			// Narrow screens: wide data tables scroll inside their box, the page itself does not (E2E finding, 390px).
+			// Header rows (run page, editor) wrap instead of widening the page.
 			add_action(
 				'admin_head',
 				static function (): void {
-					echo '<style>@media (max-width:782px){body[class*="workflow-captain"] .wrap table.widefat,body[class*="workflow-captain"] .wrap table.form-table{display:block;max-width:100%;overflow-x:auto;position:relative}}</style>';
+					echo '<style>@media (max-width:782px){body[class*="workflow-captain"] .wrap table.widefat,body[class*="workflow-captain"] .wrap table.form-table{display:block;max-width:100%;overflow-x:auto;position:relative}}body[class*="workflow-captain"] .wfc-editor-head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}body[class*="workflow-captain"] .wfc-run-state-bad{color:#b32d2e;font-weight:600}</style>';
 				}
 			);
 			( new \WorkflowCaptain\Admin\HelpPage() )->register();

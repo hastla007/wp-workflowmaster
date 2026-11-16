@@ -5,14 +5,17 @@
  * list, and writes it back on every change. The server validates on save and publish (src/Engine/Graph.php), so this
  * file only helps editing; it decides nothing.
  *
- * No build step, no dependencies. Data from PHP: window.workflowCaptainBuilder = { actions: [{key,label,fields}], events: [], i18n: {} }.
+ * No build step, no dependencies. Data from PHP: window.workflowCaptainBuilder = { actions: [{key,label,fields}], events: [], i18n: {} }
+ * and optionally sources (origin of events and actions), timezone and locale (schedule preview), focusNode (jump from
+ * a run step to its node).
  */
 ( function () {
 	'use strict';
 
 	const NS = 'http://www.w3.org/2000/svg';
 	const W = 180;
-	const H = 56;
+	const H = 64;
+	const WEEKDAYS = [ 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag' ];
 
 	function el( tag, attrs, children ) {
 		const node = document.createElement( tag );
@@ -29,10 +32,78 @@
 		return node;
 	}
 
+	let uid = 0;
+
+	/** Paragraph with a label tied to its control (for/id), so screen readers name every field. */
+	function labelled( text, input ) {
+		if ( ! input.id ) {
+			uid++;
+			input.id = 'wfc-f' + uid;
+		}
+		return el( 'p', {}, [ el( 'label', { for: input.id, text } ), el( 'br' ), input ] );
+	}
+
 	function svg( tag, attrs ) {
 		const node = document.createElementNS( NS, tag );
 		Object.entries( attrs || {} ).forEach( ( [ k, v ] ) => node.setAttribute( k, v ) );
 		return node;
+	}
+
+	const offsetFormats = {};
+
+	/** Offset of a time zone at an instant in ms (local minus UTC); fixed offsets like "+05:30" work without Intl. */
+	function tzOffset( tz, t ) {
+		const fixed = /^([+-])(\d{2}):?(\d{2})$/.exec( tz || '' );
+		if ( fixed ) {
+			return ( '-' === fixed[ 1 ] ? -1 : 1 ) * ( parseInt( fixed[ 2 ], 10 ) * 60 + parseInt( fixed[ 3 ], 10 ) ) * 60000;
+		}
+		if ( ! offsetFormats[ tz ] ) {
+			offsetFormats[ tz ] = new Intl.DateTimeFormat( 'en-US', { timeZone: tz || 'UTC', hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' } );
+		}
+		const p = {};
+		offsetFormats[ tz ].formatToParts( new Date( t ) ).forEach( ( x ) => {
+			p[ x.type ] = x.value;
+		} );
+		return Date.UTC( +p.year, p.month - 1, +p.day, +p.hour % 24, +p.minute, +p.second ) - Math.floor( t / 1000 ) * 1000;
+	}
+
+	/**
+	 * UTC instant of a local wall time, resolved like Schedule::local_time() in PHP (konzept 15.3, R-4.15): a time in
+	 * the spring-forward gap moves forward by the gap; in the repeated hour the first occurrence counts. Checked against
+	 * PHP for every quarter hour around the transitions of several zones.
+	 */
+	function localToUtc( tz, y, mo, d, h, mi ) {
+		const guess = Date.UTC( y, mo - 1, d, h, mi );
+		const before = tzOffset( tz, guess - 86400000 );
+		const after = tzOffset( tz, guess + 86400000 );
+		const valid = [ before, after ].map( ( o ) => guess - o ).filter( ( t ) => tzOffset( tz, t ) === guess - t );
+		return valid.length ? Math.min( ...valid ) : guess - Math.min( before, after );
+	}
+
+	/** Next due times (ms) strictly after now, like Schedule::upcoming() in PHP (docs/UI-ENTWUERFE.md, section 4). */
+	function upcoming( schedule, now, tz, count ) {
+		const s = schedule || {};
+		const m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec( s.time || '' );
+		if ( ! m || ! [ 'daily', 'weekly', 'monthly' ].includes( s.frequency ) || ( 'weekly' === s.frequency && ! ( s.weekday >= 1 && s.weekday <= 7 ) ) || ( 'monthly' === s.frequency && ! ( s.day >= 1 && s.day <= 28 ) ) ) {
+			return [];
+		}
+		const local = new Date( now + tzOffset( tz, now ) );
+		const out = [];
+		count = count || 3;
+		for ( let i = 0; i <= 31 * count + 1 && out.length < count; i++ ) {
+			const day = new Date( Date.UTC( local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() + i ) );
+			if ( 'weekly' === s.frequency && ( ( day.getUTCDay() + 6 ) % 7 ) + 1 !== s.weekday ) {
+				continue;
+			}
+			if ( 'monthly' === s.frequency && day.getUTCDate() !== s.day ) {
+				continue;
+			}
+			const t = localToUtc( tz, day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate(), parseInt( m[ 1 ], 10 ), parseInt( m[ 2 ], 10 ) );
+			if ( t > now ) {
+				out.push( t );
+			}
+		}
+		return out;
 	}
 
 	class Builder {
@@ -47,7 +118,91 @@
 			this.history = [];
 			this.future = [];
 			this.read();
+			this.focusNode = this.config.focusNode || null;
+			if ( this.focusNode && this.node( this.focusNode ) ) {
+				this.selected = this.focusNode;
+			}
 			this.render();
+			this.showFocus();
+		}
+
+		/** Jump from a run step (focusNode): scroll the node into view and say so (docs/UI-ENTWUERFE.md, section 5). */
+		showFocus() {
+			if ( ! this.focusNode ) {
+				return;
+			}
+			if ( ! this.node( this.focusNode ) ) {
+				this.announce( this.t( 'focusMissing', 'Der Knoten aus dem Lauf ist im Entwurf nicht mehr vorhanden:' ) + ' ' + this.focusNode );
+				return;
+			}
+			const g = this.root.querySelector( '.wfc-node[data-id="' + this.focusNode + '"]' );
+			if ( g && g.scrollIntoView ) {
+				g.scrollIntoView( { block: 'center', inline: 'center' } );
+			}
+			this.announce( this.t( 'focusShown', 'Knoten aus dem Lauf markiert:' ) + ' ' + this.label( this.node( this.focusNode ) ) );
+		}
+
+		/** Product of an event type or action key and its label, plugin and contract version (from PHP). */
+		origin( n ) {
+			const src = this.config.sources || {};
+			let product = null;
+			if ( 'trigger' === n.type ) {
+				product = ( src.events || {} )[ n.event ] || null;
+			} else if ( 'action' === n.type ) {
+				product = ( src.actions || {} )[ n.action ] || null;
+			}
+			if ( ! product ) {
+				return null;
+			}
+			const info = ( src.products || {} )[ product ] || {};
+			return { product, label: info.label || product, version: info.version || null, contract: info.contract || null };
+		}
+
+		/** Small heading of a node: origin and kind, e.g. "WOOCOMMERCE · AUSLÖSER". */
+		kicker( n ) {
+			const kinds = { trigger: this.t( 'trigger', 'Auslöser' ), action: this.t( 'action', 'Aktion' ), condition: this.t( 'condition', 'Wenn/Sonst' ), delay: this.t( 'delay', 'Warten' ), end: this.t( 'end', 'Ende' ) };
+			const o = this.origin( n );
+			return ( ( o ? o.label + ' · ' : '' ) + ( kinds[ n.type ] || n.type ) ).toLocaleUpperCase();
+		}
+
+		/** Accessible name of a node: label, short description and origin. */
+		ariaLabel( n ) {
+			const summary = this.summary( n );
+			const o = this.origin( n );
+			return this.label( n ) + ( summary ? ', ' + summary : '' ) + ( o ? ' (' + o.label + ')' : '' ) + ( this.focusNode === n.id ? ', ' + this.t( 'fromRun', 'aus dem Lauf' ) : '' );
+		}
+
+		/** Readable short description of a node instead of its ID (docs/UI-ENTWUERFE.md, section 2). */
+		summary( n ) {
+			if ( 'trigger' === n.type ) {
+				if ( 'workflow.schedule.due' === n.event && n.schedule ) {
+					const s = n.schedule;
+					const freq = { daily: this.t( 'daily', 'täglich' ), weekly: this.t( 'weekly', 'wöchentlich' ), monthly: this.t( 'monthly', 'monatlich' ) }[ s.frequency ] || '';
+					const when = 'weekly' === s.frequency ? ' ' + this.t( 'weekday' + s.weekday, WEEKDAYS[ ( s.weekday || 1 ) - 1 ] ) : ( 'monthly' === s.frequency ? ' ' + this.t( 'dayShort', 'am' ) + ' ' + s.day + '.' : '' );
+					return freq + when + ' ' + ( s.time || '' );
+				}
+				const serial = { subject: this.t( 'serialSubject', 'je Objekt nacheinander' ), actor: this.t( 'serialActor', 'je Benutzer nacheinander' ) };
+				return serial[ n.serialize ] || '';
+			}
+			if ( 'action' === n.type ) {
+				const c = n.config || {};
+				const text = [ 'subject', 'tag', 'text', 'message' ].map( ( k ) => c[ k ] ).find( ( v ) => 'string' === typeof v && '' !== v.trim() );
+				return text ? text.replace( /\s+/g, ' ' ).trim() : '';
+			}
+			if ( 'condition' === n.type ) {
+				const items = ( n.rules && Array.isArray( n.rules.items ) ) ? n.rules.items : [];
+				const r = items[ 0 ];
+				if ( ! r ) {
+					return '';
+				}
+				if ( r.op ) {
+					return this.t( 'ruleGroups', 'Regelgruppen' );
+				}
+				const op = { eq: '=', neq: '≠', gt: '>', gte: '≥', lt: '<', lte: '≤', in: '∈', not_in: '∉', contains: '∋', exists: this.t( 'opExists', 'vorhanden' ), not_exists: this.t( 'opMissing', 'fehlt' ) }[ r.operator ] || r.operator;
+				const value = [ 'exists', 'not_exists' ].includes( r.operator ) ? '' : ' ' + ( Array.isArray( r.value ) ? r.value.join( ', ' ) : String( undefined === r.value ? '' : r.value ) );
+				return String( r.field || '' ).replace( /^data\./, '' ) + ' ' + op + value + ( items.length > 1 ? ' (+' + ( items.length - 1 ) + ')' : '' );
+			}
+			return '';
 		}
 
 		read() {
@@ -290,24 +445,32 @@
 
 			this.graph.nodes.forEach( ( n ) => {
 				const unavailable = ( 'trigger' === n.type && this.config.events.length && ! this.config.events.includes( n.event ) ) || ( 'action' === n.type && ! this.config.actions.some( ( x ) => x.key === n.action ) );
-				const state = ( ( this.config.path || [] ).includes( n.id ) ? ' is-path' : '' ) + ( this.config.errorNode === n.id ? ' is-error' : '' ) + ( unavailable ? ' is-unavailable' : '' );
-				const g = svg( 'g', { class: 'wfc-node wfc-node-' + n.type + state + ( this.selected === n.id ? ' is-selected' : '' ), transform: `translate(${ n.x },${ n.y })`, tabindex: '0', role: 'button', 'aria-label': this.label( n ), 'data-id': n.id } );
+				const state = ( ( this.config.path || [] ).includes( n.id ) ? ' is-path' : '' ) + ( this.config.errorNode === n.id ? ' is-error' : '' ) + ( unavailable ? ' is-unavailable' : '' ) + ( this.focusNode === n.id ? ' is-focus' : '' );
+				const g = svg( 'g', { class: 'wfc-node wfc-node-' + n.type + state + ( this.selected === n.id ? ' is-selected' : '' ), transform: `translate(${ n.x },${ n.y })`, tabindex: '0', role: 'button', 'aria-label': this.ariaLabel( n ), 'data-id': n.id } );
 				g.appendChild( svg( 'rect', { width: W, height: H, rx: 'end' === n.type || 'trigger' === n.type ? 28 : 6 } ) );
 				if ( unavailable ) {
 					const warn = svg( 'text', { x: W - 22, y: 22, class: 'wfc-node-warn' } );
 					warn.textContent = '!';
 					g.appendChild( warn );
 				}
-				const title = svg( 'text', { x: 12, y: 24, class: 'wfc-node-title' } );
-				const full = this.label( n );
-				title.textContent = full.length > 22 ? full.slice( 0, 21 ) + '…' : full;
+				const cut = ( text, max ) => ( text.length > max ? text.slice( 0, max - 1 ) + '…' : text );
+				const kicker = svg( 'text', { x: 12, y: 17, class: 'wfc-node-kicker' } );
+				kicker.textContent = cut( this.kicker( n ), 28 );
+				g.appendChild( kicker );
+				const title = svg( 'text', { x: 12, y: 36, class: 'wfc-node-title' } );
+				const full = 'trigger' === n.type ? ( n.event || '?' ) : this.label( n );
+				title.textContent = cut( full, 22 );
 				g.appendChild( title );
+				const summary = this.summary( n );
+				const o = this.origin( n );
 				const tip = svg( 'title' );
-				tip.textContent = full;
+				tip.textContent = [ this.kicker( n ), this.label( n ), summary, o && o.contract ? this.t( 'contract', 'Vertrag' ) + ' ' + o.contract : '', 'ID: ' + n.id ].filter( ( x ) => x ).join( '\n' );
 				g.appendChild( tip );
-				const sub = svg( 'text', { x: 12, y: 42, class: 'wfc-node-id' } );
-				sub.textContent = n.id;
-				g.appendChild( sub );
+				if ( summary ) {
+					const sub = svg( 'text', { x: 12, y: 54, class: 'wfc-node-sub' } );
+					sub.textContent = cut( summary, 28 );
+					g.appendChild( sub );
+				}
 				g.addEventListener( 'mousedown', ( ev ) => this.startDrag( ev, n ) );
 				g.addEventListener( 'click', () => this.clickNode( n.id ) );
 				g.addEventListener( 'keydown', ( ev ) => this.keyNode( ev, n ) );
@@ -426,6 +589,61 @@
 			}, [ el( 'option', { value: '', text: this.t( 'insertToken', 'Platzhalter einfügen …' ) } ) ].concat( tokens.map( ( tk ) => el( 'option', { value: tk, text: '{{' + tk + '}}' } ) ) ) );
 		}
 
+		/**
+		 * Field of a rule as a list (docs/UI-ENTWUERFE.md, section 3): envelope fields and the catalog fields of the
+		 * trigger event with their data type. "Anderes Feld …" switches to a text field for a path outside the catalog.
+		 */
+		fieldPicker( n, i, r, fields, envelopeFields, types, save ) {
+			const key = n.id + ':' + i;
+			const current = r.field || '';
+			if ( this.customFields[ key ] ) {
+				return el( 'input', { type: 'text', class: 'wfc-rule-field', value: current, 'aria-label': this.t( 'fieldCustom', 'Feld (eigener Pfad, z. B. data.feld)' ), onchange: ( ev ) => { r.field = ev.target.value.trim(); delete this.customFields[ key ]; save(); } } );
+			}
+			const option = ( f ) => el( 'option', { value: f, text: f.startsWith( 'data.' ) && types[ f.slice( 5 ) ] ? f.slice( 5 ) + ' · ' + types[ f.slice( 5 ) ] : f, selected: f === current } );
+			const options = [];
+			if ( ! current ) {
+				options.push( el( 'option', { value: '', text: '—', selected: true } ) );
+			} else if ( ! fields.includes( current ) ) {
+				options.push( el( 'option', { value: current, text: current + ' ' + this.t( 'notInCatalog', '(nicht im Katalog)' ), selected: true } ) );
+			}
+			options.push( el( 'optgroup', { label: this.t( 'fieldsEnvelope', 'Ereignis' ) }, envelopeFields.map( option ) ) );
+			const data = fields.filter( ( f ) => f.startsWith( 'data.' ) );
+			if ( data.length ) {
+				options.push( el( 'optgroup', { label: this.t( 'fieldsData', 'Daten des Ereignisses' ) }, data.map( option ) ) );
+			}
+			options.push( el( 'option', { value: '__custom', text: this.t( 'fieldOther', 'Anderes Feld …' ) } ) );
+			return el( 'select', {
+				class: 'wfc-rule-field',
+				'aria-label': this.t( 'field', 'Feld' ),
+				onchange: ( ev ) => {
+					if ( '__custom' === ev.target.value ) {
+						this.customFields[ key ] = true;
+						this.render();
+						const row = this.root.querySelectorAll( '.wfc-rule' )[ i ];
+						if ( row && row.querySelector( '.wfc-rule-field' ) ) {
+							row.querySelector( '.wfc-rule-field' ).focus();
+						}
+						return;
+					}
+					r.field = ev.target.value;
+					save();
+				},
+			}, options );
+		}
+
+		/** Value of a field path in the sample event of the test run (#wfc-sample), as an example; undefined if none. */
+		sampleValue( path ) {
+			const box = document.getElementById( 'wfc-sample' );
+			if ( ! box || ! path ) {
+				return undefined;
+			}
+			try {
+				return String( path ).split( '.' ).reduce( ( o, k ) => ( o && 'object' === typeof o ? o[ k ] : undefined ), JSON.parse( box.value || '{}' ) );
+			} catch ( e ) {
+				return undefined;
+			}
+		}
+
 		/** Condition as a form (one level of rules); groups fall back to JSON. */
 		conditionForm( n ) {
 			const box = el( 'div', { class: 'wfc-rules' } );
@@ -434,10 +652,11 @@
 			if ( ! simple ) {
 				return null;
 			}
-			const fields = [ 'type', 'subject.type', 'subject.id', 'subject.id_kind', 'source.product', 'actor_user_id' ].concat( this.dataFields().map( ( f ) => 'data.' + f ) );
+			const envelopeFields = [ 'type', 'subject.type', 'subject.id', 'subject.id_kind', 'source.product', 'actor_user_id' ];
+			const fields = envelopeFields.concat( this.dataFields().map( ( f ) => 'data.' + f ) );
 			const types = this.dataTypes();
-			box.appendChild( el( 'datalist', { id: 'wfc-fields' }, fields.map( ( f ) => el( 'option', { value: f, label: f.startsWith( 'data.' ) && types[ f.slice( 5 ) ] ? types[ f.slice( 5 ) ] : null } ) ) ) );
-			box.appendChild( el( 'p', {}, [ el( 'label', { text: this.t( 'combine', 'Verknüpfung' ) + ' ' } ), el( 'select', { class: 'wfc-op', onchange: ( ev ) => { rules.op = ev.target.value; n.rules = rules; this.commit(); } }, [ [ 'and', 'alle Regeln (UND)' ], [ 'or', 'eine Regel (ODER)' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: rules.op === v } ) ) ) ] ) );
+			this.customFields = this.customFields || {};
+			box.appendChild( labelled( this.t( 'combine', 'Verknüpfung' ), el( 'select', { class: 'wfc-op', onchange: ( ev ) => { rules.op = ev.target.value; n.rules = rules; this.commit(); } }, [ [ 'and', 'alle Regeln (UND)' ], [ 'or', 'eine Regel (ODER)' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: rules.op === v } ) ) ) ) );
 			const ops = [ [ 'eq', '=' ], [ 'neq', '≠' ], [ 'gt', '>' ], [ 'gte', '≥' ], [ 'lt', '<' ], [ 'lte', '≤' ], [ 'in', 'in Liste' ], [ 'not_in', 'nicht in Liste' ], [ 'contains', 'enthält' ], [ 'exists', 'vorhanden' ], [ 'not_exists', 'fehlt' ] ];
 			const parse = ( op, raw ) => {
 				if ( [ 'in', 'not_in' ].includes( op ) ) {
@@ -454,10 +673,14 @@
 			const show = ( v ) => ( Array.isArray( v ) ? v.join( ', ' ) : ( undefined === v || null === v ? '' : String( v ) ) );
 			rules.items.forEach( ( r, i ) => {
 				const row = el( 'div', { class: 'wfc-rule' } );
-				row.appendChild( el( 'input', { type: 'text', class: 'wfc-rule-field', list: 'wfc-fields', value: r.field || '', 'aria-label': this.t( 'field', 'Feld' ), onchange: ( ev ) => { r.field = ev.target.value.trim(); n.rules = rules; this.commit(); } } ) );
+				row.appendChild( this.fieldPicker( n, i, r, fields, envelopeFields, types, () => { n.rules = rules; this.commit(); } ) );
 				const dtype = ( r.field || '' ).startsWith( 'data.' ) ? types[ r.field.slice( 5 ) ] : '';
 				if ( dtype ) {
 					row.appendChild( el( 'span', { class: 'wfc-rule-type', text: dtype } ) );
+				}
+				const example = this.sampleValue( r.field );
+				if ( undefined !== example ) {
+					row.appendChild( el( 'span', { class: 'wfc-rule-example description', text: this.t( 'example', 'Beispiel:' ) + ' ' + ( 'object' === typeof example ? JSON.stringify( example ) : String( example ) ) } ) );
 				}
 				row.appendChild( el( 'select', { class: 'wfc-rule-op', 'aria-label': this.t( 'operator', 'Operator' ), onchange: ( ev ) => { r.operator = ev.target.value; r.value = parse( r.operator, show( r.value ) ); n.rules = rules; this.commit(); } }, ops.map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: r.operator === v } ) ) ) );
 				if ( ! [ 'exists', 'not_exists' ].includes( r.operator ) ) {
@@ -498,7 +721,7 @@
 		scheduleForm( n ) {
 			n.schedule = n.schedule || { frequency: 'daily', time: '08:00' };
 			const s = n.schedule;
-			const box = el( 'fieldset', { class: 'wfc-schedule' }, [ el( 'legend', { text: this.t( 'schedule', 'Zeitplan (Zeitzone der Website)' ) } ) ] );
+			const box = el( 'fieldset', { class: 'wfc-schedule' }, [ el( 'legend', { text: this.t( 'schedule', 'Zeitplan (Zeitzone der Website)' ) + ( this.config.timezone ? ': ' + this.config.timezone : '' ) } ) ] );
 			const update = ( key, value ) => {
 				s[ key ] = value;
 				if ( 'weekly' !== s.frequency ) {
@@ -512,17 +735,48 @@
 					s.day = 1;
 				}
 				this.commit();
+				const next = upcoming( s, Date.now(), this.config.timezone || 'UTC', 1 );
+				if ( next.length ) {
+					this.announce( this.t( 'nextDue', 'Nächster Termin:' ) + ' ' + this.formatTime( next[ 0 ] ) );
+				}
 			};
-			const label = ( text, input ) => el( 'p', {}, [ el( 'label', { text } ), el( 'br' ), input ] );
+			const label = labelled;
 			box.appendChild( label( this.t( 'frequency', 'Wiederholung' ), el( 'select', { class: 'wfc-schedule-frequency', onchange: ( ev ) => update( 'frequency', ev.target.value ) }, [ [ 'daily', 'täglich' ], [ 'weekly', 'wöchentlich' ], [ 'monthly', 'monatlich' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: s.frequency === v } ) ) ) ) );
 			box.appendChild( label( this.t( 'time', 'Uhrzeit' ), el( 'input', { type: 'time', class: 'wfc-schedule-time', value: s.time || '08:00', onchange: ( ev ) => update( 'time', ev.target.value ) } ) ) );
 			if ( 'weekly' === s.frequency ) {
-				box.appendChild( label( this.t( 'weekday', 'Wochentag' ), el( 'select', { class: 'wfc-schedule-weekday', onchange: ( ev ) => update( 'weekday', parseInt( ev.target.value, 10 ) ) }, [ 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag' ].map( ( d, i ) => el( 'option', { value: i + 1, text: d, selected: s.weekday === i + 1 } ) ) ) ) );
+				box.appendChild( label( this.t( 'weekday', 'Wochentag' ), el( 'select', { class: 'wfc-schedule-weekday', onchange: ( ev ) => update( 'weekday', parseInt( ev.target.value, 10 ) ) }, WEEKDAYS.map( ( d, i ) => el( 'option', { value: i + 1, text: this.t( 'weekday' + ( i + 1 ), d ), selected: s.weekday === i + 1 } ) ) ) ) );
 			}
 			if ( 'monthly' === s.frequency ) {
 				box.appendChild( label( this.t( 'day', 'Tag im Monat (1 bis 28)' ), el( 'input', { type: 'number', min: 1, max: 28, class: 'wfc-schedule-day', value: s.day || 1, onchange: ( ev ) => update( 'day', Math.min( 28, Math.max( 1, parseInt( ev.target.value, 10 ) || 1 ) ) ) } ) ) );
 			}
+			box.appendChild( this.schedulePreview( s ) );
 			box.appendChild( el( 'p', { class: 'description', text: this.t( 'scheduleHint', 'Ein verpasster Termin wird höchstens einmal nachgeholt. In der Sommerzeitlücke verschiebt sich die Uhrzeit nach hinten.' ) } ) );
+			return box;
+		}
+
+		/** Wall time of an instant in the site time zone, e.g. "Mo., 23.11.2026, 07:30". */
+		formatTime( t ) {
+			const tz = this.config.timezone || 'UTC';
+			const opts = { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+			const locale = this.config.locale || document.documentElement.lang || undefined;
+			try {
+				return new Intl.DateTimeFormat( locale, Object.assign( { timeZone: tz }, opts ) ).format( new Date( t ) );
+			} catch ( e ) {
+				// Fixed offsets ("+05:30") that Intl does not know: shift and format as UTC.
+				return new Intl.DateTimeFormat( locale, Object.assign( { timeZone: 'UTC' }, opts ) ).format( new Date( t + tzOffset( tz, t ) ) );
+			}
+		}
+
+		/** Next three due times of the schedule (WF-CORE-04), with the same daylight saving rules as the engine. */
+		schedulePreview( s ) {
+			const times = upcoming( s, Date.now(), this.config.timezone || 'UTC', 3 );
+			const box = el( 'div', { class: 'wfc-schedule-preview' } );
+			box.appendChild( el( 'p', { id: 'wfc-next-label', text: this.t( 'nextDues', 'Nächste Termine (Zeitzone der Website):' ) } ) );
+			if ( ! times.length ) {
+				box.appendChild( el( 'p', { class: 'description', text: this.t( 'nextNone', 'Keine Termine: Der Zeitplan ist unvollständig.' ) } ) );
+				return box;
+			}
+			box.appendChild( el( 'ul', { class: 'wfc-next', 'aria-labelledby': 'wfc-next-label' }, times.map( ( t ) => el( 'li', {}, [ el( 'time', { datetime: new Date( t ).toISOString().replace( '.000Z', 'Z' ), text: this.formatTime( t ) } ) ] ) ) ) );
 			return box;
 		}
 
@@ -543,7 +797,7 @@
 					this.commit();
 				},
 			}, options.map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: ( n.serialize || '' ) === v } ) ) );
-			const box = el( 'p', {}, [ el( 'label', { text: this.t( 'serialize', 'Läufe nacheinander' ) } ), el( 'br' ), select ] );
+			const box = labelled( this.t( 'serialize', 'Läufe nacheinander' ), select );
 			if ( n.serialize ) {
 				box.appendChild( el( 'span', { class: 'description wfc-serialize-hint', text: ' ' + this.t( 'serializeHint', 'Für denselben Schlüssel wartet ein neuer Lauf, bis der ältere fertig ist. Über verschiedene Objekte oder Benutzer hinweg gibt es keine Reihenfolge.' ) } ) );
 			}
@@ -559,7 +813,16 @@
 				return box;
 			}
 			box.appendChild( el( 'h3', { text: this.label( n ) } ) );
-			const field = ( label, input ) => el( 'p', {}, [ el( 'label', { text: label } ), el( 'br' ), input ] );
+			const o = this.origin( n );
+			const facts = [ this.t( 'nodeId', 'ID' ) + ': ' + n.id ];
+			if ( o ) {
+				facts.unshift( this.t( 'origin', 'Herkunft' ) + ': ' + o.label + ( o.version ? ' ' + o.version : '' ) + ( o.contract ? ', ' + this.t( 'contract', 'Vertrag' ) + ' ' + o.contract : '' ) );
+			}
+			box.appendChild( el( 'p', { class: 'description wfc-origin', text: facts.join( ' · ' ) } ) );
+			if ( this.focusNode === n.id ) {
+				box.appendChild( el( 'p', { class: 'notice notice-info inline wfc-focus-note', text: this.t( 'focusNote', 'Dieser Knoten ist der Schritt aus dem Lauf. Der Lauf nutzte die veröffentlichte Version; der Entwurf kann abweichen.' ) } ) );
+			}
+			const field = labelled;
 			const set = ( key, value, target ) => {
 				( target || n )[ key ] = value;
 				this.commit();
@@ -626,6 +889,11 @@
 					el( 'button', { type: 'button', class: 'button', text: this.t( 'connectThen', 'Dann verbinden …' ), onclick: () => { this.connectFrom = n.id; this.connectBranch = 'then'; this.announce( this.t( 'connectHint', 'Ziel wählen.' ) ); } } ),
 					el( 'button', { type: 'button', class: 'button', text: this.t( 'connectElse', 'Sonst verbinden …' ), onclick: () => { this.connectFrom = n.id; this.connectBranch = 'else'; this.announce( this.t( 'connectHint', 'Ziel wählen.' ) ); } } ),
 				] ) );
+				[ [ 'then', this.t( 'thenOpen', 'Der Dann-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) ], [ 'else', this.t( 'elseOpen', 'Der Sonst-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) ] ].forEach( ( [ branch, text ] ) => {
+					if ( ! this.graph.edges.some( ( e ) => e.from === n.id && branch === e.branch ) ) {
+						box.appendChild( el( 'p', { class: 'notice notice-warning inline wfc-branch-open', text } ) );
+					}
+				} );
 			} else if ( 'delay' === n.type ) {
 				box.appendChild( field( this.t( 'amount', 'Dauer' ), el( 'input', { type: 'number', min: 1, max: 1000, value: n.amount || 1, onchange: ( ev ) => set( 'amount', parseInt( ev.target.value, 10 ) || 1 ) } ) ) );
 				box.appendChild( field( this.t( 'unit', 'Einheit' ), el( 'select', { onchange: ( ev ) => set( 'unit', ev.target.value ) }, [ [ 'minutes', 'Minuten' ], [ 'hours', 'Stunden' ], [ 'days', 'Tage (Kalendertage)' ], [ 'weeks', 'Wochen' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: n.unit === v } ) ) ) ) );
@@ -650,16 +918,19 @@
 				if ( ! n ) {
 					return;
 				}
-				ol.appendChild( el( 'li', {}, [ el( 'button', { type: 'button', class: 'button-link', text: prefix + this.label( n ), onclick: () => this.clickNode( id ) } ) ] ) );
+				const focus = this.focusNode === id;
+				ol.appendChild( el( 'li', { class: focus ? 'is-focus' : null, 'aria-current': focus ? 'step' : null }, [ el( 'button', { type: 'button', class: 'button-link', text: prefix + this.label( n ) + ( focus ? ' (' + this.t( 'fromRun', 'aus dem Lauf' ) + ')' : '' ), onclick: () => this.clickNode( id ) } ) ] ) );
 				this.graph.edges.filter( ( e ) => e.from === id ).forEach( ( e ) => walk( e.to, e.branch ? ( 'then' === e.branch ? this.t( 'then', 'Dann' ) : this.t( 'else', 'Sonst' ) ) + ': ' : '' ) );
 			};
 			const trigger = this.graph.nodes.find( ( n ) => 'trigger' === n.type );
 			walk( trigger && trigger.id, '' );
 			this.graph.nodes.filter( ( n ) => ! seen.has( n.id ) ).forEach( ( n ) => ol.appendChild( el( 'li', { class: 'wfc-unconnected' }, [ el( 'button', { type: 'button', class: 'button-link', text: this.t( 'unconnected', 'Nicht verbunden' ) + ': ' + this.label( n ), onclick: () => this.clickNode( n.id ) } ) ] ) ) );
-			return el( 'details', { class: 'wfc-linear-wrap' }, [ el( 'summary', { text: this.t( 'linear', 'Schritte der Reihe nach' ) } ), ol ] );
+			const narrow = window.matchMedia && window.matchMedia( '(max-width: 782px)' ).matches;
+			return el( 'details', { class: 'wfc-linear-wrap', open: this.focusNode && this.node( this.focusNode ) && narrow ? true : null }, [ el( 'summary', { text: this.t( 'linear', 'Schritte der Reihe nach' ) } ), ol ] );
 		}
 	}
 
+	Builder.upcoming = upcoming;
 	window.WorkflowCaptainBuilder = Builder;
 	document.addEventListener( 'DOMContentLoaded', () => {
 		const textarea = document.getElementById( 'wfc-graph' );

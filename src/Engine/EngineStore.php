@@ -142,6 +142,15 @@ interface EngineStore {
 	 */
 	public function count_runs( array $filter ): int;
 
+	/**
+	 * Last run and number of runs in failed or action_required since $since, per workflow (workflow list,
+	 * docs/UI-ENTWUERFE.md, section 1). Workflows without runs have no entry.
+	 *
+	 * @param int[] $workflow_ids
+	 * @return array<int,array{last_run_id:int,last_state:string,last_at:string,errors:int}>
+	 */
+	public function workflow_run_summary( array $workflow_ids, string $since ): array;
+
 	/** Creates the step for a node of a run unless it exists (key unique, R-8.4). Returns the step ID. */
 	public function ensure_step( int $run_id, string $node_id, string $key, string $due_at, string $now ): int;
 

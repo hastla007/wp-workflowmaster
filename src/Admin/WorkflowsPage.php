@@ -21,6 +21,7 @@ final class WorkflowsPage {
 	const SLUG_WORKFLOWS = 'workflow-captain-workflows';
 	const SLUG_RUNS      = 'workflow-captain-runs';
 	const PER_PAGE       = 50;
+	const ERROR_DAYS     = 30;
 
 	public function __construct( private Plugin $plugin ) {}
 
@@ -31,6 +32,12 @@ final class WorkflowsPage {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		add_action( 'admin_post_workflow_captain_export', array( $this, 'handle_export' ) );
 		add_action( 'admin_post_workflow_captain_import', array( $this, 'handle_import' ) );
+		add_action( 'admin_post_workflow_captain_run_export', array( $this, 'handle_run_export' ) );
+	}
+
+	/** Origin of event types and actions for the builder and the editor header (docs/UI-ENTWUERFE.md, section 2). */
+	private function sources(): array {
+		return Provenance::sources( $this->plugin->adapters(), array_keys( $this->plugin->engine()->actions()->all() ), array_keys( $this->plugin->connectors()->all() ) );
 	}
 
 	public function menu(): void {
@@ -68,7 +75,74 @@ final class WorkflowsPage {
 		// Fields of enabled own connectors, from their manifests, in the same format (WF-CONNECTOR-10).
 		$fields = array_merge( is_array( $fields ) ? $fields : array(), $this->plugin->connectors()->builder_fields(), \WorkflowCaptain\Engine\InboundTriggers::builder_fields() );
 		$mails  = json_decode( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'assets/data/core-mails.json' ), true );
-		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( array( 'actions' => $actions, 'events' => array_values( array_unique( $events ) ), 'fields' => array() !== $fields ? $fields : new \stdClass(), 'coreMails' => is_array( $mails ) && is_array( $mails['events'] ?? null ) ? $mails['events'] : new \stdClass(), 'path' => $path, 'errorNode' => is_array( $dry ) ? $dry['result']['error_node'] : null, 'i18n' => new \stdClass() ) ) . ';', 'before' );
+		// Jump from a run step to its node (docs/UI-ENTWUERFE.md, section 5); node IDs as Graph allows them.
+		$node   = isset( $_GET['node'] ) ? (string) wp_unslash( $_GET['node'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- display only, checked against the pattern below.
+		$config = array(
+			'actions'   => $actions,
+			'events'    => array_values( array_unique( $events ) ),
+			'fields'    => array() !== $fields ? $fields : new \stdClass(),
+			'coreMails' => is_array( $mails ) && is_array( $mails['events'] ?? null ) ? $mails['events'] : new \stdClass(),
+			'path'      => $path,
+			'errorNode' => is_array( $dry ) ? $dry['result']['error_node'] : null,
+			'sources'   => $this->sources(),
+			'timezone'  => wp_timezone_string(),
+			'locale'    => str_replace( '_', '-', get_user_locale() ),
+			'focusNode' => 1 === preg_match( '/^[A-Za-z0-9_-]{1,64}$/', $node ) ? $node : null,
+			'i18n'      => self::builder_i18n(),
+		);
+		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( $config ) . ';', 'before' );
+	}
+
+	/**
+	 * Translated texts of the builder that are new with origin, schedule preview, field list and the jump from a run.
+	 * The older texts keep their German fallbacks in builder.js.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function builder_i18n(): array {
+		return array(
+			'trigger'        => __( 'Auslöser', 'workflow-captain' ),
+			'action'         => __( 'Aktion', 'workflow-captain' ),
+			'condition'      => __( 'Wenn/Sonst', 'workflow-captain' ),
+			'delay'          => __( 'Warten', 'workflow-captain' ),
+			'end'            => __( 'Ende', 'workflow-captain' ),
+			'origin'         => __( 'Herkunft', 'workflow-captain' ),
+			'contract'       => __( 'Vertrag', 'workflow-captain' ),
+			'nodeId'         => __( 'ID', 'workflow-captain' ),
+			'fromRun'        => __( 'aus dem Lauf', 'workflow-captain' ),
+			'focusShown'     => __( 'Knoten aus dem Lauf markiert:', 'workflow-captain' ),
+			'focusMissing'   => __( 'Der Knoten aus dem Lauf ist im Entwurf nicht mehr vorhanden:', 'workflow-captain' ),
+			'focusNote'      => __( 'Dieser Knoten ist der Schritt aus dem Lauf. Der Lauf nutzte die veröffentlichte Version; der Entwurf kann abweichen.', 'workflow-captain' ),
+			'daily'          => __( 'täglich', 'workflow-captain' ),
+			'weekly'         => __( 'wöchentlich', 'workflow-captain' ),
+			'monthly'        => __( 'monatlich', 'workflow-captain' ),
+			'weekday1'       => __( 'Montag', 'workflow-captain' ),
+			'weekday2'       => __( 'Dienstag', 'workflow-captain' ),
+			'weekday3'       => __( 'Mittwoch', 'workflow-captain' ),
+			'weekday4'       => __( 'Donnerstag', 'workflow-captain' ),
+			'weekday5'       => __( 'Freitag', 'workflow-captain' ),
+			'weekday6'       => __( 'Samstag', 'workflow-captain' ),
+			'weekday7'       => __( 'Sonntag', 'workflow-captain' ),
+			'dayShort'       => _x( 'am', 'monthly schedule: on day N', 'workflow-captain' ),
+			'serialSubject'  => __( 'je Objekt nacheinander', 'workflow-captain' ),
+			'serialActor'    => __( 'je Benutzer nacheinander', 'workflow-captain' ),
+			'ruleGroups'     => __( 'Regelgruppen', 'workflow-captain' ),
+			'opExists'       => __( 'vorhanden', 'workflow-captain' ),
+			'opMissing'      => __( 'fehlt', 'workflow-captain' ),
+			'nextDue'        => __( 'Nächster Termin:', 'workflow-captain' ),
+			'nextDues'       => __( 'Nächste Termine (Zeitzone der Website):', 'workflow-captain' ),
+			'nextNone'       => __( 'Keine Termine: Der Zeitplan ist unvollständig.', 'workflow-captain' ),
+			'schedule'       => __( 'Zeitplan (Zeitzone der Website)', 'workflow-captain' ),
+			'field'          => __( 'Feld', 'workflow-captain' ),
+			'fieldCustom'    => __( 'Feld (eigener Pfad, z. B. data.feld)', 'workflow-captain' ),
+			'fieldOther'     => __( 'Anderes Feld …', 'workflow-captain' ),
+			'fieldsEnvelope' => __( 'Ereignis', 'workflow-captain' ),
+			'fieldsData'     => __( 'Daten des Ereignisses', 'workflow-captain' ),
+			'notInCatalog'   => __( '(nicht im Katalog)', 'workflow-captain' ),
+			'example'        => __( 'Beispiel:', 'workflow-captain' ),
+			'thenOpen'       => __( 'Der Dann-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.', 'workflow-captain' ),
+			'elseOpen'       => __( 'Der Sonst-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.', 'workflow-captain' ),
+		);
 	}
 
 	public static function url( string $page, array $args = array() ): string {
@@ -155,6 +229,37 @@ final class WorkflowsPage {
 		exit;
 	}
 
+	/** "Lauf exportieren": JSON for support, redacted by EnvelopeView::run_export() (docs/UI-ENTWUERFE.md, section 5). */
+	public function handle_run_export(): void {
+		$id = isset( $_GET['run'] ) ? absint( wp_unslash( $_GET['run'] ) ) : 0;
+		check_admin_referer( 'workflow_captain_run_export_' . $id );
+		if ( ! current_user_can( 'view_workflow_logs' ) ) {
+			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		$store = $this->plugin->engine()->store();
+		$run   = $store->get_run( $id );
+		if ( null === $run ) {
+			wp_die( esc_html__( 'Lauf nicht gefunden.', 'workflow-captain' ), 404 );
+		}
+		$wf      = $store->get_workflow( $run['workflow_id'] );
+		$version = $run['version_id'] > 0 ? $store->get_version( $run['version_id'] ) : null;
+		$export  = \WorkflowCaptain\Privacy\EnvelopeView::run_export(
+			$run,
+			self::timeline( $store->steps_for_run( $id ) ),
+			null === $wf ? null : (string) $wf['name'],
+			null === $version ? null : (int) $version['version'],
+			\WorkflowCaptain\Privacy\EnvelopeView::allowed_fields( $this->plugin->connectors()->builder_fields( false ) ),
+			WORKFLOW_CAPTAIN_VERSION,
+			gmdate( 'Y-m-d\TH:i:s\Z' )
+		);
+		\WorkflowCaptain\Audit::record( 'run_export', array( 'run' => $id ) );
+		nocache_headers();
+		header( 'Content-Type: application/json; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="workflow-captain-run-' . $id . '.json"' );
+		echo wp_json_encode( $export, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download.
+		exit;
+	}
+
 	public function handle_import(): void {
 		check_admin_referer( 'workflow_captain_import' );
 		if ( ! current_user_can( 'edit_workflows' ) ) {
@@ -228,16 +333,17 @@ final class WorkflowsPage {
 		}
 
 		$pages = Pagination::state( $store->count_workflows(), self::PER_PAGE, Pagination::requested() );
-		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Workflows, neueste zuerst', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Name', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Zustand', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Auslöser', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Version', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Workflows, neueste zuerst', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Name', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Zustand', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Auslöser', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Version', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Letzter Lauf (UTC)', 'workflow-captain' ) . '</th><th scope="col">' . esc_html( sprintf( /* translators: %d: number of days */ __( 'Fehler (%d Tage)', 'workflow-captain' ), self::ERROR_DAYS ) ) . '</th></tr></thead><tbody>';
 		$rows = $store->list_workflows( self::PER_PAGE, $pages['offset'] );
 		if ( array() === $rows ) {
-			echo '<tr><td colspan="4">' . esc_html__( 'Noch keine Workflows.', 'workflow-captain' ) . '</td></tr>';
+			echo '<tr><td colspan="6">' . esc_html__( 'Noch keine Workflows.', 'workflow-captain' ) . '</td></tr>';
 		}
+		$summary = $store->workflow_run_summary( array_column( $rows, 'id' ), self::error_since( time() ) );
 		foreach ( $rows as $wf ) {
 			$version = null === $wf['published_version_id'] ? null : $store->get_version( $wf['published_version_id'] );
 			$trigger = Graph::trigger( $wf['draft'] );
 			$export = wp_nonce_url( add_query_arg( array( 'action' => 'workflow_captain_export', 'workflow' => $wf['id'] ), admin_url( 'admin-post.php' ) ), 'workflow_captain_export_' . $wf['id'] );
-			echo '<tr><td><a href="' . esc_url( self::url( self::SLUG_WORKFLOWS, array( 'edit' => $wf['id'] ) ) ) . '">' . esc_html( $wf['name'] ) . '</a> <span class="row-actions"><a href="' . esc_url( $export ) . '">' . esc_html__( 'Exportieren', 'workflow-captain' ) . '</a></span></td><td>' . esc_html( self::status_label( $wf['status'] ) ) . '</td><td><code>' . esc_html( (string) ( $trigger['event'] ?? '–' ) ) . '</code></td><td>' . esc_html( null === $version ? '–' : (string) $version['version'] ) . '</td></tr>';
+			echo '<tr><td><a href="' . esc_url( self::url( self::SLUG_WORKFLOWS, array( 'edit' => $wf['id'] ) ) ) . '">' . esc_html( $wf['name'] ) . '</a> <span class="row-actions"><a href="' . esc_url( $export ) . '">' . esc_html__( 'Exportieren', 'workflow-captain' ) . '</a></span></td><td>' . esc_html( self::status_label( $wf['status'] ) ) . '</td><td><code>' . esc_html( (string) ( $trigger['event'] ?? '–' ) ) . '</code></td><td>' . esc_html( null === $version ? '–' : (string) $version['version'] ) . '</td>' . self::summary_cells( (int) $wf['id'], $summary[ (int) $wf['id'] ] ?? null ) . '</tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- summary_cells() escapes.
 		}
 		echo '</tbody></table>';
 		echo Pagination::render( $pages, array( 'page' => self::SLUG_WORKFLOWS ), __( 'Seiten der Workflow-Liste', 'workflow-captain' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in Pagination::render().
@@ -259,14 +365,12 @@ final class WorkflowsPage {
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		echo '<input type="hidden" name="action" value="workflow_captain_workflow"><input type="hidden" name="workflow" value="' . (int) $id . '">';
 		wp_nonce_field( 'workflow_captain_workflow_' . (int) $id );
+		$this->render_editor_head( $wf, $graph );
 		echo '<p><label for="wfc-name"><strong>' . esc_html__( 'Name', 'workflow-captain' ) . '</strong></label><br><input id="wfc-name" class="regular-text" name="name" value="' . esc_attr( (string) ( $wf['name'] ?? '' ) ) . '"></p>';
 		echo '<p><label for="wfc-graph"><strong>' . esc_html__( 'Ablauf (JSON)', 'workflow-captain' ) . '</strong></label><br><textarea id="wfc-graph" name="graph" rows="22" class="large-text code">' . esc_textarea( (string) wp_json_encode( $graph, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) ) . '</textarea></p>';
 		$actions = array_map( static fn( $a ) => $a->key(), $this->plugin->engine()->actions()->all() );
 		/* translators: %s: comma separated action keys */
 		echo '<p class="description">' . esc_html( sprintf( __( 'Knoten: trigger, condition, action, delay, end. Verfügbare Aktionen: %s. Platzhalter in Texten: {{type}}, {{occurred_at}}, {{subject.id}}, {{data.feld}}.', 'workflow-captain' ), implode( ', ', $actions ) ) ) . '</p>';
-		if ( null !== $wf ) {
-			echo '<p>' . esc_html( sprintf( /* translators: %s: status */ __( 'Zustand: %s', 'workflow-captain' ), self::status_label( $wf['status'] ) ) ) . '</p>';
-		}
 		$dry = isset( $_GET['dryrun'] ) ? get_transient( 'workflow_captain_dryrun_' . get_current_user_id() ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
 		$sample = is_array( $dry ) && is_array( $dry['sample'] ) ? $dry['sample'] : array( 'data' => new \stdClass() );
 		echo '<details' . ( is_array( $dry ) ? ' open' : '' ) . '><summary><strong>' . esc_html__( 'Testlauf mit Beispieldaten (ohne Seiteneffekte)', 'workflow-captain' ) . '</strong></summary>';
@@ -307,6 +411,39 @@ final class WorkflowsPage {
 			}
 		}
 		echo '</p></form>';
+	}
+
+	/**
+	 * Header of the editor (docs/UI-ENTWUERFE.md, section 2): name, state and published version, the trigger's
+	 * provider with plugin and contract version, the last run, and test run and publish at the top.
+	 */
+	private function render_editor_head( ?array $wf, array $graph ): void {
+		$store   = $this->plugin->engine()->store();
+		$version = null !== $wf && null !== $wf['published_version_id'] ? $store->get_version( $wf['published_version_id'] ) : null;
+		$parts   = array( null === $wf ? __( 'Neu, noch nicht gespeichert', 'workflow-captain' ) : self::status_label( $wf['status'] ) );
+		/* translators: %d: version number */
+		$parts[] = null === $version ? __( 'noch nicht veröffentlicht', 'workflow-captain' ) : sprintf( __( 'Version %d veröffentlicht', 'workflow-captain' ), (int) $version['version'] );
+		$trigger = Graph::trigger( $graph );
+		$event   = (string) ( $trigger['event'] ?? '' );
+		echo '<div class="wfc-editor-head"><div><h2>' . esc_html( null === $wf ? __( 'Neuer Workflow', 'workflow-captain' ) : (string) $wf['name'] ) . '</h2>';
+		echo '<p class="wfc-editor-meta">' . esc_html( implode( ' · ', $parts ) );
+		if ( '' !== $event ) {
+			$origin = Provenance::describe_event( $this->sources(), $event );
+			/* translators: 1: event type, 2: provider with plugin and contract version */
+			echo '<br>' . esc_html( null === $origin ? sprintf( __( 'Auslöser %s: Provider nicht verfügbar', 'workflow-captain' ), $event ) : sprintf( __( 'Auslöser %1$s von %2$s', 'workflow-captain' ), $event, $origin ) );
+		}
+		if ( null !== $wf ) {
+			$last = $store->workflow_run_summary( array( (int) $wf['id'] ), self::error_since( time() ) )[ (int) $wf['id'] ] ?? null;
+			if ( null !== $last ) {
+				/* translators: 1: run number, 2: state */
+				echo '<br>' . esc_html__( 'Letzter Lauf:', 'workflow-captain' ) . ' <a href="' . esc_url( self::url( self::SLUG_RUNS, array( 'run' => $last['last_run_id'] ) ) ) . '">' . esc_html( sprintf( __( 'Lauf %1$d, %2$s', 'workflow-captain' ), $last['last_run_id'], self::run_label( $last['last_state'] ) ) ) . '</a>, ' . self::time_html( $last['last_at'] ) . ' UTC'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- time_html() escapes.
+			}
+		}
+		echo '</p></div><p class="wfc-editor-actions"><button class="button" name="do" value="dryrun">' . esc_html__( 'Testlauf', 'workflow-captain' ) . '</button>';
+		if ( current_user_can( 'activate_workflows' ) ) {
+			echo ' <button class="button button-primary" name="do" value="publish">' . esc_html__( 'Prüfen und veröffentlichen', 'workflow-captain' ) . '</button>';
+		}
+		echo '</p></div>';
 	}
 
 	// ----- Runs -----------------------------------------------------------------------------------------------
@@ -384,15 +521,18 @@ final class WorkflowsPage {
 		$store   = $this->plugin->engine()->store();
 		$context = $run['context'];
 		echo '<p><a href="' . esc_url( self::url( self::SLUG_RUNS ) ) . '">&larr; ' . esc_html__( 'Alle Läufe', 'workflow-captain' ) . '</a></p>';
+		$export = wp_nonce_url( add_query_arg( array( 'action' => 'workflow_captain_run_export', 'run' => $run['id'] ), admin_url( 'admin-post.php' ) ), 'workflow_captain_run_export_' . $run['id'] );
 		/* translators: 1: run number, 2: state */
-		echo '<h2>' . esc_html( sprintf( __( 'Lauf %1$d: %2$s', 'workflow-captain' ), $run['id'], self::run_label( $run['state'] ) ) ) . '</h2>';
+		echo '<div class="wfc-editor-head"><h2>' . esc_html( sprintf( __( 'Lauf %1$d: %2$s', 'workflow-captain' ), $run['id'], self::run_label( $run['state'] ) ) ) . '</h2>';
+		echo '<p class="wfc-editor-actions"><a class="button" href="' . esc_url( $export ) . '" download>' . esc_html__( 'Lauf exportieren (JSON, redigiert)', 'workflow-captain' ) . '</a></p></div>';
 
 		$wf      = $store->get_workflow( $run['workflow_id'] );
 		$version = $run['version_id'] > 0 ? $store->get_version( $run['version_id'] ) : null;
 		$corr    = (string) ( $context['correlation_id'] ?? '' );
 		$meta    = array();
 		$name    = esc_html( (string) ( $wf['name'] ?? $run['workflow_id'] ) );
-		if ( null !== $wf && EngineStore::WF_NETWORK !== $wf['status'] && current_user_can( 'edit_workflows' ) ) {
+		$editor  = null !== $wf && EngineStore::WF_NETWORK !== $wf['status'] && current_user_can( 'edit_workflows' );
+		if ( $editor ) {
 			$name = '<a href="' . esc_url( self::url( self::SLUG_WORKFLOWS, array( 'edit' => $wf['id'] ) ) ) . '">' . $name . '</a>';
 		}
 		$name .= ' (<a href="' . esc_url( self::url( self::SLUG_RUNS, array( 'workflow' => $run['workflow_id'] ) ) ) . '">' . esc_html__( 'alle Läufe dieses Workflows', 'workflow-captain' ) . '</a>)';
@@ -432,7 +572,8 @@ final class WorkflowsPage {
 		}
 		foreach ( self::timeline( $steps ) as $i => $row ) {
 			$step = $steps[ $i ];
-			echo '<tr><th scope="row"><code>' . esc_html( $row['node'] ) . '</code></th><td>' . esc_html( self::step_label( $row['state'] ) ) . '</td><td>' . self::time_html( $row['started'] ) . '</td><td>' . self::time_html( $row['wait_until'] ) . '</td><td>' . self::time_html( $row['ended'] ) . '</td><td>' . (int) $row['attempts'] . '</td><td>' . ( array() === $row['result'] ? '' : '<code>' . esc_html( (string) wp_json_encode( $row['result'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) ) . '</code>' ) . '</td><td>' . esc_html( (string) $row['error'] ) . '</td><td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- time_html() escapes.
+			$jump = $editor ? ' <a class="wfc-jump" href="' . esc_url( self::url( self::SLUG_WORKFLOWS, array( 'edit' => $wf['id'], 'node' => $row['node'] ) ) ) . '" aria-label="' . esc_attr( sprintf( /* translators: %s: node ID */ __( 'Knoten %s im Editor zeigen', 'workflow-captain' ), $row['node'] ) ) . '">' . esc_html__( 'Im Editor zeigen', 'workflow-captain' ) . '</a>' : '';
+			echo '<tr><th scope="row"><code>' . esc_html( $row['node'] ) . '</code>' . $jump . '</th><td>' . esc_html( self::step_label( $row['state'] ) ) . '</td><td>' . self::time_html( $row['started'] ) . '</td><td>' . self::time_html( $row['wait_until'] ) . '</td><td>' . self::time_html( $row['ended'] ) . '</td><td>' . (int) $row['attempts'] . '</td><td>' . ( array() === $row['result'] ? '' : '<code>' . esc_html( (string) wp_json_encode( $row['result'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) ) . '</code>' ) . '</td><td>' . esc_html( (string) $row['error'] ) . '</td><td>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- time_html() escapes.
 			if ( in_array( $step['state'], array( EngineStore::STEP_ACTION_REQUIRED, EngineStore::STEP_PAUSED ), true ) && current_user_can( 'retry_workflow_runs' ) ) {
 				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_run"><input type="hidden" name="run" value="' . (int) $run['id'] . '"><input type="hidden" name="step" value="' . (int) $step['id'] . '">';
 				wp_nonce_field( 'workflow_captain_run_' . (int) $run['id'] );
@@ -463,6 +604,31 @@ final class WorkflowsPage {
 			wp_nonce_field( 'workflow_captain_run_' . (int) $run['id'] );
 			echo '<button class="button" name="do" value="cancel">' . esc_html__( 'Lauf abbrechen', 'workflow-captain' ) . '</button> <span class="description">' . esc_html__( 'Wartende Schritte laufen nicht mehr; Erledigtes wird nicht rückgängig gemacht.', 'workflow-captain' ) . '</span></form>';
 		}
+	}
+
+	/** Start of the error window of the workflow list (UTC, MySQL format). */
+	public static function error_since( int $now ): string {
+		return gmdate( 'Y-m-d H:i:s', $now - self::ERROR_DAYS * DAY_IN_SECONDS );
+	}
+
+	/**
+	 * Cells "Letzter Lauf" and "Fehler" of a workflow row (docs/UI-ENTWUERFE.md, section 1): time, state and link of
+	 * the last run; failed or action_required runs of the last ERROR_DAYS days, linked to the runs of the workflow.
+	 *
+	 * @param array{last_run_id:int,last_state:string,last_at:string,errors:int}|null $summary
+	 */
+	public static function summary_cells( int $workflow_id, ?array $summary ): string {
+		if ( null === $summary ) {
+			return '<td>' . self::time_html( null ) . '</td><td>0</td>';
+		}
+		$bad   = in_array( $summary['last_state'], array( EngineStore::RUN_FAILED, EngineStore::RUN_ACTION_REQUIRED ), true );
+		/* translators: %d: run number */
+		$last  = '<a href="' . esc_url( self::url( self::SLUG_RUNS, array( 'run' => $summary['last_run_id'] ) ) ) . '" aria-label="' . esc_attr( sprintf( __( 'Lauf %d ansehen', 'workflow-captain' ), $summary['last_run_id'] ) ) . '">' . self::time_html( $summary['last_at'] ) . '</a> ';
+		$last .= '<span class="wfc-run-state' . ( $bad ? ' wfc-run-state-bad' : '' ) . '">' . esc_html( self::run_label( $summary['last_state'] ) ) . '</span>';
+		$errors = (int) $summary['errors'];
+		/* translators: %d: number of runs */
+		$count  = $errors > 0 ? '<a href="' . esc_url( self::url( self::SLUG_RUNS, array( 'workflow' => $workflow_id ) ) ) . '" aria-label="' . esc_attr( sprintf( _n( '%d Lauf mit Fehler oder offener Aktion, Läufe dieses Workflows ansehen', '%d Läufe mit Fehler oder offener Aktion, Läufe dieses Workflows ansehen', $errors, 'workflow-captain' ), $errors ) ) . '"><strong>' . $errors . '</strong></a>' : '0';
+		return '<td>' . $last . '</td><td>' . $count . '</td>';
 	}
 
 	/**

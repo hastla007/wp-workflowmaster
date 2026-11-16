@@ -49,6 +49,54 @@ final class EnvelopeView {
 	}
 
 	/**
+	 * Export of a run for support ("Lauf exportieren", docs/UI-ENTWUERFE.md, section 5): the run's own fields, the
+	 * redacted envelope and the step timeline. Left out on purpose: actor_user_id, the serialisation key (it can be a
+	 * user ID), the network origin and the event row. Step results are redacted (Engine::redact) and every string is
+	 * scrubbed of decrypted secrets.
+	 *
+	 * @param array<string,mixed>                $run      From EngineStore::get_run().
+	 * @param array<int,array<string,mixed>>     $timeline From WorkflowsPage::timeline().
+	 * @param array<string,array<string,string>> $allowed  Allowed data fields per event type.
+	 * @return array<string,mixed>
+	 */
+	public static function run_export( array $run, array $timeline, ?string $workflow_name, ?int $version, array $allowed, string $plugin_version, string $now ): array {
+		$view  = self::redacted( (array) ( $run['context'] ?? array() ), $allowed );
+		$steps = array();
+		foreach ( $timeline as $row ) {
+			$steps[] = array(
+				'node'       => (string) $row['node'],
+				'state'      => (string) $row['state'],
+				'started'    => $row['started'],
+				'wait_until' => $row['wait_until'],
+				'ended'      => $row['ended'],
+				'attempts'   => (int) $row['attempts'],
+				'result'     => self::scrub( Engine::redact( (array) $row['result'] ) ),
+				'error'      => null === $row['error'] ? null : Redact::scrub( (string) $row['error'] ),
+			);
+		}
+		return array(
+			'format'             => 'workflow-captain-run-export',
+			'format_version'     => 1,
+			'exported_at'        => $now,
+			'plugin'             => $plugin_version,
+			'times'              => 'UTC',
+			'run'                => array(
+				'id'            => (int) $run['id'],
+				'workflow_id'   => (int) $run['workflow_id'],
+				'workflow_name' => null === $workflow_name ? null : Redact::scrub( $workflow_name ),
+				'version'       => $version,
+				'state'         => (string) $run['state'],
+				'reason'        => null === ( $run['last_error'] ?? null ) || '' === (string) $run['last_error'] ? null : Redact::scrub( (string) $run['last_error'] ),
+				'created_at'    => (string) $run['created_at'],
+				'updated_at'    => (string) $run['updated_at'],
+			),
+			'event'              => array() === $view['envelope']['data'] ? array_merge( $view['envelope'], array( 'data' => new \stdClass() ) ) : $view['envelope'],
+			'hidden_data_fields' => $view['hidden'],
+			'steps'              => $steps,
+		);
+	}
+
+	/**
 	 * Allowed data fields: the core catalogue plus the given non-personal connector fields.
 	 *
 	 * @param array<string,array<string,string>> $extra
