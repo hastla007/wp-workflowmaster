@@ -138,3 +138,28 @@ foreach ( array( 'wfc-edge-then' => null, 'wfc-edge-else' => null ) as $class =>
 	}
 }
 check( 'contrast: text at least 4.5:1, borders and edges at least 3:1' . ( $low ? ' (' . implode( '; ', $low ) . ')' : '' ), array() === $low );
+
+// ----- WF-SEO-03 / WF-SEO-02: no front-end output, no public data surface -------------------------------------
+
+$frontend = array(
+	'wp_head', 'wp_footer', 'template_redirect', 'the_content', 'the_title', 'wp_enqueue_scripts', 'wp_robots', 'robots_txt',
+	'wp_sitemaps', 'document_title_parts', 'pre_get_document_title', 'body_class', 'init_rewrite', 'rewrite_rules_array',
+	'query_vars', 'parse_request', 'rest_api_init', 'wp_ajax_nopriv_',
+);
+$calls = array( 'register_rest_route', 'add_shortcode', 'add_rewrite_rule', 'add_rewrite_endpoint', 'register_post_type', 'wp_register_sitemap_provider' );
+$hits  = array();
+$it    = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( WORKFLOW_CAPTAIN_PATH . 'src', FilesystemIterator::SKIP_DOTS ) );
+foreach ( array_merge( iterator_to_array( $it ), array( new SplFileInfo( WORKFLOW_CAPTAIN_PATH . 'workflow-captain.php' ) ) ) as $file ) {
+	$code = file_get_contents( $file->getPathname() );
+	foreach ( $frontend as $hook ) {
+		if ( preg_match( "/add_(action|filter)\\(\\s*'" . preg_quote( $hook, '/' ) . '/', $code ) ) {
+			$hits[] = basename( $file ) . ': ' . $hook;
+		}
+	}
+	foreach ( $calls as $call ) {
+		if ( preg_match( '/\b' . $call . '\s*\(/', $code ) ) {
+			$hits[] = basename( $file ) . ': ' . $call;
+		}
+	}
+}
+check( 'SEO-03 no front-end hooks, REST routes, shortcodes, rewrites, post types or sitemaps' . ( $hits ? ' (' . implode( '; ', $hits ) . ')' : '' ), array() === $hits );
