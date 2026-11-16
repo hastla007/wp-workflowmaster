@@ -24,6 +24,8 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`docs/TESTMATRIX.md`](docs/TESTMATRIX.md) | Was automatisch getestet ist und was echtes WordPress, WooCommerce oder Adapter braucht. |
 | [`docs/PROVIDERS.md`](docs/PROVIDERS.md) | Anbieterübersicht: wer welche Auslöser und Befehle liefert. |
 | [`docs/CONNECTOR-BEISPIELE.md`](docs/CONNECTOR-BEISPIELE.md) | Praxisbeispiele für eigene Connectoren. |
+| [`docs/LAST.md`](docs/LAST.md) | Messung des Workers und Empfehlungen für Batch und Cron. |
+| [`docs/YOAST.md`](docs/YOAST.md) | Zusammenspiel mit Yoast SEO. |
 | [`docs/OPTIONS.md`](docs/OPTIONS.md) | Optionen, Tabellen, Datenflächen und Änderungssemantik. |
 | [`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) | Release-Gate des kostenlosen Kerns. |
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Betrieb und Wiederherstellung: typische Lagen, Backup, Grenzen. |
