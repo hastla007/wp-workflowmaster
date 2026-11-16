@@ -16,6 +16,8 @@ require_once __DIR__ . '/src/Store/WpdbEventStore.php';
 require_once __DIR__ . '/src/Engine/EngineStore.php';
 require_once __DIR__ . '/src/Engine/WpdbEngineStore.php';
 require_once __DIR__ . '/src/Install.php';
+// Install::uninstall_site() ends with deactivate(), which clears the worker plan; the plugin's autoloader is not loaded here.
+require_once __DIR__ . '/src/Scheduler.php';
 
 if ( is_multisite() ) {
 	foreach ( get_sites( array( 'fields' => 'ids', 'number' => 0 ) ) as $workflow_captain_blog_id ) {

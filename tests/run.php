@@ -170,6 +170,101 @@ rmdir( $tmp . '/src' );
 rmdir( $tmp );
 
 // ---------------------------------------------------------------------------------------------------------------
+// Uninstall runs without the plugin's autoloader (WordPress includes only uninstall.php). Found in the E2E run
+// (docs/E2E-RESULTS.md): Install::deactivate() needed the Scheduler class, which uninstall.php did not load.
+
+$wfc_stub = sys_get_temp_dir() . '/wfc-uninstall-' . bin2hex( random_bytes( 4 ) ) . '.php';
+file_put_contents(
+	$wfc_stub,
+	'<?php
+define( "ABSPATH", "/" );
+define( "WP_UNINSTALL_PLUGIN", "workflow-captain/workflow-captain.php" );
+$GLOBALS["log"] = array();
+final class Stub_Db { public $prefix = "wp_"; public function query( $q ) { $GLOBALS["log"][] = $q; return true; } }
+final class Stub_Role { public function remove_cap( $c ) { $GLOBALS["log"][] = "cap:" . $c; } }
+$wpdb = new Stub_Db();
+function is_multisite() { return false; }
+function delete_option( $o ) { $GLOBALS["log"][] = "option:" . $o; return true; }
+function wp_roles() { return (object) array( "role_objects" => array( "administrator" => new Stub_Role() ) ); }
+function wp_clear_scheduled_hook( $h ) { $GLOBALS["log"][] = "cron:" . $h; return 0; }
+function as_unschedule_all_actions( $h, $a = array(), $g = "" ) { $GLOBALS["log"][] = "as:" . $h . ":" . $g; }
+require ' . var_export( dirname( __DIR__ ) . '/uninstall.php', true ) . ';
+echo json_encode( $GLOBALS["log"] );
+'
+);
+exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $wfc_stub ) . ' 2>&1', $wfc_out, $wfc_code );
+unlink( $wfc_stub );
+$wfc_log = json_decode( (string) end( $wfc_out ), true );
+check( 'uninstall.php runs without the plugin autoloader (drops tables, options, caps, clears both worker plans)', 0 === $wfc_code && is_array( $wfc_log ) && in_array( 'DROP TABLE IF EXISTS wp_workflow_captain_events', $wfc_log, true ) && in_array( 'option:workflow_captain_settings', $wfc_log, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log, true ) && in_array( 'as:workflow_captain_process_events:workflow-captain', $wfc_log, true ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
+
+// ---------------------------------------------------------------------------------------------------------------
+// Multisite: a site created while the plugin is network-active gets its tables at once (wp_initialize_site). Found in
+// the E2E run (docs/E2E-RESULTS.md): until then the new site had no tables before its first admin/cron/CLI request.
+
+$wfc_dir = sys_get_temp_dir() . '/wfc-newsite-' . bin2hex( random_bytes( 4 ) );
+mkdir( $wfc_dir . '/wp-admin/includes', 0777, true );
+file_put_contents( $wfc_dir . '/wp-admin/includes/upgrade.php', '<?php function dbDelta( $q ) { preg_match( "/CREATE TABLE (\\S+)/", $q, $m ); $GLOBALS["log"][] = "table:" . $m[1]; }' );
+file_put_contents(
+	$wfc_dir . '/run.php',
+	'<?php
+define( "ABSPATH", ' . var_export( $wfc_dir . '/', true ) . ' );
+define( "WORKFLOW_CAPTAIN_FILE", "/plugins/workflow-captain/workflow-captain.php" );
+define( "WORKFLOW_CAPTAIN_DB_VERSION", "4" );
+define( "HOUR_IN_SECONDS", 3600 ); define( "MINUTE_IN_SECONDS", 60 );
+spl_autoload_register( static function ( $c ) { $f = ' . var_export( dirname( __DIR__ ) . '/src/', true ) . ' . str_replace( "\\\\", "/", substr( $c, 16 ) ) . ".php"; if ( str_starts_with( $c, "WorkflowCaptain\\\\" ) && is_readable( $f ) ) { require_once $f; } } );
+$GLOBALS["log"] = array(); $GLOBALS["blog"] = 1; $GLOBALS["network"] = array( "workflow-captain/workflow-captain.php" => 1 );
+final class Stub_Db { public $prefix = "wp_"; public function get_charset_collate() { return ""; } }
+final class Stub_Role { public function has_cap( $c ) { return false; } public function add_cap( $c ) { $GLOBALS["log"][] = "cap:" . $c; } }
+$wpdb = new Stub_Db();
+function is_multisite() { return true; }
+function plugin_basename( $f ) { return "workflow-captain/workflow-captain.php"; }
+function get_site_option( $o, $d = false ) { return $GLOBALS["network"]; }
+function switch_to_blog( $id ) { $GLOBALS["blog"] = $id; $GLOBALS["wpdb"]->prefix = "wp_" . $id . "_"; }
+function restore_current_blog() { $GLOBALS["blog"] = 1; $GLOBALS["wpdb"]->prefix = "wp_"; }
+function update_option( $o, $v, $a = null ) { $GLOBALS["log"][] = "option:" . $o . "@" . $GLOBALS["blog"]; }
+function get_role( $r ) { return new Stub_Role(); }
+function add_filter( ...$a ) {} function did_action( $h ) { return 1; } function doing_action( $h ) { return false; }
+function wp_next_scheduled( $h ) { return false; }
+function wp_schedule_event( $t, $r, $h ) { $GLOBALS["log"][] = "cron:" . $h . "@" . $GLOBALS["blog"]; }
+function wp_clear_scheduled_hook( $h ) {}
+\WorkflowCaptain\Install::initialize_site( (object) array( "blog_id" => 7 ) );
+$GLOBALS["network"] = array();
+$GLOBALS["log"][] = "--";
+\WorkflowCaptain\Install::initialize_site( (object) array( "blog_id" => 8 ) );
+echo json_encode( $GLOBALS["log"] );
+'
+);
+exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $wfc_dir . '/run.php' ) . ' 2>&1', $wfc_out2, $wfc_code2 );
+unlink( $wfc_dir . '/run.php' );
+unlink( $wfc_dir . '/wp-admin/includes/upgrade.php' );
+rmdir( $wfc_dir . '/wp-admin/includes' );
+rmdir( $wfc_dir . '/wp-admin' );
+rmdir( $wfc_dir );
+$wfc_log2 = json_decode( (string) end( $wfc_out2 ), true );
+$wfc_cut  = is_array( $wfc_log2 ) ? array_search( '--', $wfc_log2, true ) : false;
+check( 'WF-MS new site while network-active: tables, schema option, caps and worker plan on that site; nothing when not network-active', 0 === $wfc_code2 && false !== $wfc_cut && in_array( 'table:wp_7_workflow_captain_events', $wfc_log2, true ) && in_array( 'option:workflow_captain_db_version@7', $wfc_log2, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log2, true ) && in_array( 'cron:workflow_captain_daily_maintenance@7', $wfc_log2, true ) && count( $wfc_log2 ) - 1 === $wfc_cut && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/workflow-captain.php' ), "add_action( 'wp_initialize_site', array( '\\WorkflowCaptain\\Install', 'initialize_site' )" ) );
+
+// WF-BUILDER-09 / WF-SET-15: every visible form control the admin pages print has an accessible name. Found by axe-core in
+// the E2E run (docs/E2E-RESULTS.md): the import file field of the workflow list had no label.
+$wfc_unlabelled = array();
+foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
+	$wfc_src = (string) file_get_contents( $wfc_file );
+	foreach ( explode( "\n", $wfc_src ) as $wfc_line ) {
+		if ( ! preg_match( '/<(input|select|textarea)\b/', $wfc_line ) || preg_match( '/<input type="(hidden|submit|button)"/', $wfc_line ) ) {
+			continue;
+		}
+		$wfc_id = preg_match( '/<(?:input|select|textarea)\b[^\n]*?\bid="([^"\']+)"/', $wfc_line, $wfc_i ) ? $wfc_i[1] : null;
+		$wfc_ok = str_contains( $wfc_line, '<label' ) || str_contains( $wfc_line, 'aria-label' ) || str_contains( $wfc_line, 'aria-labelledby' )
+			|| ( null !== $wfc_id && str_contains( $wfc_src, 'for="' . $wfc_id . '"' ) )
+			|| preg_match( '/\bid="\' \. esc_attr\( \$id \)/', $wfc_line ); // Settings fields: label for="$id" printed by the same helper.
+		if ( ! $wfc_ok ) {
+			$wfc_unlabelled[] = basename( $wfc_file ) . ': ' . trim( substr( trim( $wfc_line ), 0, 80 ) );
+		}
+	}
+}
+check( 'WF-BUILDER-09 admin form controls have a label (wrapped, for=id or aria-label)' . ( $wfc_unlabelled ? ': ' . implode( '; ', $wfc_unlabelled ) : '' ), array() === $wfc_unlabelled );
+
+// ---------------------------------------------------------------------------------------------------------------
 // Capture
 
 $s = site();

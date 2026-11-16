@@ -212,7 +212,7 @@ msgstr ""
 msgid "Connector freigeben"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:86 src/Admin/WorkflowsPage.php:97 src/Admin/WorkflowsPage.php:110 src/Admin/WorkflowsPage.php:116 src/Admin/WorkflowsPage.php:127 src/Admin/WorkflowsPage.php:140 src/Admin/WorkflowsPage.php:156 src/Admin/WorkflowsPage.php:170 src/Plugin.php:350 src/Plugin.php:365
+#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:86 src/Admin/WorkflowsPage.php:97 src/Admin/WorkflowsPage.php:110 src/Admin/WorkflowsPage.php:116 src/Admin/WorkflowsPage.php:127 src/Admin/WorkflowsPage.php:140 src/Admin/WorkflowsPage.php:156 src/Admin/WorkflowsPage.php:170 src/Plugin.php:359 src/Plugin.php:374
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
@@ -607,7 +607,7 @@ msgstr ""
 msgid "Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows."
 msgstr ""
 
-#: src/Plugin.php:386
+#: src/Plugin.php:395
 msgid "Jede Minute (Workflow Captain)"
 msgstr ""
 
@@ -1072,6 +1072,10 @@ msgstr ""
 
 #: src/Admin/WorkflowsPage.php:144
 msgid "Workflow nicht gefunden."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:236
+msgid "Workflow-Datei (JSON)"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:36 src/Admin/WorkflowsPage.php:36 src/Admin/WorkflowsPage.php:194

@@ -42,17 +42,19 @@ final class Command {
 	}
 
 	/**
-	 * Processes due events and steps now (for system cron on weakly visited sites).
+	 * Processes due schedule triggers, events and steps now (for system cron on weakly visited sites).
 	 *
 	 * [--limit=<n>]
 	 * : Events and steps per pass. Default 100.
 	 */
 	public function process( array $args, array $assoc ): void {
-		$limit  = max( 1, min( 1000, (int) ( $assoc['limit'] ?? 100 ) ) );
-		$plugin = Plugin::instance();
-		$events = $plugin->consumer()->process( $limit );
-		$steps  = $plugin->engine()->process( $limit );
-		\WP_CLI::success( sprintf( '%d events, %d steps processed.', $events, $steps ) );
+		$limit = max( 1, min( 1000, (int) ( $assoc['limit'] ?? 100 ) ) );
+		// The same pass as the scheduled worker, schedule triggers included (it replaces WP-Cron, docs/RUNBOOK.md).
+		$done = Plugin::instance()->work( $limit );
+		if ( null === $done ) {
+			\WP_CLI::error( 'The stored schema does not match this plugin version; run "wp workflow-captain migrate" (or install the newer version after a downgrade). Nothing was processed.' );
+		}
+		\WP_CLI::success( sprintf( '%d events, %d steps processed.', $done[0], $done[1] ) );
 	}
 
 	/**

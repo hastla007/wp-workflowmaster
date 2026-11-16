@@ -290,20 +290,29 @@ final class Plugin {
 	}
 
 	public function run_worker(): void {
-		if ( Install::SCHEMA_CURRENT !== $this->schema ) {
-			return; // Downgrade (newer schema) or upgrade not yet run: the worker waits (WF-CORE-07).
-		}
 		/**
 		 * Events handled per worker run.
 		 *
 		 * @since 0.1.0
 		 * @param int $limit
 		 */
-		$limit = max( 1, min( 200, (int) apply_filters( 'workflow_captain_worker_batch', Settings::get()['batch'] ) ) );
+		$this->work( max( 1, min( 200, (int) apply_filters( 'workflow_captain_worker_batch', Settings::get()['batch'] ) ) ) );
+	}
+
+	/**
+	 * One worker pass: due schedule triggers become events, then events and steps are processed. Shared by the
+	 * scheduled worker and "wp workflow-captain process" (system cron), so both fire schedules.
+	 *
+	 * @return array{0:int,1:int}|null Events and steps processed; null while the schema is not current (WF-CORE-07).
+	 */
+	public function work( int $limit ): ?array {
+		if ( Install::SCHEMA_CURRENT !== $this->schema ) {
+			return null; // Downgrade (newer schema) or upgrade not yet run: the worker waits (WF-CORE-07).
+		}
 		$this->tick_schedules();
-		$this->consumer()->process( $limit );
+		$events = $this->consumer()->process( $limit );
 		$this->consumer(); // Makes sure the engine knows the consumer before steps run (C-9).
-		$this->engine()->process( $limit );
+		return array( $events, $this->engine()->process( $limit ) );
 	}
 
 	public function run_maintenance(): void {

@@ -36,6 +36,34 @@ final class Install {
 		self::activate_site();
 	}
 
+	/**
+	 * Multisite: a site created while the plugin is network-active gets its tables, capabilities and worker plan right
+	 * away (hook "wp_initialize_site"). Otherwise events captured on its front end before the first admin, cron or
+	 * WP-CLI request would be lost, because only those requests run maybe_upgrade().
+	 *
+	 * @param \WP_Site|object $site
+	 */
+	public static function initialize_site( $site ): void {
+		$blog_id = (int) ( $site->blog_id ?? 0 );
+		if ( $blog_id <= 0 || ! self::network_active() ) {
+			return;
+		}
+		switch_to_blog( $blog_id );
+		try {
+			self::activate_site();
+		} finally {
+			restore_current_blog();
+		}
+	}
+
+	/** Whether this plugin is network-activated (without loading wp-admin/includes/plugin.php). */
+	public static function network_active(): bool {
+		if ( ! is_multisite() || ! defined( 'WORKFLOW_CAPTAIN_FILE' ) ) {
+			return false;
+		}
+		return array_key_exists( plugin_basename( WORKFLOW_CAPTAIN_FILE ), (array) get_site_option( 'active_sitewide_plugins', array() ) );
+	}
+
 	public static function activate_site(): void {
 		self::create_tables();
 		self::grant_admin_caps();
