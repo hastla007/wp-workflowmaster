@@ -82,6 +82,21 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 | Connector: Manifest, Gründe der Ablehnung, Freigabe, nicht deklarierte und personenbezogene Felder, Typ/Produkt, Lauf startet, Starter-Connector (F-22) | automatisch | `tests/connector-tests.php` |
 | Workflow fehlt, deaktiviert, Lizenz abgelaufen (Pro), Vertrags-MAJOR | Kern-Seite automatisch (C-15, Snapshot, Connector-Gründe); Pro-Seite in `captain-pro` | – |
 
+## Abnahme eigener Connectoren (WF-CONNECTOR-13)
+
+| Fall | Stand | Fundstelle |
+|---|---|---|
+| Connector-Plugin fehlt oder deaktiviert: offene Ereignisse pausieren, nach Rückkehr erneut einreihen | automatisch | `tests/connector-tests.php` („release: … pauses“, „requeued after switching on“) |
+| Vertrag einer anderen Hauptversion, Kern zu alt, ungültiges Manifest, doppelt | automatisch | `tests/connector-tests.php` („registry: …“) |
+| Laufzeit nicht freigeschaltet (Pro, F-18a) | automatisch | `tests/connector-tests.php` (WF-CONNECTOR-12) |
+| Fehlende Rechte: Aktion nicht angeboten, Veröffentlichen verweigert, Schritt pausiert | automatisch | `tests/connector-tests.php` („actions: …“, „starter: graph …“), `tests/engine-tests.php` (R-8.8) |
+| Ungültige Signatur, Replay, Rate-Limit bei eingehenden Aufrufen | automatisch | `tests/security-tests.php` (`InboundGuard`), Pro `WorkflowWebhooksTest` |
+| Doppeltes Ereignis | automatisch | `tests/connector-tests.php` („starter: duplicate …“) |
+| Timeout nach erfolgreichem Aufruf einer Connector-Aktion | automatisch (allgemein) | `tests/engine-tests.php` (R-8.12 unklarer Ausgang); idempotente Aktion wird mit demselben Schlüssel wiederholt („starter: repeating …“) |
+| Personenbezogene Felder nur nach Freigabe, nicht deklarierte Felder verworfen, falscher Typ verwirft | automatisch | `tests/connector-tests.php` (WF-CONNECTOR-11, R-5.2) |
+| Umgehung über eigenen Wrapper | automatisch | `tests/connector-tests.php` („bypass: …“) |
+| Ende-zu-Ende mit echtem Connector-Plugin in WordPress | offen | Starter-Connector und LearnBoating-Connector in der echten Installation |
+
 ## Multisite
 
 | Fall | Stand |
