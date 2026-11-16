@@ -2,7 +2,7 @@
 
 Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6. Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“.
 
-**Entwurf.** Veröffentlicht wird die Matrix erst mit dem ersten Release von Workflow Captain Pro. Bis dahin hält sie fest, welche Stände der Kerne die Spezifikation voraussetzt und was davon am Code belegt ist. Es gibt noch keinen Adapter (der Consumer existiert seit Plugin 0.1.0); „Mindestvertrag“ ist das, was ein Adapter nach R-13.4 verlangen müsste, um den Katalog der Spezifikation vollständig abzudecken.
+**Entwurf.** Veröffentlicht wird die Matrix erst mit dem ersten Release von Workflow Captain Pro. Bis dahin hält sie fest, welche Stände der Kerne die Spezifikation voraussetzt und was davon am Code belegt ist. Adapter gibt es seit dem 16.11.2026 (siehe Nachtrag); „Mindestvertrag“ ist das, was ein Adapter nach R-13.4 verlangen müsste, um den Katalog der Spezifikation vollständig abzudecken.
 
 ## Je Provider
 
@@ -15,6 +15,19 @@ Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0
 | Form Captain | `wp-formmaster` `main` `6f4785f` | 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` (trotz zwei neuer Actions) | kein Katalog in v1 (4.6) | – | ja, am 16.11.2026 am Code |
 | Review Captain | `wp-reviewmaster` `claude/sleepy-gates-6mm217` `b35fb95` (`main` ohne PHP-Code) | 0.1.0-dev | fehlt | kein Katalog in v1 (4.6) | – | ja, am 16.11.2026 am Code |
 | Course Captain | – | kein Code | fehlt | kein Katalog in v1 (4.6) | – | – |
+
+## Nachtrag 16.11.2026 (Nachmittag): Lesefassaden, WordPress/WooCommerce, Pro-Add-on
+
+| Provider | Neuer Stand (Branch `claude/plugin-todo-liste-2a83v4`) | Vertrag | Was neu ist | Adapter verlangt |
+|---|---|---|---|---|
+| Pass Captain | `wp-passmaster` `8293d65` | `1.2.0` | Lesefassade `wpcap_get_*_state()` | ab `1.2.0` Lesefassade; `1.1.0` nur Rückfall (veraltet) |
+| Voucher Captain | `wp-couponmaster` `fa1a66f` | `1.2.0` | Lesefassade `vcap_read_*()` | ab `1.2.0` Lesefassade; `1.1.0` nur Rückfall (veraltet) |
+| Lizenzserver | `wp-license` `57f5b7b` | – | `WPLC\License\ReadFacade`, Rechte `workflow.custom_connectors` und `workflow.multisite_network` vorgemerkt | Fassade, wenn vorhanden; sonst `PlanChange::get_license()` |
+| WordPress | im Kern | `$wp_version` | Adapter im kostenlosen Kern (Spezifikation 4.7) | WordPress ≥ 6.4 |
+| WooCommerce | im Kern | `WC_VERSION` | Adapter im kostenlosen Kern, HPOS und klassisch | WooCommerce ≥ 8.2 |
+| Workflow Captain Pro | `captain-pro` `1a49c97` | – | Suite-Adapter, Webhooks/n8n, netzwerkweite Abläufe; zurückgehalten bis zur Freigabe | Workflow Captain ≥ 0.2.0 mit Schema 4 (`ForeignRuns`) für Netzwerkabläufe |
+
+Keiner dieser Branches ist gemergt. Die Plugin-Versionen von Pass Captain (1.5.0) und Voucher Captain (1.2.0) wurden nicht erhöht; Add-ons prüfen deshalb die Vertragsversion, nicht die Plugin-Version.
 
 ## Stände auf `main`, die **nicht** genügen
 

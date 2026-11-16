@@ -49,7 +49,7 @@
 
 **Abnahme und Betrieb**
 - [ ] E2E-Matrix für HPOS, Classic/Blocks, Woo-Refunds, Suite-Event-Duplikate, Parallelität, Queue-Ausfall, Retry, Lizenzablauf, Backups, Plugin-Deaktivierung und lokale sowie netzwerkweite Multisite-Ausführung erstellen.
-- [ ] Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen. **Stand 16.11.2026:** Entwurf in `docs/KOMPATIBILITAET.md` (Pass und Voucher am Code belegt, übrige aus der Spezifikation); Veröffentlichung mit dem ersten Release.
+- [ ] Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen. **Stand 16.11.2026:** Entwurf in `docs/KOMPATIBILITAET.md` (Pass und Voucher am Code belegt, übrige aus der Spezifikation); Veröffentlichung mit dem ersten Release. **Nachtrag 16.11.2026: Verträge 1.2.0, Lesefassaden, WordPress/WooCommerce-Mindestversionen und Pro-Add-on in `docs/KOMPATIBILITAET.md`. Veröffentlichung mit dem ersten Pro-Release.**
 - [ ] Datenschutz-/Rechtsprüfung der E-Mail-, Review- und Webhook-Datenflüsse für Zielregionen durchführen.
 - [ ] Queue-Batchlimits und System-Cron-Empfehlungen gegen kleine und große Shops messen. **Stand 16.11.2026: Messung ohne WordPress (`bin/bench.php`) und Empfehlungen in `docs/LAST.md` (Batch 25 ≈ 750 Ereignisse/Stunde, 100 ≈ 3000; System-Cron ab einigen Dutzend je Stunde). Offen: Messung in echten Shops mit MySQL und Mailversand.**
 - [ ] Supportkapazität für Standard/Priority einrichten; Responsezeiten erst danach veröffentlichen.
