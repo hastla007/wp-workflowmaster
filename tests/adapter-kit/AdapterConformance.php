@@ -71,7 +71,12 @@ final class AdapterConformance {
 		if ( null === $entry ) {
 			$fail[] = 'A-4: type not in the catalog: ' . ( $event['type'] ?? '' );
 		} else {
+			$prefix = (string) ( $entry['data_field_prefix'] ?? '' );
 			foreach ( array_keys( (array) ( $event['data'] ?? array() ) ) as $field ) {
+				// Released answers of a form (spec 4.6.2): <prefix><key>, still checked by the schema below.
+				if ( '' !== $prefix && 0 === strpos( (string) $field, $prefix ) && strlen( (string) $field ) > strlen( $prefix ) ) {
+					continue;
+				}
 				if ( ! in_array( $field, $entry['data_fields'], true ) ) {
 					$fail[] = 'R-5.2: field not on the allow-list of ' . $entry['type'] . ': ' . $field;
 				}

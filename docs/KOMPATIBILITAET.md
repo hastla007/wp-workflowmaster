@@ -1,6 +1,6 @@
 # Kompatibilitätsmatrix der Provider
 
-Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` `8d9ba77`). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
+Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.7, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
 
 Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens die Mindestversion hat und dieselbe MAJOR-Version trägt (R-3.3, R-13.4). Die Plugin-Version allein entscheidet nicht. Alle Angaben sind am Code gelesen; „Branch“ heißt: noch nicht nach `main` gemergt.
 
@@ -15,7 +15,7 @@ Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens 
 | Voucher Captain | `wp-couponmaster` Branch `claude/plugin-todo-liste-2a83v4` `689ab4a` | 1.3.0 | `VCAP_CONTRACT_VERSION` = `1.3.0` | `1.1.0` (Rückfall, veraltet); Lesefassade `vcap_read_*()` ab `1.2.0`; Gutschein-Befehle ab `1.3.0` | 16 Ereignistypen, Lesefassade, Einstiegspunkte für die Befehle Ausstellen, Sperren, Reaktivieren, Gutschreiben (R-8.3) | Pro, `VoucherAdapter` (Ereignisse); die Befehle als Workflow-Aktionen fehlen in Pro noch (WF-INT-03) |
 | Affiliate Captain | `wpaffiliatemaster` Branch `claude/plugin-todo-liste-2a83v4` `a3f20cc` | 0.15.0 | `WPAC_CONTRACT_VERSION` = `1.4.0` | `1.4.0` | 21 Ereignistypen | Pro, `AffiliateAdapter` |
 | Lizenzserver (nur im Shop des Anbieters) | `wp-license` Branch `claude/zen-babbage-7q4nac` `caebdcc` | 0.2.0 | `WPLC_CONTRACT_VERSION` = `1.0.0` | `1.0.0` mit Lesefunktion `WPLC\Events\LicenseReader::get()`; ohne Konstante Rückfall über Plugin 0.2.0 und `PlanChange::get_license()` (veraltet) | 3 Ereignistypen | Pro, `LicenseAdapter` |
-| Form Captain | `wp-formmaster` `fc1f206` | 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` | – | kein Katalog in Version 1 (4.6); eigener Workflow-Vertrag zurückgezogen (F-12) | keiner |
+| Form Captain | `wp-formmaster` `fc1f206` | 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` | Major 1 | Katalog `form.*` seit Spezifikation 1.0.0-draft.7 (4.6.1, 4.6.2); eigener Workflow-Vertrag zurückgezogen (F-12) | Workflow Captain Pro (`FormAdapter`), bleibt aus bis Form Captain Pro |
 | Review Captain | `wp-reviewmaster` `main` `33d1362` | 0.1.0-dev | fehlt auf `main` | – | kein Katalog in Version 1 (4.6) | keiner |
 | Course Captain | – | kein Code | – | – | – | keiner |
 | Eigene Connectoren | eigenes Plugin | eigene | `contract` im Manifest (`CONNECTOR-CONTRACT.md`) | Workflow Captain Pro als Laufzeit (Filter `workflow_captain_connector_runtime_allowed_v1`, F-18a); die eigene Lizenz prüft der Connector selbst | eigene Typen `x<präfix>.*` | im Kern, freigeschaltet durch Pro |
@@ -33,8 +33,8 @@ Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens 
 | Voucher Captain | `wp-couponmaster` `claude/sharp-mendel-xiiwf3` `ed7b791` | 1.2.0 | `VCAP_CONTRACT_VERSION` = `1.1.0` | `1.1.0`; die vier Gutschein-Befehle brauchen eine neue MINOR-Version (R-8.1), die es noch nicht gibt | 1 | ja, am 16.11.2026 am Code |
 | Affiliate Captain | `wpaffiliatemaster` `claude/sharp-mendel-xiiwf3` `6600392`, `main` `2a77ed3` (gleiches `src/`) | 0.15.0 | `WPAC_CONTRACT_VERSION` = `1.4.0` | `1.4.0` (`creative.*`, `code_request.*`, `affiliate.recruited` seit 1.4.0) | 1 | ja, am 16.11.2026 am Code, an Tags und Git-Verlauf |
 | Lizenzserver | `wp-license` `241ae7a`, `a113568`, `main` `c269e07` (gleiches `src/License/`) | 0.2.0 | fehlt auf allen Branches (F-03) | – („Vertrag unbekannt“, R-3.3; Ersatz über Plugin-Version 0.2.0, weil `plan_changed` erst dort kommt) | – | ja, am 16.11.2026 am Code |
-| Form Captain | `wp-formmaster` `main` `6f4785f` | 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` (trotz zwei neuer Actions) | kein Katalog in v1 (4.6) | – | ja, am 16.11.2026 am Code |
-| Review Captain | `wp-reviewmaster` `claude/sleepy-gates-6mm217` `b35fb95` (`main` ohne PHP-Code) | 0.1.0-dev | fehlt | kein Katalog in v1 (4.6) | – | ja, am 16.11.2026 am Code |
+| Form Captain | `wp-formmaster` `main` `6f4785f` | 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` (trotz zwei neuer Actions) | `1.0.0` (Katalog 4.6.1 seit 1.0.0-draft.7; alle acht Actions gibt es in 1.0.0) | 1 | ja, am 16.11.2026 am Code |
+| Review Captain | `wp-reviewmaster` `claude/sleepy-gates-6mm217` `b35fb95` (`main` ohne PHP-Code) | 0.1.0-dev | fehlt | kein Katalog (4.6.3: vorgesehen, wartet auf RC-2 und F-08; `main` `33d1362` ohne Code) | – | ja, am 16.11.2026 am Code |
 | Course Captain | – | kein Code | fehlt | kein Katalog in v1 (4.6) | – | – |
 
 ## Verlauf: Nachtrag 16.11.2026 (Nachmittag)

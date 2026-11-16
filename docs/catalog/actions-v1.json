@@ -1,6 +1,6 @@
 {
   "$comment": "Machine-readable part of docs/SPEC-suite-events.md 8.1 and 8.5 (WF-INT-01). Checked by tests/engine-tests.php against the action classes of the core. network_safe: the action may run in a run from another site of the same multisite network (spec section 17, R-17.4; Engine\\NetworkSafe).",
-  "spec_version": "1.0.0-draft.6",
+  "spec_version": "1.0.0-draft.7",
   "pause_reasons": [
     "action_unavailable",
     "not_authorized",
