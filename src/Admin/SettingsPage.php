@@ -317,6 +317,18 @@ final class SettingsPage {
 			'pause_off' => __( 'Notfallpause aufgehoben', 'workflow-captain' ),
 			'connector' => __( 'Freigabe eines eigenen Connectors geändert', 'workflow-captain' ),
 		);
+		/**
+		 * Labels of audit entries written by add-ons (key => label); core labels cannot be replaced.
+		 *
+		 * @since 0.2.0
+		 * @param array<string,string> $labels
+		 */
+		$extra = apply_filters( 'workflow_captain_audit_labels_v1', array() );
+		foreach ( is_array( $extra ) ? $extra : array() as $key => $label ) {
+			if ( is_string( $key ) && is_string( $label ) && ! isset( $labels[ $key ] ) ) {
+				$labels[ $key ] = $label;
+			}
+		}
 		echo '<h2>' . esc_html__( 'Letzte sicherheitsrelevante Änderungen', 'workflow-captain' ) . '</h2>';
 		$entries = array_slice( Audit::entries(), 0, 20 );
 		if ( ! $entries ) {

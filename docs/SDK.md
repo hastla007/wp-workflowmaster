@@ -94,6 +94,7 @@ Bis zum visuellen Editor werden Workflows als JSON bearbeitet (Admin „Workflow
 | `workflow_captain_worker_batch` | Filter | Ereignisse und Schritte je Worker-Durchlauf (1 bis 200, Standard 25) |
 | `workflow_captain_event_processed_v1` | Action | Ereignis vom Worker verarbeitet (für Ausgangswarteschlangen von Add-ons, 4.10) |
 | `workflow_captain_inbound_triggers_v1` | Filter | Auslöser für eingehende Aufrufe anmelden; speichern mit `Consumer::capture_inbound()` |
+| `workflow_captain_audit_labels_v1` | Filter | Beschriftungen für Audit-Einträge von Add-ons (Status-Tab) |
 | `workflow_captain_retention_days` | Filter | Aufbewahrung nur verkürzen (`finished`, `stuck`) |
 
 ## 5a. Bausteine für Webhooks und n8n (für Add-ons)
