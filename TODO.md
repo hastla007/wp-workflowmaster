@@ -2,14 +2,14 @@
 
 > **Maßgeblich seit 16.11.2026:** `docs/SPEC-suite-events.md` ist die normative Spezifikation für die Zusammenarbeit der Suite-Plugins (Entscheidung D1) und geht jeder abweichenden Aufgabe dieser Liste vor. Aufgaben, die eine Entscheidung vom 16.11.2026 überholt, sind neu gefasst oder durchgestrichen und mit „Entfällt durch Entscheidung D…“ gekennzeichnet. Nach D12 rangiert alle Workflow-Arbeit hinter dem Verkaufsstart der drei vorhandenen Add-ons.
 
-**Zählung (16.11.2026, nachgezogen):** 184 offen, 2 erledigt (WF-E17-01, WF-SPEC-04), 7 entfallen. Davon 3 aus Entscheidung 17 (WF-E17-01 bis -03, am Ende der Datei). Vor den Entscheidungen waren es 175 offene Aufgaben; 7 sind entfallen, 15 (WF-SPEC-01 bis -15) und 3 (WF-E17-01 bis -03) neu. Nachzählen: `grep -c '^- \[ \]' TODO.md`, `grep -c '^- \[x\]' TODO.md`, `grep -c '^- ~~' TODO.md`.
+**Zählung (16.11.2026, nachgezogen):** 180 offen, 6 erledigt (WF-E17-01, WF-SPEC-04, WF-N8N-01, WF-N8N-13, WF-N8N-14 und in 18.7 die Befehlseigenschaften), 7 entfallen; weitere Aufgaben sind teilweise erledigt und dort mit „Stand 16.11.2026“ vermerkt. Davon 3 aus Entscheidung 17 (WF-E17-01 bis -03, am Ende der Datei). Vor den Entscheidungen waren es 175 offene Aufgaben; 7 sind entfallen, 15 (WF-SPEC-01 bis -15) und 3 (WF-E17-01 bis -03) neu. Nachzählen: `grep -c '^- \[ \]' TODO.md`, `grep -c '^- \[x\]' TODO.md`, `grep -c '^- ~~' TODO.md`.
 
 **Stand der Abarbeitung (16.11.2026):** In diesem Repository ohne Code machbare Aufgaben sind erledigt oder so weit vorbereitet, wie es ohne Antwort oder Zugriff geht. Alles Übrige hängt an einem der folgenden Punkte:
 
 | Blocker | Aufgaben | Was es braucht |
 |---|---|---|
 | Antwort des Inhabers | WF-SPEC-01 (Abnahme, offene Fragen in `docs/SPEC-open-questions.md`), WF-E17-03 (F-18a, F-01), Entitlements und Preise (Produktumsetzung, WF-INT-13; E9, F-19), WF-SPEC-11 (Fristen nach Rechtsprüfung, F-04) | Entscheidungen; die Fragen stehen mit Empfehlung bereit |
-| Zugriff auf andere Repositories | WF-E17-02 (`boatingschool`, `learnboating`; Übergabedokument liegt bereit), WF-SPEC-02 (16 „zu prüfen“-Stellen), WF-SPEC-03 (erlaubte Felder je Ereignistyp aus den Hooks der Kerne), WF-SPEC-14 (Aufgaben in anderen Repositories anlegen), WF-SPEC-15 (Lesefunktionen je Provider) | Lese- bzw. Schreibzugriff dieser Sitzung auf die Provider-Repositories und Freigabe, dort Aufgaben anzulegen |
+| Zugriff auf andere Repositories | WF-E17-02 (`boatingschool`, `learnboating`; Übergabedokument liegt bereit), WF-SPEC-02, -03 und -15 nur noch für Affiliate Captain, Lizenzserver, Form und Review (Pass, Voucher und `captain-pro` sind am 16.11.2026 geprüft), WF-SPEC-14 (Aufgaben in anderen Repositories anlegen; Dokument liegt bereit) | Lese- bzw. Schreibzugriff dieser Sitzung auf die Provider-Repositories und Freigabe, dort Aufgaben anzulegen |
 | Netzwerkfreigabe | WordPress.org-Verfügbarkeit des Slugs prüfen (`api.wordpress.org` ist in dieser Umgebung gesperrt) | Freigabe des Hosts oder Prüfung von Hand unter wordpress.org/plugins/workflow-captain/ |
 | Code, nach D12 erst nach dem Verkaufsstart | alle übrigen Aufgaben (Builder, Kernengine, Consumer, Adapter, Connectoren, n8n, Multisite, Sicherheit, Tests, Release) | Freigabe zum Bau nach dem Verkaufsstart der drei vorhandenen Add-ons |
 
@@ -49,7 +49,7 @@
 
 **Abnahme und Betrieb**
 - [ ] E2E-Matrix für HPOS, Classic/Blocks, Woo-Refunds, Suite-Event-Duplikate, Parallelität, Queue-Ausfall, Retry, Lizenzablauf, Backups, Plugin-Deaktivierung und lokale sowie netzwerkweite Multisite-Ausführung erstellen.
-- [ ] Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen.
+- [ ] Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen. **Stand 16.11.2026:** Entwurf in `docs/KOMPATIBILITAET.md` (Pass und Voucher am Code belegt, übrige aus der Spezifikation); Veröffentlichung mit dem ersten Release.
 - [ ] Datenschutz-/Rechtsprüfung der E-Mail-, Review- und Webhook-Datenflüsse für Zielregionen durchführen.
 - [ ] Queue-Batchlimits und System-Cron-Empfehlungen gegen kleine und große Shops messen.
 - [ ] Supportkapazität für Standard/Priority einrichten; Responsezeiten erst danach veröffentlichen.
@@ -104,7 +104,7 @@ Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebau
 
 ### Suite-Provider: verbindliche Implementierungsaufgaben
 
-- [ ] WF-INT-01 – Eine maschinenlesbare Providerregistry aus der Trigger-/Action-Matrix in Abschnitt 17 erstellen. Pro Fähigkeit: stabile ID, Schema, Mindest-Core-Version, Free/Pro-Recht, Zielplugin-Recht, Capability, Payload-Allowlist, Side-Effect, Retry und Fehlercodes.
+- [ ] WF-INT-01 – Eine maschinenlesbare Providerregistry aus der Trigger-/Action-Matrix in Abschnitt 17 erstellen. Pro Fähigkeit: stabile ID, Schema, Mindest-Core-Version, Free/Pro-Recht, Zielplugin-Recht, Capability, Payload-Allowlist, Side-Effect, Retry und Fehlercodes. **Vorstufe am 16.11.2026:** `docs/catalog/suite-events-v1.json` (34 Ereignistypen mit Hook, Seit, Subjekt, erlaubten Feldern, Bedeutung von `actor_user_id`, Nach-Commit-Stand), vom Validator gegen Schema und Beispiele geprüft. Offen: Aktionen, Rechte, Capabilities, Retry und Fehlercodes je Fähigkeit sowie die WordPress-/WooCommerce-Trigger aus Abschnitt 17.
 - [ ] WF-INT-02 – Adapter je Provider an die vorhandenen PHP-Hooks nach dem Ereigniskatalog in `docs/SPEC-suite-events.md`, Abschnitt 4, anbinden; Vertragskonstante und Mindestversion je Provider prüfen; unbekannte optionale Felder tolerant, Major-Inkompatibilität sicher deaktivieren (neu gefasst nach D4, D5 und D9; eigene Providerverträge v1 und Quell-Outbox entfallen).
 - [ ] WF-INT-03 – Befehle der Version 1 nach `docs/SPEC-suite-events.md`, Abschnitt 8, umsetzen: lesende Abfragen, Benachrichtigungen, Markierungen und Notizen im eigenen Speicher sowie die vier Gutschein-Befehle `voucher.issue`, `voucher.void`, `voucher.reactivate` und `voucher.redeem` (D11b); keine direkten Tabellen, Meta-Schreibpfade oder internen Klassen (neu gefasst nach D11; weitere Fach-Commands in den Suite-Plugins entfallen).
 - ~~WF-INT-04 – Ownership-Handshake als Plugin-eigenen Default implementieren. Nur optionale Kommunikation/Erinnerungen können nach Vorschau und Bestätigung übergeben werden; kritische Geschäftsabläufe bleiben Domainplugin-eigen.~~ **Entfällt durch Entscheidung D10.** Kein Ownership-Handshake.

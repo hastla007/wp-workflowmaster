@@ -2,11 +2,11 @@
 
 | | |
 |---|---|
-| Version | **1.0.0-draft.3** |
+| Version | **1.0.0-draft.4** |
 | Stand | 16.11.2026 |
 | Status | Entwurf zur Abnahme durch den Inhaber. Gebaut ist davon nichts. |
 | Ort | `hastla007/wp-workflowmaster`, `docs/SPEC-suite-events.md` (Entscheidung D1) |
-| Maschinenlesbar | [`schema/suite-event-v1.schema.json`](schema/suite-event-v1.schema.json), Beispiele unter [`examples/`](examples/) |
+| Maschinenlesbar | [`schema/suite-event-v1.schema.json`](schema/suite-event-v1.schema.json), Katalog [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json), Beispiele unter [`examples/`](examples/) |
 | Offene Punkte | [`SPEC-open-questions.md`](SPEC-open-questions.md) |
 
 Dieses Dokument ist die eine gemeinsame Spezifikation dafür, wie die Plugins der Captain Suite zusammenarbeiten. Wo `konzept.md`, `TODO.md` oder ein Dokument eines anderen Repositorys etwas anderes sagt, gilt dieses Dokument.
@@ -23,8 +23,8 @@ Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D1
 
 | Kürzel | Repository | Branch | Commit | Plugin-Version |
 |---|---|---|---|---|
-| VC | `wp-couponmaster` (Voucher Captain) | `claude/sharp-mendel-xiiwf3` | `df3eee2` | 1.2.0 (`voucher-captain.php:6`) |
-| PC | `wp-passmaster` (Pass Captain) | `claude/sharp-mendel-xiiwf3` | `bca8d85a` | 1.5.0 (`pass-captain.php:6`) |
+| VC | `wp-couponmaster` (Voucher Captain) | `claude/sharp-mendel-xiiwf3` | `df3eee2`; Z-05 bis Z-16 am 16.11.2026 an `ed7b791` geprüft, dazu `hvollo-refactors` `82145ed` und `main` `2d84943` | 1.2.0 (`voucher-captain.php:6`) |
+| PC | `wp-passmaster` (Pass Captain) | `claude/sharp-mendel-xiiwf3` | `bca8d85a`; Z-01 bis Z-04 und Z-07 am 16.11.2026 an `dd32087` geprüft (Nachfolger, nur `TODO.md` geändert), dazu `main` `b2b88ea` | 1.5.0 (`pass-captain.php:6`) |
 | AC | `wpaffiliatemaster` (Affiliate Captain) | `claude/sharp-mendel-xiiwf3` | `23f06be` (Katalog gelesen zwischen `70c23b7` und `dbb319d`; Entfernung des Workflow-Providers geprüft an `23f06be`) | 0.15.0 (`affiliate-captain.php:6`) |
 | LIC | `wp-license` (Lizenzserver) | `claude/sharp-mendel-xiiwf3` | `241ae7a` (committeter Stand) | 0.2.0 (`wp-license.php:23`) |
 | CP | `captain-pro` (Add-ons, Kernel) | `claude/sharp-mendel-xiiwf3` | `5e333f7` (Arbeitsverzeichnis mit uncommitteten Änderungen); am 16.11.2026 gegengeprüft an `07b5365` und `main` `2f23da7`: alle Fundstellen in `packages/addon-kernel` unverändert | – |
@@ -397,22 +397,21 @@ Weitere Felder auf der obersten Ebene sind nicht erlaubt.
 | `voucher.voucher.redeemed`, `voucher.redemption.*` | `user_id` aus dem Array der Action; bei der Einlösung im Shop und am Schalter der angemeldete Benutzer (`get_current_user_id()`, `VC:src/VoucherRepository.php:776-795`) |
 | `voucher.store_credit.changed` | der Kunde, dessen Guthaben sich geändert hat |
 | `license.*` | der Kunde, dem die Lizenz gehört (Abschnitt 11) |
+| alle Ereignisse von Pass Captain und Voucher Captain | wie in den Feldtabellen in 4.2 und 4.3 angegeben (16.11.2026); diese gehen den Zeilen oben vor |
 | alle anderen | nicht gesetzt, solange die Tabelle hier nichts nennt |
 
 Der Gast eines Tickets und der Empfänger eines Gutscheins haben oft kein WordPress-Konto. Für sie gibt es dann keine Benutzer-ID; der Adapter erreicht sie nur über die Lesefunktionen des Providers (R-5.6, F-13).
 
-**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für die sechs Beispiele dieser Fassung gilt:
+**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für Pass Captain und Voucher Captain stehen die Listen in den Feldtabellen in 4.2 und 4.3; maschinenlesbar in [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json). Außerdem gilt:
 
 | Ereignistyp | Felder |
 |---|---|
-| `pass.ticket.checked_in` | `checkin_source` (String), `device_id` (Integer), `area_id` (Integer) |
-| `voucher.voucher.redeemed` | `amount_minor` (Integer), `currency` (ISO 4217), `order_id` (Integer), `channel` (`shop`, `counter`, `external`), `redemption_source` (String), `committed_at` (UTC), `redemption_key` (String) |
-| `voucher.voucher.issued_standalone` | `amount_minor`, `currency`, `issue_source` (String), `reference` (String, der Idempotenzschlüssel des Aufrufs) |
 | `affiliate.code_request.approved` | `affiliate_id` (Integer), `partner_code` (String, öffentlich), `main` (Wahrheitswert) |
 | `affiliate.commission.approved` | `affiliate_id`, `amount_minor`, `currency`, `kind` |
 | `license.license.status_changed` | `product` (Produktschlüssel), `plan` (`single`, `business`, `agency`), `status`, `previous_status`, `lifecycle_action` |
+| `license.license.issued`, `license.license.plan_changed` | `product`, `plan`, `status` (Abschnitt 11) |
 
-Die Listen aller übrigen Ereignistypen sind eine Aufgabe dieses Repositorys vor Version 1.0.0 (siehe `TODO.md`, WF-SPEC-03).
+Die Listen der übrigen Ereignistypen von Affiliate Captain sind eine Aufgabe dieses Repositorys vor Version 1.0.0 (siehe `TODO.md`, WF-SPEC-03).
 
 Beispiele: [`pass.ticket.checked_in.json`](examples/pass.ticket.checked_in.json), [`voucher.voucher.redeemed.json`](examples/voucher.voucher.redeemed.json), [`voucher.voucher.issued_standalone.json`](examples/voucher.voucher.issued_standalone.json) (durch einen Workflow ausgelöst), [`license.license.status_changed.json`](examples/license.license.status_changed.json). Seit dem 16.11.2026 liegt für jeden Ereignistyp von Pass Captain (13) und Voucher Captain (16) ein Beispiel unter [`examples/`](examples/), aufgebaut nach den Feldtabellen in 4.2 und 4.3. Die Werte sind erfunden; die `public_id` hat das Format des Kerns (32 Hex, 4.2). [`affiliate.code_request.approved.json`](examples/affiliate.code_request.approved.json) zeigt den erlaubten Partnercode, [`affiliate.commission.approved.json`](examples/affiliate.commission.approved.json) einen Geldbetrag (D8b). `python3 bin/validate-spec-examples.py` prüft Schema und Beispiele gegeneinander.
 
@@ -880,6 +879,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 
 | Version | Datum | Änderung |
 |---|---|---|
+| 1.0.0-draft.4 | 16.11.2026 | Stellen „zu prüfen“ für Pass Captain (Z-01 bis Z-04), Voucher Captain (Z-05, Z-06, Z-15, Z-16), Lesefunktionen (Z-07 für beide) und `captain-pro` (Z-13) am Code geklärt und Tabellen 3.2, 4.2, 4.3, 7.2, 8.3.3, 8.3.4 und R-8.6 berichtigt. Erlaubte Felder und `actor_user_id` für alle 29 Ereignistypen von Pass und Voucher Captain (4.2, 4.3), je ein Beispiel, maschinenlesbarer Katalog `catalog/suite-events-v1.json`. Neue Regel R-4.7 (`reference`, `redemption_key` nicht weiterreichen); Beispiele `voucher.voucher.issued_standalone` und `voucher.voucher.redeemed` entsprechend ohne diese Felder; `public_id` im Beispiel im Format des Kerns. Tabelle der Lesefunktionen in 8.1 (WF-SPEC-15). Neuer Abschnitt 8.5 mit den Eigenschaften je Befehl und R-8.11 bis R-8.13. Offen bleiben die Stellen für Affiliate, Lizenzserver, Form und Review. |
 | 1.0.0-draft.3 | 16.11.2026 | F-05 entschieden: feste Grenzen der vier Gutschein-Befehle als Tabelle in 8.3.1 (100 EUR und 50 je Tag; Einlösen jedes Gutscheins); neue Teilfrage F-05a für Shops ohne Euro. D13 im Affiliate-Kern umgesetzt: 4.4.1, R-4.4 bis R-4.6, 7.2 und R-13.6 nennen die Entfernung als Stand; neue Stelle Z-16 für den Voucher-Kern. |
 | 1.0.0-draft.2 | 16.11.2026 | Folgeentscheidungen eingearbeitet. D13: Abschnitt 4.4.1 neu, die vorläufigen Workflow-Provider werden vor dem Release aus den Kernen entfernt, `wpac_workflow_read()` ist keine anerkannte Lesefunktion. D8b: öffentlicher Partnercode und Geldbeträge erlaubt (R-5.1a, Katalog 4.4, Schema, zwei neue Beispiele). D11b: vier Gutschein-Befehle statt einem (Abschnitt 8 neu, Verbotsliste, Lizenzmatrix, R-13.6, P-8, A-9, neue Stelle Z-15). **Berichtigung:** Abschnitt 7.2 nannte für Voucher Captain „10 der 15“ Actions nach Commit und „fünf“ ohne Vermerk; richtig sind 9 und sechs. |
 | 1.0.0-draft | 16.11.2026 | Erste Fassung nach den Entscheidungen D1, D2 und D4 bis D12 vom 16.11.2026. Katalog: Pass Captain 13, Voucher Captain 16, Affiliate Captain 21, Lizenzserver 3 Ereignisse. Schema und vier Beispiele. |

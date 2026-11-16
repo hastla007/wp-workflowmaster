@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Checks docs/schema/suite-event-v1.schema.json against docs/examples/*.json.
+"""Checks docs/schema/suite-event-v1.schema.json and docs/catalog/suite-events-v1.json against docs/examples/*.json.
 
 Needs the Python package "jsonschema" (pip install jsonschema); it is not part of this repository.
 Usage: python3 bin/validate-spec-examples.py
 Exit code 0: the schema is a valid draft 2020-12 schema, every example is valid, the file name of every
-example equals its "type", and every counter-example below is rejected.
+example equals its "type", every counter-example below is rejected, and the catalog holds: every example
+type is in the catalog with the matching product and subject, its data carries only catalog fields, every
+catalog field name passes the schema, and every type of a product marked "example_required" has an example.
 """
 import copy
 import glob
@@ -16,6 +18,7 @@ from jsonschema import Draft202012Validator
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCHEMA = os.path.join(ROOT, "docs", "schema", "suite-event-v1.schema.json")
+CATALOG = os.path.join(ROOT, "docs", "catalog", "suite-events-v1.json")
 EXAMPLES = sorted(glob.glob(os.path.join(ROOT, "docs", "examples", "*.json")))
 
 
@@ -29,6 +32,48 @@ def mutate(doc, path, value="__delete__"):
     else:
         node[path[-1]] = value
     return doc
+
+
+def check_catalog(validator, docs):
+    """Checks the machine-readable catalog against the schema and the examples. Returns the failure count."""
+    with open(CATALOG, encoding="utf-8") as handle:
+        catalog = json.load(handle)
+    failed = 0
+    by_type = {}
+    for product, entry in catalog["products"].items():
+        for event in entry["events"]:
+            if event["type"] in by_type:
+                print("FAIL catalog: duplicate type", event["type"])
+                failed += 1
+            by_type[event["type"]] = (product, entry, event)
+            probe = copy.deepcopy(docs["pass.ticket.checked_in.json"])
+            probe["data"] = {field: 1 for field in event["data_fields"]}
+            if not validator.is_valid(probe):
+                print("FAIL catalog: a data field of", event["type"], "is rejected by the schema")
+                failed += 1
+            if entry.get("example_required") and event["type"] + ".json" not in docs:
+                print("FAIL catalog: no example for", event["type"])
+                failed += 1
+    for name, doc in docs.items():
+        found = by_type.get(doc.get("type"))
+        if not found:
+            print("FAIL catalog: example type not in catalog:", name)
+            failed += 1
+            continue
+        product, _entry, event = found
+        if doc["source"]["product"] != product:
+            print("FAIL catalog:", name, "has source.product", doc["source"]["product"], "instead of", product)
+            failed += 1
+        if doc["subject"]["type"] not in event["subject_type"].split("|") or doc["subject"]["id_kind"] != event["id_kind"]:
+            print("FAIL catalog:", name, "subject does not match the catalog")
+            failed += 1
+        extra = sorted(set(doc["data"]) - set(event["data_fields"]))
+        if extra:
+            print("FAIL catalog:", name, "data fields not in the catalog:", ", ".join(extra))
+            failed += 1
+    if not failed:
+        print("ok   catalog: %d types, all examples match" % len(by_type))
+    return failed
 
 
 def main():
@@ -54,6 +99,8 @@ def main():
         failed += len(errors)
         if not errors:
             print("ok  ", name)
+
+    failed += check_catalog(validator, docs)
 
     base = docs["pass.ticket.checked_in.json"]
     caused = next(d for d in docs.values() if d["causation_id"])

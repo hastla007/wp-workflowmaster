@@ -6,12 +6,14 @@ on:
     paths:
       - "docs/schema/**"
       - "docs/examples/**"
+      - "docs/catalog/**"
       - "bin/validate-spec-examples.py"
       - ".github/workflows/validate-spec.yml"
   pull_request:
     paths:
       - "docs/schema/**"
       - "docs/examples/**"
+      - "docs/catalog/**"
       - "bin/validate-spec-examples.py"
       - ".github/workflows/validate-spec.yml"
   workflow_dispatch:

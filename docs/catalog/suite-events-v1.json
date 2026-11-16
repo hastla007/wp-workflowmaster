@@ -1,0 +1,564 @@
+{
+  "$comment": "Machine-readable part of docs/SPEC-suite-events.md (sections 4.2, 4.3, 6, 11). The spec text is normative; this file must match it. Checked by bin/validate-spec-examples.py.",
+  "spec_version": "1.0.0-draft.4",
+  "catalog_version": "1.0",
+  "products": {
+    "pass-captain": {
+      "contract_constant": "WPCAP_CONTRACT_VERSION",
+      "min_contract": "1.1.0",
+      "example_required": true,
+      "events": [
+        {
+          "type": "pass.order.paid",
+          "hook": "wpcap_order_paid",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "order",
+          "id_kind": "public",
+          "data_fields": [
+            "status",
+            "payment_status",
+            "payment_provider",
+            "currency",
+            "total_minor",
+            "refunded_minor",
+            "ticket_count",
+            "customer_user_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.order.cancelled",
+          "hook": "wpcap_order_cancelled",
+          "since": "0.9.0/1.0.0; 3 args since 1.5.0/1.1.0",
+          "subject_type": "order",
+          "id_kind": "public",
+          "data_fields": [
+            "status",
+            "previous_payment_status",
+            "reason_class",
+            "currency",
+            "total_minor"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.order.refunded",
+          "hook": "wpcap_order_refunded",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "order",
+          "id_kind": "public",
+          "data_fields": [
+            "status",
+            "payment_status",
+            "currency",
+            "total_minor",
+            "refunded_minor",
+            "reason_class",
+            "refund_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.order.tickets_issued",
+          "hook": "wpcap_tickets_issued",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "order",
+          "id_kind": "public",
+          "data_fields": [
+            "issued_count",
+            "currency",
+            "total_minor"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.refund.completed",
+          "hook": "wpcap_refund_completed",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "refund",
+          "id_kind": "record",
+          "data_fields": [
+            "order_id",
+            "amount_minor",
+            "tax_minor",
+            "deducted_minor",
+            "currency",
+            "ticket_count",
+            "refund_source"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.refund.rejected",
+          "hook": "wpcap_refund_rejected",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "refund",
+          "id_kind": "record",
+          "data_fields": [
+            "order_id",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.ticket.revoked",
+          "hook": "wpcap_ticket_revoked",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "ticket",
+          "id_kind": "public",
+          "data_fields": [
+            "order_id",
+            "ticket_type_id",
+            "occurrence_id",
+            "event_id",
+            "reason_class"
+          ],
+          "actor_user_id": "staff_on_admin_path_else_none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.ticket.checked_in",
+          "hook": "wpcap_ticket_checked_in",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "ticket",
+          "id_kind": "public",
+          "data_fields": [
+            "checkin_source",
+            "device_id",
+            "area_id",
+            "occurrence_id",
+            "event_id",
+            "ticket_type_id",
+            "reentry"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.ticket.checked_out",
+          "hook": "wpcap_ticket_checked_out",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "ticket",
+          "id_kind": "public",
+          "data_fields": [
+            "checkin_source",
+            "device_id",
+            "area_id",
+            "occurrence_id",
+            "event_id",
+            "ticket_type_id"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.occurrence.rescheduled",
+          "hook": "wpcap_occurrence_rescheduled",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "occurrence",
+          "id_kind": "record",
+          "data_fields": [
+            "event_id",
+            "old_starts_at",
+            "new_starts_at",
+            "timezone",
+            "issued_tickets"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "autocommit_unchecked"
+        },
+        {
+          "type": "pass.occurrence.cancelled",
+          "hook": "wpcap_occurrence_cancelled",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "occurrence",
+          "id_kind": "record",
+          "data_fields": [
+            "event_id",
+            "issued_tickets",
+            "starts_at",
+            "scope"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes_or_autocommit_unchecked"
+        },
+        {
+          "type": "pass.event.cancelled",
+          "hook": "wpcap_event_cancelled",
+          "since": "1.5.0/1.1.0",
+          "subject_type": "event",
+          "id_kind": "record",
+          "data_fields": [
+            "occurrence_count",
+            "revoked_tickets",
+            "cancelled_orders"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes"
+        },
+        {
+          "type": "pass.invoice.created",
+          "hook": "wp_pass_captain_invoice_created_v1",
+          "since": "1.5.0/1.1.0",
+          "subject_type": "invoice|credit_note|settlement",
+          "id_kind": "record",
+          "data_fields": [
+            "document_type",
+            "document_number",
+            "order_id",
+            "invoice_id",
+            "refund_id",
+            "partner_id",
+            "period",
+            "currency",
+            "total_minor",
+            "tax_minor"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        }
+      ]
+    },
+    "voucher-captain": {
+      "contract_constant": "VCAP_CONTRACT_VERSION",
+      "min_contract": "1.1.0",
+      "example_required": true,
+      "events": [
+        {
+          "type": "voucher.order.vouchers_issued",
+          "hook": "vcap_vouchers_issued",
+          "since": "1.0.0",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "order_id",
+            "voucher_count",
+            "background"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "autocommit"
+        },
+        {
+          "type": "voucher.voucher.issued_standalone",
+          "hook": "vcap_voucher_issued_standalone",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "voucher_type",
+            "usage_mode",
+            "status",
+            "paid",
+            "issue_source",
+            "send"
+          ],
+          "actor_user_id": "staff_if_logged_in",
+          "after_commit": "autocommit"
+        },
+        {
+          "type": "voucher.voucher.delivered",
+          "hook": "vcap_voucher_delivered",
+          "since": "1.0.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "address_count",
+            "roles",
+            "bundled"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "autocommit"
+        },
+        {
+          "type": "voucher.voucher.delivery_failed",
+          "hook": "vcap_voucher_delivery_given_up",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "failures"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "autocommit"
+        },
+        {
+          "type": "voucher.voucher.bounced",
+          "hook": "vcap_voucher_bounced",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "role"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "autocommit"
+        },
+        {
+          "type": "voucher.voucher.redeemed",
+          "hook": "vcap_voucher_redeemed",
+          "since": "1.1.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "order_id",
+            "channel",
+            "redemption_source",
+            "committed_at",
+            "balance_after_minor"
+          ],
+          "actor_user_id": "user_id_from_args_if_positive",
+          "after_commit": "yes"
+        },
+        {
+          "type": "voucher.redemption.reserved",
+          "hook": "vcap_redemption_reserved",
+          "since": "1.1.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "balance_after_minor",
+            "expires_at",
+            "state"
+          ],
+          "actor_user_id": "user_id_from_args_if_positive",
+          "after_commit": "yes"
+        },
+        {
+          "type": "voucher.redemption.released",
+          "hook": "vcap_redemption_released",
+          "since": "1.1.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "balance_after_minor",
+            "expires_at",
+            "state",
+            "expired"
+          ],
+          "actor_user_id": "user_id_from_args_if_positive",
+          "after_commit": "yes"
+        },
+        {
+          "type": "voucher.redemption.refunded",
+          "hook": "vcap_redemption_refunded",
+          "since": "1.1.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "refunded_minor",
+            "refunded_total_minor",
+            "currency"
+          ],
+          "actor_user_id": "user_id_from_args_if_positive",
+          "after_commit": "yes"
+        },
+        {
+          "type": "voucher.redemption.reversed",
+          "hook": "vcap_redemption_reversed",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "reversed_event_id",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "staff_if_logged_in",
+          "after_commit": "yes"
+        },
+        {
+          "type": "voucher.voucher.expired",
+          "hook": "vcap_voucher_expired",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "balance_minor",
+            "currency",
+            "voucher_type"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "voucher.voucher.reissued",
+          "hook": "vcap_voucher_reissued",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "status"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "autocommit"
+        },
+        {
+          "type": "voucher.voucher.voided",
+          "hook": "vcap_voucher_event:voided",
+          "since": "1.0.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "balance_minor",
+            "currency",
+            "order_id",
+            "change_source",
+            "void_reason"
+          ],
+          "actor_user_id": "user_id_arg_if_positive",
+          "after_commit": "yes"
+        },
+        {
+          "type": "voucher.voucher.reactivated",
+          "hook": "vcap_voucher_event:reactivated",
+          "since": "1.0.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "balance_minor",
+            "currency",
+            "order_id",
+            "change_source"
+          ],
+          "actor_user_id": "user_id_arg_if_positive",
+          "after_commit": "yes"
+        },
+        {
+          "type": "voucher.store_credit.changed",
+          "hook": "vcap_store_credit_changed",
+          "since": "1.1.0",
+          "subject_type": "store_credit",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "balance_minor",
+            "currency",
+            "credit_event",
+            "order_id"
+          ],
+          "actor_user_id": "customer",
+          "after_commit": "yes"
+        },
+        {
+          "type": "voucher.gift_card.topped_up",
+          "hook": "vcap_gift_card_topped_up",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "order_id",
+            "balance_minor"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        }
+      ]
+    },
+    "affiliate-captain": {
+      "contract_constant": "WPAC_CONTRACT_VERSION",
+      "min_contract": "1.4.0",
+      "example_required": false,
+      "fields_complete": false,
+      "events": [
+        {
+          "type": "affiliate.code_request.approved",
+          "hook": "wpac_code_request_approved",
+          "since": "1.4.0",
+          "subject_type": "code_request",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "partner_code",
+            "main"
+          ],
+          "actor_user_id": "see_spec_6",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.commission.approved",
+          "hook": "wpac_commission_approved",
+          "since": "unverified",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "amount_minor",
+            "currency",
+            "kind"
+          ],
+          "actor_user_id": "see_spec_6",
+          "after_commit": "yes"
+        }
+      ]
+    },
+    "wp-license": {
+      "contract_constant": null,
+      "min_contract": null,
+      "example_required": false,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "license.license.status_changed",
+          "hook": "wplc/license_status_changed",
+          "since": "unverified",
+          "subject_type": "license",
+          "id_kind": "record",
+          "data_fields": [
+            "product",
+            "plan",
+            "status",
+            "previous_status",
+            "lifecycle_action"
+          ],
+          "actor_user_id": "customer",
+          "after_commit": "unverified"
+        },
+        {
+          "type": "license.license.issued",
+          "hook": "wplc/license_issued_followup",
+          "since": "unverified",
+          "subject_type": "license",
+          "id_kind": "record",
+          "data_fields": [
+            "product",
+            "plan",
+            "status"
+          ],
+          "actor_user_id": "customer",
+          "after_commit": "unverified"
+        },
+        {
+          "type": "license.license.plan_changed",
+          "hook": "wplc/license_plan_changed",
+          "since": "unverified",
+          "subject_type": "license",
+          "id_kind": "record",
+          "data_fields": [
+            "product",
+            "plan",
+            "status"
+          ],
+          "actor_user_id": "customer",
+          "after_commit": "unverified"
+        }
+      ]
+    }
+  }
+}

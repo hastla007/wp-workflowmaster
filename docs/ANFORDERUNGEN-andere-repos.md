@@ -1,6 +1,6 @@
 # Anforderungen an andere Repositories der Suite
 
-Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.3. Aufgabe WF-SPEC-14 in [`../TODO.md`](../TODO.md).
+Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.4 (nach der Prüfung von Pass und Voucher Captain am Code). Aufgabe WF-SPEC-14 in [`../TODO.md`](../TODO.md).
 
 Die Spezifikation verlangt von anderen Repositories Änderungen. Dieses Dokument sammelt sie je Repository so, dass sie dort ohne weitere Recherche als Aufgaben angelegt werden können. Angelegt sind sie noch nicht: Diese Sitzung hat keine Schreibrechte in den anderen Repositories. Wer eine Aufgabe dort anlegt, trägt den Ort hier in der Spalte „Angelegt“ ein; sind alle angelegt, ist WF-SPEC-14 erledigt.
 
@@ -18,18 +18,21 @@ Regeln, die für alle gelten:
 | VC-2 | Gutschein über `voucher_id` annehmen, nie über den Code; Empfänger über `recipient_user_id`, nie über eine E-Mail-Adresse; eigener Code, `allow_weak`, Prozent-Gutscheine und `paid = true` ablehnen; `$refund`/`$after_refund` fest `false`; `refund()` der Einlöse-API nicht erreichbar | 8.3.2 bis 8.3.4 | nach D12 | |
 | VC-3 | Höchstbeträge in Shops ohne Euro nach der Antwort auf F-05a | F-05a | nach der Antwort | |
 | VC-4 | Satz in `README.md:96` („Kein Formular und kein Workflow stellt selbstständig Gutscheine aus.“) an D11b anpassen | 8.3.4 | sofort | |
-| VC-5 | Vorläufigen Workflow-Provider aus Pull Request 16 vor dem Release entfernen und auf einem geparkten Branch aufbewahren; Wächtertest wie im Affiliate-Kern | D13, R-4.4 bis R-4.6, Z-16 | vor dem nächsten Release | |
+| VC-5 | Vorläufigen Workflow-Provider aus Pull Request 16 vor dem Release entfernen und auf einem geparkten Branch aufbewahren; Wächtertest wie im Affiliate-Kern | D13, R-4.4 bis R-4.6, Z-16 (geprüft: auf `hvollo-refactors` `82145ed` noch vorhanden, auf `main` nie; dort VOUCH-WF-10) | vor dem nächsten Release | |
 | VC-6 | „Nach Commit“ für die Actions ohne Vermerk in der Hook-Tabelle belegen oder als „nicht nach Commit“ kennzeichnen | R-3.9, Z-05 | Dokumentation, jederzeit | |
 | VC-7 | Lesefunktionen für Zustand eines Gutscheins und für Kontakt und Einwilligung des Empfängers als dokumentierten Vertrag führen (additiv) | 8.1, F-13, Z-07 | nach der Antwort auf F-13 | |
 | VC-8 | Wächtertest „kein Lizenzcode im Kern“ in der CI | R-3.11 | jederzeit | |
+| VC-9 | `reactivate()` prüft die Berechtigung nur, wenn ein Benutzer angemeldet ist; der neue Einstiegspunkt darf sich darauf nicht verlassen. `void()` und die Einlöse-API prüfen in PHP keine Berechtigung | 8.3.3, 8.3.4, Z-15 | mit VC-1 | |
+| VC-10 | Kartenimport bildet die Idempotenzreferenz aus einem Hash des Codes (`src/Admin/CardImport.php:92-94`, der Docblock in Zeile 13 nennt fälschlich `import:<code>`); Referenz ohne Bezug zum Code bilden | R-4.7 | jederzeit | |
 
 ## Pass Captain (`wp-passmaster`)
 
 | Nr. | Anforderung | Grundlage | Dringlichkeit | Angelegt |
 |---|---|---|---|---|
-| PC-1 | „Seit“ je `wpcap_*`-Action des Katalogs in `docs/HOOKS.md` nachtragen | R-3.4, Z-01 | Dokumentation, jederzeit | |
-| PC-2 | „Nach Commit“ für die sechs Actions aus Z-02 belegen oder kennzeichnen | R-3.9, Z-02 | Dokumentation, jederzeit | |
-| PC-3 | Festlegen, dass `$reason` bei `wpcap_order_cancelled`, `wpcap_order_refunded` und `wpcap_ticket_revoked` ein fester Schlüssel ist, oder Freitext als solchen dokumentieren | Abschnitt 5, Z-03 | Dokumentation | |
+| PC-1 | „Seit“ je `wpcap_*`-Action des Katalogs in `docs/HOOKS.md` nachtragen; die Werte sind ermittelt (Spezifikation 4.2), ebenso die nicht im CHANGELOG vermerkte Erweiterung von `wpcap_order_cancelled` um zwei Argumente in 1.5.0 (`b6ef0b4`) | R-3.4, Z-01 | Dokumentation, jederzeit | |
+| PC-2 | „Nach Commit“ für die sechs Actions aus Z-02 in `docs/HOOKS.md` vermerken (geprüft: alle nach COMMIT oder im Autocommit) | R-3.9, Z-02 | Dokumentation, jederzeit | |
+| PC-6 | `wpcap_occurrence_rescheduled` und `wpcap_occurrence_cancelled` feuern im Admin auch, wenn das UPDATE fehlschlug (`src/Admin/EventsPage.php:207-218`, `:242-245`); Ergebnis prüfen | Z-02, 4.2 | jederzeit | |
+| PC-3 | Dokumentieren, dass `$reason` bei `wpcap_order_cancelled` und `wpcap_ticket_revoked` Freitext sein kann (Admin; bei `wpcap_order_cancelled` auch beliebiger Text über `wp_pass_captain_ticket_service_v1`), und die festen Präfixe auflisten | Abschnitt 5, Z-03 | Dokumentation | |
 | PC-4 | Lesefunktionen für Zustand von Bestellung und Ticket und für Kontakt und Einwilligung zu einem Ticket als dokumentierten Vertrag führen (additiv) | 8.1, F-13, Z-07 | nach der Antwort auf F-13 | |
 | PC-5 | Wächtertest „kein Lizenzcode im Kern“ in der CI | R-3.11 | jederzeit | |
 
