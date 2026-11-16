@@ -2,7 +2,7 @@
 
 Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.5 (nach der Prüfung von Pass und Voucher Captain am Code). Aufgabe WF-SPEC-14 in [`../TODO.md`](../TODO.md).
 
-Die Spezifikation verlangt von anderen Repositories Änderungen. Dieses Dokument sammelt sie je Repository so, dass sie dort ohne weitere Recherche als Aufgaben angelegt werden können. Angelegt sind sie noch nicht: Diese Sitzung hat keine Schreibrechte in den anderen Repositories. Wer eine Aufgabe dort anlegt, trägt den Ort hier in der Spalte „Angelegt“ ein; sind alle angelegt, ist WF-SPEC-14 erledigt.
+Die Spezifikation verlangt von anderen Repositories Änderungen. Dieses Dokument sammelt sie je Repository so, dass sie dort ohne weitere Recherche als Aufgaben angelegt werden können. Wo sie angelegt sind, steht in der letzten Spalte (Stand 16.11.2026): Diese Sitzung hat keine Schreibrechte in den anderen Repositories. Wer eine Aufgabe dort anlegt, trägt den Ort hier in der Spalte „Angelegt“ ein; sind alle angelegt, ist WF-SPEC-14 erledigt.
 
 Regeln, die für alle gelten:
 
