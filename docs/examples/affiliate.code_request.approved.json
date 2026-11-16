@@ -1,0 +1,28 @@
+{
+  "id": "6d2b4f80-1c3e-4a5b-9d7f-2e4a6c8b0d1f",
+  "type": "affiliate.code_request.approved",
+  "spec_version": "1.0",
+  "source": {
+    "product": "affiliate-captain",
+    "core_version": "0.15.0",
+    "contract_version": "1.4.0"
+  },
+  "occurred_at": "2026-11-16T12:30:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "code_request",
+    "id": "57",
+    "id_kind": "record"
+  },
+  "data": {
+    "affiliate_id": 310,
+    "partner_code": "SEGELN10",
+    "main": true
+  },
+  "idempotency_key": "c0ffee00112233445566778899aabbccddeeff00112233445566778899aabbcc",
+  "correlation_id": "6d2b4f80-1c3e-4a5b-9d7f-2e4a6c8b0d1f",
+  "causation_id": null,
+  "chain_depth": 0
+}

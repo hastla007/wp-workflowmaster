@@ -1,23 +1,27 @@
 # Workflow Captain – Umsetzungsliste
 
+> **Maßgeblich seit 16.11.2026:** `docs/SPEC-suite-events.md` ist die normative Spezifikation für die Zusammenarbeit der Suite-Plugins (Entscheidung D1) und geht jeder abweichenden Aufgabe dieser Liste vor. Aufgaben, die eine Entscheidung vom 16.11.2026 überholt, sind neu gefasst oder durchgestrichen und mit „Entfällt durch Entscheidung D…“ gekennzeichnet. Nach D12 rangiert alle Workflow-Arbeit hinter dem Verkaufsstart der drei vorhandenen Add-ons.
+
+**Zählung (16.11.2026):** 183 offen, 0 erledigt, 7 entfallen. Vor den Entscheidungen waren es 175 offene Aufgaben; 7 sind entfallen, 15 (WF-SPEC-01 bis -15) neu. Nachzählen: `grep -c '^- \[ \]' TODO.md`, `grep -c '^- \[x\]' TODO.md`, `grep -c '^- ~~' TODO.md`.
+
 **Quelle:** migrierte Umsetzungspunkte aus den Abschnitten 15.11 und 18.7 des Produktkonzepts. Das Konzept bleibt maßgeblich für Umfang, Verträge und Produktentscheidungen.
 
-**Festgelegt:** Free-Core bleibt eigenständig; Pro-Add-on workflow-captain-pro. WPLC Produktkey workflow-captain-pro, Präfix workflow.; Jahrespreise Single 129 EUR/1 Live-Site, Business 229 EUR/5, Agency 399 EUR/25. Alle Pläne erhalten denselben Pro-Funktionsumfang.
+**Festgelegt:** Free-Core bleibt eigenständig; Pro-Add-on workflow-captain-pro. WPLC Produktkey workflow-captain-pro, Präfix workflow.; Jahrespreise Single 129 EUR/1 Live-Site, Business 229 EUR/5, Agency 399 EUR/25. Alle Pläne erhalten denselben Pro-Funktionsumfang. **Hinweis 16.11.2026:** Die Preise sind nicht bestätigt (offene Entscheidung E9); „festgelegt“ gilt für Schlüssel, Präfix und die Site-Limits 1/5/25.
 
 ### 15.11 Was noch fehlt – Umsetzungsaufgaben, keine offenen Produktentscheidungen
 
 **Öffentliche Verträge**
-- [ ] Für jeden der sechs Captain-Provider Trigger-/Action-Schema, Vertragsversion, Berechtigung, Fehlercodes und minimale Payload in den Fachplugin-Repositories veröffentlichen.
-- [ ] Pass Captain: versionierte Brücke für Check-in, Ausgabe, Widerruf und Eventabsage statt direkter Abhängigkeit auf interne Hooks.
-- [ ] Voucher Captain: versionierte Events/Services für Ausstellung, Zustellung, Einlösung, Rückgabe und Geheimnisredaktion.
-- [ ] Review Captain: idempotente Request-/Cancel-API mit Suppression, Opt-out, Frequenzlimit und Statusrückgabe.
+- [ ] Für jeden Provider den Ereigniskatalog, die erlaubten Felder je Ereignistyp und die Befehle in `docs/SPEC-suite-events.md` dieses Repositorys festlegen; die Fachplugin-Repositories verweisen darauf und veröffentlichen keine eigenen Suite-Verträge (neu gefasst nach D1).
+- ~~Pass Captain: versionierte Brücke für Check-in, Ausgabe, Widerruf und Eventabsage statt direkter Abhängigkeit auf interne Hooks.~~ **Entfällt durch Entscheidung D5.** Transport sind die vorhandenen Hooks von Pass Captain; der Adapter liegt im Add-on.
+- [ ] Voucher Captain: Einstiegspunkte für automatisches Ausstellen, Sperren, Reaktivieren und Einlösen mit festen Grenzen, Protokoll, Idempotenz und Missbrauchsschutz im Voucher-Kern anfordern (D11b); Anforderungen in `docs/SPEC-suite-events.md`, Abschnitt 8.3 (neu gefasst nach D5 und D11; neue Events, Rückgabe und Redaktion im Kern entfallen, die Redaktion leistet der Adapter).
+- [ ] Review Captain: idempotente Request-/Cancel-API mit Suppression, Opt-out, Frequenzlimit und Statusrückgabe. *[Hinweis: Katalog `review.*` folgt in einer Minor-Version der Spezifikation; kein eigener Workflow-Vertrag im Review-Repository (D1).]*
 - [ ] Form Captain: Feldklassen und Einwilligungs-/Übertragungsregeln je Feld festlegen und in den Submission-Service einbauen.
-- [ ] Affiliate Captain: Provision-/Refund-Aktionen ausschließlich über kanonischen Verkaufsvertrag; keine zweite Buchung aus Workflow Captain.
-- [ ] WP License Captain: nur benachrichtigungsfähige Lizenzereignisse; keine generischen Lizenzänderungen als Workflow-Aktionen.
+- ~~Affiliate Captain: Provision-/Refund-Aktionen ausschließlich über kanonischen Verkaufsvertrag; keine zweite Buchung aus Workflow Captain.~~ **Entfällt durch Entscheidung D11.** Ein Workflow bucht in Version 1 keine Provision und keine Erstattungskorrektur.
+- [ ] WP License Captain: Lizenzereignisse nur im Shop des Herstellers über PHP-Hooks im selben WordPress verarbeiten; fehlende Actions (Aktivierung, Deaktivierung, Site-Limit erreicht, Release veröffentlicht), Vertragskonstante und Lesefassade beim Lizenzserver anfordern; keine Lizenzänderung als Workflow-Aktion (neu gefasst nach D2; `docs/SPEC-suite-events.md`, Abschnitt 11).
 
 **Produktumsetzung**
-- [ ] Die bestätigten Entitlements workflow.suite_integrations, workflow.custom_connectors, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.delays, workflow.multisite_network, workflow.recipe_templates und workflow.extended_logs in wp-license/captain-pro anlegen.
-- [ ] Produktkey und drei Jahrespläne im Shop/WP License Captain mit 1/5/25 Sites und oben festgelegten Preisen konfigurieren.
+- [ ] Die sechs im Lizenzserver vorgemerkten Entitlements workflow.suite_integrations, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.recipe_templates und workflow.extended_logs mit dem Add-on in captain-pro anlegen. workflow.custom_connectors, workflow.delays und workflow.multisite_network sind nicht reserviert, Entscheidung offen (`docs/SPEC-open-questions.md`, F-01).
+- [ ] Produktkey und drei Jahrespläne im Shop/WP License Captain mit 1/5/25 Sites und oben festgelegten Preisen konfigurieren. *[Preise nicht bestätigt, E9.]*
 - [ ] WordPress.org-Verfügbarkeit des Produktnamens/Slugs vor Einreichung prüfen.
 - [ ] UI-Entwürfe der Tabellen, Workflow-Canvas/Schrittfolge, Branching, Zeitplanung, Fehler-Replay und Lizenzablauf umsetzen.
 - [ ] WF-BUILDER-01 – Drag-&-Drop-Canvas mit Palette für Trigger, Aktion, If/Else, Delay/Wait und Ende implementieren; Knoten per Tastatur hinzufügen und verschieben können.
@@ -42,14 +46,35 @@
 - [ ] Supportkapazität für Standard/Priority einrichten; Responsezeiten erst danach veröffentlichen.
 - [ ] Lizenzclient/Updater und beide ZIPs (Free/Pro) in einer echten WooCommerce-Testinstallation freigeben.
 
+### Suite-Spezifikation (neu am 16.11.2026)
+
+Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebaut wird nach D12 erst nach dem Verkaufsstart der drei vorhandenen Add-ons; die Spezifikation selbst darf vorher fertig werden.
+
+- [ ] WF-SPEC-01 – Spezifikation dem Inhaber zur Abnahme vorlegen; die noch offenen Fragen und Widersprüche aus `docs/SPEC-open-questions.md` beantworten lassen (entschieden sind F-05, F-11, F-17, W-10, W-12 sowie Teile von F-12, F-19 und W-11; neu ist F-05a) und einarbeiten; danach Version 1.0.0 setzen.
+- [ ] WF-SPEC-02 – Die 16 „zu prüfen“-Stellen (Spezifikation, Abschnitt 15) in den Provider-Repositories klären und die Tabellen berichtigen.
+- [ ] WF-SPEC-03 – Für jeden Ereignistyp des Katalogs die Liste der erlaubten Felder in `data` und die Bedeutung von `actor_user_id` festlegen (heute nur für sechs Typen) und je Typ ein Beispiel unter `docs/examples/` ablegen.
+- [ ] WF-SPEC-04 – `bin/validate-spec-examples.py` in eine CI dieses Repositorys aufnehmen (es gibt noch keine).
+- [ ] WF-SPEC-05 – Consumer im kostenlosen Kern bauen: Ereignisspeicher je Website mit eindeutigem Idempotenzschlüssel, Zustände, Wiederholungsplan mit acht Versuchen, `dead_letter`-Ansicht, Schemaprüfung vor dem Speichern (Abschnitte 5 bis 7).
+- [ ] WF-SPEC-06 – Öffentliche Anmeldeschnittstelle für Adapter im Kern festlegen und mit eigener Vertragskonstante versionieren (R-13.7); der Kern kennt dabei weder Produktschlüssel noch Rechte.
+- [ ] WF-SPEC-07 – Gegenlesen vor dem Start eines Workflows für Ereignisse ohne belegtes „nach Commit“ (R-7.4).
+- [ ] WF-SPEC-08 – Kausalkette: Befehlskontext im Prozess, Zuordnung später entstehender Ereignisse über das erzeugte Objekt, Tiefe 3, „ein Workflow startet sich nie selbst“ (R-7.12 bis R-7.14); ergänzt WF-CORE-01.
+- [ ] WF-SPEC-09 – Berechtigung bei Hintergrundläufen: `authorized_by_user_id` beim Veröffentlichen speichern und bei jeder Ausführung prüfen; nie `wp_set_current_user()` (R-8.5 bis R-8.10); ergänzt WF-CORE-08.
+- [ ] WF-SPEC-10 – Lizenzende: Adapter abmelden, offene Ereignisse auf `paused`, nichts löschen, nichts nachholen, Freigabe nach Vorschau (R-10.4 bis R-10.9).
+- [ ] WF-SPEC-11 – Datenschutz: Exporteur und Löscher für WordPress anmelden, auf `deleted_user` und `affiliate.affiliate.erased` reagieren, Aufbewahrungsfristen (Abschnitt 12); Fristen nach der Rechtsprüfung festlegen.
+- [ ] WF-SPEC-12 – Wächtertest „kein Lizenzcode im Kern“ für `workflow-captain` anlegen (R-3.11).
+- [ ] WF-SPEC-13 – Konformitätstests C-1 bis C-16 schreiben; Testvorlagen für A-1 bis A-11 für die Adapter in captain-pro bereitstellen.
+- [ ] WF-SPEC-15 – Anerkannte Lesefunktionen je Provider festlegen (für Gegenlesen, Bedingungen und Empfängerauflösung) und in Abschnitt 8.1 der Spezifikation eintragen; `wpac_workflow_read()` zählt nach D13 nicht dazu.
+- [ ] WF-SPEC-14 – Anforderungen an andere Repositories als Aufgaben dort anlegen lassen: Voucher-Kern (vier Einstiegspunkte für `voucher.issue`, `voucher.void`, `voucher.reactivate`, `voucher.redeem` nach D11b; Satz im README zu Workflows ändern; vorläufigen Provider aus Pull Request 16 entfernen, D13), Lizenzserver (vier fehlende Actions, Vertragskonstante, „nach Commit“, Lesefassade), captain-pro (Recht eines anderen Add-ons, mehrere Kerne je Add-on), Pass Captain („seit“ je `wpcap_*`-Action), Affiliate Captain („Seit“-Tabelle; der vorläufige Workflow-Provider ist entfernt, Wiedereinführung dort als AFF-WF-08), Form und Review Captain (eigene Workflow-Verträge angleichen).
+
+
 ### 18.7 Neue technische To-dos nach der Suite-Prüfung
 
 **P0 – Providerverträge**
 
-- [ ] Suite-weite SemVer-, Envelope-, Privacy- und Ownership-Konvention in allen Plugin-Repositories festlegen.
-- [ ] Für jeden Command Idempotency-ID, Seiteneffekt, Retryregeln, Capability/Entitlement und Auditformat dokumentieren.
-- [ ] Ownership-Handshake mit „Plugin-eigen“ als Default in den Core-Plugins implementieren.
-- [ ] Events nach Commit und Source-Outbox/Replay für kritische Ereignisquellen bereitstellen.
+- [ ] Suite-weite SemVer-, Umschlag-, Datenschutz- und Zuständigkeitsregeln in `docs/SPEC-suite-events.md` dieses Repositorys abnehmen lassen und auf Version 1.0.0 bringen (neu gefasst nach D1: eine Spezifikation hier, nicht in allen Plugin-Repositories).
+- [ ] Für jeden Command Idempotency-ID, Seiteneffekt, Retryregeln, Capability/Entitlement und Auditformat dokumentieren. *[Umfang der Befehle: `docs/SPEC-suite-events.md`, Abschnitt 8.]*
+- ~~Ownership-Handshake mit „Plugin-eigen“ als Default in den Core-Plugins implementieren.~~ **Entfällt durch Entscheidung D10.** Die Kerne behalten ihre Mails und Erinnerungen; es gibt keine Übergabe.
+- ~~Events nach Commit und Source-Outbox/Replay für kritische Ereignisquellen bereitstellen.~~ **Entfällt durch Entscheidung D5 und D9.** Die Kerne bleiben unverändert; der Abnehmer speichert und wiederholt.
 - [ ] Woo/Refund-Verknüpfung zu Voucher, Pass und Affiliate als eine kanonische Quelle testen.
 - [ ] WP License, Woo, Voucher, Pass, Affiliate, Form und Review Provider mit Plugin-fehlt-, Lizenz-fehlt- und Contract-Major-Verhalten ergänzen.
 
@@ -57,34 +82,34 @@
 
 - [ ] Adapter für alle v1-Trigger aus Abschnitt 17 umsetzen.
 - [ ] Actions pro Zielplugin ausschließlich über öffentliche Serviceverträge implementieren.
-- [ ] Installations-/Migrationsassistent für native Erinnerungen/Benachrichtigungen, Draftimport, Duplikaterkennung, Besitzerwechsel und Rollback bauen.
+- [ ] Einrichtungsassistent bauen: zeigt beim Anlegen einer zusätzlichen Nachricht die Mail des Kerns zum selben Anlass und erkennt Duplikate (neu gefasst nach D10; Draftimport nativer Erinnerungen, Besitzerwechsel und Rollback entfallen).
 - [ ] Providerstatus, aktive Workflowlinks und gemeinsame Run-/Correlation-IDs in Suite-Admins anzeigen.
 - [ ] Testmatrix für Workflow vorhanden/fehlend/deaktiviert, Free/Pro/abgelaufene Lizenz, Fachplugin-Pro-Recht, inkompatiblen Vertrag und doppelte Events ergänzen.
 
 **P2 – Betrieb**
 
 - [ ] Supportdiagnose-Export ohne PII/Secrets erstellen.
-- [ ] Source-Outbox-Replay und Workflow-Queue-Retry unterscheiden und idempotent machen.
+- ~~Source-Outbox-Replay und Workflow-Queue-Retry unterscheiden und idempotent machen.~~ **Entfällt durch Entscheidung D9.** Es gibt keine Source-Outbox; übrig bleibt die Idempotenz der eigenen Warteschlange (WF-CORE-03).
 - [ ] Anonymisierung/Löschung über Source- und Workflow-Logs abstimmen, ohne Geschäftsledger zu löschen.
 - [ ] Aktivierung/Deaktivierung, Backup/Restore, per-Site-Isolation und Site-A-zu-Site-B-Routing in Multisite pro Provider validieren.
 
 ### Suite-Provider: verbindliche Implementierungsaufgaben
 
 - [ ] WF-INT-01 – Eine maschinenlesbare Providerregistry aus der Trigger-/Action-Matrix in Abschnitt 17 erstellen. Pro Fähigkeit: stabile ID, Schema, Mindest-Core-Version, Free/Pro-Recht, Zielplugin-Recht, Capability, Payload-Allowlist, Side-Effect, Retry und Fehlercodes.
-- [ ] WF-INT-02 – Providerverträge v1 mit WP License, WooCommerce, Voucher, Pass, Affiliate, Form und Review versionieren. Events nach Commit; Quell-Outbox für kritische Quellen; unbekannte optionale Felder tolerant, Major-Inkompatibilität sicher deaktivieren.
-- [ ] WF-INT-03 – Fach-Commands in Suite-Plugins öffentlich und versioniert bereitstellen lassen; keine direkten Tabellen, Meta-Schreibpfade oder internen Klassen verwenden.
-- [ ] WF-INT-04 – Ownership-Handshake als Plugin-eigenen Default implementieren. Nur optionale Kommunikation/Erinnerungen können nach Vorschau und Bestätigung übergeben werden; kritische Geschäftsabläufe bleiben Domainplugin-eigen.
+- [ ] WF-INT-02 – Adapter je Provider an die vorhandenen PHP-Hooks nach dem Ereigniskatalog in `docs/SPEC-suite-events.md`, Abschnitt 4, anbinden; Vertragskonstante und Mindestversion je Provider prüfen; unbekannte optionale Felder tolerant, Major-Inkompatibilität sicher deaktivieren (neu gefasst nach D4, D5 und D9; eigene Providerverträge v1 und Quell-Outbox entfallen).
+- [ ] WF-INT-03 – Befehle der Version 1 nach `docs/SPEC-suite-events.md`, Abschnitt 8, umsetzen: lesende Abfragen, Benachrichtigungen, Markierungen und Notizen im eigenen Speicher sowie die vier Gutschein-Befehle `voucher.issue`, `voucher.void`, `voucher.reactivate` und `voucher.redeem` (D11b); keine direkten Tabellen, Meta-Schreibpfade oder internen Klassen (neu gefasst nach D11; weitere Fach-Commands in den Suite-Plugins entfallen).
+- ~~WF-INT-04 – Ownership-Handshake als Plugin-eigenen Default implementieren. Nur optionale Kommunikation/Erinnerungen können nach Vorschau und Bestätigung übergeben werden; kritische Geschäftsabläufe bleiben Domainplugin-eigen.~~ **Entfällt durch Entscheidung D10.** Kein Ownership-Handshake.
 - [ ] WF-INT-05 – Woo-Provider über Woo CRUD und Order-Abstraktionen für HPOS/Classic implementieren; Bestellung, Zahlung, Refund/Chargeback, Produkt/Bestand und Kundenstatus als Trigger.
-- [ ] WF-INT-06 – License-Provider read-only; Status/Entitlement auslösen, aber keine Lizenzänderungen; Lizenzgeheimnisse ausschließen und Self-trigger-Loops verhindern.
-- [ ] WF-INT-07 – Voucher-Provider auf Issuer-/Redemption-Services setzen; Zustellung, Einlösung, Ablauf, Refund und Widerruf idempotent abbilden; Code/PII redigieren.
+- [ ] WF-INT-06 – License-Adapter in Workflow Captain Pro, nur für den Shop des Herstellers: hängt sich an die PHP-Hooks des Lizenzservers im selben WordPress, nie an `wplc/license_issued` (übergibt den Schlüssel); read-only; Self-trigger-Loops verhindern (neu gefasst nach D2).
+- [ ] WF-INT-07 – Voucher-Provider auf Issuer-/Redemption-Services setzen; Zustellung, Einlösung, Ablauf, Refund und Widerruf idempotent abbilden; Code/PII redigieren. *[Hinweis nach D5/D11: Zustellung, Ablauf, Refund und Widerruf nur als Ereignisse; schreibende Aktionen sind nur die vier Gutschein-Befehle (D11b). Code/PII entfernt der Adapter per Positivliste.]*
 - [ ] WF-INT-08 – Pass-Provider mit stabiler Ticket-/Order-Line-ID, Refund-Semantik, Teilnahme/Check-in und Code-/Teilnehmer-PII-Redaction umsetzen.
-- [ ] WF-INT-09 – Affiliate-Provider auf CONTRACT v1.3 setzen, Verkaufs-/Refund-Dedupe erhalten und keine Payout-Automation anbieten.
-- [ ] WF-INT-10 – Form-Provider nur freigegebene Felder und explizite Actions liefern; keine automatische Zahlung, Ticket-/Gutscheinausgabe, Partnerfreigabe oder Review-Veröffentlichung.
+- [ ] WF-INT-09 – Affiliate-Provider auf CONTRACT v1.3 setzen, Verkaufs-/Refund-Dedupe erhalten und keine Payout-Automation anbieten. *[Hinweis: Der Affiliate-Kern steht bei Vertrag 1.4.0; sein vorläufiger Workflow-Provider (`wpac_workflow_event`, `wpac_workflow_read()`) ist entfernt (D13, Spezifikation 4.4.1).]*
+- [ ] WF-INT-10 – Form-Provider nur freigegebene Felder und explizite Actions liefern; keine automatische Zahlung, Ticket-/Gutscheinausgabe, Partnerfreigabe oder Review-Veröffentlichung. *[Hinweis D10: Die auf dem Form-Branch gebaute Mail-Übergabe an Workflow entfällt (F-12).]*
 - [ ] WF-INT-11 – Review-Provider schützt Consent, Einladung, Opt-out, Suppression, Frequenzlimit, Plattformziel und Moderation vor Workflow-Umgehung.
-- [ ] WF-INT-12 – Pro-Features nur bei workflow-captain-pro Recht registrieren; Fachplugin-Pro-Recht zusätzlich prüfen, ohne Free-Core oder Daten zu sperren.
-- [ ] WF-INT-13 – WPLC-Katalog/Shop verbindlich abgleichen: workflow-captain-pro; workflow.*; Single 129 EUR/1 Site, Business 229 EUR/5 Sites, Agency 399 EUR/25 Sites pro Jahr; gleiche Pro-Funktionen in allen Plänen.
-- [ ] WF-INT-14 – Adminseiten für Provider, Vertragsversion, Verfügbarkeit, Testevent, Ownership, aktive Workflows, Fehler, Retry und Diagnoseexport bauen.
-- [ ] WF-INT-15 – Migrationsassistent zeigt Vorschau, sichert Nativeinstellungen, erkennt Duplikate, verlangt Bestätigung und erlaubt Besitzerwechsel/Rollback.
+- [ ] WF-INT-12 – Adapter nur registrieren, wenn workflow-captain-pro lizenziert ist **und** das Add-on des jeweiligen Produkts eine gültige Pro-Lizenz hat (D6, immer, nicht nur bei Pro-Funktionen des Fachplugins); Prüfung nur im Add-on; Free-Core und Daten nie sperren. Braucht die Kernel-Erweiterung in captain-pro (F-06).
+- [ ] WF-INT-13 – WPLC-Katalog/Shop verbindlich abgleichen: workflow-captain-pro; workflow.*; Single 129 EUR/1 Site, Business 229 EUR/5 Sites, Agency 399 EUR/25 Sites pro Jahr; gleiche Pro-Funktionen in allen Plänen. *[Preise nicht bestätigt, E9; Schlüsselliste siehe Spezifikation 10.2.]*
+- [ ] WF-INT-14 – Adminseiten für Provider, Vertragsversion, Verfügbarkeit, Testevent, Ownership, aktive Workflows, Fehler, Retry und Diagnoseexport bauen. *[„Ownership“ entfällt (D10).]*
+- ~~WF-INT-15 – Migrationsassistent zeigt Vorschau, sichert Nativeinstellungen, erkennt Duplikate, verlangt Bestätigung und erlaubt Besitzerwechsel/Rollback.~~ **Entfällt durch Entscheidung D10.** Kein Besitzerwechsel, daher kein Migrationsassistent dafür.
 - [ ] WF-INT-16 – Kompatibilitätsmatrix für WP, Woo HPOS/Classic, Checkout Blocks, lokale und netzwerkweite Multisite, PHP, Action Scheduler/Cron und alle Suite Core/Pro-Kombinationen festlegen.
 - [ ] WF-INT-17 – Vertrags-/E2E-Matrix für Plugin fehlt/deaktiviert, Lizenz/Recht fehlt/abgelaufen, Contract Major, Timeout nach erfolgreichem Zielaufruf, Replay, Duplicate, Refund, Restore, lokale Site-Isolation und Cross-Site-Permissions in Multisite ergänzen.
 - [ ] WF-INT-18 – Release-Gate für getestete ZIPs aller geänderten Plugins, WPLC-Shop-Sandbox, Kauf/Aktivierung/Entitlement/Update/Refund/Deaktivierung, Migration und Rollback definieren.

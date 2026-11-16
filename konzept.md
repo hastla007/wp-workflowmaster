@@ -11,6 +11,8 @@
 **Kern-Plugin-Slug/Textdomain:** `workflow-captain`  
 **Vorgesehener Pro-Ort:** `hastla007/captain-pro/addons/workflow-captain-pro/`
 
+> **Maßgeblich seit 16.11.2026:** `docs/SPEC-suite-events.md` ist die normative Spezifikation für die Zusammenarbeit der Suite-Plugins (Entscheidung D1) und geht jeder abweichenden Stelle dieses Konzepts vor. Überholte Stellen sind unten mit „Überholt“ und der Nummer der Entscheidung gekennzeichnet, nicht gelöscht. Offene Punkte: `docs/SPEC-open-questions.md`.
+
 > Dieses Dokument ist die Produkt- und Umsetzungsgrundlage. Es beschreibt geplante Verträge und Funktionen, keine bereits vorhandenen Hooks, API-Rechte oder getestete Kompatibilität. Vor Releases sind Plattform-, Datenschutz-, Sicherheits- und Lizenzbedingungen erneut zu prüfen.
 
 ## Lizenzmodell und Produktabgrenzung
@@ -83,7 +85,7 @@ Free umfasst keine Captain-Suite-Provider oder externen Serviceverbindungen. Pre
 
 ### Workflow Captain Pro (separates Add-on, lizenziert)
 
-- Alle sechs Captain-Provider: WP License Captain, WooCommerce (erweiterte Suite-Aktionen), Pass, Voucher, Affiliate, Form und Review Captain.
+- Alle sechs Captain-Provider: WP License Captain, WooCommerce (erweiterte Suite-Aktionen), Pass, Voucher, Affiliate, Form und Review Captain. *[Überholt durch D2: Lizenzereignisse gibt es nur im Shop des Herstellers, nicht bei Käufern; siehe `docs/SPEC-suite-events.md`, Abschnitt 11.]*
 - Sichere, signierte Ein-/Ausgangswebhooks als Brücke zu Fremdsystemen und anderen WordPress-Websites. V1 enthält keine native App-Bibliothek für Hunderte Drittanbieter.
 - Erweiterte Event-Korrelation, If/Else-Verzweigung, Bedingungsgruppen und Freigabeschritte.
 - Geplante Queue-Aktionen mit Geschäftslogik zur Stornierung bei Refund/Storno oder Statusänderung.
@@ -99,7 +101,7 @@ Externe App-Plattformen und Cloud-Runs sind nicht Teil von Version 1; Webhooks s
 - Produktschlüssel/Add-on-Ordner/Textdomain: `workflow-captain-pro`; Rechtepräfix: `workflow.`.
 - Pro nutzt den bestehenden WP-License-Client und Add-on-Kernel in `captain-pro`. Free enthält keinerlei Lizenzcode.
 - Die Pläne verwenden nur `sites.live_limit` und `support.level` als Tarifunterschiede; es gibt keine pro-Feature-Tiers, Run-Limits oder Task-Credits.
-- Premiumrechte: `workflow.suite_integrations`, `workflow.custom_connectors`, `workflow.webhooks`, `workflow.event_correlation`, `workflow.advanced_logic`, `workflow.delays`, `workflow.multisite_network`, `workflow.recipe_templates`, `workflow.extended_logs`.
+- Premiumrechte: `workflow.suite_integrations`, `workflow.custom_connectors`, `workflow.webhooks`, `workflow.event_correlation`, `workflow.advanced_logic`, `workflow.delays`, `workflow.multisite_network`, `workflow.recipe_templates`, `workflow.extended_logs`. *[Hinweis: Im Lizenzserver sind nur sechs dieser Schlüssel vorgemerkt; `workflow.custom_connectors`, `workflow.delays` und `workflow.multisite_network` sind nicht reserviert, Entscheidung offen; siehe `docs/SPEC-suite-events.md`, Abschnitt 10.2.]*
 - Alle Pro-Pläne erteilen dieselben neun Rechte; Site-Limit/Support kommen aus dem Standardvertrag. Die Katalog-Entitlements müssen vor dem Verkauf angelegt werden.
 - Bei Lizenzablauf bleiben Rezepte, Versionen, Logs und Export lesbar. Neue Pro-Runs starten nicht. Geplante Pro-Aktionen werden pausiert und nicht automatisch nach Lizenzverlängerung nachgeholt; Betreiber prüft eine Wiederaufnahme mit Vorschau.
 - In `captain-pro/README.md`, Architektur, Build, Übersetzungen und Release-Checkliste wird das Add-on nach dem bestehenden Produktmuster ergänzt.
@@ -116,7 +118,7 @@ Jede Integration registriert Metadaten und Handler an einer stabilen Registry:
 - **Adapterstatus:** verfügbar, Plugin fehlt, Mindestversion nicht erfüllt, Vertragsversion inkompatibel oder Provider-Fehler.
 - **Contract-Version:** semantische Version je Provider. Bei inkompatiblen Änderungen bleibt ein Workflow deaktiviert oder wird mit einem klaren Migrationshinweis markiert; Felder werden nie stillschweigend umgedeutet.
 
-Workflow Engine ruft Anbieter-Handler auf. Ein Provider darf nie interne Tabellen anderer Plugins lesen oder beschreiben. Wo es noch keinen stabilen Servicevertrag gibt, gehört dessen Entwicklung in die vorbereitende Arbeit des Quellplugins.
+Workflow Engine ruft Anbieter-Handler auf. Ein Provider darf nie interne Tabellen anderer Plugins lesen oder beschreiben. Wo es noch keinen stabilen Servicevertrag gibt, gehört dessen Entwicklung in die vorbereitende Arbeit des Quellplugins. *[Überholt durch D5 und D9: Die Kerne bekommen für Ereignisse keine neuen Verträge; Transport sind ihre vorhandenen PHP-Hooks; siehe `docs/SPEC-suite-events.md`, Abschnitt 1.]*
 
 ### Event-Vertrag
 
@@ -124,7 +126,7 @@ Vorgeschlagene öffentliche PHP-Schnittstelle (Namen sind Entwurf und müssen mi
 
 - `workflow_captain_register_providers` als Registry-Einstieg oder versionierte `ProviderInterface`.
 - Stabile Ereignis-IDs in der Form `woocommerce.order.paid`, `voucher.voucher.issued`, `pass.ticket.checked_in`.
-- Einheitlicher Envelope: `event_id`, `event_key`, `occurred_at_utc`, `site_id`, `actor_user_id` (falls vorhanden), `object_type`, `object_id`, `schema_version`, `payload`, `privacy_tags`.
+- Einheitlicher Envelope: `event_id`, `event_key`, `occurred_at_utc`, `site_id`, `actor_user_id` (falls vorhanden), `object_type`, `object_id`, `schema_version`, `payload`, `privacy_tags`. *[Überholt: erste von drei abweichenden Beschreibungen des Umschlags. Es gilt allein `docs/SPEC-suite-events.md`, Abschnitt 6 (D1, D8, D9).]*
 - Payload enthält nur benötigte Felder; sensible Daten standardmäßig minimieren. Tokens zeigen keine Auth-Secrets, Lizenzschlüssel, Zahlungskartendaten, vollständige Gutschein-/Einlasstokens oder Affiliate-Bankdaten.
 - Jeder Event wird mit stabiler Event-ID und Objektversion verarbeitet. Retry eines Events erhält denselben Idempotency-Key.
 
@@ -359,7 +361,7 @@ Die folgenden Phasen beschreiben die Umsetzungsreihenfolge. **Alle Phasen 0–3 
 
 - Die in Abschnitt 15.10 festgelegten Free-/Pro-, Lizenz-, Preis- und Kompatibilitätsentscheidungen bilden die Vorgabe.
 - Öffentliche Event-/Action-Schemas für WordPress, WooCommerce und alle Captain-Plugins verabschieden.
-- Bestehende Plugin-Hooks auf öffentliche, stabile Verträge abbilden; fehlende Verträge zuerst in den jeweiligen Fachplugins ergänzen.
+- Bestehende Plugin-Hooks auf öffentliche, stabile Verträge abbilden; fehlende Verträge zuerst in den jeweiligen Fachplugins ergänzen. *[Überholt durch D5: Fehlende Verträge werden nicht in den Fachplugins ergänzt; der Adapter im Add-on bildet die vorhandenen Hooks ab.]*
 - Data ownership, Refund-/Stornoverhalten, PII/Secrets und Idempotency je Provider dokumentieren.
 
 **Abnahme:** jeder V1-Provider besitzt eine verantwortliche Quellkomponente, versioniertes Schema, Fehlercodes und Testspezifikation.
@@ -400,6 +402,8 @@ Die folgenden Phasen beschreiben die Umsetzungsreihenfolge. **Alle Phasen 0–3 
 Die Produkt-, Free/Pro-, Lizenz- und Preisentscheidungen stehen in Abschnitt 15.10. Diese Liste enthält nur Arbeiten, die in Code, Verträgen, Design und Release noch erledigt werden müssen.
 
 ### P0 – Providerverträge
+
+> **Überholt (D5, D9, D1):** Die Punkte dieser Liste, die neue Brücken, Services oder Provider-Events in den Fachplugins verlangen, entfallen. Neu gebaut wird nur der Abnehmer in Workflow Captain; die Verträge stehen in `docs/SPEC-suite-events.md`. Maßgeblich ist `TODO.md`.
 
 - [ ] Workflow Event-Envelope, SemVer-Regel und Provider-Registry implementieren und dokumentieren.
 - [ ] WooCommerce: Bestell-, Status-, Refund-, Produkt-/Lager- und Coupon-Events auf stabile Quellereignisse abbilden.
@@ -555,14 +559,14 @@ Die folgende Liste ist verbindlicher Zielumfang. Die PHP-Eventnamen sind nicht a
 
 #### WP License Captain
 
-**Trigger:** Lizenz erstellt/aktiviert/verlängert/abgelaufen/gesperrt sowie Updateversion veröffentlicht, wenn der Lizenzkern einen sicheren Outbound-Provider bereitstellt. Kein Trigger für Lizenzschlüsselwert oder geheime Kundendaten.  
+**Trigger:** Lizenz erstellt/aktiviert/verlängert/abgelaufen/gesperrt sowie Updateversion veröffentlicht, wenn der Lizenzkern einen sicheren Outbound-Provider bereitstellt. Kein Trigger für Lizenzschlüsselwert oder geheime Kundendaten. *[Überholt durch D2: kein „Outbound-Provider“; PHP-Hooks im selben WordPress, nur im Shop des Herstellers.]*
 **Aktionen:** Adminhinweis oder interne Benachrichtigung; keine Lizenz widerrufen/verlängern/ändern durch generische Workflows in Version 1.  
 **Lizenzablauf von Workflow Captain selbst** wird nicht über diese Workflow-Engine gesteuert, sondern über den Add-on-Kernel.
 
 #### Voucher Captain
 
 **Trigger:** Gutschein ausgestellt; E-Mail zugestellt/fehlgeschlagen; Gutschein eingelöst; Guthaben geändert; Gutschein abgelaufen/gesperrt; Rückerstattung/Storno.  
-**Aktionen:** Gutschein kontrolliert über Voucher-Service ausstellen, erneute Zustellung, Gutscheinstatus abfragen, zulässige Sperrung/Rückgabe. Wertänderung und manuelle Guthabenkorrektur bleiben dem Voucher-Admin vorbehalten.  
+**Aktionen:** Gutschein kontrolliert über Voucher-Service ausstellen, erneute Zustellung, Gutscheinstatus abfragen, zulässige Sperrung/Rückgabe. Wertänderung und manuelle Guthabenkorrektur bleiben dem Voucher-Admin vorbehalten. *[Überholt durch D11: Erlaubt sind nur Ausstellen, Sperren, Reaktivieren und Einlösen in festen Grenzen (D11b); Rückgabe und Erstattung sind in Version 1 verboten; siehe `docs/SPEC-suite-events.md`, Abschnitt 8.]*
 **Schutz:** Gutscheincode ist Geheimnis, standardmäßig kein Token und niemals im Run-Log. Downloadlinks nur als kurzlebige, gezielte Zustellaktion. Das Gutschein-/Guthaben-Ledger bleibt im Voucher-Plugin.
 
 #### Pass Captain
@@ -574,7 +578,7 @@ Die folgende Liste ist verbindlicher Zielumfang. Die PHP-Eventnamen sind nicht a
 #### Affiliate Captain
 
 **Trigger:** Bewerbung eingegangen; Partner freigegeben/abgelehnt/pausiert; Provision erfasst/freigegeben/abgelehnt/ausgezahlt; Auszahlung abgebrochen.  
-**Aktionen:** Benachrichtigung; Bewerbungs-/Partnerstatus nur über Affiliate-Service und mit explizitem Capability-Schutz. Provision und Auszahlung nicht selbst errechnen, ändern oder wiederholen; Refunds gehen über die definierte Verkaufsquelle/Idempotenz des Affiliate-Kerns.  
+**Aktionen:** Benachrichtigung; Bewerbungs-/Partnerstatus nur über Affiliate-Service und mit explizitem Capability-Schutz. Provision und Auszahlung nicht selbst errechnen, ändern oder wiederholen; Refunds gehen über die definierte Verkaufsquelle/Idempotenz des Affiliate-Kerns. *[Überholt durch D11: In Version 1 nur Benachrichtigung und lesende Abfragen.]*
 **Schutz:** Bank-/Steuerdaten und personenbezogene Partnerdaten sind keine Tokens. Umsatz- und Partneraktionen werden auditiert.
 
 #### Form Captain
@@ -606,9 +610,9 @@ Jede Vorlage zeigt beteiligte Plugins, Voraussetzungen, Seiteneffekte, betroffen
 
 ### 15.6 Öffentliche Provider-Verträge und Datenmodell
 
-**Vertrag pro Provider:** Provider-ID, SemVer, Mindestversion Kernplugin, Trigger-/Action-Schema, Feldtypen und Datenschutzklassen, Capability-Anforderung, Retry-/Idempotenzregel, API-Fehlercodes, Beispielpayload, Migrationsanleitung, Tests und Changelog.
+**Vertrag pro Provider:** Provider-ID, SemVer, Mindestversion Kernplugin, Trigger-/Action-Schema, Feldtypen und Datenschutzklassen, Capability-Anforderung, Retry-/Idempotenzregel, API-Fehlercodes, Beispielpayload, Migrationsanleitung, Tests und Changelog. *[Überholt durch D1: Es gibt eine gemeinsame Spezifikation in diesem Repository, keine Verträge je Produkt-Repository.]*
 
-**Pflichtfelder eines Events:** event_id; event_key; contract_version; occurred_at_utc; source_plugin; object_type/object_ref; correlation_id; payload; privacy_tags. Das Quellplugin muss nach Commit feuern, sofern das Ereignis eine dauerhafte Buchung repräsentiert; bei Vorabvalidierung muss der Vertrag ausdrücklich „vor Commit“ markieren. Ein Ereignis darf keine rohen Datenbankobjekte transportieren.
+**Pflichtfelder eines Events:** event_id; event_key; contract_version; occurred_at_utc; source_plugin; object_type/object_ref; correlation_id; payload; privacy_tags. Das Quellplugin muss nach Commit feuern, sofern das Ereignis eine dauerhafte Buchung repräsentiert; bei Vorabvalidierung muss der Vertrag ausdrücklich „vor Commit“ markieren. Ein Ereignis darf keine rohen Datenbankobjekte transportieren. *[Überholt: zweite von drei abweichenden Beschreibungen des Umschlags. Es gilt allein `docs/SPEC-suite-events.md`, Abschnitt 6; den Umschlag baut der Abnehmer, nicht das Quellplugin (D5, D9).]*
 
 **Provider-Registry:** Capability wird zur Laufzeit geprüft (Plugin vorhanden/Version/Vertrag). Unbekannte oder inkompatible Felder führen zu verständlichen Fehlern. Das Kernplugin kann Provider ohne Suite-Komponenten starten. Provider dürfen ihre Schnittstellen unabhängig aktualisieren, sofern die Contract-Major kompatibel bleibt.
 
@@ -635,7 +639,7 @@ Jede Vorlage zeigt beteiligte Plugins, Voraussetzungen, Seiteneffekte, betroffen
 ### 15.8 Lizenz- und Upgradeverhalten für Version 1
 
 - Produktkey/Ordner/Textdomain: workflow-captain-pro. Rechtepräfix: workflow.
-- Entitlements als einzelne Fähigkeiten: workflow.suite_integrations, workflow.custom_connectors, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.delays, workflow.multisite_network, workflow.recipe_templates und workflow.extended_logs. Ein Recht je eigenem Feature im Captain-Pro-Kernel.
+- Entitlements als einzelne Fähigkeiten: workflow.suite_integrations, workflow.custom_connectors, workflow.webhooks, workflow.event_correlation, workflow.advanced_logic, workflow.delays, workflow.multisite_network, workflow.recipe_templates und workflow.extended_logs. Ein Recht je eigenem Feature im Captain-Pro-Kernel. *[Hinweis: sechs vorgemerkt, drei nicht reserviert, Entscheidung offen; siehe `docs/SPEC-suite-events.md`, Abschnitt 10.2.]*
 - Free enthält keine Lizenzlogik. Pro-Lizenzclient, Updater und Feature-Registry liegen ausschließlich in captain-pro und nutzen den bestehenden vendorten Client/Kernel.
 - Site-Limits und Supportlevel folgen dem WP-License-Captain-Modell; keine neuen Lizenztypen, selbstgebauten Checks oder monatlichen Task-Credits.
 - Ohne gültige Lizenz bleiben Workflows, Snapshots, Logs und Exporte lesbar. Neue Pro-Ausführungen und geplante Premiumaktionen werden pausiert, mit Grund angezeigt und nicht stillschweigend in Free-Aktionen konvertiert.
@@ -659,6 +663,8 @@ Version 1.0 ist erst releasebereit, wenn:
 Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punkte sind Abnahmekriterien für die spätere Implementierung.
 
 ### 15.10 Festgelegte Produktentscheidungen
+
+> **Hinweis:** Die Preise in dieser Tabelle (129/229/399 €) sind **nicht bestätigt** (offene Entscheidung E9), auch nicht netto oder brutto.
 
 | Thema | Festlegung für Version 1 |
 |---|---|
@@ -707,11 +713,13 @@ Diese Festlegung konkretisiert die Rollen von Workflow Captain und den Fachplugi
 - Im Multisite-Netzwerkmodus ist Workflow Captain Core und Pro netzwerkaktiviert. Network-Control-Plane und Cross-Site-Koordination nutzen eigene Tabellen mit dem Netzwerk-Präfix; normale Site-Flows und deren Queue bleiben unter dem jeweiligen Site-Präfix getrennt. Site-lokale Suite-Plugins müssen nicht netzwerkaktiviert sein: Ziel-Actions werden als interne, persistente Site-Command-Aufgaben für die konkrete Ziel-Site eingeplant und dort durch den Site-Worker ausgeführt, sodass die dort aktiven Plugins tatsächlich geladen sind.
 - Jedes Fachplugin bleibt eigenständig lauffähig. Es darf Workflow Captain oder dessen Pro-Lizenz nicht benötigen, um Bestellungen, Gutscheine, Tickets, Provisionen, Formularantworten oder Reviews zu speichern und zu verwalten.
 - Fachplugins besitzen ihre Geschäftsobjekte und unverzichtbaren Zustandsübergänge. Workflow Captain koordiniert Abläufe, ersetzt aber kein System of Record.
-- Für eine Premiumfunktion eines Fachplugins braucht es gegebenenfalls zwei Rechte: das passende Workflow-Entitlement und das Entitlement des Fachplugins. Workflow Captain darf keine fremde Pro-Funktion freischalten.
+- Für eine Premiumfunktion eines Fachplugins braucht es gegebenenfalls zwei Rechte: das passende Workflow-Entitlement und das Entitlement des Fachplugins. Workflow Captain darf keine fremde Pro-Funktion freischalten. *[Überholt durch D6: nicht „gegebenenfalls“. Jede Automation mit einem Captain-Produkt braucht Workflow Pro **und** die Pro-Lizenz des Produkt-Add-ons; geprüft wird nur in Add-ons.]*
 - Fehlendes oder inkompatibles Plugin blendet nur dessen Provider aus. Kein Fatal Error, keine Migration und kein Einfluss auf andere Provider.
 - Aktionen laufen über versionierte Serviceverträge des Datenbesitzers. Keine direkten Tabellen-/Meta-Änderungen, Reflection auf interne Klassen oder beliebigen PHP-Hooks.
 
 ### 16.2 Ereignisvertrag: nach Commit veröffentlichen, dann dauerhaft übernehmen
+
+> **Überholt (D1, D5, D8, D9):** Dies ist die dritte von drei abweichenden Beschreibungen des Umschlags. Es gilt allein `docs/SPEC-suite-events.md`, Abschnitt 6. Die `event_id` vergibt der Abnehmer, nicht das Quellplugin.
 
 Jeder Anbieter veröffentlicht ein stabiles, typisiertes Ereignis. Workflow Captain normalisiert es zu einem Envelope:
 
@@ -734,7 +742,7 @@ Vertragsregeln:
 - Workflow Captain speichert das Event in seiner Inbox, bevor es dessen Annahme bestätigt. Wiederholte Zustellung derselben Event-ID startet keine zweite Aktion.
 - Empfängerinformationen werden bei Bedarf zur Laufzeit über einen minimal berechtigten Resolver gelesen, nicht im Run-Log oder Eventpayload dupliziert.
 - Jeder Provider dokumentiert Schema, Contract-Major, Feldtypen, Consent-/Capability-Anforderung, Fehlercodes, Idempotenz und Seiteneffekte.
-- Für Ereignisse, deren Verlust nicht tolerierbar ist, braucht es Source-Outbox oder nachholbare Abfrage nach stabiler Event-/Objekt-ID. Ein einmaliger do_action-Aufruf ist allein keine Zustellgarantie.
+- Für Ereignisse, deren Verlust nicht tolerierbar ist, braucht es Source-Outbox oder nachholbare Abfrage nach stabiler Event-/Objekt-ID. Ein einmaliger do_action-Aufruf ist allein keine Zustellgarantie. *[Überholt durch D5 und D9: keine Source-Outbox in den Kernen; der Abnehmer speichert und wiederholt; siehe `docs/SPEC-suite-events.md`, Abschnitt 7.]*
 
 ### 16.3 Aktionen und Befehlsübergabe
 
@@ -743,10 +751,12 @@ Workflow-Aktionen laufen als typisierte Commands im Plugin, das die Daten besitz
 - Erfolg wird erst verbucht, wenn die Ziel-API die Command-ID angenommen und ein Ergebnis geliefert hat.
 - Retryfähige Fehler laufen mit Backoff; Rechte-, Schema-, Objekt- und Vertragsfehler werden nicht erneut versucht.
 - Jede Aktion kennzeichnet Seiteneffektklasse, Idempotenz, Retryverhalten, erforderliche Capability und erforderliches Lizenz-Entitlement.
-- Finanzielle und irreversible Aktionen verlangen Extra-Capability und in v1 eine explizite Freigabestufe.
+- Finanzielle und irreversible Aktionen verlangen Extra-Capability und in v1 eine explizite Freigabestufe. *[Überholt durch D11: Außer den vier Gutschein-Befehlen in festen Grenzen (D11b) gibt es in Version 1 keine geldwirksamen Aktionen, auch nicht mit Freigabe.]*
 - Lokale Suite-Events werden über PHP-Provider verarbeitet. Signierte Webhooks dienen externen Websites/Systemen; der interne Adapter baut keinen unnötigen HTTP-Loopback.
 
 ### 16.4 Laufzeit und Lizenzverhalten
+
+> **Überholt (D6):** Die Zeile „Command nutzt ein Fachplugin-Pro-Feature“ gilt für jede Automation mit einem Captain-Produkt; siehe `docs/SPEC-suite-events.md`, Abschnitt 10.
 
 | Installation/Zustand | Verhalten |
 |---|---|
@@ -827,7 +837,7 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 
 **Auslöser:** Lizenz erstellt/aktiviert/verlängert; Zahlung fehlgeschlagen; Grace-/Past-Due, gesperrt, widerrufen, abgelaufen; Site aktiviert/freigegeben; Paket veröffentlicht/withdrawn.
 
-**Aktionen:** interne Admin- oder Kundenbenachrichtigung über offiziellen Mailservice. Keine Lizenz verlängern, Zahlung belasten, Key ausgeben, Aktivierungsplatz erzwingen oder Lizenzstatus ändern.
+**Aktionen:** interne Admin- oder Kundenbenachrichtigung über offiziellen Mailservice. Keine Lizenz verlängern, Zahlung belasten, Key ausgeben, Aktivierungsplatz erzwingen oder Lizenzstatus ändern. *[Hinweis (D2): nur im Shop des Herstellers.]*
 
 **Szenarien:** Verlängerungszahlung scheitert → Adminhinweis; baldiger Ablauf → Kundenhinweis nur, wenn die entsprechende native Erinnerung nicht parallel aktiv ist.
 
@@ -835,7 +845,7 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 
 **Auslöser:** Gutschein ausgestellt, zugestellt/fehlgeschlagen, eingelöst, abgelaufen, gesperrt/storniert oder refundiert; Guthaben reserviert, bestätigt, freigegeben, zurückgebucht oder Schwellenwert erreicht.
 
-**Aktionen:** Voucher nach konkreter Order-Position/Produktkonfiguration ausstellen; erneut zustellen; Status/Saldo abfragen; sperren/stornieren nur mit Berechtigung; Ticketumtausch über die bestehende Voucher-to-Pass-Bridge. Keine direkte Saldoänderung; Ledgerbefehle nur mit Grund, Referenz und Idempotenz über die Voucher-API.
+**Aktionen:** Voucher nach konkreter Order-Position/Produktkonfiguration ausstellen; erneut zustellen; Status/Saldo abfragen; sperren/stornieren nur mit Berechtigung; Ticketumtausch über die bestehende Voucher-to-Pass-Bridge. Keine direkte Saldoänderung; Ledgerbefehle nur mit Grund, Referenz und Idempotenz über die Voucher-API. *[Überholt durch D11: Erlaubt sind nur `voucher.issue`, `voucher.void`, `voucher.reactivate` und `voucher.redeem` in festen Grenzen (D11b); Ticketumtausch, Erstattung und weitere Ledgerbefehle sind in Version 1 verboten.]*
 
 **Szenarien:** bestätigte Serviceeinlösung → Review Captain kann eine Anfrage planen; Geschenk-/Rabattcodeverkauf allein ist keine Erfahrung. Refund → Voucher verwaltet Status und Ledger, Workflow koordiniert nur Folgekommunikation.
 
@@ -843,7 +853,7 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 
 **Auslöser:** Event/Termin veröffentlicht, geändert, verschoben, abgesagt; Ticket reserviert, ausgegeben, übertragen, eingecheckt/ausgecheckt, widerrufen; Wartelistenangebot erstellt/angenommen/abgelehnt/abgelaufen; Service-Slot gebucht/abgeschlossen/abgesagt; Refund mit Woo-Referenz.
 
-**Aktionen:** Nachricht über Pass-Mailservice, Event-/Bestellnotiz, sichere Voucher-Aktion, Review-Anfrage planen/abbrechen. Tickets nicht über generische Workflows verkaufen, reservieren, einchecken oder übertragen; nur dedizierte Pass-Services mit Kapazitäts-/Identitätsregeln.
+**Aktionen:** Nachricht über Pass-Mailservice, Event-/Bestellnotiz, sichere Voucher-Aktion, Review-Anfrage planen/abbrechen. Tickets nicht über generische Workflows verkaufen, reservieren, einchecken oder übertragen; nur dedizierte Pass-Services mit Kapazitäts-/Identitätsregeln. *[Überholt durch D10 und D11: nur zusätzliche Nachrichten des Workflows; keine Aktion im Pass-Kern.]*
 
 **Szenarien:** Ticket-Check-in → verzögerte Anfrage an den Teilnehmer; Eventabsage → Pass führt Absage aus, Workflow storniert offene Review-Anfragen und überwacht freigegebene Refunds; angenommenes Wartelistenangebot → Pass erzeugt die Bestellung, Workflow versendet Folgeinfos.
 
@@ -851,7 +861,7 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 
 **Auslöser:** Bewerbung, Freigabe, Ablehnung, Pause, Reaktivierung; Provision angelegt, Prüfung erforderlich, freigegeben, abgelehnt oder ausgezahlt; Refund-/Chargeback-/Wiederherstellungsbuchung; Auszahlung abgeschlossen/abgebrochen.
 
-**Aktionen:** Admin-/Partnerbenachrichtigung; Partnerstatus über Affiliate-Service ändern; begründete manuelle Provisionkorrektur über die API nur mit Extra-Capability und Freigabeschritt. Keine parallele Provisionserstellung aus demselben Woo-/Voucher-/Pass-Verkauf und keine automatische Auszahlung.
+**Aktionen:** Admin-/Partnerbenachrichtigung; Partnerstatus über Affiliate-Service ändern; begründete manuelle Provisionkorrektur über die API nur mit Extra-Capability und Freigabeschritt. Keine parallele Provisionserstellung aus demselben Woo-/Voucher-/Pass-Verkauf und keine automatische Auszahlung. *[Überholt durch D11: keine Provisionskorrektur und keine Statusänderung durch einen Workflow in Version 1.]*
 
 **Szenarien:** Formular → Affiliate legt Partner auf „pending“ an; Affiliate verwaltet Freigabe, Code und Konditionen. Refund → Affiliate korrigiert seinen Ledger; Workflow meldet Ergebnis, schreibt keine Provision nach.
 
@@ -1005,7 +1015,7 @@ Die Installation darf vorhandene Plugin-Abläufe nicht automatisch abschalten od
 
 1. **Plugin-eigen:** Plugin führt seine Regeln und Nachrichten aus.
 2. **Ergänzend:** Workflow löst zusätzliche Aktionen aus; erkannte doppelte E-Mails/Reminder werden angezeigt.
-3. **Workflow übernimmt:** Nur optionale Automation wie Erinnerungen, Benachrichtigungen, Review-Anfragen und Folgeaktionen wird umgestellt.
+3. **Workflow übernimmt:** Nur optionale Automation wie Erinnerungen, Benachrichtigungen, Review-Anfragen und Folgeaktionen wird umgestellt. *[Überholt durch D10: Diese Möglichkeit entfällt. Die Kerne behalten ihre Mails und Erinnerungen; ein Workflow ergänzt nur.]*
 
 Der Assistent importiert vorhandene Einstellungen als Entwürfe, zeigt geplante/native Jobs und Duplikate und schaltet erst nach erfolgreichem Testlauf um. Keine automatische Umstellung beim bloßen Installieren.
 
@@ -1025,6 +1035,8 @@ Workflow Captain kann nachgelagerte Schritte planen und über autorisierte APIs 
 
 ### 18.3 Ownership-Handshake für optionale Aktionen
 
+> **Überholt (D10):** Der Ownership-Handshake entfällt vollständig; kein Kern bekommt einen Schalter dafür. Siehe `docs/SPEC-suite-events.md`, Abschnitt 9.
+
 Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native Automation und optionale Workflow-Übernahme:
 
 - Quelle publiziert ein fachliches Event und behält die native Aktion als Standard.
@@ -1036,6 +1048,8 @@ Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native
 - Der Quellplugin kann die optionale native Aktion nur unterdrücken, wenn Workflow die dauerhafte Annahme bestätigt. Ein fire-and-forget Hook reicht dafür nicht.
 
 ### 18.4 Fallback, Lizenzende und Migration zurück
+
+> **Überholt (D10):** Da es keine Übergabe gibt, gibt es auch keinen Rückfall auf native Abläufe. Bei Lizenzende wird die Automation pausiert; siehe `docs/SPEC-suite-events.md`, Abschnitt 10.3.
 
 - Workflow fehlt/deaktiviert: unveränderte native Abläufe; ausgewählte optionale Workflow-Automationen fallen beim nächsten Ereignis auf Native zurück.
 - Pro-Lizenz fehlt/endet: keine neuen Pro-Annahmen; neue Ereignisse nutzen Native-Fallback, sofern der Administrator die Übernahme nicht ausdrücklich als „pausieren statt Fallback“ konfiguriert hat.
@@ -1051,6 +1065,8 @@ Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native
 - Gemeinsame Correlation-/Run-ID dient Supportdiagnose; kein Plugin liest/ändert das fremde Protokoll.
 
 ### 18.6 Tatsächliche Vertragslage aus der Repository-Prüfung
+
+> **Überholt (D5, D9, D11):** Die Spalte „Noch nötige Arbeit für Workflow“ verlangt neue Providerverträge, Outbox und Befehle in den Kernen; das entfällt bis auf die Einstiegspunkte der vier Gutschein-Befehle im Voucher-Kern (D11b) und die fehlenden Actions des Lizenzservers. Der tatsächliche Stand der Hooks steht in `docs/SPEC-suite-events.md`, Abschnitt 4. Die Provisionskorrektur („adjustment“) als Aktion ist ausgeschlossen.
 
 | Plugin | Vorhandene Grundlage | Noch nötige Arbeit für Workflow |
 |---|---|---|
