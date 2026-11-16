@@ -86,6 +86,7 @@ final class Plugin {
 			( new \WorkflowCaptain\Admin\OverviewPage( $this ) )->register();
 			( new EventsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\WorkflowsPage( $this ) )->register();
+			( new \WorkflowCaptain\Admin\SchedulesPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\SettingsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\ProvidersPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\ConnectorsPage( $this ) )->register();

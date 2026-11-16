@@ -112,6 +112,29 @@ final class WpdbEngineStore implements EngineStore {
 		return array_map( array( self::class, 'version_row' ), (array) $rows );
 	}
 
+	public function published_for_trigger( string $type ): array {
+		$rows = $this->db->get_results(
+			$this->db->prepare(
+				"SELECT w.*, v.id AS v_id, v.workflow_id AS v_workflow_id, v.version AS v_version, v.graph AS v_graph, v.trigger_type AS v_trigger_type, v.authorized_by_user_id AS v_authorized_by_user_id, v.created_at AS v_created_at
+				FROM {$this->t( 'versions' )} v JOIN {$this->t( 'workflows' )} w ON w.published_version_id = v.id
+				WHERE w.status IN (%s, %s) AND v.trigger_type = %s ORDER BY w.name ASC, w.id ASC",
+				self::WF_ACTIVE,
+				self::WF_PAUSED,
+				$type
+			),
+			ARRAY_A
+		);
+		$out = array();
+		foreach ( (array) $rows as $row ) {
+			$version = array();
+			foreach ( array( 'id', 'workflow_id', 'version', 'graph', 'trigger_type', 'authorized_by_user_id', 'created_at' ) as $key ) {
+				$version[ $key ] = $row[ 'v_' . $key ];
+			}
+			$out[] = array( 'workflow' => self::workflow_row( $row ), 'version' => self::version_row( $version ) );
+		}
+		return $out;
+	}
+
 	// ----- Runs -----------------------------------------------------------------------------------------------
 
 	public function create_run( array $run, string $now ): array {
@@ -327,6 +350,13 @@ final class WpdbEngineStore implements EngineStore {
 		if ( ! empty( $filter['state'] ) ) {
 			$where[] = 'state = %s';
 			$args[]  = (string) $filter['state'];
+		}
+		// Time range of the run list (docs/UI-ENTWUERFE.md, section 1); MySQL datetime strings compare in order.
+		foreach ( array( 'since' => '>=', 'until' => '<=' ) as $key => $cmp ) {
+			if ( isset( $filter[ $key ] ) && 1 === preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', (string) $filter[ $key ] ) ) {
+				$where[] = 'created_at ' . $cmp . ' %s';
+				$args[]  = (string) $filter[ $key ];
+			}
 		}
 		if ( isset( $filter['correlation_id'] ) && '' !== (string) $filter['correlation_id'] ) {
 			if ( preg_match( \WorkflowCaptain\Envelope\Validator::UUID4, (string) $filter['correlation_id'] ) ) {

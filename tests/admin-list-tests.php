@@ -172,3 +172,92 @@ check( 'export: format, run fields and steps', 'workflow-captain-run-export' ===
 check( 'export: no actor, no serialisation key, no user IDs', ! str_contains( $json, 'actor' ) && ! str_contains( $json, 'serial' ) && ! str_contains( $json, '_user_id' ) && ! array_key_exists( 'actor_user_id', $x['event'] ) );
 check( 'export: step results redacted and secrets scrubbed', array( 'n' => 1, 'note' => '[redacted]' ) === $x['steps'][0]['result'] && ! str_contains( $json, 'example.test' ) && 'failed for [redacted]' === $x['run']['reason'] );
 check( 'export: event data only from the catalogue, hidden fields counted', isset( $x['event']['correlation_id'] ) && ! isset( $x['event']['data']['partner_user_id'] ) && $x['hidden_data_fields'] >= 1 );
+
+// ----- Run list: time range (docs/UI-ENTWUERFE.md, section 1) ---------------------------------------------------
+
+$e = engine_site();
+publish( $e, sample_graph(), 'Zeitraum' );
+for ( $i = 1; $i <= 3; $i++ ) {
+	$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'range-' . $i, array( 'checkin_source' => 'scanner' ) ) );
+}
+drain( $e );
+$ids = array_column( $e->store->find_runs( array(), 10, 0 ), 'id' );
+sort( $ids );
+foreach ( array( '2026-10-01 08:00:00', '2026-11-10 23:59:59', '2026-11-16 09:00:00' ) as $k => $at ) {
+	$e->pdo->exec( "UPDATE wp_workflow_captain_runs SET created_at = '{$at}' WHERE id = " . (int) $ids[ $k ] );
+}
+check( 'range: since counts runs from that time on', 2 === $e->store->count_runs( array( 'since' => '2026-11-10 00:00:00' ) ) && 1 === $e->store->count_runs( array( 'since' => '2026-11-11 00:00:00' ) ) );
+check( 'range: until is inclusive, since and until combine', 2 === $e->store->count_runs( array( 'until' => '2026-11-10 23:59:59' ) ) && 1 === $e->store->count_runs( array( 'since' => '2026-11-01 00:00:00', 'until' => '2026-11-10 23:59:59' ) ) );
+check( 'range: find_runs uses the same bounds', array( $ids[1] ) === array_column( $e->store->find_runs( array( 'since' => '2026-11-01 00:00:00', 'until' => '2026-11-10 23:59:59' ), 10, 0 ), 'id' ) );
+check( 'range: a malformed bound is ignored, not injected', 3 === $e->store->count_runs( array( 'since' => "2026-11-11' OR '1'='1" ) ) && 3 === $e->store->count_runs( array( 'until' => '16.11.2026' ) ) );
+$now = strtotime( '2026-11-16 10:00:00 UTC' );
+check( 'range: preset of 7 days', array( 'filter' => array( 'since' => '2026-11-09 10:00:00' ), 'args' => array( 'period' => '7' ) ) === WorkflowsPage::period_filter( '7', '', '', $now ) );
+check( 'range: preset of 24 hours', '2026-11-15 10:00:00' === WorkflowsPage::period_filter( '1', '', '', $now )['filter']['since'] );
+check( 'range: unknown preset means no range', array( 'filter' => array(), 'args' => array() ) === WorkflowsPage::period_filter( '5', '', '', $now ) && array() === WorkflowsPage::period_filter( '07', '', '', $now )['filter'] );
+check( 'range: own dates win over the preset and cover whole days in UTC', array( 'filter' => array( 'since' => '2026-11-01 00:00:00', 'until' => '2026-11-10 23:59:59' ), 'args' => array( 'from' => '2026-11-01', 'to' => '2026-11-10' ) ) === WorkflowsPage::period_filter( '30', '2026-11-01', '2026-11-10', $now ) );
+check( 'range: reversed dates are swapped, a single date is open-ended', '2026-11-01 00:00:00' === WorkflowsPage::period_filter( '', '2026-11-10', '2026-11-01', $now )['filter']['since'] && array( 'since' => '2026-11-10 00:00:00' ) === WorkflowsPage::period_filter( '', '2026-11-10', '', $now )['filter'] );
+check( 'range: invalid dates are ignored', array() === WorkflowsPage::period_filter( '', '2026-02-30', '10.11.2026', $now )['filter'] );
+
+// ----- Overview: runs in 30 days and provider status (docs/UI-ENTWUERFE.md, section 1) -------------------------
+
+$diag  = array( 'environment' => array( 'next_worker_run' => gmdate( 'Y-m-d\TH:i:s\Z', time() + 30 ), 'secret_key_own' => true ), 'workflows' => array( 'active' => 3 ), 'runs' => array(), 'events' => array(), 'stuck' => array() );
+$cards = \WorkflowCaptain\Admin\OverviewPage::cards( $diag, 1284 );
+check( 'overview: card "Läufe · 30 Tage" second, linked to the run list for 30 days', 'Läufe · 30 Tage' === $cards[1]['label'] && 1284 === $cards[1]['value'] && WorkflowsPage::SLUG_RUNS === $cards[1]['page'] && array( 'period' => '30' ) === $cards[1]['args'] && '2026-10-17 10:00:00' === WorkflowsPage::period_filter( $cards[1]['args']['period'], '', '', $now )['filter']['since'] );
+check( 'overview: without the count the card is left out', 6 === count( \WorkflowCaptain\Admin\OverviewPage::cards( $diag ) ) && 7 === count( $cards ) );
+$prov_rows = array(
+	array( 'product' => 'pass-captain', 'status' => 'registered', 'types' => array( 'pass.ticket.checked_in', 'pass.order.paid' ) ),
+	array( 'product' => 'voucher-captain', 'status' => 'missing', 'types' => array() ),
+	array( 'product' => 'review-captain', 'status' => 'refused', 'types' => array() ),
+);
+$prov_src  = array(
+	'products' => array( 'pass-captain' => array( 'label' => 'Pass Captain' ) ),
+	'actions'  => array( 'voucher.code.issue' => 'voucher-captain', 'voucher.code.void' => 'voucher-captain', 'notify.admin' => 'workflow-captain' ),
+);
+$status    = \WorkflowCaptain\Admin\OverviewPage::provider_status( $prov_rows, $prov_src );
+check( 'provider status: label, state text, tone and counts per product', array( 'Pass Captain', 'angemeldet', 'ok', 2, 0 ) === array( $status[0]['label'], $status[0]['state'], $status[0]['tone'], $status[0]['events'], $status[0]['actions'] ) && array( 'kein Adapter', 'warn', 2 ) === array( $status[1]['state'], $status[1]['tone'], $status[1]['actions'] ) && 'bad' === $status[2]['tone'] );
+$ptable = \WorkflowCaptain\Admin\OverviewPage::provider_table( $status );
+check( 'provider status table: caption, row headers, state as text (colour only repeats it)', str_contains( $ptable, '<caption class="screen-reader-text">Providerstatus</caption>' ) && str_contains( $ptable, '<th scope="row">Pass Captain</th>' ) && str_contains( $ptable, '</span>abgelehnt</td>' ) && str_contains( $ptable, '2 Ereignistypen · 0 Aktionen' ) && str_contains( $ptable, 'aria-hidden="true"' ) );
+
+// ----- Overview of all schedules (docs/UI-ENTWUERFE.md, section 4) ---------------------------------------------
+
+$e = engine_site( 'Europe/Berlin' );
+$e->registry->add_core( new \WorkflowCaptain\Providers\ScheduleAdapter() );
+$sched_graph = static function ( array $schedule ): array {
+	return array(
+		'nodes' => array(
+			array( 'id' => 't', 'type' => 'trigger', 'event' => 'workflow.schedule.due', 'schedule' => $schedule ),
+			array( 'id' => 'mail', 'type' => 'action', 'action' => 'notify.admin', 'config' => array( 'subject' => 'Bericht', 'message' => 'x' ) ),
+			array( 'id' => 'e', 'type' => 'end' ),
+		),
+		'edges' => array( array( 'from' => 't', 'to' => 'mail' ), array( 'from' => 'mail', 'to' => 'e' ) ),
+	);
+};
+$weekly  = array( 'frequency' => 'weekly', 'time' => '07:30', 'weekday' => 1 );
+$w_week  = publish( $e, $sched_graph( $weekly ), 'Wochenbericht' );
+$w_day   = publish( $e, $sched_graph( array( 'frequency' => 'daily', 'time' => '02:30' ) ), 'Aufräumen nachts' );
+$w_pause = publish( $e, $sched_graph( array( 'frequency' => 'monthly', 'time' => '08:00', 'day' => 1 ) ), 'Monatsabschluss' );
+$w_arch  = publish( $e, $sched_graph( $weekly ), 'Archiviert' );
+publish( $e, sample_graph(), 'Kein Zeitplan' );
+list( $w_draft ) = $e->workflows->save( null, 'Nur Entwurf', $sched_graph( $weekly ) );
+$e->store->set_workflow_status( $w_pause, EngineStore::WF_PAUSED, '2026-11-16 00:00:00' );
+$e->store->set_workflow_status( $w_arch, EngineStore::WF_ARCHIVED, '2026-11-16 00:00:00' );
+$e->workflows->save( $w_day, 'Aufräumen nachts', $sched_graph( array( 'frequency' => 'daily', 'time' => '03:00' ) ) );
+$e->clock->time = strtotime( '2026-10-24 12:00:00 UTC' );
+$sched = array_column( $e->engine->schedules( array( $w_week => strtotime( '2026-10-19 05:30:00 UTC' ) ) ), null, 'workflow_id' );
+check( 'schedules: active and paused workflows with a published schedule, by name; archived, drafts and other triggers left out', array( $w_day, $w_pause, $w_week ) === array_keys( $sched ) && ! isset( $sched[ $w_draft ] ) );
+check( 'schedules: next due time from Schedule::upcoming() in the site time zone (repeated hour: first occurrence)', strtotime( '2026-10-25 00:30:00 UTC' ) === $sched[ $w_day ]['next'] && \WorkflowCaptain\Engine\Schedule::upcoming( $weekly, $e->clock->time, 'Europe/Berlin', 1 ) === array( $sched[ $w_week ]['next'] ) && strtotime( '2026-10-26 06:30:00 UTC' ) === $sched[ $w_week ]['next'] );
+check( 'schedules: paused workflow has no next due time', EngineStore::WF_PAUSED === $sched[ $w_pause ]['status'] && null === $sched[ $w_pause ]['next'] );
+check( 'schedules: last fired time from the option, none when never fired', strtotime( '2026-10-19 05:30:00 UTC' ) === $sched[ $w_week ]['last_fired'] && null === $sched[ $w_day ]['last_fired'] );
+check( 'schedules: a draft with another schedule is flagged, the published schedule counts', $sched[ $w_day ]['draft_differs'] && '02:30' === $sched[ $w_day ]['schedule']['time'] && ! $sched[ $w_week ]['draft_differs'] );
+check( 'schedules: readable rule', 'wöchentlich, Montag, 07:30' === \WorkflowCaptain\Admin\SchedulesPage::describe( $weekly ) && 'monatlich, am 1., 08:00' === \WorkflowCaptain\Admin\SchedulesPage::describe( $sched[ $w_pause ]['schedule'] ) && 'täglich, 02:30' === \WorkflowCaptain\Admin\SchedulesPage::describe( $sched[ $w_day ]['schedule'] ) );
+$fmt   = static fn( string $f, int $ts ): string => ( new DateTimeImmutable( '@' . $ts ) )->setTimezone( new DateTimeZone( 'Europe/Berlin' ) )->format( $f );
+$lines = \WorkflowCaptain\Admin\SchedulesPage::table_rows( array_values( $sched ), $fmt, true );
+check( 'schedules table: row header links to the editor, times as time elements in the site time zone', 3 === count( $lines ) && str_contains( $lines[2], '<th scope="row"><a href="https://example.test/wp-admin/admin.php?page=workflow-captain-workflows&amp;edit=' . $w_week . '">Wochenbericht</a></th>' ) && str_contains( $lines[2], '<time datetime="2026-10-26T06:30:00Z">Mon, 26.10.2026 07:30</time>' ) && str_contains( $lines[2], 'workflow=' . $w_week . '">Läufe</a>' ) );
+check( 'schedules table: paused says so, never fired is a dash for screen readers, differing draft is noted', str_contains( $lines[1], 'keiner (pausiert)' ) && str_contains( $lines[0], 'keine Angabe' ) && str_contains( $lines[0], 'Der Entwurf weicht ab' ) );
+check( 'schedules table: without editor right no link', ! str_contains( \WorkflowCaptain\Admin\SchedulesPage::table_rows( array_values( $sched ), $fmt, false )[2], 'edit=' ) );
+
+// ----- Builder: codes of the last check per node (docs/UI-ENTWUERFE.md, section 3) -----------------------------
+
+check( 'node codes: grouped by node, graph codes and malformed entries left out', array( 'mail' => array( 'invalid_to', 'needs_exactly_one_outgoing_edge' ), 'c' => array( 'condition:too_deep' ) ) === WorkflowsPage::node_violations( array( 'do' => 'publish', 'errors' => array( 'node:mail:invalid_to', 'graph:cycle', 'node:mail:needs_exactly_one_outgoing_edge', 'node:c:condition:too_deep', 'node:bad id:x', 7 ) ) ) );
+check( 'node codes: no notice gives an empty object (JSON {})', '{}' === json_encode( WorkflowsPage::node_violations( false ) ) && '{}' === json_encode( WorkflowsPage::node_violations( array( 'errors' => array() ) ) ) );
+check( 'last fired: milliseconds and link to the runs of the workflow, none when never fired', array( 'at' => 1763274600000, 'runs' => 'https://example.test/wp-admin/admin.php?page=workflow-captain-runs&workflow=3' ) === WorkflowsPage::last_fired( array( 3 => 1763274600 ), 3 ) && null === WorkflowsPage::last_fired( array( 3 => 1763274600 ), 4 ) && null === WorkflowsPage::last_fired( array(), 0 ) );

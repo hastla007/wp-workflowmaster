@@ -132,6 +132,8 @@ Keine. Workflow Captain ruft keinen externen Dienst auf.
 * Editor: Herkunft (Provider, Plugin- und Vertragsversion) und Kurzbeschreibung am Knoten, Kopfzeile mit Zustand, Version, letztem Lauf, Testlauf und Veröffentlichen; Feld einer Bedingung als Auswahlliste mit Datentyp und Beispielwert; Vorschau der nächsten Termine eines Zeitplans in der Zeitzone der Website.
 * Lauf als redigiertes JSON exportieren (ohne Benutzer und Geheimnisse); „Im Editor zeigen“ springt vom Schritt zum markierten Knoten; Workflowliste mit letztem Lauf und Fehlern der letzten 30 Tage.
 * Zeitplan: Eine Uhrzeit in der doppelten Stunde bei Ende der Sommerzeit gilt jetzt auch östlich von UTC beim ersten Vorkommen (vorher eine Stunde später).
+* Läufe nach Zeitraum filtern (letzte 24 Stunden bis 90 Tage oder eigene Daten); Übersicht mit Kachel „Läufe · 30 Tage“ und Providerstatus; neue Seite „Zeitpläne“ mit nächstem Termin und letzter Auslösung in der Zeitzone der Website.
+* Editor: Bausteine auf den Ablauf ziehen; „+ Gruppe“ im Bedingungsformular (eine Gruppenebene, höchstens 20 Regeln); Warnzeichen am Knoten bei fehlendem Provider, offenem Ausgang oder ungültigen Regeln; „Zuletzt ausgelöst“ im Zeitplan.
 
 = 0.1.0 =
 * Erster Stand des Consumers nach docs/SPEC-suite-events.md (Entwurf 1.0.0-draft.5).

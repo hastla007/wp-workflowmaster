@@ -91,6 +91,42 @@ final class Engine implements Dispatcher {
 		return $out;
 	}
 
+	/**
+	 * Overview of all schedules (docs/UI-ENTWUERFE.md, section 4): every active or paused workflow whose published
+	 * version starts on a schedule, with the next due time (Schedule::upcoming(), site time zone; none while paused),
+	 * the last fired time and whether the draft has another trigger or schedule than the published version.
+	 *
+	 * @param array<int,int> $last_fired workflow ID => UTC timestamp of the last fired time (as for due_schedules()).
+	 * @return array<int,array{workflow_id:int,name:string,status:string,version:int,schedule:array,next:?int,last_fired:?int,draft_differs:bool}>
+	 */
+	public function schedules( array $last_fired ): array {
+		$now = $this->clock->now();
+		$out = array();
+		foreach ( $this->store->published_for_trigger( Schedule::EVENT ) as $row ) {
+			$wf       = $row['workflow'];
+			$trigger  = Graph::trigger( $row['version']['graph'] );
+			$schedule = (array) ( $trigger['schedule'] ?? array() );
+			$draft    = Graph::trigger( (array) $wf['draft'] );
+			$next     = EngineStore::WF_ACTIVE === $wf['status'] ? ( Schedule::upcoming( $schedule, $now, $this->timezone, 1 )[0] ?? null ) : null;
+			$out[]    = array(
+				'workflow_id'   => (int) $wf['id'],
+				'name'          => (string) $wf['name'],
+				'status'        => (string) $wf['status'],
+				'version'       => (int) $row['version']['version'],
+				'schedule'      => $schedule,
+				'next'          => $next,
+				'last_fired'    => isset( $last_fired[ (int) $wf['id'] ] ) ? (int) $last_fired[ (int) $wf['id'] ] : null,
+				'draft_differs' => Schedule::EVENT !== ( $draft['event'] ?? null ) || (array) ( $draft['schedule'] ?? array() ) != $schedule,
+			);
+		}
+		return $out;
+	}
+
+	/** Site time zone the engine computes schedules in. */
+	public function timezone(): string {
+		return $this->timezone;
+	}
+
 	/** Current contract version per registered provider, for the run snapshot check (WF-CORE-02). */
 	public function set_provider_contracts( callable $contracts ): void {
 		$this->contracts = $contracts;
