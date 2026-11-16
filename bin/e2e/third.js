@@ -17,7 +17,7 @@ const BASE = process.env.E2E_URL || 'http://127.0.0.1:8080';
 const SHOTS = process.env.E2E_SHOTS || process.cwd();
 const RESULTS = process.env.E2E_RESULTS || '';
 const AXE = process.env.AXE ? fs.readFileSync( process.env.AXE, 'utf8' ) : '';
-const LOGS = ( process.env.E2E_ROOT || '/home/user/wp-e2e' ) + '/logs';
+const LOGS = process.env.E2E_LOGS || ( process.env.E2E_ROOT || '/home/user/wp-e2e' ) + '/logs';
 const A = '/wp-admin/admin.php?page=';
 const PII = [ 'erika.musterfrau.e2e@example.test', 'Erikae2e', 'Musterfraue2e', 'Teststrasse 42e2e', '+49301234e2e', 'Musterstadte2e', 'admin@example.test' ];
 
@@ -32,7 +32,7 @@ function check( id, name, ok, detail ) {
 	return ok;
 }
 const wp = ( ...args ) => execFileSync( 'wp', args, { encoding: 'utf8', stdio: [ 'ignore', 'pipe', 'ignore' ] } ).trim();
-const sql = ( q ) => execFileSync( 'mysql', [ '-N', 'wp_e2e', '-e', q ], { encoding: 'utf8' } ).trim();
+const sql = ( q ) => execFileSync( 'mysql', [ '-N', process.env.E2E_MAIN_DB || 'wp_e2e', '-e', q ], { encoding: 'utf8' } ).trim();
 
 const jsErrors = [];
 async function login( browser, width, height = 900 ) {

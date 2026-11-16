@@ -18,13 +18,16 @@ use WorkflowCaptain\Plugin;
 
 defined( 'ABSPATH' ) || exit;
 
+// Log directory of the site under test (bin/e2e/env.sh exports E2E_LOGS).
+defined( 'E2E_LOG_DIR' ) || define( 'E2E_LOG_DIR', getenv( 'E2E_LOGS' ) ?: '/home/user/wp-e2e/logs' );
+
 $e2e_section = $args[0] ?? 'activation';
 $e2e_param   = $args[1] ?? '';
 
 /** Records one result line. */
 function e2e_check( string $id, string $name, bool $ok, $detail = '' ): bool {
 	$e2e_label = (string) getenv( 'E2E_LABEL' );
-	$file = getenv( 'E2E_RESULTS' ) ?: '/home/user/wp-e2e/logs/results.jsonl';
+	$file = getenv( 'E2E_RESULTS' ) ?: E2E_LOG_DIR . '/results.jsonl';
 	$row  = array(
 		'id'     => $id . ( '' !== $e2e_label ? '/' . $e2e_label : '' ),
 		'name'   => $name,
@@ -97,7 +100,7 @@ function e2e_tag( string $product, string $type, string $id, string $tag ): bool
 }
 
 function e2e_mails(): array {
-	$file = getenv( 'E2E_MAIL_FILE' ) ?: '/home/user/wp-e2e/logs/mail.jsonl';
+	$file = getenv( 'E2E_MAIL_FILE' ) ?: E2E_LOG_DIR . '/mail.jsonl';
 	if ( ! is_readable( $file ) ) {
 		return array();
 	}
@@ -331,7 +334,7 @@ switch ( $e2e_section ) {
 		// Published "earlier today": the version's creation time is the lower bound for the first due time.
 		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}workflow_captain_versions SET created_at = %s WHERE workflow_id = %d", gmdate( 'Y-m-d H:i:s', time() - 30 * MINUTE_IN_SECONDS ), $wf ) );
 		e2e_check( 'f0', 'schedule workflow published (daily ' . $time . ' site time ' . $tz->getName() . ')', $wf > 0 );
-		file_put_contents( '/home/user/wp-e2e/logs/schedule-wf.txt', (string) $wf );
+		file_put_contents( E2E_LOG_DIR . '/schedule-wf.txt', (string) $wf );
 		if ( 'cli' === $e2e_param ) {
 			break; // The CLI variant is run by run-checks.sh with "wp workflow-captain process" and checked in schedule_check.
 		}
@@ -344,7 +347,7 @@ switch ( $e2e_section ) {
 		break;
 
 	case 'schedule_check':
-		$wf   = (int) file_get_contents( '/home/user/wp-e2e/logs/schedule-wf.txt' );
+		$wf   = (int) file_get_contents( E2E_LOG_DIR . '/schedule-wf.txt' );
 		$runs = e2e_runs( $wf );
 		e2e_check( 'f3', 'schedule fires via "wp workflow-captain process" (system cron path)', 1 === count( $runs ), count( $runs ) . ' runs' );
 		Plugin::instance()->workflows()->pause( $wf );
@@ -365,12 +368,12 @@ switch ( $e2e_section ) {
 		$ev = e2e_events( 'wordpress.post.published', (string) $pid );
 		e2e_check( 'g1', 'event still stored during pause', 1 === count( $ev ), $ev ? $ev[0]['state'] : 'none' );
 		e2e_check( 'g2', 'no step executed during pause (no tag)', ! e2e_tag( 'wordpress', 'post', (string) $pid, 'e2e-pause' ) );
-		file_put_contents( '/home/user/wp-e2e/logs/pause-post.txt', $wf . ' ' . $pid );
+		file_put_contents( E2E_LOG_DIR . '/pause-post.txt', $wf . ' ' . $pid );
 		\WorkflowCaptain\EmergencyPause::set( false, e2e_admin_id() );
 		break;
 
 	case 'pause_resume':
-		list( $wf, $pid ) = array_map( 'intval', explode( ' ', (string) file_get_contents( '/home/user/wp-e2e/logs/pause-post.txt' ) ) );
+		list( $wf, $pid ) = array_map( 'intval', explode( ' ', (string) file_get_contents( E2E_LOG_DIR . '/pause-post.txt' ) ) );
 		e2e_work( 4 );
 		e2e_check( 'g3', 'after lifting the pause the step runs (tag set)', e2e_tag( 'wordpress', 'post', (string) $pid, 'e2e-pause' ), array_map( static fn( $r ) => $r['state'], e2e_runs( $wf ) ) );
 		Plugin::instance()->workflows()->pause( $wf );
@@ -381,11 +384,11 @@ switch ( $e2e_section ) {
 		e2e_work( 2 );
 		$ev = e2e_events( 'wordpress.post.published', (string) $pid );
 		e2e_check( 'g4', 'permanently failing dispatcher moves event to dead_letter', $ev && 'dead_letter' === $ev[0]['state'], $ev ? $ev[0]['state'] . ' ' . $ev[0]['last_error'] : 'none' );
-		file_put_contents( '/home/user/wp-e2e/logs/dlq-event.txt', $ev ? $ev[0]['id'] : '0' );
+		file_put_contents( E2E_LOG_DIR . '/dlq-event.txt', $ev ? $ev[0]['id'] : '0' );
 		break;
 
 	case 'deadletter_check':
-		$id = (int) file_get_contents( '/home/user/wp-e2e/logs/dlq-event.txt' );
+		$id = (int) file_get_contents( E2E_LOG_DIR . '/dlq-event.txt' );
 		global $wpdb;
 		$state = $wpdb->get_var( $wpdb->prepare( "SELECT state FROM {$wpdb->prefix}workflow_captain_events WHERE id = %d", $id ) );
 		e2e_check( 'g6', 'requeued dead-letter event processed to done', 'done' === $state, (string) $state );
@@ -423,12 +426,12 @@ switch ( $e2e_section ) {
 	case 'as_prep':
 		$wf  = e2e_publish( 'E2E Action Scheduler', array( 'event' => 'wordpress.post.published' ), array( array( 'workflow.tag.set', array( 'tag' => 'e2e-as' ) ) ) );
 		$pid = wp_insert_post( array( 'post_title' => 'E2E AS Beitrag', 'post_status' => 'publish' ) );
-		file_put_contents( '/home/user/wp-e2e/logs/as-post.txt', $wf . ' ' . $pid );
+		file_put_contents( E2E_LOG_DIR . '/as-post.txt', $wf . ' ' . $pid );
 		e2e_check( 'a10', 'event waits for the worker (received)', 'received' === ( e2e_events( 'wordpress.post.published', (string) $pid )[0]['state'] ?? '' ) );
 		break;
 
 	case 'as_check':
-		list( $wf, $pid ) = array_map( 'intval', explode( ' ', (string) file_get_contents( '/home/user/wp-e2e/logs/as-post.txt' ) ) );
+		list( $wf, $pid ) = array_map( 'intval', explode( ' ', (string) file_get_contents( E2E_LOG_DIR . '/as-post.txt' ) ) );
 		e2e_check( 'a11', 'the Action Scheduler action runs the worker (event done, step ran)', 'done' === ( e2e_events( 'wordpress.post.published', (string) $pid )[0]['state'] ?? '' ) && e2e_tag( 'wordpress', 'post', (string) $pid, 'e2e-as' ) );
 		$pending = as_get_scheduled_actions( array( 'hook' => Install::CRON_PROCESS, 'status' => \ActionScheduler_Store::STATUS_PENDING ), 'ids' );
 		e2e_check( 'a12', 'recurring action rescheduled exactly once after running', 1 === count( $pending ), count( $pending ) . ' pending' );
@@ -440,13 +443,13 @@ switch ( $e2e_section ) {
 		$order = e2e_order( 7 );
 		$order->payment_complete( 'e2e-wcoff' );
 		$oid = (string) $order->get_id();
-		file_put_contents( '/home/user/wp-e2e/logs/wcoff.txt', $wf . ' ' . $oid );
+		file_put_contents( E2E_LOG_DIR . '/wcoff.txt', $wf . ' ' . $oid );
 		e2e_check( 't0', 'order.paid event queued (received), worker not yet run', 'received' === ( e2e_events( 'woocommerce.order.paid', $oid )[0]['state'] ?? '' ) );
 		break;
 
 	case 'wcoff_check':
 		// WooCommerce is deactivated now; this request registered the adapters without it.
-		list( $wf, $oid ) = array_map( 'intval', explode( ' ', (string) file_get_contents( '/home/user/wp-e2e/logs/wcoff.txt' ) ) );
+		list( $wf, $oid ) = array_map( 'intval', explode( ' ', (string) file_get_contents( E2E_LOG_DIR . '/wcoff.txt' ) ) );
 		e2e_work( 2 );
 		$ev = e2e_events( 'woocommerce.order.paid', (string) $oid );
 		e2e_check( 't1', 'WooCommerce deactivated: queued event is paused (adapter_unregistered / R-10.7), not lost or failed', $ev && 'paused' === $ev[0]['state'], $ev ? $ev[0]['state'] . ' ' . $ev[0]['last_error'] : 'none' );
@@ -460,7 +463,7 @@ switch ( $e2e_section ) {
 		break;
 
 	case 'wcoff_resume':
-		list( $wf, $oid ) = array_map( 'intval', explode( ' ', (string) file_get_contents( '/home/user/wp-e2e/logs/wcoff.txt' ) ) );
+		list( $wf, $oid ) = array_map( 'intval', explode( ' ', (string) file_get_contents( E2E_LOG_DIR . '/wcoff.txt' ) ) );
 		$ev = e2e_events( 'woocommerce.order.paid', (string) $oid );
 		e2e_check( 't5', 'WooCommerce active again: requeue of the paused event accepted', $ev && Plugin::instance()->consumer()->requeue( (int) $ev[0]['id'] ) );
 		e2e_work( 4 );

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Front-end neutrality (WF-SEO-03/-07): the public HTML must be identical with the plugin active and deactivated,
 # apart from nonces and timestamps, and must not mention Workflow Captain. Usage: bin/e2e/frontend-diff.sh <base-url> <out-dir>
-# E2E_URLS overrides the list; {POST}, {PAGE}, {PRODUCT} are replaced with IDs of published items.
+# E2E_URLS overrides the list; {POST}, {PAGE}, {PRODUCT} are replaced with IDs of published items, {BASE} with the base URL.
 set -eu
 BASE=${1:-http://127.0.0.1:8080}
 OUT=${2:-.}
@@ -10,10 +10,10 @@ PRODUCT=$(wp post list --post_type=product --post_status=publish --field=ID --po
 POST=$(wp post list --post_type=post --post_status=publish --field=ID --posts_per_page=1)
 PAGE=$(wp post list --post_type=page --post_status=publish --field=ID --posts_per_page=1)
 URLS=${E2E_URLS:-"/ /?p=$POST /?page_id=$PAGE /?post_type=product&p=$PRODUCT /?post_type=product /?feed=rss2 /wp-json/ /wp-sitemap.xml"}
-URLS=$(echo "$URLS" | sed "s/{POST}/$POST/g; s/{PAGE}/$PAGE/g; s/{PRODUCT}/$PRODUCT/g")
+URLS=$(echo "$URLS" | sed "s/{POST}/$POST/g; s/{PAGE}/$PAGE/g; s/{PRODUCT}/$PRODUCT/g; s#{BASE}#$BASE#g")
 norm() {
-	# Nonces, cache busters and generated times vary per request.
-	sed -E 's/(nonce|_wpnonce|wpApiSettings|wcStoreApiNonce)([^,;]{0,40})[0-9a-f]{10}/\1\2NONCE/g; s/[0-9a-f]{10}/HEX10/g; s/<lastBuildDate>[^<]*/<lastBuildDate>/; s/"timestamp":[0-9]+/"timestamp":0/g'
+	# Nonces, cache busters, generated times and uniqid() field ids (WooCommerce quantity_<13 hex>) vary per request.
+	sed -E 's/quantity_[0-9a-f]{13}/quantity_UNIQID/g; s/(nonce|_wpnonce|wpApiSettings|wcStoreApiNonce)([^,;]{0,40})[0-9a-f]{10}/\1\2NONCE/g; s/[0-9a-f]{10}/HEX10/g; s/<lastBuildDate>[^<]*/<lastBuildDate>/; s/"timestamp":[0-9]+/"timestamp":0/g'
 }
 fetch() {
 	i=0

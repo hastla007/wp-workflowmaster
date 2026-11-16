@@ -15,7 +15,7 @@ const path = require( 'path' );
 
 const BASE = process.env.E2E_URL || 'http://127.0.0.1:8080';
 const OUT = process.env.E2E_OUT || path.join( __dirname, '../../.wordpress-org' );
-const LOGS = ( process.env.E2E_ROOT || '/home/user/wp-e2e' ) + '/logs';
+const LOGS = process.env.E2E_LOGS || ( process.env.E2E_ROOT || '/home/user/wp-e2e' ) + '/logs';
 const A = '/wp-admin/admin.php?page=';
 
 ( async () => {
