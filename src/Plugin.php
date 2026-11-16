@@ -44,7 +44,9 @@ final class Plugin {
 	}
 
 	public function boot(): void {
-		$this->schema = Install::maybe_upgrade();
+		// Schema changes run in the admin, in cron or in WP-CLI, never on a front-end request (konzept 5, Datenmodell).
+		$may_migrate  = is_admin() || wp_doing_cron() || ( defined( 'WP_CLI' ) && WP_CLI );
+		$this->schema = $may_migrate ? Install::maybe_upgrade() : Install::schema_state( get_option( Install::DB_OPTION ), WORKFLOW_CAPTAIN_DB_VERSION );
 		if ( Install::SCHEMA_NEWER === $this->schema ) {
 			add_action(
 				'admin_notices',
@@ -186,8 +188,8 @@ final class Plugin {
 	}
 
 	public function run_worker(): void {
-		if ( Install::SCHEMA_NEWER === $this->schema ) {
-			return; // Downgrade: older code does not touch a newer schema (WF-CORE-07).
+		if ( Install::SCHEMA_CURRENT !== $this->schema ) {
+			return; // Downgrade (newer schema) or upgrade not yet run: the worker waits (WF-CORE-07).
 		}
 		/**
 		 * Events handled per worker run.

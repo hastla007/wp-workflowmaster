@@ -15,6 +15,8 @@
 
 > Dieses Dokument ist die Produkt- und Umsetzungsgrundlage. Es beschreibt geplante Verträge und Funktionen, keine bereits vorhandenen Hooks, API-Rechte oder getestete Kompatibilität. Vor Releases sind Plattform-, Datenschutz-, Sicherheits- und Lizenzbedingungen erneut zu prüfen.
 
+
+> **Stand der Umsetzung (16.11.2026):** Abweichend von D12 wird seit dem 16.11.2026 gebaut. Plugin `workflow-captain` 0.2.x enthält den Consumer nach `docs/SPEC-suite-events.md` und die Workflow-Engine: Workflows mit unveränderlichen Versionen, Bedingungen, Wartezeiten, Läufe und Schritte mit sicherer Wiederholung, die Aktionen der Version 1 (Nachrichten, Markierungen, Notizen), einen visuellen Builder (erste Fassung), Testlauf, Datenschutz, Einstellungen, Diagnose, WP-CLI und Website-Zustand. Noch nicht gebaut: Adapter (gehören nach `captain-pro`), Auslöser aus WordPress und WooCommerce (F-20), Webhooks und n8n (Pro), Gutschein-Befehle (warten auf VC-1), netzwerkweite Abläufe (F-07). Wo der Code eine Festlegung dieses Konzepts anders löst, steht es unten mit „Umsetzung“ vermerkt. Tests und offene Fälle: `docs/TESTMATRIX.md`.
 ## Lizenzmodell und Produktabgrenzung
 
 WP License Captain (License Captain Server) ist ein eigenständiges, separat verkauftes Server-Plugin und kein Bestandteil von Workflow Captain Pro. Workflow Captain Pro enthält nur die Client-Komponente, die wir zur Prüfung der eigenen PRO-Lizenzen an unserem Lizenzserver verwenden. Diese interne Lizenzierungsinfrastruktur hat für den Kunden keinen eigenständigen Produktnutzen und wird vor dem Kauf nicht als PRO-Leistung kommuniziert. Käufer benötigen keinen eigenen License Captain Server, um Workflow Captain Pro zu nutzen.
@@ -164,12 +166,12 @@ V1 enthält damit ein SDK/Provider-Contract, Beispiel-Connector, lokale Projekta
 
 1. Der Fachplugin-Hook erzeugt ein kompaktes Event und übergibt es an die Registry.
 2. Workflow Captain findet aktive Rezeptversionen, prüft Trigger, Bedingungen und Berechtigungen.
-3. Sofortige Läufe werden synchron nur für kurze, risikoarme Aktionen ausgeführt; E-Mail, HTTP, Verzögerung und längere Folgeketten gehen in eine Queue.
+3. Sofortige Läufe werden synchron nur für kurze, risikoarme Aktionen ausgeführt; E-Mail, HTTP, Verzögerung und längere Folgeketten gehen in eine Queue. *[Umsetzung 0.2: Alles läuft über die Warteschlange, auch kurze Aktionen; der Adapter-Callback schreibt nur (Spezifikation R-7.6).]*
 4. Queue-Einträge werden atomar beansprucht, mit Lock/Lease und Idempotency-Key ausgeführt.
 5. Jede Aktion schreibt Status und Ergebnis-Metadaten; sensible Antworten/Token werden redigiert.
 6. Fehlerklassen bestimmen Retry: vorübergehend mit Backoff; endgültig sofort als fehlgeschlagen. Keine Endlosschleifen; maximale Versuche konfigurierbar.
 7. Manuelles Replay erzeugt eine neue Run-Instanz, behält aber ursprüngliches Event und Idempotenzkontrolle. „Aktion erneut ausführen“ zeigt mögliche externe Seiteneffekte.
-8. Action Scheduler wird verwendet, wenn WooCommerce verfügbar ist; sonst eigener WP-Cron-/Queue-Fallback mit dokumentierter System-Cron-Empfehlung.
+8. Action Scheduler wird verwendet, wenn WooCommerce verfügbar ist; sonst eigener WP-Cron-/Queue-Fallback mit dokumentierter System-Cron-Empfehlung. *[Umsetzung 0.2: eigene Warteschlange in den Tabellen von Workflow Captain mit Minutentakt über WP-Cron und `wp workflow-captain process` für System-Cron; Action Scheduler ist noch nicht angebunden.]*
 9. Rezeptänderungen betreffen neue Läufe. Ein bereits gestarteter Run nutzt einen unveränderlichen Rezept-Snapshot.
 10. Rekursive Triggerketten werden über Korrelations-ID, Run-Ursprung und Loop-Grenze erkannt.
 
@@ -181,8 +183,9 @@ V1 enthält damit ein SDK/Provider-Contract, Beispiel-Connector, lokale Projekta
 - `wp_workflow_runs`: Status, Rezeptversions-ID, Event-Referenz, Start-/Endzeit, Korrelations-/Idempotency-Key.
 - `wp_workflow_steps`: Schrittstatus, Retry-Zähler, Fehlerklasse, redigierte Ausgabe.
 - `wp_workflow_queue`: fällige Arbeit, Lease, Versuche, nächste Ausführung.
+- *[Umsetzung 0.2: Die Tabellen heißen `{prefix}workflow_captain_events`, `_causes`, `_workflows`, `_versions`, `_runs`, `_steps`, `_tags`, `_notes`; die Warteschlange sind die Schritte selbst (Zustand, Fälligkeit, Sperrfrist). Schema: `src/Install.php`.]*
 - Tabellen haben eindeutige Schlüssel gegen Doppelausführung. Site-lokale Tabellen bleiben pro Blog getrennt. Netzwerkweite Flows nutzen getrennte Tabellen unter dem Netzwerk-Präfix: Registry/Versionen, opt-in Sites und Scopes, minimale Network-Inbox, Parent-Runs/Steps, Dispatch-Queue und Auditverweise. Netzwerktabellen speichern nur nötige Eventfelder, keine doppelten Vollobjekte; die Site-ID gehört in jeden Scope- und Idempotenzschlüssel.
-- Datenbank-Updates laufen kontrolliert im Admin, über WP-Cron oder WP-CLI und nicht bei jedem Frontend-Aufruf. Schemaänderungen werden versioniert.
+- Datenbank-Updates laufen kontrolliert im Admin, über WP-Cron oder WP-CLI und nicht bei jedem Frontend-Aufruf. Schemaänderungen werden versioniert. *[Umsetzung 0.2: so gebaut; bei einem neueren Schema (Downgrade) ändert das Plugin nichts und der Worker pausiert.]*
 
 ## 6. Integrationskatalog und priorisierte Ereignisse
 
@@ -248,7 +251,7 @@ Jede Vorlage muss Voraussetzungen, beteiligte Plugins, ausgelöste E-Mails/Daten
 
 ## 8. Admin-Navigation und Seiteninhalte
 
-Hauptmenü: **Workflow Captain**. Navigation wird nach verfügbaren Kernfunktionen aufgebaut. Lizenzseite kommt nur vom Pro-Add-on und wird analog zu bestehenden Add-ons unter das Kernmenü gehängt.
+Hauptmenü: **Workflow Captain**. Navigation wird nach verfügbaren Kernfunktionen aufgebaut. Lizenzseite kommt nur vom Pro-Add-on und wird analog zu bestehenden Add-ons unter das Kernmenü gehängt. *[Umsetzung 0.2: Übersicht, Workflows (mit Builder und Testlauf), Läufe, Ereignisse, Provider, Einstellungen. Vorlagen und Integrationen fehlen noch; Beispiel-Workflows liegen in `docs/recipes/`. Capabilities wie in Abschnitt 9: `manage_workflow_captain`, `edit_workflows`, `activate_workflows`, `view_workflow_logs`, `retry_workflow_runs`; `manage_workflow_integrations` kommt mit den Integrationen.]*
 
 ### 8.1 Übersicht / Dashboard
 
