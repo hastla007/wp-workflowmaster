@@ -7,7 +7,8 @@
  *       "schedule": { "frequency": "weekly", "time": "08:00", "weekday": 1 } }
  *
  * Rules: the local time follows the site time zone; a time in the spring-forward gap moves forward by the gap,
- * a time in the repeated hour uses the first occurrence (PHP DateTime does both). A missed time is caught up at most
+ * a time in the repeated hour uses the first occurrence (local_time(); PHP DateTime alone picks the second one in
+ * zones east of UTC, e.g. 02:30 in Europe/Berlin on the last Sunday of October). A missed time is caught up at most
  * once: only the latest due time fires, and never one older than the catch-up limit.
  *
  * @package WorkflowCaptain
@@ -66,12 +67,61 @@ final class Schedule {
 			if ( 'monthly' === $schedule['frequency'] && (int) $day->format( 'j' ) !== $schedule['day'] ) {
 				continue;
 			}
-			$candidate = ( new \DateTimeImmutable( $day->format( 'Y-m-d' ) . sprintf( ' %02d:%02d:00', $h, $m ), $tz ) )->getTimestamp();
+			$candidate = self::local_time( $day->format( 'Y-m-d' ), $h, $m, $tz );
 			if ( $candidate <= $now ) {
 				return $candidate > $after ? $candidate : null;
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * The next due times (UTC timestamps) strictly after $now, for the preview in the editor (docs/UI-ENTWUERFE.md,
+	 * section 4). Same local-time rules as last_due(): gap moves forward, repeated hour uses the first occurrence.
+	 * assets/js/builder.js computes the same in the browser; tests compare both.
+	 *
+	 * @return int[]
+	 */
+	public static function upcoming( array $schedule, int $now, string $timezone, int $count = 3 ): array {
+		if ( array() !== self::violations( $schedule ) || $count < 1 ) {
+			return array();
+		}
+		$tz            = new \DateTimeZone( $timezone );
+		list( $h, $m ) = array_map( 'intval', explode( ':', $schedule['time'] ) );
+		$local         = ( new \DateTimeImmutable( '@' . $now ) )->setTimezone( $tz );
+		$out           = array();
+		// Monthly needs about 31 days per hit; one extra day covers a time that already passed today.
+		for ( $i = 0; $i <= 31 * $count + 1 && count( $out ) < $count; $i++ ) {
+			$day = $local->modify( '+' . $i . ' days' );
+			if ( 'weekly' === $schedule['frequency'] && (int) $day->format( 'N' ) !== $schedule['weekday'] ) {
+				continue;
+			}
+			if ( 'monthly' === $schedule['frequency'] && (int) $day->format( 'j' ) !== $schedule['day'] ) {
+				continue;
+			}
+			$candidate = self::local_time( $day->format( 'Y-m-d' ), $h, $m, $tz );
+			if ( $candidate > $now ) {
+				$out[] = $candidate;
+			}
+		}
+		return $out;
+	}
+
+	/**
+	 * UTC timestamp of a local wall time (konzept 15.3, R-4.15): in the spring-forward gap the time moves forward by the
+	 * gap (PHP DateTime does that); in the repeated hour the first occurrence counts. PHP DateTime returns the second
+	 * occurrence in zones east of UTC, so the earlier instant with the same wall time is taken when there is one.
+	 */
+	public static function local_time( string $date, int $h, int $m, \DateTimeZone $tz ): int {
+		$t    = ( new \DateTimeImmutable( $date . sprintf( ' %02d:%02d:00', $h, $m ), $tz ) )->getTimestamp();
+		$diff = abs( $tz->getOffset( new \DateTimeImmutable( '@' . ( $t - 86400 ) ) ) - $tz->getOffset( new \DateTimeImmutable( '@' . ( $t + 86400 ) ) ) );
+		if ( $diff > 0 ) {
+			$wall = ( new \DateTimeImmutable( '@' . $t ) )->setTimezone( $tz )->format( 'Y-m-d H:i' );
+			if ( ( new \DateTimeImmutable( '@' . ( $t - $diff ) ) )->setTimezone( $tz )->format( 'Y-m-d H:i' ) === $wall ) {
+				return $t - $diff;
+			}
+		}
+		return $t;
 	}
 
 	/**

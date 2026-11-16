@@ -129,6 +129,9 @@ Keine. Workflow Captain ruft keinen externen Dienst auf.
 * Auslöser für WordPress, WooCommerce, Zeitplan und eingehende Auslöser von Add-ons; Anmeldung eigener Connectoren.
 * Datenbank-Aktualisierung mit Sperre und sicherer Wiederholung; Protokoll der Eingriffe; Einstellung „Läufe nacheinander“ im Editor.
 * Workflows, Läufe und Ereignisse seitenweise mit Gesamtzahl; Laufansicht mit Korrelation, Zeitleiste der Schritte und redigierten Ereignisdaten.
+* Editor: Herkunft (Provider, Plugin- und Vertragsversion) und Kurzbeschreibung am Knoten, Kopfzeile mit Zustand, Version, letztem Lauf, Testlauf und Veröffentlichen; Feld einer Bedingung als Auswahlliste mit Datentyp und Beispielwert; Vorschau der nächsten Termine eines Zeitplans in der Zeitzone der Website.
+* Lauf als redigiertes JSON exportieren (ohne Benutzer und Geheimnisse); „Im Editor zeigen“ springt vom Schritt zum markierten Knoten; Workflowliste mit letztem Lauf und Fehlern der letzten 30 Tage.
+* Zeitplan: Eine Uhrzeit in der doppelten Stunde bei Ende der Sommerzeit gilt jetzt auch östlich von UTC beim ersten Vorkommen (vorher eine Stunde später).
 
 = 0.1.0 =
 * Erster Stand des Consumers nach docs/SPEC-suite-events.md (Entwurf 1.0.0-draft.5).

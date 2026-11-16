@@ -127,3 +127,48 @@ $secret = EnvelopeView::redacted( array( 'type' => 'pass.ticket.checked_in', 'su
 check( 'redacted: secret values are scrubbed', '[redacted]' === $secret['envelope']['subject']['id'] && '[redacted]' === $secret['envelope']['data']['checkin_source'] );
 Redact::reset();
 check( 'redacted: unknown event type shows no data', array() === EnvelopeView::redacted( array( 'type' => 'x.y.z', 'data' => array( 'a' => 1 ) ), $allowed )['envelope']['data'] );
+
+// ----- Workflow list: last run and errors per workflow (docs/UI-ENTWUERFE.md, section 1) -----------------------
+
+$ids     = array_column( $e->store->list_workflows( 10, 0 ), 'id' );
+$runs_wf = $e->store->find_runs( array( 'workflow_id' => $ids[0] ), 10, 0 );
+$e->store->set_run_state( $runs_wf[0]['id'], EngineStore::RUN_FAILED, 'mail_failed', '2026-11-16 12:00:00' );
+$e->store->set_run_state( $runs_wf[1]['id'], EngineStore::RUN_ACTION_REQUIRED, 'unclear_outcome', '2026-11-16 12:00:00' );
+$sum = $e->store->workflow_run_summary( array_merge( $ids, array( 999 ) ), '2000-01-01 00:00:00' );
+check( 'summary: last run per workflow is the newest run', $runs_wf[0]['id'] === $sum[ $ids[0] ]['last_run_id'] && EngineStore::RUN_FAILED === $sum[ $ids[0] ]['last_state'] && $runs_wf[0]['created_at'] === $sum[ $ids[0] ]['last_at'] );
+check( 'summary: errors count failed and action_required runs', 2 === $sum[ $ids[0] ]['errors'] && 0 === $sum[ $ids[1] ]['errors'] );
+check( 'summary: workflow without runs has no entry', ! isset( $sum[999] ) && 5 === count( $sum ) );
+check( 'summary: errors before the window do not count', 0 === $e->store->workflow_run_summary( array( $ids[0] ), '2999-01-01 00:00:00' )[ $ids[0] ]['errors'] );
+check( 'summary: empty list asks nothing', array() === $e->store->workflow_run_summary( array(), '2000-01-01 00:00:00' ) );
+check( 'summary: error window is 30 days', '2026-10-17 10:00:00' === WorkflowsPage::error_since( strtotime( '2026-11-16 10:00:00 UTC' ) ) );
+$cells = WorkflowsPage::summary_cells( $ids[0], $sum[ $ids[0] ] );
+check( 'summary cells: last run as time with link and state, errors linked to the runs of the workflow', str_contains( $cells, '<time datetime="' ) && str_contains( $cells, 'run=' . $runs_wf[0]['id'] ) && str_contains( $cells, 'wfc-run-state-bad' ) && str_contains( $cells, 'workflow=' . $ids[0] . '"' ) && str_contains( $cells, '<strong>2</strong>' ) && str_contains( $cells, 'aria-label="2 Läufe mit Fehler' ) );
+check( 'summary cells: no run gives a dash for screen readers and 0', str_contains( WorkflowsPage::summary_cells( 7, null ), 'keine Angabe' ) && str_ends_with( WorkflowsPage::summary_cells( 7, null ), '<td>0</td>' ) );
+
+// ----- Origin of events and actions (docs/UI-ENTWUERFE.md, section 2) -----------------------------------------
+
+$src = \WorkflowCaptain\Admin\Provenance::sources( $e->registry, array( 'notify.admin', 'workflow.tag.set', 'voucher.code.issue', 'xstarterconnector.ping', 'webhook.send' ), array( 'starter-connector' ) );
+check( 'origin: event type maps to its adapter with plugin and contract version', 'pass-captain' === $src['events']['pass.ticket.checked_in'] && 'Pass Captain' === $src['products']['pass-captain']['label'] && '1.1.0' === $src['products']['pass-captain']['contract'] && $src['products']['pass-captain']['registered'] );
+check( 'origin: core actions belong to Workflow Captain, product actions to their product', 'workflow-captain' === $src['actions']['notify.admin'] && 'workflow-captain' === $src['actions']['workflow.tag.set'] && 'voucher-captain' === $src['actions']['voucher.code.issue'] && 'starter-connector' === $src['actions']['xstarterconnector.ping'] );
+check( 'origin: unknown action prefix has no origin; unregistered product is marked', ! isset( $src['actions']['webhook.send'] ) && false === $src['products']['voucher-captain']['registered'] );
+check( 'origin: product labels', 'WooCommerce' === \WorkflowCaptain\Admin\Provenance::label( 'woocommerce' ) && 'Starter Connector' === \WorkflowCaptain\Admin\Provenance::label( 'starter-connector' ) );
+check( 'origin: editor header line names product, version and contract', str_starts_with( (string) \WorkflowCaptain\Admin\Provenance::describe_event( $src, 'pass.ticket.checked_in' ), 'Pass Captain ' ) && str_ends_with( (string) \WorkflowCaptain\Admin\Provenance::describe_event( $src, 'pass.ticket.checked_in' ), ', Vertrag 1.1.0' ) && null === \WorkflowCaptain\Admin\Provenance::describe_event( $src, 'woocommerce.order.paid' ) );
+
+// ----- Run export (docs/UI-ENTWUERFE.md, section 5) -----------------------------------------------------------
+
+$run_x                              = $same[0];
+$run_x['context']['actor_user_id']  = 42;
+$run_x['context']['data']['partner_user_id'] = 9;
+$run_x['actor_user_id']             = 42;
+$run_x['serial_key']                = 'actor:42';
+$run_x['last_error']                = 'failed for geheim-5678';
+$tl                                 = WorkflowsPage::timeline( $e->store->steps_for_run( $run_x['id'] ) );
+$tl[0]['result']                    = array( 'to' => 'jemand@example.test', 'n' => 1, 'note' => 'geheim-5678' );
+Redact::remember( 'geheim-5678' );
+$x    = EnvelopeView::run_export( $run_x, $tl, 'WF 1', 1, $allowed, '0.2.0', '2026-11-16T12:00:00Z' );
+Redact::reset();
+$json = json_encode( $x );
+check( 'export: format, run fields and steps', 'workflow-captain-run-export' === $x['format'] && $run_x['id'] === $x['run']['id'] && 'WF 1' === $x['run']['workflow_name'] && count( $tl ) === count( $x['steps'] ) && $tl[0]['node'] === $x['steps'][0]['node'] );
+check( 'export: no actor, no serialisation key, no user IDs', ! str_contains( $json, 'actor' ) && ! str_contains( $json, 'serial' ) && ! str_contains( $json, '_user_id' ) && ! array_key_exists( 'actor_user_id', $x['event'] ) );
+check( 'export: step results redacted and secrets scrubbed', array( 'n' => 1, 'note' => '[redacted]' ) === $x['steps'][0]['result'] && ! str_contains( $json, 'example.test' ) && 'failed for [redacted]' === $x['run']['reason'] );
+check( 'export: event data only from the catalogue, hidden fields counted', isset( $x['event']['correlation_id'] ) && ! isset( $x['event']['data']['partner_user_id'] ) && $x['hidden_data_fields'] >= 1 );
