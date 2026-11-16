@@ -212,3 +212,27 @@ $replies = array( array( 'error' => 'http_request_failed: https://hooks.example.
 $r       = $http->request( 'webhook', 'POST', 'https://hooks.example.com/x' );
 check( 'SafeHttp: transport errors become fixed codes without URL or token', ! str_contains( $r['error'], 'token' ) && ! str_contains( $r['error'], 'example' ) );
 check( 'SafeHttp: hint for localhost explains it is the WordPress server', str_contains( SafeHttp::local_hint( 'http://localhost:5678' ), 'WordPress-Server' ) && '' === SafeHttp::local_hint( 'https://hooks.example.com' ) );
+
+// ----- WF-SEC-03: inbound guard (HMAC, window, replay, rate limit, allowlist) ----------------------------------
+
+use WorkflowCaptain\Security\InboundGuard;
+$conns = array( 'n8n-main' => array( 'secret' => 's3cr3t-value', 'active' => true, 'triggers' => array( 'order.export' ), 'rate' => 3 ), 'old' => array( 'secret' => 'x', 'active' => false, 'triggers' => array() ) );
+$seen  = array();
+$cnt   = array();
+$guard = new InboundGuard(
+	fn( $k ) => $conns[ $k ] ?? null,
+	function ( $k, $ttl ) use ( &$seen ) { if ( isset( $seen[ $k ] ) ) { return false; } $seen[ $k ] = 1; return true; },
+	function ( $k, $ttl ) use ( &$cnt ) { return $cnt[ $k ] = ( $cnt[ $k ] ?? 0 ) + 1; }
+);
+$now   = 1763287200;
+$body  = '{"order":5}';
+$req   = fn( array $over = array() ) => array_merge( array( 'connection' => 'n8n-main', 'timestamp' => (string) $now, 'nonce' => 'abcdefghijklmnop', 'signature' => InboundGuard::sign( 's3cr3t-value', $now, 'abcdefghijklmnop', $body ), 'trigger' => 'order.export' ), $over );
+check( 'SEC-03 inbound: valid signed request accepted', true === $guard->check( $req(), $body, $now )['ok'] );
+check( 'SEC-03 inbound: same nonce again is a replay', 'replay' === $guard->check( $req(), $body, $now )['reason'] );
+check( 'SEC-03 inbound: wrong signature refused (constant-time compare)', 'bad_signature' === $guard->check( $req( array( 'nonce' => 'qrstuvwxyzabcdef' ) ), $body . ' ', $now )['reason'] );
+check( 'SEC-03 inbound: rate limit per connection', 'rate_limited' === $guard->check( $req( array( 'nonce' => 'zzzzzzzzzzzzzzzz' ) ), $body, $now )['reason'] );
+$cnt = array();
+check( 'SEC-03 inbound: timestamp outside the window refused', 'stale_timestamp' === $guard->check( $req( array( 'nonce' => 'yyyyyyyyyyyyyyyy' ) ), $body, $now + 301 )['reason'] );
+$sig = InboundGuard::sign( 's3cr3t-value', $now, 'wwwwwwwwwwwwwwww', $body );
+check( 'SEC-03 inbound: trigger not on the allowlist refused', 'trigger_not_allowed' === $guard->check( $req( array( 'nonce' => 'wwwwwwwwwwwwwwww', 'signature' => $sig, 'trigger' => 'user.delete' ) ), $body, $now )['reason'] );
+check( 'SEC-03 inbound: revoked or unknown connection refused, oversized body refused first', 'unknown_connection' === $guard->check( $req( array( 'connection' => 'old' ) ), $body, $now )['reason'] && 'unknown_connection' === $guard->check( $req( array( 'connection' => 'nope' ) ), $body, $now )['reason'] && 413 === $guard->check( $req(), str_repeat( 'a', InboundGuard::MAX_BYTES + 1 ), $now )['status'] );

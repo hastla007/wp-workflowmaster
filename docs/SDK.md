@@ -94,6 +94,14 @@ Bis zum visuellen Editor werden Workflows als JSON bearbeitet (Admin „Workflow
 | `workflow_captain_worker_batch` | Filter | Ereignisse und Schritte je Worker-Durchlauf (1 bis 200, Standard 25) |
 | `workflow_captain_retention_days` | Filter | Aufbewahrung nur verkürzen (`finished`, `stuck`) |
 
+## 5a. Bausteine für Webhooks und n8n (für Add-ons)
+
+- `WorkflowCaptain\Security\SafeHttp`: ausgehende Anfragen mit den Profilen `webhook` (nur öffentliches HTTPS) und `n8n` (privat und HTTP nur mit Ausnahme je Verbindung), IP-Festnageln, geprüfte Weiterleitungen, Zeit- und Größenlimit, Fehlercodes ohne URL oder Token.
+- `WorkflowCaptain\Security\InboundGuard`: Prüfung eingehender Anfragen in fester Reihenfolge (Größe, Verbindung, Rate-Limit, Zeitfenster, HMAC-SHA256 über `timestamp.nonce.body`, Replay, Trigger-Allowlist); jede Ablehnung ist ein fester Code mit HTTP-Status.
+- `WorkflowCaptain\Security\Vault`: Geheimnisse verschlüsselt speichern, rotieren, redigieren.
+
+Der Kern selbst registriert keine REST-Route und macht keinen ausgehenden Aufruf; die Routen und Verbindungen liegen in Workflow Captain Pro.
+
 ## 6. Datenfluss und Datenschutz
 
 | Ort | Was liegt dort | Personenbezug | Frist |
