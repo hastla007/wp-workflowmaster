@@ -35,7 +35,10 @@ if ! mysqladmin ping >/dev/null 2>&1; then
 fi
 mysql -e "CREATE DATABASE IF NOT EXISTS wp_e2e; CREATE DATABASE IF NOT EXISTS wp_e2e_ms;
 	CREATE USER IF NOT EXISTS 'wp'@'localhost' IDENTIFIED BY 'wp';
-	GRANT ALL ON wp_e2e.* TO 'wp'@'localhost'; GRANT ALL ON wp_e2e_ms.* TO 'wp'@'localhost'; FLUSH PRIVILEGES;"
+	GRANT ALL ON wp_e2e.* TO 'wp'@'localhost'; GRANT ALL ON wp_e2e_ms.* TO 'wp'@'localhost';
+	GRANT ALL ON wp_e2e_restore.* TO 'wp'@'localhost'; GRANT ALL ON wp_e2e_load.* TO 'wp'@'localhost'; FLUSH PRIVILEGES;"
+# Second run: WP-CLI on a restored copy with E2E_DB=<db> (wp-config.php reads it; older configs are patched once).
+[ -f "$ROOT/www/wp-config.php" ] && sed -i "s/^define( 'DB_NAME', 'wp_e2e' );/define( 'DB_NAME', getenv( 'E2E_DB' ) ?: 'wp_e2e' );/" "$ROOT/www/wp-config.php"
 
 # 2. WordPress core (built core repository, one tag).
 [ -d "$ROOT/www/wp-includes" ] || git clone -q --depth 1 --branch "$WP_TAG" https://github.com/WordPress/WordPress "$ROOT/www"
@@ -73,7 +76,7 @@ if [ ! -f "$WC/woocommerce.php" ]; then
 		echo '/* e2e stub: WooCommerce JS not built */' > "assets/client/admin/$d/index.js"
 	done
 	mkdir -p assets/client/admin/wp-admin-scripts
-	for f in $(grep -rhoE "register_script\( *'wp-admin-scripts', *'[a-z-]+'" src includes | sed -E "s/.*'([a-z-]+)'$/\1/" | sort -u); do
+	for f in $(grep -rhoE "(register_script|enqueue_block_editor_script)\( *'wp-admin-scripts', *'[a-z-]+'" src includes | sed -E "s/.*'([a-z-]+)'$/\1/" | sort -u); do
 		echo "<?php return array( 'dependencies' => array(), 'version' => 'e2e-stub' );" > "assets/client/admin/wp-admin-scripts/$f.asset.php"
 		echo '/* e2e stub */' > "assets/client/admin/wp-admin-scripts/$f.js"
 	done
@@ -90,13 +93,26 @@ if [ "${E2E_YOAST:-0}" = 1 ] && [ ! -f "$ROOT/www/wp-content/plugins/wordpress-s
 	rsync -a --delete --exclude .git --exclude node_modules --exclude tests --exclude packages --exclude apps ./ "$ROOT/www/wp-content/plugins/wordpress-seo/"
 	(cd "$ROOT/www/wp-content/plugins/wordpress-seo" && composer dump-autoload -q --no-dev --no-scripts)
 fi
+# Yoast admin screens (post editor) need the asset manifests of its JS build; stubs keep wp-admin from a fatal.
+YO="$ROOT/www/wp-content/plugins/wordpress-seo/src/generated/assets"
+if [ -d "$ROOT/www/wp-content/plugins/wordpress-seo" ] && [ ! -f "$YO/plugin.php" ]; then
+	mkdir -p "$YO"
+	printf "<?php // e2e stub: Yoast JS not built\nreturn array( 'post-edit.js' => array( 'dependencies' => array(), 'version' => 'e2e-stub' ), 'installation-success.js' => array( 'dependencies' => array(), 'version' => 'e2e-stub' ), 'workouts.js' => array( 'dependencies' => array(), 'version' => 'e2e-stub' ) );\n" > "$YO/plugin.php"
+	for f in externals languages; do printf "<?php // e2e stub\nreturn array();\n" > "$YO/$f.php"; done
+fi
+
+# 4c. Optional: Classic Editor plugin from git (E2E_CLASSIC=1) for WF-SEO-08; no tags in that repository, trunk.
+if [ "${E2E_CLASSIC:-0}" = 1 ] && [ ! -f "$ROOT/www/wp-content/plugins/classic-editor/classic-editor.php" ]; then
+	git clone -q --depth 1 https://github.com/WordPress/classic-editor "$ROOT/www/wp-content/plugins/classic-editor"
+fi
 
 # 5. wp-config.php for both sites, test mu-plugin, plugin symlink.
 write_config() { # <dir> <db> <url>
 	[ -f "$1/wp-config.php" ] && return
 	{
 		echo "<?php"
-		echo "define( 'DB_NAME', '$2' ); define( 'DB_USER', 'wp' ); define( 'DB_PASSWORD', 'wp' ); define( 'DB_HOST', 'localhost' );"
+		db="'$2'"; [ "$2" = wp_e2e ] && db="getenv( 'E2E_DB' ) ?: 'wp_e2e'" # www only: copies via E2E_DB
+		echo "define( 'DB_NAME', $db ); define( 'DB_USER', 'wp' ); define( 'DB_PASSWORD', 'wp' ); define( 'DB_HOST', 'localhost' );"
 		echo "define( 'DB_CHARSET', 'utf8mb4' ); define( 'DB_COLLATE', '' );"
 		for k in AUTH_KEY SECURE_AUTH_KEY LOGGED_IN_KEY NONCE_KEY AUTH_SALT SECURE_AUTH_SALT LOGGED_IN_SALT NONCE_SALT; do
 			echo "define( '$k', '$(php -r 'echo bin2hex(random_bytes(32));')' );"

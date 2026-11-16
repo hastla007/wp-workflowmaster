@@ -173,6 +173,11 @@ function e2e_order( float $price = 49.90 ): \WC_Order {
 	return $order;
 }
 
+// Other check files (bin/e2e/ops.php) load only the helpers above.
+if ( defined( 'E2E_LIB_ONLY' ) ) {
+	return;
+}
+
 // Clean slate: workflows left active by an earlier (aborted) section must not react to this section's events.
 if ( in_array( $e2e_section, array( 'order', 'wc_more', 'schedule', 'pause', 'as_prep', 'wcoff_prep' ), true ) ) {
 	global $wpdb;
