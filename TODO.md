@@ -2,11 +2,11 @@
 
 > **Maßgeblich seit 16.11.2026:** `docs/SPEC-suite-events.md` ist die normative Spezifikation für die Zusammenarbeit der Suite-Plugins (Entscheidung D1) und geht jeder abweichenden Aufgabe dieser Liste vor. Aufgaben, die eine Entscheidung vom 16.11.2026 überholt, sind neu gefasst oder durchgestrichen und mit „Entfällt durch Entscheidung D…“ gekennzeichnet. Nach D12 rangiert alle Workflow-Arbeit hinter dem Verkaufsstart der drei vorhandenen Add-ons.
 
-**Zählung (16.11.2026):** 183 offen, 0 erledigt, 7 entfallen. Vor den Entscheidungen waren es 175 offene Aufgaben; 7 sind entfallen, 15 (WF-SPEC-01 bis -15) neu. Nachzählen: `grep -c '^- \[ \]' TODO.md`, `grep -c '^- \[x\]' TODO.md`, `grep -c '^- ~~' TODO.md`.
+**Zählung (16.11.2026):** 186 offen, 0 erledigt, 7 entfallen. Davon 3 neu aus Entscheidung 17 (WF-E17-01 bis -03, am Ende der Datei). Vor den Entscheidungen waren es 175 offene Aufgaben; 7 sind entfallen, 15 (WF-SPEC-01 bis -15) neu. Nachzählen: `grep -c '^- \[ \]' TODO.md`, `grep -c '^- \[x\]' TODO.md`, `grep -c '^- ~~' TODO.md`.
 
 **Quelle:** migrierte Umsetzungspunkte aus den Abschnitten 15.11 und 18.7 des Produktkonzepts. Das Konzept bleibt maßgeblich für Umfang, Verträge und Produktentscheidungen.
 
-**Festgelegt:** Free-Core bleibt eigenständig; Pro-Add-on workflow-captain-pro. WPLC Produktkey workflow-captain-pro, Präfix workflow.; Jahrespreise Single 129 EUR/1 Live-Site, Business 229 EUR/5, Agency 399 EUR/25. Alle Pläne erhalten denselben Pro-Funktionsumfang. **Hinweis 16.11.2026:** Die Preise sind nicht bestätigt (offene Entscheidung E9); „festgelegt“ gilt für Schlüssel, Präfix und die Site-Limits 1/5/25.
+**Festgelegt:** Free-Core bleibt eigenständig; Pro-Add-on workflow-captain-pro. WPLC Produktkey workflow-captain-pro, Präfix workflow.; Jahrespreise Single 129 EUR/1 Live-Site, Business 229 EUR/5, Agency 399 EUR/25. Alle Pläne erhalten denselben Pro-Funktionsumfang. **Hinweis 16.11.2026:** Die Preise sind nicht bestätigt (offene Entscheidung E9); „festgelegt“ gilt für Schlüssel, Präfix und die Site-Limits 1/5/25. Entschieden am 16.11.2026: Alle Preise sind netto, zzgl. USt.; die Beträge bleiben unbestätigt.
 
 ### 15.11 Was noch fehlt – Umsetzungsaufgaben, keine offenen Produktentscheidungen
 
@@ -133,6 +133,8 @@ Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebau
 
 ### Kundenconnector 1 – BoatingSchool B2B / Laravel
 
+> **Entscheidung 17 (16.11.2026):** Dieser Connector ist ein eigenes Projektprodukt außerhalb von Workflow Captain und Workflow Captain Pro. Die Aufgaben bleiben bis zur Übergabe stehen (WF-E17-02).
+
 - [ ] WF-CUST1-01 – Vorhandenen WooCommerce-Connector als fachlichen Owner von Paid-Order-Codezustellung, Idempotenz pro Order-Position, Retry und Refund-Sperrung festhalten; Workflow darf diese Befehle nicht nochmals ausführen.
 - [ ] WF-CUST1-02 – In BoatingSchool einen eigenen dauerhaften Workflow-Event-Outbox-Dispatcher nach Commit ergänzen. Nicht die vorhandene `tenant.provision`-Shop-Outbox oder bloße Commerce-Logs als allgemeine Zustellgarantie voraussetzen.
 - [ ] WF-CUST1-03 – Versionierte Events für Shopkonto registriert/verknüpft/deaktiviert, Provisionierung erfolgreich/fehlgeschlagen sowie Code-Batch geliefert/entwertet veröffentlichen; stabile Event-IDs und tenant-/shop-scoped Correlation-IDs nutzen.
@@ -144,6 +146,8 @@ Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebau
 - [ ] WF-CUST1-09 – Integrationstests für Tenant-Isolation, RLS, falsche/abgelaufene Signatur, Replay, doppelte Event-ID, HMAC-Key-Rotation, Timeout nach erfolgreichem Zielaufruf, Refund, Code-Redaktion und Outbox-Replay ergänzen.
 
 ### Kundenconnector 2 – LearnBoating B2C / WordPress
+
+> **Entscheidung 17 (16.11.2026):** Dieser Connector ist ein eigenes Projektprodukt außerhalb von Workflow Captain und Workflow Captain Pro. Die Aufgaben bleiben bis zur Übergabe stehen (WF-E17-02).
 
 - [ ] WF-CUST2-01 – In LearnBoating einen öffentlichen, versionierten Workflow-Event-/Action-Vertrag ergänzen. Das Plugin bleibt ohne Workflow Captain eigenständig; keine direkten Tabellen-/Meta-Zugriffe des Workflow-Adapters.
 - [ ] WF-CUST2-02 – Separaten `LearnBoating Workflow Connector`-Adapter mit Providerregistrierung, Mindestversion, Status und Lizenz-/Capability-Prüfung bereitstellen.
@@ -252,3 +256,11 @@ Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebau
 - [ ] WF-MS-23 – Komplette E2E-/Security-Matrix definieren und ausführen: Site A Event → Site B Action; 3-Site-Fan-out; nicht freigegebene Source/Target; Site-Admin vs Network-Admin; Capabilityentzug; Site B Plugin fehlt/deaktiviert; inkompatibler Contract; Timeout nach Side Effect; Duplicate/Replay; Ziel-Site-Cron-Ausfall; Partial Failure; Opt-out während Run; Site-Löschung/Restore; Lizenzablauf; PII-Leak- und Blog-Switch/Cache-Isolation.
 - [ ] WF-MS-24 – Release- und Supportmaterial erstellen: Netzwerkaktivierung, Site-Teilnahme, Sitelizenzrechnung, lokaler Cron, Debuggen von Partial Failure und sicheres Wiederaufnehmen; WordPress-Network-Admin-UI-Mockup und Rezeptbeispiele abnehmen.
 - [ ] WF-MS-25 – Mit WP License Captain/captain-pro den versionierten Lizenzvertrag für Multisite-Subsite-Sitze abgleichen und implementieren: eindeutige Blog-ID-Teilnahme statt nur Network-Root-URL zählen, Sitzfreigabe/-entzug, Domain-Mapping ohne Doppelzählung und Lizenzreaktion bei Netzwerkmigration belegen.
+
+### Entscheidung 17 (16.11.2026): Connectoren von BoatingSchool und LearnBoating sind eigene Projektprodukte
+
+Der Inhaber hat am 16.11.2026 entschieden (Entscheidung 17; `wp-formmaster` `docs/ENTSCHEIDUNGEN.md:23`, Commits `1832ceb`, `1e8acd4`, `0e6aea1`; gegenüber der Koordination bestätigt): Jeder Connector für BoatingSchool oder LearnBoating ist ein eigenes, nicht verkauftes Projektprodukt mit eigenem Produktschlüssel, eigenem Präfix und eigener Lizenz auf dem Lizenzserver des Inhabers. Er wird als eigenes Plugin installiert; die Pro-Lizenz eines Captain-Produkts deckt ihn nicht ab. Das gilt für alle Connectoren beider Kunden (Form, Voucher, künftige); Paket und Updates bekommt nur der jeweilige Kunde. Die zwischenzeitliche Fassung „Teil von Form Captain Pro“ ist am selben Tag verworfen worden.
+
+- [ ] WF-E17-01 – `konzept.md:712` berichtigen. Dort steht: „Workflow Captain Pro enthält Suite-Provider, kundenspezifische Connectoren …“. Überholt durch Entscheidung 17: Workflow Captain Pro enthält keine Connectoren für BoatingSchool oder LearnBoating. Fertig, wenn `konzept.md` Zeile 712 und die Abschnitte 17.10 und 17.11 sagen, dass beide Connectoren eigene Projektprodukte in den Projekt-Repositories sind, mit eigener Lizenz und eigenem Präfix.
+- [ ] WF-E17-02 – Die 19 Aufgaben WF-CUST1-01 bis -09 und WF-CUST2-01 bis -10 an die Projekt-Repositories (boatingschool, learnboating) übergeben. Damit ist F-18 in `docs/SPEC-open-questions.md` entschieden. In dieser Liste bleibt nur, was der Workflow-Kern für fremde Connectoren anbietet (WF-CONNECTOR-01 bis -14). Fertig, wenn die beiden Abschnitte durchgestrichen sind, mit „Überholt durch Entscheidung 17, übergeben an …“, und die Zählung oben stimmt. Braucht: einen Ort für die Aufgaben in den Projekt-Repositories (kein Zugriff aus dieser Sitzung).
+- [ ] WF-E17-03 – Lizenzprüfung der Kundenconnectoren neu fassen. WF-CUST2-02 („Lizenz-/Capability-Prüfung“) und WF-CONNECTOR-12 (`workflow.custom_connectors`) gehen davon aus, dass Workflow Captain Pro die Connectoren lizenziert. Nach Entscheidung 17 prüft jeder Connector seine eigene Lizenz mit seiner eigenen Kopie der Lizenzbibliothek. Offen bleibt, ob die Connector-Laufzeit zusätzlich Workflow Captain Pro voraussetzt (`workflow.custom_connectors` ist nicht reserviert, F-01); das ist eine technische Abhängigkeit, keine Deckung durch die Pro-Lizenz. Fertig, wenn die Antwort in `docs/SPEC-open-questions.md` (F-01, F-18) steht und beide Aufgaben danach umformuliert sind. Braucht: die Antwort des Inhabers auf F-01.

@@ -133,13 +133,13 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 ### F-18 · Kundenconnectoren im Umfang der ersten Version
 
 - **Frage:** Bleiben die Connectoren für BoatingSchool und LearnBoating Aufgaben von Workflow Captain 1.0?
-- **Stand:** `TODO.md` führt 19 Aufgaben dafür. Nach E6 ist der Learnboating-Connector ein eigenes Kundenprojekt und kein Teil von Voucher Pro.
+- **Stand:** `TODO.md` führt 19 Aufgaben dafür. Nach E6 ist der Learnboating-Connector ein eigenes Kundenprojekt und kein Teil von Voucher Pro. **Entschieden am 16.11.2026 (Entscheidung 17):** Alle Connectoren von BoatingSchool und LearnBoating sind eigene, nicht verkaufte Projektprodukte mit eigener Lizenz, außerhalb von Workflow Captain und Workflow Captain Pro. Die Aufgaben dazu stehen in `TODO.md` (WF-E17-01 bis -03).
 - **Empfehlung:** Beide als Kundenprojekte außerhalb der ersten Version führen; die Spezifikation regelt sie nicht.
 
 ### F-19 · Preise — **für Form Captain Pro entschieden am 16.11.2026; sonst offen**
 
 - **Entschieden:** Form Captain Pro kostet 59, 129 und 249 Euro pro Jahr netto, zzgl. USt., für 1, 5 und 25 Websites (`single`, `business`, `agency`; Entscheidung des Inhabers vom 16.11.2026, berichtigt von brutto auf netto).
-- **Offen:** die Preise aller anderen Produkte. `konzept.md` und `TODO.md` dieses Repositorys nennen für Workflow Captain Pro 129, 229 und 399 Euro als festgelegt; bestätigt ist das nicht, auch nicht netto oder brutto.
+- **Offen:** die Preise aller anderen Produkte. `konzept.md` und `TODO.md` dieses Repositorys nennen für Workflow Captain Pro 129, 229 und 399 Euro als festgelegt; bestätigt sind die Beträge nicht. Entschieden am 16.11.2026: Alle Preise aller Pro-Add-ons und Tarife sind netto, zzgl. USt.
 - **Empfehlung:** Keine; Geschäftsentscheidung. Bis dahin gelten die Beträge für Workflow als Vorschlag.
 
 ## Teil 2: Widersprüche zwischen den Entscheidungen vom 16.11.2026
