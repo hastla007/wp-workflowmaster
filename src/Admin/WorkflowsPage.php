@@ -31,8 +31,8 @@ final class WorkflowsPage {
 	}
 
 	public function menu(): void {
-		add_submenu_page( EventsPage::SLUG, __( 'Workflows', 'workflow-captain' ), __( 'Workflows', 'workflow-captain' ), 'edit_workflows', self::SLUG_WORKFLOWS, array( $this, 'render_workflows' ) );
-		add_submenu_page( EventsPage::SLUG, __( 'Läufe', 'workflow-captain' ), __( 'Läufe', 'workflow-captain' ), 'view_workflow_logs', self::SLUG_RUNS, array( $this, 'render_runs' ) );
+		add_submenu_page( OverviewPage::SLUG, __( 'Workflows', 'workflow-captain' ), __( 'Workflows', 'workflow-captain' ), 'edit_workflows', self::SLUG_WORKFLOWS, array( $this, 'render_workflows' ) );
+		add_submenu_page( OverviewPage::SLUG, __( 'Läufe', 'workflow-captain' ), __( 'Läufe', 'workflow-captain' ), 'view_workflow_logs', self::SLUG_RUNS, array( $this, 'render_runs' ) );
 	}
 
 	/** Loads the visual builder on the workflow editor (WF-BUILDER-01). */

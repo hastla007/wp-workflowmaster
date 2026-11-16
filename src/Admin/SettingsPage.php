@@ -30,7 +30,7 @@ final class SettingsPage {
 	}
 
 	public function menu(): void {
-		add_submenu_page( EventsPage::SLUG, __( 'Einstellungen', 'workflow-captain' ), __( 'Einstellungen', 'workflow-captain' ), 'manage_workflow_captain', self::SLUG, array( $this, 'render' ) );
+		add_submenu_page( OverviewPage::SLUG, __( 'Einstellungen', 'workflow-captain' ), __( 'Einstellungen', 'workflow-captain' ), 'manage_workflow_captain', self::SLUG, array( $this, 'render' ) );
 	}
 
 	public function render(): void {

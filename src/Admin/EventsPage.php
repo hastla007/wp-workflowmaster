@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class EventsPage {
 
-	const SLUG     = 'workflow-captain';
+	const SLUG     = 'workflow-captain-events';
 	const PER_PAGE = 50;
 
 	public function __construct( private Plugin $plugin ) {}
@@ -29,16 +29,7 @@ final class EventsPage {
 	}
 
 	public function menu(): void {
-		add_menu_page(
-			__( 'Workflow Captain', 'workflow-captain' ),
-			__( 'Workflow Captain', 'workflow-captain' ),
-			'view_workflow_logs',
-			self::SLUG,
-			array( $this, 'render' ),
-			'dashicons-randomize',
-			58
-		);
-		add_submenu_page( self::SLUG, __( 'Ereignisse', 'workflow-captain' ), __( 'Ereignisse', 'workflow-captain' ), 'view_workflow_logs', self::SLUG, array( $this, 'render' ) );
+		add_submenu_page( OverviewPage::SLUG, __( 'Ereignisse', 'workflow-captain' ), __( 'Ereignisse', 'workflow-captain' ), 'view_workflow_logs', self::SLUG, array( $this, 'render' ) );
 	}
 
 	public function handle_requeue(): void {

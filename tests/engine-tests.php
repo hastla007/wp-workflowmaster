@@ -734,3 +734,9 @@ $e->pdo->exec( "INSERT INTO wp_workflow_captain_steps (run_id,node_id,step_key,s
 $c = $e->store->consistency();
 check( 'consistency: runs without version, orphan steps, active workflow without version found', 1 === count( $c['runs_without_version'] ) && 1 === count( $c['steps_without_run'] ) && 1 === count( $c['active_without_version'] ) );
 check( 'consistency: reporting changes nothing', 1 === count( $e->store->find_runs( array(), 10, 0 ) ) );
+
+// ----- Overview cards ------------------------------------------------------------------------------------------
+
+$cards = \WorkflowCaptain\Admin\OverviewPage::cards( array( 'environment' => array( 'next_worker_run' => gmdate( 'Y-m-d\TH:i:s\Z', time() + 30 ), 'secret_key_own' => true ), 'workflows' => array( 'active' => 3 ), 'runs' => array( 'running' => 2, 'action_required' => 1, 'paused' => 1 ), 'events' => array( 'dead_letter' => 0 ), 'stuck' => array( 'expired_leases' => 0, 'runs_without_steps' => 0 ) ) );
+$by    = array_column( $cards, null, 'label' );
+check( 'overview: counts and tones', 3 === $by['Aktive Workflows']['value'] && 2 === $by['Brauchen eine Entscheidung']['value'] && 'warn' === $by['Brauchen eine Entscheidung']['tone'] && 'ok' === $by['Fehlgeschlagene Ereignisse']['tone'] && 'läuft' === $by['Worker']['value'] );

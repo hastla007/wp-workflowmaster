@@ -67,6 +67,7 @@ final class Plugin {
 		}
 		add_action( 'admin_post_workflow_captain_diagnostics', array( $this, 'download_diagnostics' ) );
 		if ( is_admin() ) {
+			( new \WorkflowCaptain\Admin\OverviewPage( $this ) )->register();
 			( new EventsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\WorkflowsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\SettingsPage( $this ) )->register();

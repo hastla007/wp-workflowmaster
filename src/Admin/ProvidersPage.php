@@ -26,7 +26,7 @@ final class ProvidersPage {
 	}
 
 	public function menu(): void {
-		add_submenu_page( EventsPage::SLUG, __( 'Provider', 'workflow-captain' ), __( 'Provider', 'workflow-captain' ), 'view_workflow_logs', self::SLUG, array( $this, 'render' ) );
+		add_submenu_page( OverviewPage::SLUG, __( 'Provider', 'workflow-captain' ), __( 'Provider', 'workflow-captain' ), 'view_workflow_logs', self::SLUG, array( $this, 'render' ) );
 	}
 
 	/**
