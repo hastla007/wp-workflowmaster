@@ -393,3 +393,30 @@ drain( $e );
 check( 'notify.user mails the actor by user ID', array( 'person@example.com', 'Hallo', 'Danke für den Besuch' ) === ( $e->dir->sent[0] ?? array() ) );
 check( 'note added once with rendered text', 1 === count( $e->store->notes_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' ) ) && 'Eingecheckt über scanner' === $e->store->notes_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' )[0]['note'] );
 check( 'run context keeps the actor until the run ends (privacy handles it)', 17 === run_of( $e )['actor_user_id'] );
+
+// ----- Privacy for runs (R-12.5, R-12.4) ------------------------------------------------------------------------
+
+$e = engine_site();
+publish( $e, sample_graph() );
+$GLOBALS['wfc_test_users'] = array( 17 => 'person@example.com' );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+$privacy = new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, fn() => $e->store );
+$export  = $privacy->export( 'person@example.com' );
+check( 'C-13 export includes the runs of the user', 1 === count( array_filter( $export['data'], fn( $i ) => 'workflow-captain-runs' === $i['group_id'] ) ) );
+$privacy->erase( 'person@example.com' );
+check( 'C-13 erasure removes the user from runs', array() === $e->store->runs_by_actor( 17, 10, 0 ) && ! isset( run_of( $e )['context']['actor_user_id'] ) );
+$e->clock->advance( 31 * DAY_IN_SECONDS );
+$privacy->apply_retention();
+check( 'C-14 finished runs and their steps are deleted after 30 days', array() === $e->store->find_runs( array(), 10, 0 ) );
+$e = engine_site();
+$g = sample_graph();
+$g['nodes'][] = array( 'id' => 'wait', 'type' => 'delay', 'unit' => 'weeks', 'amount' => 10 );
+$g['edges'][3] = array( 'from' => 'mail', 'to' => 'wait' );
+$g['edges'][] = array( 'from' => 'wait', 'to' => 'tag' );
+publish( $e, $g );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+$e->clock->advance( 40 * DAY_IN_SECONDS );
+( new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, fn() => $e->store ) )->apply_retention();
+check( 'C-14 an open run is kept', 1 === count( $e->store->find_runs( array(), 10, 0 ) ) );

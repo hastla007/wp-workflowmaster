@@ -48,9 +48,10 @@ final class Plugin {
 		add_action( 'init', array( $this, 'register_adapters' ), 20 );
 		add_action( Install::CRON_PROCESS, array( $this, 'run_worker' ) );
 		add_action( Install::CRON_DAILY, array( $this, 'run_maintenance' ) );
-		( new Privacy( array( $this, 'store' ) ) )->register();
+		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->register();
 		if ( is_admin() ) {
 			( new EventsPage( $this ) )->register();
+			( new \WorkflowCaptain\Admin\WorkflowsPage( $this ) )->register();
 		}
 		/**
 		 * Workflow Captain has booted. Adapters register on "workflow_captain_register_adapters_v1" (init, priority 20).
@@ -113,6 +114,10 @@ final class Plugin {
 		return $this->engine;
 	}
 
+	public function engine_store(): \WorkflowCaptain\Engine\EngineStore {
+		return $this->engine()->store();
+	}
+
 	public function workflows(): \WorkflowCaptain\Engine\Workflows {
 		$engine = $this->engine();
 		return new \WorkflowCaptain\Engine\Workflows( $engine->store(), $engine->actions(), new \WorkflowCaptain\Engine\WpDirectory(), new Clock() );
@@ -164,7 +169,7 @@ final class Plugin {
 	}
 
 	public function run_maintenance(): void {
-		( new Privacy( array( $this, 'store' ) ) )->apply_retention();
+		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->apply_retention();
 		$this->consumer()->store()->purge_causes( ( new Clock() )->mysql() );
 	}
 

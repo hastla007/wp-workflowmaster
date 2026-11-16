@@ -4,7 +4,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 
 ## Stand
 
-**Konzept, Spezifikation und erster Code.** Abweichend von D12 wird seit dem 16.11.2026 schon vor dem Verkaufsstart der drei vorhandenen Add-ons gebaut. Vorhanden ist der Consumer des kostenlosen Kerns: Ereignisspeicher, Wiederholung, Schleifenschutz, Anmeldeschnittstelle für Adapter, Datenschutz und eine Admin-Seite. Workflow-Engine, Builder und Adapter fehlen noch.
+**Konzept, Spezifikation und erster Code.** Abweichend von D12 wird seit dem 16.11.2026 schon vor dem Verkaufsstart der drei vorhandenen Add-ons gebaut. Vorhanden sind im kostenlosen Kern (Plugin 0.2.0) der Consumer (Ereignisspeicher, Wiederholung, Schleifenschutz, Anmeldeschnittstelle für Adapter) und die Workflow-Engine (Workflows mit unveränderlichen Versionen, Bedingungen, Wartezeiten, Läufe und Schritte mit sicherer Wiederholung, Aktionen `notify.admin`, `notify.user`, Markierungen und Notizen), dazu Datenschutz und Admin-Seiten. Workflows werden bis zum visuellen Builder als JSON bearbeitet. Adapter für die Captain-Produkte fehlen noch (sie gehören nach `captain-pro`).
 
 ## Inhalt
 
@@ -16,7 +16,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`docs/examples/`](docs/examples/) | Beispiel-Umschläge, je Ereignistyp von Pass und Voucher Captain einer. |
 | [`docs/catalog/suite-events-v1.json`](docs/catalog/suite-events-v1.json) | Maschinenlesbarer Ereigniskatalog (Typ, Hook, erlaubte Felder, Bedeutung von `actor_user_id`); Vorstufe der Providerregistry (WF-INT-01). |
 | [`konzept.md`](konzept.md) | Produktkonzept. Wo es der Spezifikation widerspricht, gilt die Spezifikation; überholte Stellen sind gekennzeichnet. |
-| [`workflow-captain.php`](workflow-captain.php), [`src/`](src/) | Plugin `workflow-captain` 0.1.0: Consumer (Ereignisspeicher, Wiederholung, Schleifenschutz), Anmeldeschnittstelle für Adapter, Datenschutz, Admin-Seite „Ereignisse“. |
+| [`workflow-captain.php`](workflow-captain.php), [`src/`](src/) | Plugin `workflow-captain` 0.2.0: Consumer (`src/Consumer`, `src/Store`, `src/Envelope`), Workflow-Engine (`src/Engine`), Adapter-Schnittstelle (`src/Adapter`), Datenschutz, Admin-Seiten „Ereignisse“, „Workflows“, „Läufe“. |
 | [`tests/`](tests/) | `php tests/run.php` (Tests ohne WordPress, SQLite) und `php tests/license-guard.php` (Wächtertest „kein Lizenzcode im Kern“). |
 | [`TODO.md`](TODO.md) | Umsetzungsliste. |
 | [`docs/n8n/`](docs/n8n/) | Entwürfe von n8n-Vorlagen ohne Zugangsdaten (WF-N8N-10). |

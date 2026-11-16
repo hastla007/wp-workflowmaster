@@ -14,7 +14,7 @@ Automatisierungsbaukasten der Captain Suite. Diese Vorabversion enthält den Ere
 
 Workflow Captain verbindet Ereignisse aus WordPress, WooCommerce und den Plugins der Captain Suite mit Abläufen.
 
-Diese Vorabversion 0.1.0 enthält nur den Abnehmer der Ereignisse (Consumer):
+Diese Vorabversion enthält den Abnehmer der Ereignisse (Consumer) und die Workflow-Engine:
 
 * speichert jedes Ereignis einmal je Website, erkennt Doppelte
 * wiederholt bei vorübergehenden Fehlern nach einem festen Plan und zeigt fehlgeschlagene Ereignisse im Admin
@@ -22,13 +22,18 @@ Diese Vorabversion 0.1.0 enthält nur den Abnehmer der Ereignisse (Consumer):
 * bietet die Schnittstelle, an der sich Adapter aus Add-ons anmelden
 * meldet sich beim Export und Löschen persönlicher Daten von WordPress an und löscht gespeicherte Ereignisse nach einer Frist
 
-Abläufe, Editor und Adapter folgen in späteren Versionen. Ereignisse enthalten nie Gutschein-, Ticket- oder Lizenzcodes, E-Mail-Adressen, Namen oder Freitext.
+* führt veröffentlichte Workflows aus: Bedingungen, Wartezeiten, Nachrichten an Betreiber und Benutzer, Markierungen und Notizen; jede Version bleibt für laufende Läufe unverändert
+
+Der visuelle Editor und die Adapter für die Captain-Produkte folgen in späteren Versionen. Ereignisse enthalten nie Gutschein-, Ticket- oder Lizenzcodes, E-Mail-Adressen, Namen oder Freitext.
 
 == External services ==
 
 Keine. Workflow Captain ruft in dieser Version keinen externen Dienst auf.
 
 == Changelog ==
+
+= 0.2.0 =
+* Workflow-Engine: Workflows, Versionen, Läufe, Schritte, Bedingungen, Wartezeiten, Aktionen der Version 1.
 
 = 0.1.0 =
 * Erster Stand des Consumers nach docs/SPEC-suite-events.md (Entwurf 1.0.0-draft.5).

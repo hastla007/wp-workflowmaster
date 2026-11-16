@@ -9,6 +9,7 @@
 namespace WorkflowCaptain\Privacy;
 
 use WorkflowCaptain\Clock;
+use WorkflowCaptain\Engine\EngineStore;
 use WorkflowCaptain\Store\EventStore;
 
 defined( 'ABSPATH' ) || exit;
@@ -27,8 +28,16 @@ final class Privacy {
 	private $store_provider;
 
 	/** @param callable():EventStore $store_provider Resolved lazily, so registering the hooks opens no database. */
-	public function __construct( callable $store_provider, private ?Clock $clock = null ) {
-		$this->store_provider = $store_provider;
+	/** @var callable():EngineStore|null */
+	private $engine_provider;
+
+	/**
+	 * @param callable():EventStore       $store_provider  Resolved lazily, so registering the hooks opens no database.
+	 * @param callable():EngineStore|null $engine_provider Runs of the workflow engine; they hold a copy of the event.
+	 */
+	public function __construct( callable $store_provider, private ?Clock $clock = null, ?callable $engine_provider = null ) {
+		$this->store_provider  = $store_provider;
+		$this->engine_provider = $engine_provider;
 		$this->clock          = $clock ?? new Clock();
 	}
 
@@ -80,13 +89,30 @@ final class Privacy {
 				'data'        => $fields,
 			);
 		}
-		return array( 'data' => $items, 'done' => count( $rows ) < self::PAGE_SIZE );
+		$runs = null === $this->engine_provider ? array() : $this->engine()->runs_by_actor( (int) $user->ID, self::PAGE_SIZE, ( max( 1, $page ) - 1 ) * self::PAGE_SIZE );
+		foreach ( $runs as $run ) {
+			$items[] = array(
+				'group_id'    => 'workflow-captain-runs',
+				'group_label' => __( 'Workflow Captain: Läufe', 'workflow-captain' ),
+				'item_id'     => 'workflow-captain-run-' . $run['id'],
+				'data'        => array(
+					array( 'name' => __( 'Ereignis', 'workflow-captain' ), 'value' => (string) ( $run['context']['type'] ?? '' ) ),
+					array( 'name' => __( 'Objekt', 'workflow-captain' ), 'value' => (string) ( $run['context']['subject']['type'] ?? '' ) . ' ' . (string) ( $run['context']['subject']['id'] ?? '' ) ),
+					array( 'name' => __( 'Zustand', 'workflow-captain' ), 'value' => $run['state'] ),
+					array( 'name' => __( 'Begonnen (UTC)', 'workflow-captain' ), 'value' => $run['created_at'] ),
+				),
+			);
+		}
+		return array( 'data' => $items, 'done' => count( $rows ) < self::PAGE_SIZE && count( $runs ) < self::PAGE_SIZE );
 	}
 
 	/** Eraser callback: removes the user from every stored event; the events stay without actor (R-12.5, C-13). */
 	public function erase( string $email, int $page = 1 ): array {
 		$user  = get_user_by( 'email', $email );
 		$count = $user ? $this->store()->anonymize_actor( (int) $user->ID, $this->clock->mysql() ) : 0;
+		if ( $user && null !== $this->engine_provider ) {
+			$count += $this->engine()->anonymize_runs( (int) $user->ID, $this->clock->mysql() );
+		}
 		return array(
 			'items_removed'  => $count > 0,
 			'items_retained' => false,
@@ -97,6 +123,9 @@ final class Privacy {
 
 	public function on_deleted_user( $user_id ): void {
 		$this->store()->anonymize_actor( (int) $user_id, $this->clock->mysql() );
+		if ( null !== $this->engine_provider ) {
+			$this->engine()->anonymize_runs( (int) $user_id, $this->clock->mysql() );
+		}
 	}
 
 	/**
@@ -117,7 +146,15 @@ final class Privacy {
 				? array( EventStore::DONE, EventStore::DISCARDED, EventStore::LOOP_BLOCKED )
 				: array( EventStore::DEAD_LETTER, EventStore::PAUSED );
 			$this->store()->delete_older( $states, $clock->mysql( $clock->now() - $days * DAY_IN_SECONDS ) );
+			if ( 'finished' === $group && null !== $this->engine_provider ) {
+				// Finished runs follow the same period; open runs (running, action required, paused) stay.
+				$this->engine()->delete_runs_older( array( EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_FAILED, EngineStore::RUN_CANCELLED ), $clock->mysql( $clock->now() - $days * DAY_IN_SECONDS ) );
+			}
 		}
+	}
+
+	private function engine(): EngineStore {
+		return ( $this->engine_provider )();
 	}
 
 	private function store(): EventStore {
