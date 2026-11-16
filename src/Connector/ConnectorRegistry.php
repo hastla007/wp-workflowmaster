@@ -38,6 +38,7 @@ final class ConnectorRegistry {
 	const CONTRACT_MAJOR      = 'contract_major';
 	const DUPLICATE           = 'duplicate';
 	const NOT_ENABLED         = 'not_enabled';
+	const RUNTIME_NOT_ALLOWED = 'runtime_not_allowed';
 
 	/** @var array<string,ConnectorAdapter> */
 	private array $connectors = array();
@@ -82,6 +83,17 @@ final class ConnectorRegistry {
 		}
 		if ( Manifest::major( $this->core_contract ) !== Manifest::major( $required ) ) {
 			return $this->refuse( $key, self::CONTRACT_MAJOR, $manifest );
+		}
+		/**
+		 * Whether the runtime for own connectors may run on this site (WF-CONNECTOR-12). Free by default until F-18a
+		 * is answered; an add-on such as Workflow Captain Pro may switch it off. The core checks no license.
+		 *
+		 * @since 0.2.0
+		 * @param bool   $allowed
+		 * @param string $key Connector key.
+		 */
+		if ( function_exists( 'apply_filters' ) && ! apply_filters( 'workflow_captain_connector_runtime_allowed_v1', true, $key ) ) {
+			return $this->refuse( $key, self::RUNTIME_NOT_ALLOWED, $manifest );
 		}
 		$wrapped = new ConnectorAdapter( $adapter, $manifest, $this );
 		if ( ! $this->adapters->add_connector( $wrapped ) ) {

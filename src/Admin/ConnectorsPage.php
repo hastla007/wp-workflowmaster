@@ -77,6 +77,7 @@ final class ConnectorsPage {
 			ConnectorRegistry::INVALID_MANIFEST         => __( 'Manifest ungültig', 'workflow-captain' ),
 			ConnectorRegistry::REQUIRES_NEWER_CORE      => __( 'braucht eine neuere Version von Workflow Captain', 'workflow-captain' ),
 			ConnectorRegistry::CONTRACT_MAJOR           => __( 'für eine andere Hauptversion von Workflow Captain gebaut', 'workflow-captain' ),
+			ConnectorRegistry::RUNTIME_NOT_ALLOWED      => __( 'die Laufzeit für eigene Connectoren ist auf dieser Website nicht freigeschaltet (Workflow Captain Pro)', 'workflow-captain' ),
 			ConnectorRegistry::DUPLICATE                => __( 'Schlüssel doppelt angemeldet', 'workflow-captain' ),
 			ConnectorRegistry::NOT_ENABLED              => __( 'wartet auf Freigabe', 'workflow-captain' ),
 		);

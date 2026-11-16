@@ -81,7 +81,7 @@ msgstr ""
 msgid "Aktion erforderlich"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102
+#: src/Admin/ConnectorsPage.php:103
 msgid "Aktionen"
 msgstr ""
 
@@ -187,7 +187,7 @@ msgstr ""
 msgid "Benachrichtigungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:326
+#: src/Admin/SettingsPage.php:338
 msgid "Benutzer"
 msgstr ""
 
@@ -208,7 +208,7 @@ msgstr ""
 msgid "Brauchen eine Entscheidung"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:121
+#: src/Admin/ConnectorsPage.php:122
 msgid "Connector freigeben"
 msgstr ""
 
@@ -317,7 +317,7 @@ msgstr ""
 msgid "Diese Testnachricht zeigt, dass Hinweise von Workflow Captain ankommen. Sie enthält keine Daten von Ereignissen oder Läufen."
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:95
+#: src/Admin/ConnectorsPage.php:96
 msgid "Dieser Connector ist nicht angemeldet."
 msgstr ""
 
@@ -325,7 +325,7 @@ msgstr ""
 msgid "Duplizieren"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:30 src/Admin/ConnectorsPage.php:30 src/Admin/ConnectorsPage.php:92
+#: src/Admin/ConnectorsPage.php:30 src/Admin/ConnectorsPage.php:30 src/Admin/ConnectorsPage.php:93
 msgid "Eigene Connectoren"
 msgstr ""
 
@@ -337,7 +337,7 @@ msgstr ""
 msgid "Eigener Schlüssel für Geheimnisse"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:97
+#: src/Admin/ConnectorsPage.php:98
 msgid "Ein Connector ist ein eigenes Plugin, das ein Projekt an Workflow Captain anbindet. Er bleibt aus, bis Sie ihn hier freigeben. Bis dahin werden seine Ereignisse nicht gespeichert und seine Aktionen nicht angeboten. Personenbezogene Felder bleiben auch nach der Freigabe aus, bis Sie sie einzeln einschalten."
 msgstr ""
 
@@ -373,7 +373,7 @@ msgstr ""
 msgid "Einstellungen, Notfallpause, Diagnose"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:326
+#: src/Admin/SettingsPage.php:338
 msgid "Einzelheiten"
 msgstr ""
 
@@ -430,7 +430,7 @@ msgstr ""
 msgid "Ereignisse und Schritte je Worker-Durchlauf"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102 src/Admin/ProvidersPage.php:133
+#: src/Admin/ConnectorsPage.php:103 src/Admin/ProvidersPage.php:133
 msgid "Ereignistypen"
 msgstr ""
 
@@ -477,7 +477,7 @@ msgid "Erste Schritte"
 msgstr ""
 
 #. translators: 1: number, 2: option name
-#: src/Admin/SettingsPage.php:336
+#: src/Admin/SettingsPage.php:348
 msgid "Es bleiben die letzten %1$d Einträge in der Option %2$s."
 msgstr ""
 
@@ -521,7 +521,7 @@ msgstr ""
 msgid "Fortsetzen"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102
+#: src/Admin/ConnectorsPage.php:103
 msgid "Freigabe"
 msgstr ""
 
@@ -529,7 +529,7 @@ msgstr ""
 msgid "Freigabe eines eigenen Connectors geändert"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:95
+#: src/Admin/ConnectorsPage.php:96
 msgid "Freigabe gespeichert."
 msgstr ""
 
@@ -554,7 +554,7 @@ msgstr ""
 msgid "Gespeicherte Ereignisse"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102 src/Admin/WorkflowsPage.php:322 src/Admin/WorkflowsPage.php:340
+#: src/Admin/ConnectorsPage.php:103 src/Admin/WorkflowsPage.php:322 src/Admin/WorkflowsPage.php:340
 msgid "Grund"
 msgstr ""
 
@@ -674,7 +674,7 @@ msgstr ""
 msgid "Laufzeit je Worker-Durchlauf in Sekunden"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:320
+#: src/Admin/SettingsPage.php:332
 msgid "Letzte sicherheitsrelevante Änderungen"
 msgstr ""
 
@@ -742,7 +742,7 @@ msgstr ""
 msgid "Nachricht an Betreiber"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102 src/Admin/WorkflowsPage.php:222 src/Admin/WorkflowsPage.php:252
+#: src/Admin/ConnectorsPage.php:103 src/Admin/WorkflowsPage.php:222 src/Admin/WorkflowsPage.php:252
 msgid "Name"
 msgstr ""
 
@@ -762,11 +762,11 @@ msgstr ""
 msgid "Noch kein Adapter angemeldet. Workflows für die Captain-Produkte lassen sich veröffentlichen, sobald ein Pro-Add-on seinen Adapter anmeldet."
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:99
+#: src/Admin/ConnectorsPage.php:100
 msgid "Noch kein Connector angemeldet."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:323
+#: src/Admin/SettingsPage.php:335
 msgid "Noch keine Einträge."
 msgstr ""
 
@@ -830,7 +830,7 @@ msgstr ""
 msgid "Pausierte Läufe"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:131
+#: src/Admin/ConnectorsPage.php:132
 msgid "Personenbezogene Felder weitergeben:"
 msgstr ""
 
@@ -878,11 +878,11 @@ msgstr ""
 msgid "Schleife gestoppt"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102
+#: src/Admin/ConnectorsPage.php:103
 msgid "Schlüssel"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:80
+#: src/Admin/ConnectorsPage.php:81
 msgid "Schlüssel doppelt angemeldet"
 msgstr ""
 
@@ -898,7 +898,7 @@ msgstr ""
 msgid "So läuft die Ausführung"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:137
+#: src/Admin/ConnectorsPage.php:138
 msgid "Speichern"
 msgstr ""
 
@@ -910,7 +910,7 @@ msgstr ""
 msgid "Standardwerte dieses Tabs"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102 src/Admin/SettingsPage.php:73
+#: src/Admin/ConnectorsPage.php:103 src/Admin/SettingsPage.php:73
 msgid "Status"
 msgstr ""
 
@@ -943,7 +943,7 @@ msgstr ""
 msgid "Tägliche Hinweis-Mail an die Betreiber-Adresse"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102 src/Admin/WorkflowsPage.php:222
+#: src/Admin/ConnectorsPage.php:103 src/Admin/WorkflowsPage.php:222
 msgid "Version"
 msgstr ""
 
@@ -951,7 +951,7 @@ msgstr ""
 msgid "Versuche"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102
+#: src/Admin/ConnectorsPage.php:103
 msgid "Vertragsversion"
 msgstr ""
 
@@ -1086,7 +1086,7 @@ msgstr ""
 msgid "Workflows veröffentlichen und pausieren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:326
+#: src/Admin/SettingsPage.php:338
 msgid "Zeit (UTC)"
 msgstr ""
 
@@ -1129,6 +1129,10 @@ msgstr ""
 
 #: src/Admin/ConnectorsPage.php:78
 msgid "braucht eine neuere Version von Workflow Captain"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:80
+msgid "die Laufzeit für eigene Connectoren ist auf dieser Website nicht freigeschaltet (Workflow Captain Pro)"
 msgstr ""
 
 #: src/Admin/ConnectorsPage.php:74
@@ -1183,7 +1187,7 @@ msgstr ""
 msgid "verfügbar"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:81
+#: src/Admin/ConnectorsPage.php:82
 msgid "wartet auf Freigabe"
 msgstr ""
 
@@ -1191,7 +1195,7 @@ msgstr ""
 msgid "Ältere"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:326
+#: src/Admin/SettingsPage.php:338
 msgid "Änderung"
 msgstr ""
 

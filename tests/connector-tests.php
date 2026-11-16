@@ -244,3 +244,9 @@ $e->release = array();
 check( 'starter: action unavailable again once the connector is switched off', null === $e->actions->get( 'xstarterconnector.ticket.note' ) );
 check( 'starter: connector is not shipped (export-ignore) and not inside src/', str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . '.gitattributes' ), '/examples export-ignore' ) && ! is_dir( WORKFLOW_CAPTAIN_PATH . 'src/Connector/starter-connector' ) );
 check( 'install: manage_workflow_integrations is a capability of the core', in_array( 'manage_workflow_integrations', \WorkflowCaptain\Install::CAPS, true ) );
+
+// ----- WF-CONNECTOR-12: Pro can bind the connector runtime to workflow.custom_connectors
+$GLOBALS['wfc_test_filters']['workflow_captain_connector_runtime_allowed_v1'][] = fn( $allowed, $key ) => 'blocked-connector' !== $key;
+$reg_rt = new \WorkflowCaptain\Connector\ConnectorRegistry( new \WorkflowCaptain\Adapter\AdapterRegistry(), fn() => array(), '0.1.0' );
+check( 'WF-CONNECTOR-12 runtime switch: a refused runtime keeps the connector off with its own reason', false === $reg_rt->add( conn_manifest( 'blocked-connector' ), new TestAdapter( 'blocked-connector' ) ) && \WorkflowCaptain\Connector\ConnectorRegistry::RUNTIME_NOT_ALLOWED === $reg_rt->reason( 'blocked-connector' ) );
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_connector_runtime_allowed_v1'] );
