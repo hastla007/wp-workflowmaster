@@ -1,10 +1,31 @@
-# Kompatibilitätsmatrix der Provider (Entwurf)
+# Kompatibilitätsmatrix der Provider
 
-Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6. Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“.
+Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` `8d9ba77`). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
 
-**Entwurf.** Veröffentlicht wird die Matrix erst mit dem ersten Release von Workflow Captain Pro. Bis dahin hält sie fest, welche Stände der Kerne die Spezifikation voraussetzt und was davon am Code belegt ist. Adapter gibt es seit dem 16.11.2026 (siehe Nachtrag); „Mindestvertrag“ ist das, was ein Adapter nach R-13.4 verlangen müsste, um den Katalog der Spezifikation vollständig abzudecken.
+Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens die Mindestversion hat und dieselbe MAJOR-Version trägt (R-3.3, R-13.4). Die Plugin-Version allein entscheidet nicht. Alle Angaben sind am Code gelesen; „Branch“ heißt: noch nicht nach `main` gemergt.
 
-## Je Provider
+## Aktuelle Matrix
+
+| Provider | Gelesener Stand | Plugin | Vertragskonstante | Adapter verlangt (Workflow Captain Pro) | Was der Stand bringt | Adapter |
+|---|---|---|---|---|---|---|
+| WordPress | – | ab 6.4 | `$wp_version` steht für den Vertrag (4.7) | WordPress ≥ 6.4 | `wordpress.user.registered`, `wordpress.post.published` | im kostenlosen Kern |
+| WooCommerce | – | ab 8.2 | `WC_VERSION` steht für den Vertrag (4.7) | WooCommerce ≥ 8.2, HPOS und klassische Bestelltabellen | `woocommerce.order.*` (5 Typen) | im kostenlosen Kern |
+| Workflow Captain (Zeitplan, eingehende Auslöser) | Kern 0.2.x | 0.2.0 | `WORKFLOW_CAPTAIN_CONTRACT_VERSION` = `0.1.0` (Adapter-Schnittstelle) | – | `workflow.schedule.due`; `workflow.inbound.<auslöser>` nur, wenn ein Add-on Auslöser anmeldet | im kostenlosen Kern |
+| Pass Captain | `wp-passmaster` Branch `claude/plugin-todo-liste-2a83v4` `51da413` | 1.6.0 | `WPCAP_CONTRACT_VERSION` = `1.2.0` | `1.1.0` (Rückfall, veraltet); Lesefassade `wpcap_get_*_state()` ab `1.2.0` | 13 Ereignistypen, Lesefassade | Pro, `PassAdapter` |
+| Voucher Captain | `wp-couponmaster` Branch `claude/plugin-todo-liste-2a83v4` `689ab4a` | 1.3.0 | `VCAP_CONTRACT_VERSION` = `1.3.0` | `1.1.0` (Rückfall, veraltet); Lesefassade `vcap_read_*()` ab `1.2.0`; Gutschein-Befehle ab `1.3.0` | 16 Ereignistypen, Lesefassade, Einstiegspunkte für die Befehle Ausstellen, Sperren, Reaktivieren, Gutschreiben (R-8.3) | Pro, `VoucherAdapter` (Ereignisse); die Befehle als Workflow-Aktionen fehlen in Pro noch (WF-INT-03) |
+| Affiliate Captain | `wpaffiliatemaster` Branch `claude/plugin-todo-liste-2a83v4` `a3f20cc` | 0.15.0 | `WPAC_CONTRACT_VERSION` = `1.4.0` | `1.4.0` | 21 Ereignistypen | Pro, `AffiliateAdapter` |
+| Lizenzserver (nur im Shop des Anbieters) | `wp-license` Branch `claude/zen-babbage-7q4nac` `caebdcc` | 0.2.0 | `WPLC_CONTRACT_VERSION` = `1.0.0` | `1.0.0` mit Lesefunktion `WPLC\Events\LicenseReader::get()`; ohne Konstante Rückfall über Plugin 0.2.0 und `PlanChange::get_license()` (veraltet) | 3 Ereignistypen | Pro, `LicenseAdapter` |
+| Form Captain | `wp-formmaster` `fc1f206` | 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` | – | kein Katalog in Version 1 (4.6); eigener Workflow-Vertrag zurückgezogen (F-12) | keiner |
+| Review Captain | `wp-reviewmaster` `main` `33d1362` | 0.1.0-dev | fehlt auf `main` | – | kein Katalog in Version 1 (4.6) | keiner |
+| Course Captain | – | kein Code | – | – | – | keiner |
+| Eigene Connectoren | eigenes Plugin | eigene | `contract` im Manifest (`CONNECTOR-CONTRACT.md`) | Workflow Captain Pro als Laufzeit (Filter `workflow_captain_connector_runtime_allowed_v1`, F-18a); die eigene Lizenz prüft der Connector selbst | eigene Typen `x<präfix>.*` | im Kern, freigeschaltet durch Pro |
+
+**Workflow Captain Pro** verlangt Workflow Captain ≥ 0.2.0 (für netzwerkweite Abläufe Schema 4 mit `ForeignRuns`) und für jedes Captain-Produkt zusätzlich dessen gültiges Pro-Add-on (Spezifikation 10.1; der Lizenzserver hat keines).
+
+**Ungeprüft:** ein Lauf der Adapter gegen genau diese Stände in einer echten WordPress-Installation (laut [`E2E-RESULTS.md`](E2E-RESULTS.md) liefen die Suite-Adapter von Pro dort nicht, weil Pro ohne Lizenz keine Funktion freigibt; Prüfung der Adapter bisher nur mit PHPUnit in `captain-pro`). Ältere Stände stehen unten als Verlauf.
+
+## Verlauf: Stand 16.11.2026 (Vormittag)
+
 
 | Provider | Gelesener Stand | Plugin-Version | Vertragskonstante | Mindestvertrag für den ganzen Katalog | Bekannte MAJOR | Belegt |
 |---|---|---|---|---|---|---|
@@ -16,7 +37,7 @@ Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0
 | Review Captain | `wp-reviewmaster` `claude/sleepy-gates-6mm217` `b35fb95` (`main` ohne PHP-Code) | 0.1.0-dev | fehlt | kein Katalog in v1 (4.6) | – | ja, am 16.11.2026 am Code |
 | Course Captain | – | kein Code | fehlt | kein Katalog in v1 (4.6) | – | – |
 
-## Nachtrag 16.11.2026 (Nachmittag): Lesefassaden, WordPress/WooCommerce, Pro-Add-on
+## Verlauf: Nachtrag 16.11.2026 (Nachmittag)
 
 | Provider | Neuer Stand (Branch `claude/plugin-todo-liste-2a83v4`) | Vertrag | Was neu ist | Adapter verlangt |
 |---|---|---|---|---|

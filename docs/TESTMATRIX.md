@@ -65,12 +65,12 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 
 | Fall | Stand |
 |---|---|
-| A-3 bis A-9 | Testkit `tests/adapter-kit/` bereit; offen, bis es Adapter in `captain-pro` gibt |
-| A-1, A-2, A-10, A-11 | beschrieben in `tests/adapter-kit/README.md`; offen |
-| Plugin fehlt oder deaktiviert, Lizenz fehlt oder abgelaufen, Vertrags-MAJOR | Kern-Seite automatisch (C-15, Providerverfügbarkeit); Adapter-Seite offen |
-| Timeout nach erfolgreichem Zielaufruf, Replay, Doppelte | Kern-Seite automatisch (R-8.12, C-4, C-10); Gutschein-Befehle offen (VC-1) |
+| A-3 bis A-9 | automatisch in `captain-pro` (`tests/Addons/WorkflowSuiteAdaptersTest.php`, 44 Tests, prüft jedes Ereignis zusätzlich mit dem Testkit `tests/adapter-kit/` dieses Kerns; am 16.11.2026 gegen `captain-pro` `8d9ba77` und diesen Kern grün) |
+| A-1, A-2, A-10, A-11 | A-2 (ohne Lizenz des Produkt-Add-ons keine Anmeldung) und A-11 (Lizenzende während der Anfrage) automatisch in `captain-pro`; A-1 durch den Wächtertest `tests/license-guard.php`; A-10 beschrieben in `tests/adapter-kit/README.md` |
+| Plugin fehlt oder deaktiviert, Lizenz fehlt oder abgelaufen, Vertrags-MAJOR | Kern-Seite automatisch (C-15, Providerverfügbarkeit); Adapter-Seite automatisch in `captain-pro` (`test_an_adapter_registers_only_with_a_known_contract`, `test_a_new_major_of_the_license_contract_keeps_the_adapter_off`, `test_without_the_license_of_the_product_add_on_its_adapter_does_not_register`, `test_without_the_workflow_pro_license_no_adapter_is_hooked`, `test_a_product_license_that_ends_inside_the_request_stops_the_capture`); Form und Review haben in Version 1 keinen Provider (4.6); in einer echten Installation offen |
+| Timeout nach erfolgreichem Zielaufruf, Replay, Doppelte | Kern-Seite automatisch (R-8.12, C-4, C-10); Adapter-Seite (gleicher Schlüssel für dieselbe Action, A-7) automatisch in `captain-pro`; Gutschein-Befehle als Workflow-Aktionen offen (WF-INT-03) |
 | Refund, Woo HPOS/Classic, Checkout Blocks | offen (braucht WooCommerce und Adapter) |
-| Wiederherstellung aus Backup | Verfahren in `docs/RUNBOOK.md`; Konsistenzprüfung automatisch getestet; Durchlauf mit echter Sicherung offen |
+| Wiederherstellung aus Backup | Verfahren in `docs/RUNBOOK.md`; Konsistenzprüfung und sichere Wiederholung einer abgebrochenen Aktualisierung (`Migrator`, WF-CORE-07) automatisch getestet; Durchlauf mit echter Sicherung offen |
 
 ## WordPress, WooCommerce und eigene Connectoren
 

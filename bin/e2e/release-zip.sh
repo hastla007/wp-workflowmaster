@@ -11,7 +11,7 @@ REF=${1:-HEAD}
 export E2E_RESULTS="$ROOT/logs/zip.jsonl" E2E_LABEL=zip E2E_MAIL_FILE="$ROOT/logs/mail.jsonl"
 : > "$E2E_RESULTS"
 git -C "$PLUGIN" archive --format=zip --prefix=workflow-captain/ -o "$ROOT/workflow-captain.zip" "$REF"
-leaked=$(unzip -Z1 "$ROOT/workflow-captain.zip" | grep -E '^workflow-captain/(tests|bin|docs|examples|konzept.md|TODO.md|README.md|composer.json|\.git)' || true)
+leaked=$(unzip -Z1 "$ROOT/workflow-captain.zip" | grep -E '^workflow-captain/(tests|bin|docs|examples|konzept.md|TODO.md|README.md|composer.json|\.git|\.wordpress-org)' || true)
 php -r 'echo json_encode(array("id"=>"z1","name"=>"release ZIP contains only shipped files (export-ignore honoured)","result"=>$argv[1]===""?"PASS":"FAIL","detail"=>$argv[1]===""?$argv[2]:$argv[1])), "\n";' "$leaked" "$(unzip -Z1 "$ROOT/workflow-captain.zip" | cut -d/ -f2 | sort -u | tr '\n' ' ')" | tee -a "$E2E_RESULTS"
 mysql -e "DROP DATABASE IF EXISTS wp_e2e_zip; CREATE DATABASE wp_e2e_zip; GRANT ALL ON wp_e2e_zip.* TO 'wp'@'localhost';"
 [ -d "$ROOT/zip/wp-includes" ] || git clone -q --depth 1 --branch "${E2E_WP_TAG:-6.9.11}" https://github.com/WordPress/WordPress "$ROOT/zip"

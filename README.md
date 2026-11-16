@@ -32,7 +32,10 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Betrieb und Wiederherstellung: typische Lagen, Backup, Grenzen. |
 | [`docs/SDK.md`](docs/SDK.md) | Entwickler-SDK: Adapter, Aktionen, Workflow-Format, Hooks, Datenfluss, Betrieb. |
 | [`docs/CONNECTOR-CONTRACT.md`](docs/CONNECTOR-CONTRACT.md) | Entwurf des öffentlichen Connector-Vertrags für eigene Projekte (wartet auf F-22). |
-| [`docs/KOMPATIBILITAET.md`](docs/KOMPATIBILITAET.md) | Entwurf der Kompatibilitätsmatrix: welche Stände der Kerne die Spezifikation voraussetzt. |
+| [`docs/KOMPATIBILITAET.md`](docs/KOMPATIBILITAET.md) | Kompatibilitätsmatrix der Provider: Plugin- und Vertragsversionen, ab denen die Adapter sich anmelden (aus `readme.txt` verlinkt). |
+| [`docs/UI-ENTWUERFE.md`](docs/UI-ENTWUERFE.md) | Abgleich der gebauten Oberfläche mit den Konzeptentwürfen, Entwürfe für das Fehlende. |
+| [`docs/n8n/MATRIX.md`](docs/n8n/MATRIX.md) | Kompatibilitäts- und Sicherheitsmatrix für n8n (WF-N8N-12), gegen echtes n8n noch ungeprüft. |
+| [`.wordpress-org/`](.wordpress-org/) | Bildschirmfotos für WordPress.org (nicht im ZIP). |
 | [`docs/ANFORDERUNGEN-andere-repos.md`](docs/ANFORDERUNGEN-andere-repos.md) | Anforderungen der Spezifikation an die anderen Repositories, fertig zum Anlegen dort (WF-SPEC-14). |
 | [`docs/UEBERGABE-E17-kundenconnectoren.md`](docs/UEBERGABE-E17-kundenconnectoren.md) | Übergabe der Aufgaben der Kundenconnectoren BoatingSchool und LearnBoating an die Projekt-Repositories (Entscheidung 17). |
 
