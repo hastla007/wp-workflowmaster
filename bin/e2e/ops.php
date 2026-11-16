@@ -21,7 +21,7 @@ require __DIR__ . '/checks.php';
 
 $e2e_section = $args[0] ?? '';
 $e2e_param   = $args[1] ?? '';
-define( 'E2E_LOGS', ( getenv( 'E2E_ROOT' ) ?: '/home/user/wp-e2e' ) . '/logs' );
+define( 'E2E_LOGS', getenv( 'E2E_LOGS' ) ?: ( getenv( 'E2E_ROOT' ) ?: '/home/user/wp-e2e' ) . '/logs' );
 
 /** Small state file shared between the sections of one script run (workflow and order IDs). */
 function e2e_state( ?array $set = null ): array {
@@ -160,7 +160,7 @@ switch ( $e2e_section ) {
 		$before = json_decode( (string) file_get_contents( E2E_LOGS . '/br-before.json' ), true );
 		global $wpdb;
 		$now = array( 'counts' => e2e_counts(), 'events' => e2e_state_counts( 'events' ), 'runs' => e2e_state_counts( 'runs' ), 'steps' => e2e_state_counts( 'steps' ), 'schema' => e2e_schema_hash() );
-		e2e_check( 'r5', 'restored copy is a different database with the same rows, states and schema', DB_NAME !== 'wp_e2e' && $before === $now, array( 'db' => DB_NAME ) + $now );
+		e2e_check( 'r5', 'restored copy is a different database with the same rows, states and schema', DB_NAME !== ( getenv( 'E2E_MAIN_DB' ) ?: 'wp_e2e' ) && $before === $now, array( 'db' => DB_NAME ) + $now );
 		e2e_check( 'r5b', 'consistency check on the copy finds nothing', array() === array_filter( Plugin::instance()->engine()->store()->consistency() ), Plugin::instance()->engine()->store()->consistency() );
 		break;
 
@@ -382,7 +382,7 @@ switch ( $e2e_section ) {
 		update_post_meta( $post, '_yoast_wpseo_title', 'SEO Titel ' . $e2e_param . ' %%sep%% %%sitename%%' );
 		update_post_meta( $post, '_yoast_wpseo_metadesc', 'Beschreibung für ' . $e2e_param );
 		update_post_meta( $post, '_yoast_wpseo_focuskw', 'testfokus' );
-		update_post_meta( $post, '_yoast_wpseo_canonical', 'http://127.0.0.1:8080/kanonisch-' . $post . '/' );
+		update_post_meta( $post, '_yoast_wpseo_canonical', home_url( '/kanonisch-' . $post . '/' ) );
 		echo 'POST=' . $post . "\n";
 		break;
 

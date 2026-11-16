@@ -14,6 +14,11 @@ bestehenden Seite, neue Listen, Filter, Laufansicht, Zeitpläne und Builder-Teil
 101 von 101 Prüfungen bestehen, acht Fehler im Kern behoben (fünf Commits); Wiederholung des ersten Laufs 197 von 199
 (zwei bekannte Punkte, Umgebung und Pro), des zweiten 79 von 79.
 
+**Staging** (gleicher Tag, Abschnitt „Staging (WordPress 7.1.4, WooCommerce 11.3, Yoast 28.8)“ unten): frische Installation
+nach dem GitHub-Workflow mit den echten Release-Paketen von wordpress.org, Workflow Captain aus dem Release-ZIP; alle
+drei Läufe mit HPOS und klassisch, Checkout-Block mit echten Bestellungen, Yoast-Seitenleiste und -Metabox, Multisite,
+Mindestversionen 6.4.5/8.9.0; 908 von 910 Prüfungen bestehen (zweimal `p-network-license`, Pro), kein Fehler im Kern.
+
 ## Umgebung
 
 | Teil | Version / Herkunft |
@@ -94,7 +99,9 @@ Alle Kernprüfungen grün nach jedem Commit: `php tests/run.php` (619), `php tes
   (Provider). Das Pausieren laufender Schritte bei MAJOR-Wechsel eines Providers braucht eine Provider-Aktion aus Pro.
 - **Echter Screenreader:** keiner verfügbar; ersetzt durch axe-core (WCAG 2.2 AA) und Tastaturabläufe.
 - **WooCommerce-JS und Block-Checkout:** ohne JS-Build nicht lauffähig; die Bestellungen entstehen über die CRUD-API.
-- **WordPress 7.x:** nicht geprüft (Testseite auf 6.9.11, wie verlangt die neueste 6.x).
+  **Nachgeholt** auf Staging (Abschnitt „Staging“, Teil 2): echte Bestellungen über den Checkout-Block.
+- **WordPress 7.x:** nicht geprüft (Testseite auf 6.9.11, wie verlangt die neueste 6.x). **Nachgeholt** auf Staging mit
+  WordPress 7.1.4, WooCommerce 11.3.0 und Yoast 28.8.
 
 ## Wo die Seite liegt, Neustart
 
@@ -473,6 +480,188 @@ Korrelation in `logs/third-correlation.txt`), Yoast inaktiv, Option `e2e_addon_a
 netzwerkweit aktiv, Schema 4 auf allen Websites (Stand nach `run-checks.sh` und Teil 1). Ergebnisse
 `logs/results-3.jsonl`, Wiederholungen `logs/results.jsonl` und `logs/results-2.jsonl`; Screenshots des Laufs in
 `/home/user/wp-e2e/shots-3`. Die Seiten der anderen Agenten (8083, 8084, 8086) blieben unberührt.
+
+## Staging (WordPress 7.1.4, WooCommerce 11.3, Yoast 28.8)
+
+Stand 16.11.2026, Branch `wt/staging` (Basis `claude/plugin-todo-liste-2a83v4`, `12b8ace`). Nachdem `wordpress.org`,
+`downloads.wordpress.org` und `api.wordpress.org` freigegeben wurden, entstand eine frische Staging-Installation mit
+den echten, gebauten Release-Paketen (mit JS), gebaut mit den Schritten der GitHub-Workflows. Damit liefen alle drei
+bisherigen Prüfläufe erneut, je einmal mit HPOS und mit klassischer Bestellspeicherung, dazu echte Bestellungen über
+den Checkout-Block, Yoast mit Seitenleiste und Metabox und eine Mindestversions-Prüfung.
+
+    E2E_FRESH=1 bin/e2e/staging/setup.sh
+    AXE=<pfad>/axe.min.js bin/e2e/staging/run-staging.sh yes 500   # HPOS
+    AXE=<pfad>/axe.min.js bin/e2e/staging/run-staging.sh no 500    # klassische Speicherung
+
+**Ergebnis:** 910 Prüfungen, 2 offen – beide `p-network-license` (je einmal je Speicherart; Befund 5 des ersten Laufs,
+Workflow Captain Pro, nicht der Kern). Kein Fehler im Kern gefunden; geändert wurden nur die Prüfskripte, die Doku und `readme.txt` (Commits auf `wt/staging`, nicht gepusht).
+
+### Ergebnistabelle
+
+| Lauf | HPOS an | HPOS aus | Was |
+| --- | --- | --- | --- |
+| Einrichtung wie im Workflow (`results-staging-setup.jsonl`) | 4 / 4 | – | ZIP mit `--activate` und `--force`, nur ausgelieferte Dateien, Versionen, HPOS-Schalter |
+| Erster Lauf (`run-checks.sh`) | 198 / 199 | 198 / 199 | Aktivierung, Provider, Bestellablauf HPOS/klassisch, weitere Ereignisse, Action Scheduler, Zeitplan, Betrieb, Provider fehlt, Admin, axe-core/Tastatur 1280 und 390 px, Frontend mit/ohne Yoast, Löschen, Multisite mit Pro |
+| Zweiter Lauf (`run-second.sh`, Last mit 500) | 84 / 84 | 84 / 84 | Sicherung/Wiederherstellung, Migrationen, Builder-Pfade, Yoast im Block- und Classic Editor (jetzt mit JS, s13–s17), lineare Ansicht, Last |
+| Dritter Lauf (`run-third.sh`) | 101 / 101 | 101 / 101 | Upgrade vom Stand des zweiten Laufs per ZIP (`--force`), Daten, neue Oberfläche, Frontend mit Yoast |
+| Checkout (`staging/checkout.js`) | 26 / 26 (erster Durchgang 25 / 26, siehe „Befund 3 in echt“) | 26 / 26 | Block-Checkout Überweisung/Nachnahme/Gratisbestellung, Shortcode-Checkout, abgebrochener Checkout, keine Personendaten |
+| Mindestversionen (WordPress 6.4.5, WooCommerce 8.9.0) | 52 / 52 und 34 / 34 | (in den 52) | `checks.php` activation, providers, order on/off, wc_more; `admin.js` |
+
+### Aufbau nach dem Workflow und Abweichungen
+
+Vorlage: `wp-couponmaster` `.github/workflows/plugin-smoke.yml`, Job `wordpress-integration` (Schritte
+„Install WordPress 7.1.4“ und „Build, install, and update the release ZIP“, Matrix HPOS/klassisch), WooCommerce-Version
+aus `wp-passmaster` `ci.yml` (Browser-Job, 11.3.0 = „WC tested up to“) und `learnboating` `ci.yml` (Zielsystem WP 7.1.4,
+11.3 dort als Beta in der Testphase). Ausgeführt wurde:
+
+    wp core download --version=7.1.4
+    wp config create --dbname=wp_staging --dbuser=wp --dbpass=wp --dbhost=localhost --skip-check
+    wp core install --url=http://127.0.0.1:8090 --title=… --admin_user=admin …
+    wp plugin install woocommerce --version=11.3.0 --activate
+    wp plugin install wordpress-seo --version=28.8 --activate
+    wp option update woocommerce_custom_orders_table_enabled yes|no
+    git archive --format=zip --prefix=workflow-captain/ -o workflow-captain.zip HEAD     # statt bin/build.sh
+    wp plugin install workflow-captain.zip --activate
+    wp plugin install workflow-captain.zip --force
+    wp plugin install classic-editor                                                     # für WF-SEO-08
+
+| Workflow | Staging | Grund |
+| --- | --- | --- |
+| PHP 8.4 (`setup-php`) | PHP 8.3.6 | einzige PHP-Version im Container; WordPress 7.1.4 verlangt 7.4, WooCommerce 11.3 und Yoast 28.8 ebenfalls 7.4 |
+| MySQL 8.4 / MariaDB 11.4 als Dienst, `root`/`root` über 127.0.0.1 | MariaDB 10.11.14 lokal, Benutzer `wp`, Socket (`localhost`) | vorhandene Datenbank der Testseiten; Root nur über den Socket |
+| `wp-cli.phar` von `raw.githubusercontent.com` | WP-CLI 2.12.0 aus den Quellen (`/home/user/wp-e2e/wp-cli`, `--path`) | keine heruntergeladenen ausführbaren Archive; 2.12.0 ist auch der neueste Tag (`git ls-remote`), also dieselbe Version wie das Phar |
+| WooCommerce 11.2.2 (`plugin-smoke.yml`) | 11.3.0 | Auftrag; wie `wp-passmaster` |
+| `bin/build.sh` des Gutschein-Plugins | `git archive` wie `bin/e2e/release-zip.sh` | Workflow Captain hat kein Build-Skript; `.gitattributes` bestimmt den Inhalt |
+| Datenbank `wordpress`, `--url=http://localhost` | `wp_staging` (Multisite `wp_staging_ms`), Ports 8090/8091 | neben den bestehenden Seiten :8080–:8086 |
+| – | zusätzlich `WP_DEBUG`, `WP_DEBUG_LOG`, `DISABLE_WP_CRON`, `WP_ENVIRONMENT_TYPE=staging`, `E2E_MAIL_FILE` | Prüfskripte (Fehlerprotokoll, System-Cron-Pfad, Mails) |
+| – | `WP_PROXY_HOST/PORT` und mu-plugin `bin/e2e/staging/mu-plugins/e2e-staging-proxy.php` | der Container erreicht wordpress.org nur über seinen Proxy und hat kein DNS: WordPress lehnt sonst jeden „sicheren“ Download ab (`wp_http_validate_url()` → „A valid URL was not provided“); das mu-plugin vertraut der CA des Proxys und überspringt die DNS-Prüfung nur für `*.wordpress.org` |
+| – | mu-plugin `e2e-test-site.php` (Mails in eine Datei) | keine echten Mails |
+| Prüfungen: `tests/run-integration.sh` des Gutschein-Plugins | `bin/e2e/staging/run-staging.sh` | eigene Prüfläufe von Workflow Captain |
+
+Keine Notbehelfe an WooCommerce oder Yoast mehr: keine leeren Asset-Listen, kein erzeugtes `feature-config.php`, kein
+Container-Build; der Entwicklerhinweis „requires files to be built“ erscheint nicht.
+
+### Prüfskripte für beliebige Seiten
+
+`bin/e2e/env.sh` (von jedem Skript eingebunden) hält Seite, Datenbank, URL, Log-Ordner und Plugin-Art; die Standardwerte
+sind die erste Testseite, `bin/e2e/staging/env-staging.sh` setzt die Staging-Werte und legt `wp`/`wpms` für Staging
+vor den Pfad. Mit `E2E_PLUGIN_MODE=zip` kommt das Plugin aus dem Release-ZIP: der Plugin-Tausch in `run-checks.sh`
+(Löschen, Wiederherstellen) und das Upgrade in `upgrade.sh` laufen über `wp plugin install <zip> --force` (alte Fassung
+`ecd352e` als eigenes ZIP), wie ein echtes Update. `E2E_HPOS=no` lässt den ersten Lauf auf klassischer Speicherung laufen.
+Ergebnisse je Speicherart unter `/home/user/wp-e2e/logs-staging/hpos-yes|hpos-no/`.
+
+Anpassung am Messverfahren: WooCommerce 11.3 vergibt den Mengenfeldern der Produktseite `quantity_<uniqid>` mit 13 statt
+10 Hex-Zeichen; `frontend-diff.sh` glättet sie jetzt (im ersten Durchgang meldeten i1/i2 deshalb nur diese Zeile als
+Unterschied).
+
+### 1. Alle bisherigen Läufe, HPOS an und aus
+
+Erster Lauf 198 / 199 (HPOS) und 198 / 199 (klassisch): offen nur `p-network-license` (Befund 5). Gegenüber 6.9.11 jetzt
+bestanden: `p-network-plugins` (die Netzwerk-Pluginseite fragt wordpress.org für „Requires Plugins“ ohne Warnung,
+Befund 6 war Umgebung). Zweiter Lauf 84 / 84 / 84 / 84, dritter Lauf 101 / 101 / 101 / 101. Im Fehlerprotokoll (`WP_DEBUG`) kein Eintrag
+von Workflow Captain; einziger fremder Eintrag ein `_load_textdomain_just_in_time`-Hinweis von WooCommerce beim
+Aktivieren per WP-CLI (tritt ohne Workflow Captain genauso auf).
+
+### 2. Checkout-Block mit echten Bestellungen
+
+Theme Twenty Twenty-Five, die von WooCommerce angelegte Kassenseite mit dem Checkout-Block, ein Produkt (39,90 EUR),
+kostenloser Versand nach Deutschland, Überweisung und Nachnahme aktiv, Gast-Bestellung. Drei Workflows:
+`order.created` → Markierung, `order.status_changed` → Notiz, `order.paid` → Mail an den Betreiber + Markierung.
+Bestellt wurde im Browser (Chromium 153), Name, Adresse, Telefon und E-Mail in die Felder getippt.
+
+| Fall | Ereignisse | Läufe |
+| --- | --- | --- |
+| Block, Überweisung; danach setzt der Shop-Manager im Bestellbildschirm „In Bearbeitung“ | `created`, `status_changed` on-hold, `status_changed` processing | 1 + 2, alle erfolgreich |
+| Block, Nachnahme | `created`, `status_changed` processing | 1 + 1 |
+| Block, Gutschein 100 % (nichts zu zahlen) | `created`, `status_changed` processing, `paid` | 1 + 1 + 1, Mail „Checkout 213 bezahlt: 0 EUR ()“ |
+| Shortcode `[woocommerce_checkout]`, Überweisung (Vergleich) | `created`, `status_changed` on-hold | 1 + 1 |
+| Block, Adresse getippt, nicht bestellt | keine | keine |
+
+`order.created` trägt beim Block-Checkout `created_via` = `store-api`, beim Shortcode `checkout`, Status `pending`,
+Betrag und Artikelzahl, keine Kundendaten. In keiner `workflow_captain_*`-Tabelle steht etwas von den getippten Daten
+(E-Mail, Vor- und Nachname, Adresse, Adresszusatz, Telefon, Ort, PLZ; `co-pii`). Keine JS-Fehler oder fehlgeschlagenen
+Anfragen des Plugins auf Warenkorb, Kasse, Bestätigung und Bestellbildschirm.
+
+Befunde (kein Code-Fehler, Spezifikation):
+
+- **`order.paid` bei Überweisung und Nachnahme:** WooCommerce ruft `payment_complete()` bei diesen Zahlarten nie auf –
+  auch nicht, wenn der Shop-Manager die Bestellung auf „In Bearbeitung“ setzt. Ein Workflow auf „Bestellung bezahlt“
+  startet bei Überweisung und Nachnahme also nie; er startet bei Gateways, die die Zahlung melden, und bei
+  Gratisbestellungen. Das entspricht 4.7 (Hook `woocommerce_payment_complete`), ist für Betreiber aber überraschend.
+  Frage an den Inhaber: so lassen und im Builder/der Hilfe sagen („für Überweisung den Statuswechsel auf In Bearbeitung
+  nehmen“) oder `order.paid` zusätzlich beim ersten Wechsel auf processing/completed mit gesetztem `date_paid` auslösen
+  (Spezifikationsänderung). Empfehlung: Hinweis im Builder jetzt; die Erweiterung nur mit Entscheidung.
+- **Statuswechsel aus dem Entwurf:** Der Block-Checkout legt die Bestellung als `checkout-draft` an und wechselt beim
+  Absenden über `pending` sofort weiter (on-hold/processing). Das Ereignis „→ pending“ (`from_status` = `checkout-draft`)
+  wird beim Gegenlesen verworfen (`reread_mismatch`, R-7.4) – gewollt. Der Shortcode-Checkout erzeugt dieses Ereignis
+  nicht (Bestellung entsteht direkt als `pending`).
+- **Befund 3 in echt:** Im ersten Durchgang setzte das Skript die Überweisung auf „In Bearbeitung“, bevor der Worker
+  lief; das ältere „on-hold“-Ereignis wurde verworfen, der Workflow lief dafür nicht. Das ist der in „Zweiter Lauf“,
+  Teil 6 beschriebene Fall, hier mit einem echten Admin-Klick. Das Skript lässt den Worker jetzt vorher laufen (wie der
+  System-Cron jede Minute; im echten Shop kommt die Überweisung Tage später).
+- WooCommerce 11.3 behält für einen abgebrochenen Block-Checkout keine Entwurfs-Bestellung; deshalb entsteht dort kein
+  Ereignis.
+
+### 3. Yoast SEO 28.8 mit JS (WF-SEO-08, WF-SEO-07)
+
+`seo.js` mit den gebauten Yoast-Skripten und dem Classic-Editor-Plugin 1.7.0 von wordpress.org:
+
+- Block-Editor: Yoast-Seitenleiste öffnet mit Fokus-Keyphrase „testfokus“, SEO-Analyse und Lesbarkeit; der Yoast-Store
+  hält SEO-Titel und Beschreibung (s13). Nach Veröffentlichen und Workflow-Lauf zeigt die Seitenleiste dieselben Werte
+  (s14); Yoast-Metadaten, Beitragszeile und Indexable unverändert (s4).
+- Classic Editor: Metabox mit Keyphrase, SEO-Analyse und Snippet mit der Beschreibung (s15), nach dem Lauf gleich (s16);
+  Metadaten unverändert (s9); „Aktualisieren“ startet nichts erneut (s10); privater Beitrag startet nichts (s11).
+- Kein unbehandelter JS-Fehler in beiden Editoren mit Yoast, WooCommerce und Workflow Captain aktiv (s17); Workflow
+  Captain lädt dort kein Skript (s1, s6).
+- Yoast schreibt beim Speichern im Block-Editor eigene Bewertungsfelder (`_yoast_wpseo_content_score`, `…_linkdex`,
+  `…_meta_description_score`, `…_seo_title_score`, Lesezeit, Hauptkategorie) – vom Editor, nicht vom Workflow; der
+  Vergleich vor/nach dem Lauf ist gleich.
+- Frontend, Feed, REST, Yoast-Sitemaps und `yoast/v1/get_head` mit und ohne Workflow Captain gleich, keine Erwähnung in
+  öffentlichen Antworten (i2, i3-2), mit HPOS und klassisch.
+
+### 4. Oberfläche auf WordPress 7.1.4 (WF-SET-15, WF-BUILDER-09)
+
+axe-core 4.10.3 (WCAG 2.2 AA) und Tastatur mit den Admin-Styles von 7.1.4: 15 Seiten bei 1280 und 390 px ohne Verstoß
+und ohne seitliches Scrollen, Builder-Tastatur (x-…, 53 Prüfungen), lineare Ansicht und Fokus (y1–y10), neue Seiten des
+dritten Laufs bei 1280 und 390 px (v…, x…). Keine Abweichung zu 6.9.11, kein Fix nötig. Ein echter Screenreader war
+weiterhin nicht verfügbar.
+
+### 5. Multisite (staging-ms, :8091)
+
+Netzwerkinstallation auf frischer Datenbank, Workflow Captain per `wpms plugin install <zip>` und
+`plugin activate --network`: Tabellen, Schema und Rechte je Website (k1), neue Website sofort mit Tabellen (k2, k3),
+Löschen der Website entfernt ihre Tabellen (k4), Netzwerk-Deinstallation entfernt alle (k5), Fehlerprotokoll sauber
+(k6); Upgrade einer Unterwebsite mit verwaister Sperre (u14, u15); Pro netzwerkweit (p-…, außer `p-network-license`).
+
+### 6. WordPress.org-Slug „workflow-captain“
+
+`https://api.wordpress.org/plugins/info/1.2/?action=plugin_information&request[slug]=workflow-captain` →
+`{"error":"Plugin not found."}`; ebenso `workflowcaptain` und `workflow-captain-pro`. Gegenprobe: ein geschlossenes
+Plugin (`display-widgets`) liefert `{"error":"closed", … "closed":true}` – der Slug ist also weder vergeben noch
+geschlossen. `https://wordpress.org/plugins/workflow-captain/` leitet auf die Suche um; die Suche nach
+„workflow captain“ findet kein Plugin dieses Namens (nur „Captain …“-Plugins anderer Anbieter). Nicht öffentlich prüfbar:
+Einreichungen in der Prüfwarteschlange; reserviert ist der Slug erst mit der eigenen Einreichung.
+(`plugins.svn.wordpress.org` ist im Container nicht freigegeben.)
+
+### 7. readme.txt
+
+`Tested up to: 7.1` (alle Kernprüfungen auf 7.1.4 grün). `Requires at least: 6.4` bleibt: auf WordPress 6.4.5 mit
+WooCommerce 8.9.0 (die Mindestversionen des Gutschein-Workflows, Job `minimum-versions`) bestehen Aktivierung,
+Provider, Bestellablauf mit HPOS und klassisch und weitere Ereignisse (52 von 52) sowie alle Admin-Seiten (34 von 34);
+dazwischen geprüft 6.9.11 (erste drei Läufe). Die Mindestversions-Seite lag unter `/home/user/wp-e2e/staging-min`
+(Datenbank `wp_staging_min`, Server nur für die Prüfung auf :8092 gestartet und wieder beendet).
+
+### Neustart
+
+- Nach einem Container-Neustart: `bin/e2e/staging/setup.sh` (startet MariaDB und die Server :8090/:8091, baut nichts
+  neu). Frisch: `E2E_FRESH=1 bin/e2e/staging/setup.sh` (löscht `wp_staging`, `wp_staging_ms` und beide Ordner).
+- Danach jedes Skript mit `. bin/e2e/staging/env-staging.sh` davor, z. B. `node bin/e2e/staging/checkout.js`.
+- Admin `admin` / `admin-e2e-pass`; WP-CLI `/home/user/wp-e2e/bin-staging/wp` und `wpms`; ZIP unter
+  `/home/user/wp-e2e/staging-zip/`; Logs und Ergebnisse `/home/user/wp-e2e/logs-staging/`, Screenshots
+  `/home/user/wp-e2e/shots-staging/`.
+- Zustand: `staging` hält die Daten des letzten Laufs (klassische Speicherung, Checkout-Bestellungen), Yoast und Classic
+  Editor installiert, aber inaktiv (die Skripte schalten sie selbst ein); `staging-ms` Netzwerk mit „zwei“, Workflow
+  Captain netzwerkweit aktiv, Pro inaktiv. Die Seiten :8080–:8086 blieben unberührt.
 
 ## Ergebnisse Hauptlauf (`bin/e2e/run-checks.sh`)
 
@@ -900,3 +1089,46 @@ netzwerkweit aktiv, Schema 4 auf allen Websites (Stand nach `run-checks.sh` und 
 | i3-1 | front-end HTML identical active vs. deactivated (home, post, product, shop, feed, REST index, sitemap), with the data of this run | **PASS** | SAME / (86858 bytes) SAME /?p=198 (97320 bytes) SAME /?page_id=9 (75906 bytes) SAME /?post_type=product&p=191 (97466 bytes) SAME /?post_type=product (86622 b... |
 | i3-2 | with Yoast SEO active: front end, XML sitemaps, REST and get_head identical with Workflow Captain active vs. deactivated, no Workflow Captain data in public responses | **PASS** | SAME / (89810 bytes) SAME /?p=198 (101235 bytes) SAME /?page_id=9 (78962 bytes) SAME /?post_type=product&p=191 (100796 bytes) SAME /sitemap_index.xml (2441 b... |
 | h3-20 | PHP error log has no notice, warning or error from Workflow Captain during the whole run (WP_DEBUG) | **PASS** | 142 lines in debug.log, none from the plugin |
+
+## Ergebnisse Staging (`bin/e2e/staging/`)
+
+Vollständige Ergebnisse aller Läufe unter `/home/user/wp-e2e/logs-staging/hpos-yes|hpos-no/` (nicht im Repository). Hier die
+neuen Prüfungen: Einrichtung, Checkout (HPOS an), Yoast mit JS (HPOS an), Mindestversionen (Zusammenfassung oben).
+
+| ID | Prüfung | Ergebnis | Detail |
+| --- | --- | --- | --- |
+| st1 | release ZIP installed with --activate and updated with --force (as in the workflow) | **PASS** | Success: Installed 1 of 1 plugins. |
+| st2 | release ZIP contains only shipped files (export-ignore) | **PASS** |  assets languages readme.txt src uninstall.php workflow-captain.php  |
+| st3 | versions: WordPress / WooCommerce / Yoast SEO / PHP | **PASS** | 7.1.4 / 11.3.0 / 28.8 / PHP 8.3.6 |
+| st4 | HPOS setting as in the workflow matrix | **PASS** | woocommerce_custom_orders_table_enabled=yes |
+| co0 | setup: WooCommerce created the checkout page with the Checkout block; bank transfer and cash on delivery enabled; three workflows published | **PASS** | {"workflows":{"created":62,"status":63,"paid":64},"product":208,"blocks_page":8,"classic_page":210,"cart_page":7,"theme":"twentytwentyfive"} |
+| co-blocks-bacs-0 | Checkout block, bank transfer: order placed (order-received page), manager sets "processing" on the order screen | **PASS** | {"order":"211","hpos":true,"saved":true} |
+| co-blocks-bacs-1 | blocks-bacs: order placed in the browser, payment method bacs, created via store-api | **PASS** | {"status":"processing","method":"bacs","via":"store-api","total":"39.90"} |
+| co-blocks-bacs-2 | blocks-bacs: events woocommerce.order.created, woocommerce.order.status_changed:on-hold, woocommerce.order.status_changed:processing (each once) | **PASS** | {"events":["woocommerce.order.created","woocommerce.order.status_changed:pending","woocommerce.order.status_changed:on-hold","woocommerce.order.status_change... |
+| co-blocks-bacs-3 | blocks-bacs: order.created envelope valid, with status, items, total and channel of the placed order, no customer data | **PASS** | {"status":"pending","currency":"EUR","total_minor":3990,"item_count":1,"created_via":"store-api","customer_user_id":null} |
+| co-blocks-bacs-4 | blocks-bacs: every expected event processed to done | **PASS** | [] |
+| co-blocks-bacs-5 | blocks-bacs: runs succeeded (created 1, status 2, paid 0) | **PASS** | {"created":["succeeded"],"status":["succeeded","succeeded"],"paid":[]} |
+| co-blocks-cod-1 | blocks-cod: order placed in the browser, payment method cod, created via store-api | **PASS** | {"status":"processing","method":"cod","via":"store-api","total":"39.90"} |
+| co-blocks-cod-2 | blocks-cod: events woocommerce.order.created, woocommerce.order.status_changed:processing (each once) | **PASS** | {"events":["woocommerce.order.created","woocommerce.order.status_changed:pending","woocommerce.order.status_changed:processing"],"discarded_on_reread":["wooc... |
+| co-blocks-cod-3 | blocks-cod: order.created envelope valid, with status, items, total and channel of the placed order, no customer data | **PASS** | {"status":"pending","currency":"EUR","total_minor":3990,"item_count":1,"created_via":"store-api","customer_user_id":null} |
+| co-blocks-cod-4 | blocks-cod: every expected event processed to done | **PASS** | [] |
+| co-blocks-cod-5 | blocks-cod: runs succeeded (created 1, status 1, paid 0) | **PASS** | {"created":["succeeded"],"status":["succeeded"],"paid":[]} |
+| co-blocks-free-1 | blocks-free: order placed in the browser, payment method , created via store-api | **PASS** | {"status":"processing","method":"","via":"store-api","total":"0.00"} |
+| co-blocks-free-2 | blocks-free: events woocommerce.order.created, woocommerce.order.status_changed:processing, woocommerce.order.paid (each once) | **PASS** | {"events":["woocommerce.order.created","woocommerce.order.status_changed:pending","woocommerce.order.status_changed:processing","woocommerce.order.paid"],"di... |
+| co-blocks-free-3 | blocks-free: order.created envelope valid, with status, items, total and channel of the placed order, no customer data | **PASS** | {"status":"pending","currency":"EUR","total_minor":0,"item_count":1,"created_via":"store-api","customer_user_id":null} |
+| co-blocks-free-4 | blocks-free: every expected event processed to done | **PASS** | [] |
+| co-blocks-free-5 | blocks-free: runs succeeded (created 1, status 1, paid 1) | **PASS** | {"created":["succeeded"],"status":["succeeded"],"paid":["succeeded"]} |
+| co-blocks-free-6 | blocks-free: paid workflow mail with rendered subject, tag set | **PASS** | Checkout 213 bezahlt: 0 EUR () |
+| co-classic-bacs-1 | classic-bacs: order placed in the browser, payment method bacs, created via checkout | **PASS** | {"status":"on-hold","method":"bacs","via":"checkout","total":"39.90"} |
+| co-classic-bacs-2 | classic-bacs: events woocommerce.order.created, woocommerce.order.status_changed:on-hold (each once) | **PASS** | {"events":["woocommerce.order.created","woocommerce.order.status_changed:on-hold"],"discarded_on_reread":[]} |
+| co-classic-bacs-3 | classic-bacs: order.created envelope valid, with status, items, total and channel of the placed order, no customer data | **PASS** | {"status":"pending","currency":"EUR","total_minor":3990,"item_count":1,"created_via":"checkout","customer_user_id":null} |
+| co-classic-bacs-4 | classic-bacs: every expected event processed to done | **PASS** | [] |
+| co-classic-bacs-5 | classic-bacs: runs succeeded (created 1, status 1, paid 0) | **PASS** | {"created":["succeeded"],"status":["succeeded"],"paid":[]} |
+| co-draft | abandoned block checkout (address typed, order not placed): no WooCommerce event, so no run (WooCommerce 11.3 keeps no draft order for it) | **PASS** | {"new_events":[],"draft_orders":[]} |
+| co-pii | no personal data typed into the block and classic checkout (e-mail, names, address, phone, city, postcode) in any workflow_captain_* table | **PASS** | 600955 bytes searched |
+| co-js | no JS error or failed request of Workflow Captain on cart, checkout, order-received and the order screen | **PASS** |  |
+| s13 | block editor with the built Yoast JS: Yoast sidebar opens with focus keyphrase, SEO analysis and readability; editor store holds the saved Yoast fields | **PASS** | {"sidebar0":{"keyphraseField":"testfokus","seoAnalysis":true,"readability":true},"store0":{"keyphrase":"testfokus","title":"SEO Titel SEO Block %%sep%% %%sit... |
+| s14 | block editor after the workflow run: the Yoast sidebar shows the same focus keyphrase, SEO title and description as before | **PASS** | {"sidebar1":{"keyphraseField":"testfokus","seoAnalysis":true,"readability":true},"store1":{"keyphrase":"testfokus","title":"SEO Titel SEO Block %%sep%% %%sit... |
+| s15 | classic editor with the built Yoast JS: metabox shows focus keyphrase, SEO analysis and the snippet with the saved description | **PASS** | {"keyphrase":"testfokus","analysis":true,"preview":true} |
+| s16 | classic editor after the workflow run: the metabox shows the same focus keyphrase, analysis and snippet | **PASS** | {"keyphrase":"testfokus","analysis":true,"preview":true} |
+| s17 | no uncaught JS error at all in the block editor and the classic editor with Yoast, WooCommerce and Workflow Captain active | **PASS** |  |

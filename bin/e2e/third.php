@@ -14,14 +14,14 @@
 defined( 'ABSPATH' ) || exit;
 
 if ( ! getenv( 'E2E_RESULTS' ) ) {
-	putenv( 'E2E_RESULTS=/home/user/wp-e2e/logs/results-3.jsonl' );
+	putenv( 'E2E_RESULTS=' . ( getenv( 'E2E_LOGS' ) ?: '/home/user/wp-e2e/logs' ) . '/results-3.jsonl' );
 }
 define( 'E2E_LIB_ONLY', true );
 require __DIR__ . '/checks.php';
 
 use WorkflowCaptain\Plugin;
 
-const E3_LOGS = '/home/user/wp-e2e/logs';
+define( 'E3_LOGS', getenv( 'E2E_LOGS' ) ?: '/home/user/wp-e2e/logs' );
 
 $e3_section = $args[0] ?? '';
 $e3_param   = $args[1] ?? '';

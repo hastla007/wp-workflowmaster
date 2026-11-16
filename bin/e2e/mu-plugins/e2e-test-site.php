@@ -13,7 +13,7 @@ add_filter(
 			update_option( 'e2e_mail_fail', array( $fail[0], (int) $fail[1] - 1 ), false );
 			return false;
 		}
-		$file = getenv( 'E2E_MAIL_FILE' ) ?: '/home/user/wp-e2e/logs/mail.jsonl';
+		$file = getenv( 'E2E_MAIL_FILE' ) ?: ( defined( 'E2E_MAIL_FILE' ) ? E2E_MAIL_FILE : '/home/user/wp-e2e/logs/mail.jsonl' );
 		$row  = array(
 			'time'    => gmdate( 'c' ),
 			'to'      => $atts['to'],

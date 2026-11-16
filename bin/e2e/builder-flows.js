@@ -21,7 +21,7 @@ const SHOTS = process.env.E2E_SHOTS || process.cwd();
 const RESULTS = process.env.E2E_RESULTS || '';
 const ROOT = process.env.E2E_ROOT || '/home/user/wp-e2e';
 const OPS = path.join( __dirname, 'ops.php' );
-const MAILS = path.join( ROOT, 'logs/mail.jsonl' );
+const MAILS = process.env.E2E_MAIL_FILE || path.join( ROOT, 'logs/mail.jsonl' );
 const A = '/wp-admin/admin.php?page=';
 
 let failed = 0;
