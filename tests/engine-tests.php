@@ -518,6 +518,21 @@ drain( $e );
 check( 'WF-CORE-05 serialisation: after the first run the second follows', 3 === count( array_filter( $e->store->find_runs( array(), 10, 0 ), fn( $r ) => EngineStore::RUN_SUCCEEDED === $r['state'] ) ) );
 check( 'graph: invalid serialize mode refused', in_array( 'node:t:invalid_serialize', Graph::violations( array( 'nodes' => array( array( 'id' => 't', 'type' => 'trigger', 'event' => 'pass.order.paid', 'serialize' => 'order' ), array( 'id' => 'e', 'type' => 'end' ) ), 'edges' => array( array( 'from' => 't', 'to' => 'e' ) ) ), $e->actions ), true ) );
 
+// Conflicts of parallel runs (konzept 15.3): tags "last writer wins" without duplicates, notes are only appended.
+$e  = engine_site();
+$at = $e->clock->mysql();
+$e->store->set_tag( 'pass', 'ticket', '77', 'vip', 1, $at );
+$e->store->set_tag( 'pass', 'ticket', '77', 'vip', 2, $at );
+check( 'WF-CORE-05 conflict: the same tag from two workflows is stored once', array( 'vip' ) === $e->store->tags_for( 'pass', 'ticket', '77' ) );
+$e->store->remove_tag( 'pass', 'ticket', '77', 'vip' );
+$removed = $e->store->tags_for( 'pass', 'ticket', '77' );
+$e->store->set_tag( 'pass', 'ticket', '77', 'vip', 1, $at );
+check( 'WF-CORE-05 conflict: remove then set, the last writer wins', array() === $removed && array( 'vip' ) === $e->store->tags_for( 'pass', 'ticket', '77' ) );
+$e->store->add_note( str_repeat( 'a', 64 ), 'pass', 'ticket', '77', 'one', 1, 1, $at );
+$e->store->add_note( str_repeat( 'b', 64 ), 'pass', 'ticket', '77', 'two', 2, 2, $at );
+$e->store->add_note( str_repeat( 'a', 64 ), 'pass', 'ticket', '77', 'one again', 1, 1, $at );
+check( 'WF-CORE-05 conflict: notes of two runs are appended, a repeated step adds nothing', array( 'one', 'two' ) === array_column( $e->store->notes_for( 'pass', 'ticket', '77' ), 'note' ) );
+
 // ----- WF-CORE-06: heartbeat and hanging work -------------------------------------------------------------------
 
 $e    = engine_site();
@@ -655,6 +670,53 @@ use WorkflowCaptain\Install;
 check( 'schema: same version is current', Install::SCHEMA_CURRENT === Install::schema_state( '3', '3' ) );
 check( 'schema: missing or older version needs an upgrade', Install::SCHEMA_UPGRADE === Install::schema_state( false, '3' ) && Install::SCHEMA_UPGRADE === Install::schema_state( '2', '3' ) );
 check( 'schema: newer stored version is a downgrade', Install::SCHEMA_NEWER === Install::schema_state( '4', '3' ) );
+
+// WF-CORE-07: versioned upgrade with lock, resumption and data steps (Migrator), on an in-memory option table.
+function migrator_case( array $opts, array $migrations, int $now, ?callable $schema = null ): array {
+	$log   = array();
+	$steps = array();
+	foreach ( $migrations as $version => $step ) {
+		$steps[ $version ] = function () use ( $step, &$log ) { $log[] = 'step' . $step; };
+	}
+	$m = new \WorkflowCaptain\Migrator(
+		array(
+			'get'    => function ( $n, $d = false ) use ( &$opts ) { return $opts[ $n ] ?? $d; },
+			'add'    => function ( $n, $v ) use ( &$opts ) { if ( isset( $opts[ $n ] ) ) { return false; } $opts[ $n ] = $v; return true; },
+			'update' => function ( $n, $v ) use ( &$opts, &$log ) { $opts[ $n ] = $v; $log[] = $n . '=' . $v; return true; },
+			'delete' => function ( $n ) use ( &$opts ) { unset( $opts[ $n ] ); return true; },
+		),
+		$schema ?? function () use ( &$log ) { $log[] = 'schema'; },
+		$steps,
+		$now
+	);
+	try {
+		$r = $m->run( '6' );
+	} catch ( \RuntimeException $e ) {
+		$r = array( 'state' => 'exception' );
+	}
+	return array( $r, $opts, $log );
+}
+$lock = \WorkflowCaptain\Migrator::LOCK_OPTION;
+$db   = Install::DB_OPTION;
+$steps = array( 3 => 3, 5 => 5, 6 => 6 );
+[ $r, $o, $l ] = migrator_case( array( $db => '4' ), $steps, 1000 );
+check( 'WF-CORE-07 upgrade: tables first, then only the data steps above the stored version, version moves step by step', 'done' === $r['state'] && array( 'schema', 'step5', $db . '=5', 'step6', $db . '=6', $db . '=6' ) === $l && array( 5, 6 ) === $r['steps'] );
+check( 'WF-CORE-07 upgrade: lock released afterwards', ! isset( $o[ $lock ] ) && '6' === $o[ $db ] );
+[ $r, $o, $l ] = migrator_case( array(), $steps, 1000 );
+check( 'WF-CORE-07 fresh installation: tables only, no data step', 'done' === $r['state'] && array( 'schema', $db . '=6' ) === $l );
+[ $r, $o, $l ] = migrator_case( array( $db => '4', $lock => '900' ), $steps, 1000 );
+check( 'WF-CORE-07 a second request while an upgrade runs changes nothing and reports busy', 'busy' === $r['state'] && array() === $l && '900' === $o[ $lock ] && '4' === $o[ $db ] );
+[ $r, $o, $l ] = migrator_case( array( $db => '5', $lock => '100' ), $steps, 100 + \WorkflowCaptain\Migrator::STALE_SECONDS );
+check( 'WF-CORE-07 an upgrade that stopped half-way is taken over and resumed after the last finished step', 'done' === $r['state'] && $r['resumed'] && array( 'schema' ) === array_slice( $l, 1, 1 ) && in_array( 'step6', $l, true ) && ! in_array( 'step5', $l, true ) && ! isset( $o[ $lock ] ) );
+[ $r, $o, $l ] = migrator_case( array( $db => '7' ), $steps, 1000 );
+check( 'WF-CORE-07 downgrade: newer stored schema is left alone', 'newer' === $r['state'] && array() === $l && '7' === $o[ $db ] );
+[ $r, $o, $l ] = migrator_case( array( $db => '6' ), $steps, 1000 );
+check( 'WF-CORE-07 current schema: nothing runs', 'current' === $r['state'] && array() === $l );
+[ $r, $o, $l ] = migrator_case( array( $db => '4' ), $steps, 1000, function () { throw new \RuntimeException( 'disk full' ); } );
+check( 'WF-CORE-07 a failed upgrade keeps the old version and frees the lock for the next request', 'exception' === $r['state'] && '4' === $o[ $db ] && ! isset( $o[ $lock ] ) );
+check( 'WF-CORE-07 pending steps are sorted and bounded', array( 5, 6 ) === \WorkflowCaptain\Migrator::pending_steps( 4, 6, array( 7, 6, 2, 5 ) ) );
+check( 'WF-CORE-07 lock state for diagnostics', 'free' === \WorkflowCaptain\Migrator::lock_state( false, 1000 ) && 'held' === \WorkflowCaptain\Migrator::lock_state( '900', 1000 ) && 'stale' === \WorkflowCaptain\Migrator::lock_state( '1', 1000 ) );
+check( 'WF-CORE-07 the shipped data steps lead at most to the current schema version', array() === array_filter( array_keys( Install::migrations() ), fn( $v ) => (int) $v > (int) WORKFLOW_CAPTAIN_DB_VERSION ) );
 
 // ----- Site Health ---------------------------------------------------------------------------------------------
 

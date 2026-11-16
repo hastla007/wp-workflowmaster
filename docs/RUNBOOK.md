@@ -22,6 +22,7 @@ Stand: Plugin 0.2.x. Aufgabe WF-CORE-10. Für Betreiber und Support.
 | Lauf pausiert – `provider_contract_changed` | **Läufe** | Der Provider einer Aktion hat seit dem Veröffentlichen eine neue MAJOR-Version seines Vertrags (oder fehlt). Workflow prüfen, neu veröffentlichen (neue Läufe nutzen den neuen Vertrag), alte Läufe abbrechen oder nach Rückkehr zur alten Version fortsetzen. |
 | Viele Ereignisse fehlgeschlagen oder pausiert nach einer Störung | **Ereignisse** | `wp workflow-captain reconcile` zeigt, welche beim Provider noch stimmen und welche sich geändert haben; `--requeue` reiht nur die stimmigen wieder ein. Geänderte von Hand prüfen. |
 | Hängende Schritte | Website-Zustand / Einstellungen → Status | Ein Worker starb und kein anderer lief seitdem. Sobald der Cron läuft, übernimmt der nächste Worker. Ist eine Nachricht betroffen, entscheidet ein Mensch (siehe `unclear_outcome`). |
+| Aktualisierung abgebrochen (Zeitlimit, Fehler beim Update) | Einstellungen → Status: „Aktualisierung der Datenbank: abgebrochen“; Worker wartet | Nichts löschen. Nach 10 Minuten übernimmt der nächste Aufruf im Admin, per Cron oder `wp workflow-captain migrate` die Aktualisierung und wiederholt sie ab dem letzten fertigen Schritt (Tabellen per `dbDelta`, Datenschritte wiederholbar). Das Protokoll in Einstellungen → Status nennt „Abgebrochene Datenbank-Aktualisierung wiederholt“. Meldet `migrate` „Another request is upgrading“, läuft gerade eine andere Aktualisierung. |
 | Nach einem Downgrade | Hinweis „Datenbank stammt von einer neueren Version“ | Neuere Version wieder installieren. Das ältere Plugin ändert nichts am Schema und verarbeitet nichts. |
 
 ## Wiederherstellung aus einem Backup
@@ -31,6 +32,10 @@ Stand: Plugin 0.2.x. Aufgabe WF-CORE-10. Für Betreiber und Support.
 2. `wp workflow-captain migrate` stellt das Schema her (nur aufwärts), `wp workflow-captain verify` meldet Läufe ohne Version, Schritte ohne Lauf und aktive Workflows ohne Version.
 3. Läufe, die beim Backup offen waren, laufen weiter. Schritte, deren Nachricht schon vor dem Backup hinausging, erkennt das Plugin nicht. Bei Zweifel die offenen Läufe in **Läufe** prüfen und abbrechen.
 4. Ereignisse, die zwischen Backup und Wiederherstellung entstanden, fehlen. Die Kerne wiederholen nicht für die Suite (R-7.3).
+
+## Protokoll der Eingriffe
+
+Einstellungen → Status zeigt die letzten 50 Einträge (Option `workflow_captain_audit`): Rechte, Notfallpause, Einstellungen, Freigabe eigener Connectoren, erneut eingereihte Ereignisse (Admin, `requeue`, `reconcile --requeue`), abgebrochene Läufe, fortgesetzte Schritte, Veröffentlichen/Archivieren/Wiederherstellen/Pausieren/Fortsetzen von Workflows und wiederholte Datenbank-Aktualisierungen. Gespeichert werden Benutzer-ID, Zeit und Nummern, nie Inhalte von Ereignissen.
 
 ## Grenzen, die man kennen muss
 

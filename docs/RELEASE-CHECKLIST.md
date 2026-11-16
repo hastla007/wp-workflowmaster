@@ -27,4 +27,5 @@ Stand: Plugin 0.2.x. Aufgaben WF-INT-18 (Teil Kern) und WF-SEO-10. Abgehakt wird
 ## Inhalt
 
 - [ ] `readme.txt`: Version, „Tested up to“, Changelog, Datenschutzabschnitt
+- [ ] Bilder für WordPress.org in `.wordpress-org/` (nicht im ZIP, `export-ignore`): `screenshot-N.png` passend zu „== Screenshots ==“ in `readme.txt`, 1280 × 800 bei Pixelfaktor 1; Banner `banner-772x250.png` und `banner-1544x500.png`, Icon `icon-128x128.png` und `icon-256x256.png` (fehlen noch, brauchen ein Motiv des Inhabers). Die Bilder lädt man ins `assets/`-Verzeichnis des SVN von WordPress.org, nicht in `trunk/`.
 - [ ] `docs/TESTMATRIX.md` und `docs/KOMPATIBILITAET.md` auf den Stand gebracht

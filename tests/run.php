@@ -222,6 +222,7 @@ function get_site_option( $o, $d = false ) { return $GLOBALS["network"]; }
 function switch_to_blog( $id ) { $GLOBALS["blog"] = $id; $GLOBALS["wpdb"]->prefix = "wp_" . $id . "_"; }
 function restore_current_blog() { $GLOBALS["blog"] = 1; $GLOBALS["wpdb"]->prefix = "wp_"; }
 function update_option( $o, $v, $a = null ) { $GLOBALS["log"][] = "option:" . $o . "@" . $GLOBALS["blog"]; }
+function get_option( $o, $d = false ) { return $d; } function add_option( $o, $v = "", $x = "", $a = null ) { return true; } function delete_option( $o ) { return true; }
 function get_role( $r ) { return new Stub_Role(); }
 function add_filter( ...$a ) {} function did_action( $h ) { return 1; } function doing_action( $h ) { return false; }
 function wp_next_scheduled( $h ) { return false; }

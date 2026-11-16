@@ -1,6 +1,6 @@
 # Anbieterübersicht
 
-Stand: 16.11.2026, Plugin 0.2.x, Spezifikation 1.0.0-draft.6. Für Betreiber, Vertrieb und Support. Technische Einzelheiten: [`SPEC-suite-events.md`](SPEC-suite-events.md), Versionen: [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md), Ereignisse und Felder: [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json).
+Stand: 16.11.2026 (Abend), Plugin 0.2.x, Workflow Captain Pro 0.1.0 (Entwicklungsstand), Spezifikation 1.0.0-draft.6. Für Betreiber, Vertrieb und Support. Technische Einzelheiten: [`SPEC-suite-events.md`](SPEC-suite-events.md), Versionen: [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md), Ereignisse und Felder: [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json).
 
 ## Wer liefert was
 
@@ -8,15 +8,16 @@ Ein **Anbieter** (Provider) ist ein Plugin, dessen Ereignisse Workflows auslöse
 
 | Anbieter | Auslöser (Ereignistypen) | Befehle für Workflows | Adapter | Stand |
 |---|---|---|---|---|
-| Workflow Captain (eingebaut) | – | Nachricht an Betreiber, Nachricht an Benutzer, Markierung setzen und entfernen, Notiz anlegen | im Kern | gebaut |
+| Workflow Captain (eingebaut) | Zeitplan (`workflow.schedule.due`: täglich, wöchentlich, monatlich in der Zeitzone der Website; ein verpasster Termin wird höchstens einmal nachgeholt) | Nachricht an Betreiber, Nachricht an Benutzer, Markierung setzen und entfernen, Notiz anlegen | im Kern | gebaut |
+| Eingehende Auslöser | `workflow.inbound.<auslöser>` mit typisierten Feldern, die ein Add-on am Filter `workflow_captain_inbound_triggers_v1` anmeldet; der Kern prüft Namen, Typen und verbotene Felder noch einmal | – | im Kern (`src/Engine/InboundTriggers.php`); die Annahme von außen (signierte Webhooks, n8n) bringt Workflow Captain Pro | gebaut |
 | WordPress | 2: Benutzer registriert (`wordpress.user.registered`), Beitrag veröffentlicht (`wordpress.post.published`, nur öffentliche Inhaltstypen) | – | im Kern (`src/Providers/WordPressAdapter.php`), ohne Lizenz, ab WordPress 6.4 | gebaut (F-20) |
 | WooCommerce | 5: Bestellung angelegt, bezahlt, Statuswechsel, erstattet, storniert (`woocommerce.order.*`); nur Status, Beträge in kleinster Einheit, Währung, Kennungen, nie Adressen, E-Mail, Namen, IP, Kundennotiz oder Kupon-Codes | – | im Kern (`src/Providers/WooCommerceAdapter.php`), ohne Lizenz, nur wenn WooCommerce 8.2 oder neuer aktiv ist | gebaut (F-20) |
-| Pass Captain | 13: Bestellung bezahlt, Tickets ausgestellt, storniert, erstattet, Erstattung abgeschlossen oder abgelehnt, Ticket widerrufen, Ein- und Auslass, Termin verschoben oder abgesagt, Veranstaltung abgesagt, Rechnung erstellt | Lesen (8.1) | Workflow Captain Pro | Adapter offen |
-| Voucher Captain | 16: Gutscheine ausgestellt, zugestellt, Zustellung fehlgeschlagen, Rückläufer, eingelöst, Reservierung, Freigabe, Erstattung, Storno, abgelaufen, neu ausgestellt, ungültig, reaktiviert, Guthaben, Aufladung | Lesen; Gutschein ausstellen, sperren, verlängern, gutschreiben (8.1, braucht eine neue Version von Voucher Captain) | Workflow Captain Pro | Adapter und Befehle offen |
-| Affiliate Captain | 21: Partner angelegt, Statuswechsel, geworben, gelöscht, Verkauf zugeordnet, Provisionen (angelegt, geprüft, freigegeben, abgelehnt, bezahlt, angepasst, erneut geprüft), Auszahlungen, Korrekturen, Werbemittel, Code-Anfragen | Lesen | Workflow Captain Pro | Adapter offen |
-| Lizenzserver | 3: Lizenz ausgestellt, Statuswechsel, Plan gewechselt | Lesen | Workflow Captain Pro | Adapter offen; Vertragskonstante fehlt im Lizenzserver (F-03) |
+| Pass Captain | 13: Bestellung bezahlt, Tickets ausgestellt, storniert, erstattet, Erstattung abgeschlossen oder abgelehnt, Ticket widerrufen, Ein- und Auslass, Termin verschoben oder abgesagt, Veranstaltung abgesagt, Rechnung erstellt | Lesen (8.1) | Workflow Captain Pro (`PassAdapter`), dazu Pass Captain Pro | gebaut (Entwicklungsstand), Vertrag ab 1.1.0, Lesefassade ab 1.2.0 |
+| Voucher Captain | 16: Gutscheine ausgestellt, zugestellt, Zustellung fehlgeschlagen, Rückläufer, eingelöst, Reservierung, Freigabe, Erstattung, Storno, abgelaufen, neu ausgestellt, ungültig, reaktiviert, Guthaben, Aufladung | Lesen; Gutschein ausstellen, sperren, verlängern, gutschreiben (8.1, braucht eine neue Version von Voucher Captain) | Workflow Captain Pro (`VoucherAdapter`), dazu Voucher Captain Pro | Adapter gebaut (Entwicklungsstand); Einstiegspunkte der Befehle seit Voucher Captain 1.3.0 (Vertrag 1.3.0), die Workflow-Aktionen dafür fehlen in Pro noch |
+| Affiliate Captain | 21: Partner angelegt, Statuswechsel, geworben, gelöscht, Verkauf zugeordnet, Provisionen (angelegt, geprüft, freigegeben, abgelehnt, bezahlt, angepasst, erneut geprüft), Auszahlungen, Korrekturen, Werbemittel, Code-Anfragen | Lesen | Workflow Captain Pro (`AffiliateAdapter`), dazu Affiliate Captain Pro | gebaut (Entwicklungsstand), Vertrag ab 1.4.0 |
+| Lizenzserver | 3: Lizenz ausgestellt, Statuswechsel, Plan gewechselt | Lesen | Workflow Captain Pro (`LicenseAdapter`), nur im Shop des Anbieters | gebaut (Entwicklungsstand); `WPLC_CONTRACT_VERSION` 1.0.0 und `LicenseReader` auf einem Branch des Lizenzservers |
 | Form Captain, Review Captain, Course Captain | in Version 1 keine (4.6) | – | – | später |
-| Eigene Connectoren und Kundenconnectoren | eigene Ereignisse nach dem öffentlichen Vertrag | eigene | eigene Projektprodukte mit eigener Lizenz (Entscheidung 17) | Vertrag in [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md) |
+| Eigene Connectoren und Kundenconnectoren | eigene Ereignisse nach dem öffentlichen Vertrag | eigene | eigene Plugins, die sich am Kern anmelden; zur Laufzeit braucht es Workflow Captain Pro (Filter `workflow_captain_connector_runtime_allowed_v1`, F-18a); die eigene Lizenz prüft jeder Connector selbst (Entscheidung 17) | gebaut; Vertrag in [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md), Freigabe je Connector unter „Eigene Connectoren“ |
 
 ## Was der Betreiber sieht
 
@@ -30,4 +31,4 @@ Ereignisse enthalten Kennungen, Status, Beträge und Zeitpunkte, nie Gutschein-,
 
 ## Mindeststände der Kerne
 
-Ein Adapter meldet sich nur an, wenn der Kern die nötige Vertragsversion hat. Die heutigen Stände auf `main` von Pass Captain und Voucher Captain genügen dafür **nicht**; Einzelheiten in [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md).
+Ein Adapter meldet sich nur an, wenn der Kern die nötige Vertragsversion hat. Die Stände auf `main` von Pass Captain und Voucher Captain genügen dafür **nicht**, die Branches `claude/plugin-todo-liste-2a83v4` (Pass 1.6.0, Voucher 1.3.0, Affiliate 0.15.0) genügen; Einzelheiten in [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md).

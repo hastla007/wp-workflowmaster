@@ -11,6 +11,19 @@ Stand: Plugin 0.2.0, Spezifikation [`SPEC-suite-events.md`](SPEC-suite-events.md
 | Engine | `WorkflowCaptain\Engine\Engine` | startet Läufe veröffentlichter Workflows und führt ihre Schritte aus |
 | Aktion | `WorkflowCaptain\Engine\Action` | ein Befehl, den ein Schritt ausführt; nur Befehle aus Abschnitt 8.1 der Spezifikation |
 
+## 1a. Welche Adapter es gibt
+
+| Quelle | Produkt (`source.product`) | Wo der Adapter liegt | Voraussetzung |
+|---|---|---|---|
+| WordPress | `wordpress` | Kern, `src/Providers/WordPressAdapter.php` | WordPress ≥ 6.4 |
+| WooCommerce | `woocommerce` | Kern, `src/Providers/WooCommerceAdapter.php` | WooCommerce ≥ 8.2 aktiv (HPOS und klassisch) |
+| Zeitplan | `workflow-captain` | Kern, `src/Providers/ScheduleAdapter.php`, `src/Engine/Schedule.php` | – |
+| Eingehende Auslöser | `workflow-captain` (`workflow.inbound.*`) | Kern, `src/Engine/InboundTriggers.php`; die Annahme (REST-Route, Signatur) liegt im Add-on | ein Add-on meldet Auslöser an |
+| Pass, Voucher, Affiliate Captain, Lizenzserver | `pass-captain`, `voucher-captain`, `affiliate-captain`, `wp-license` | Workflow Captain Pro (`src/Suite/`) | Vertragsversionen in [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md); je Produkt dessen Pro-Add-on (Spezifikation 10.1) |
+| Eigene Connectoren | eigenes Präfix `x…` | eigenes Plugin nach [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md), Beispiel `examples/starter-connector/` | Laufzeit durch Workflow Captain Pro (Filter `workflow_captain_connector_runtime_allowed_v1`, F-18a); Freigabe unter „Eigene Connectoren“; die eigene Lizenz prüft der Connector selbst |
+
+Der Kern kennt keine Lizenz. Fehlt ein Adapter, bleiben seine offenen Ereignisse als `paused` (`adapter_unregistered`) liegen und werden nicht von selbst nachgeholt (R-10.8).
+
 ## 2. Einen Adapter schreiben
 
 ```php
@@ -81,7 +94,7 @@ add_action( 'workflow_captain_actions_v1', function ( $registry ) {
 
 ## 4. Workflow-Format
 
-Bis zum visuellen Editor werden Workflows als JSON bearbeitet (Admin „Workflows“). Format und Regeln stehen in `src/Engine/Graph.php`; Knoten sind `trigger`, `condition`, `action`, `delay` und `end`. Bedingungen: `src/Engine/Conditions.php`. Platzhalter in Texten: `{{type}}`, `{{occurred_at}}`, `{{subject.type}}`, `{{subject.id}}`, `{{source.product}}`, `{{data.<feld>}}`.
+Workflows entstehen im visuellen Editor (Admin „Workflows“); darunter steht dasselbe JSON, das Export und Import nutzen. Format und Regeln stehen in `src/Engine/Graph.php`; Knoten sind `trigger`, `condition`, `action`, `delay` und `end`. Bedingungen: `src/Engine/Conditions.php`. Platzhalter in Texten: `{{type}}`, `{{occurred_at}}`, `{{subject.type}}`, `{{subject.id}}`, `{{source.product}}`, `{{data.<feld>}}`. Am Auslöser: `schedule` (für `workflow.schedule.due`) und `serialize` (`subject` oder `actor`: je Objekt oder Benutzer höchstens ein Lauf dieses Workflows gleichzeitig, die übrigen warten in Startreihenfolge; ohne `serialize` gibt es keine Reihenfolge, Spezifikation 7.5).
 
 ## 5. Hooks
 
@@ -143,6 +156,22 @@ Export und Löschung persönlicher Daten über die Werkzeuge von WordPress erfas
 
 ## 7. Betrieb
 
-- `wp workflow-captain status|process|requeue|migrate|diagnostics|verify`
+- `wp workflow-captain status|process|requeue|reconcile|migrate|diagnostics|verify|secrets`
 - Auf schwach besuchten Websites einen System-Cron einrichten, der `wp workflow-captain process` jede Minute aufruft.
-- Der Diagnose-Export (Seite „Ereignisse“) enthält keine persönlichen Daten und keine Geheimnisse.
+- Schema und Daten werden versioniert aktualisiert (`src/Migrator.php`): eine Aktualisierung je Website zur Zeit (Sperre `workflow_captain_upgrade_lock`), eine abgebrochene wird nach 10 Minuten übernommen und ab dem letzten fertigen Schritt wiederholt; Datenschritte stehen in `Install::migrations()` und müssen wiederholbar sein und dürfen keine Historie löschen. Solange das Schema nicht aktuell ist, wartet der Worker.
+- Eingriffe (Wiedereinreihen, Abbrechen, Fortsetzen, Veröffentlichen, Pausieren, Archivieren) stehen im Protokoll (`WorkflowCaptain\Audit`, Einstellungen → Status); Add-ons schreiben mit `Audit::record()` und beschriften mit `workflow_captain_audit_labels_v1`.
+
+### Support-Diagnose
+
+Der Diagnose-Export (Seite „Ereignisse“ → „Diagnose herunterladen“ oder `wp workflow-captain diagnostics`) ist eine JSON-Datei ohne personenbezogene Daten und ohne Geheimnisse. Sie enthält:
+
+| Teil | Inhalt |
+|---|---|
+| `environment` | Versionen von Plugin, Schema (gespeichert/erwartet, Zustand, Aktualisierungssperre), Adapter-Schnittstelle, WordPress, PHP; Multisite; WP-Cron abgeschaltet; nächster Worker-Lauf; Planung (Action Scheduler oder WP-Cron); eigener Schlüssel gesetzt (ja/nein); Notfallpause; Zahl und Codes abgelehnter Umschläge |
+| `adapters` | angemeldete Produkte und abgelehnte Adapter mit Grund |
+| `events`, `runs`, `workflows` | Anzahl je Zustand; Workflows gesamt, aktiv, pausiert |
+| `action_required_reasons` | Gründe der Läufe „Aktion erforderlich“ mit Anzahl (feste Codes) |
+| `stuck` | Schritte mit seit über einem Tag abgelaufener Sperrfrist, Läufe ohne offenen Schritt |
+| `consistency` | Zahl fehlender Verweise nach einer Wiederherstellung (Läufe ohne Version, Schritte ohne Lauf, aktive Workflows ohne Version); die Nummern nennt `wp workflow-captain verify` |
+
+Nie enthalten: Umschläge, Felder von Ereignissen, Benutzer-IDs, E-Mail-Adressen, Namen, Codes, Geheimnisse, URLs von Verbindungen. Der Website-Zustand von WordPress zeigt dieselben Prüfungen (Worker, Schema, Entscheidungen, Schlüssel, Notfallpause).

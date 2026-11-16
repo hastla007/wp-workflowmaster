@@ -129,6 +129,9 @@ final class WorkflowsPage {
 			}
 			'pause' === $do ? $workflows->pause( $id ) : $workflows->resume( $id );
 		}
+		if ( array() === $errors && in_array( $do, array( 'publish', 'archive', 'restore', 'pause', 'resume' ), true ) ) {
+			\WorkflowCaptain\Audit::record( 'workflow_' . $do, array( 'workflow' => $id ) );
+		}
 		set_transient( 'workflow_captain_notice_' . get_current_user_id(), array( 'do' => $do, 'errors' => array_slice( $errors, 0, 30 ) ), 60 );
 		wp_safe_redirect( self::url( self::SLUG_WORKFLOWS, array( 'edit' => $id ) ) );
 		exit;
@@ -180,6 +183,9 @@ final class WorkflowsPage {
 		} elseif ( 'continue' === $do ) {
 			$step = isset( $_POST['step'] ) ? absint( wp_unslash( $_POST['step'] ) ) : 0;
 			$ok   = $workflows->continue_step( $step, ! empty( $_POST['confirm'] ) );
+		}
+		if ( $ok ) {
+			\WorkflowCaptain\Audit::record( 'run_' . $do, array( 'run' => $run ) );
 		}
 		wp_safe_redirect( self::url( self::SLUG_RUNS, array( 'run' => $run, 'done' => $ok ? '1' : '0' ) ) );
 		exit;

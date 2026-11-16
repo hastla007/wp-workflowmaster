@@ -9,13 +9,14 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 define( 'WORKFLOW_CAPTAIN_PATH', __DIR__ . '/' );
 if ( ! defined( 'WORKFLOW_CAPTAIN_DB_VERSION' ) ) {
-	define( 'WORKFLOW_CAPTAIN_DB_VERSION', '3' );
+	define( 'WORKFLOW_CAPTAIN_DB_VERSION', '4' );
 }
 require_once __DIR__ . '/src/Store/EventStore.php';
 require_once __DIR__ . '/src/Store/WpdbEventStore.php';
 require_once __DIR__ . '/src/Engine/EngineStore.php';
 require_once __DIR__ . '/src/Engine/WpdbEngineStore.php';
 require_once __DIR__ . '/src/Install.php';
+require_once __DIR__ . '/src/Migrator.php';
 // Install::uninstall_site() ends with deactivate(), which clears the worker plan; the plugin's autoloader is not loaded here.
 require_once __DIR__ . '/src/Scheduler.php';
 

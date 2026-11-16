@@ -66,6 +66,7 @@ final class Command {
 	public function requeue( array $args ): void {
 		$id = (int) ( $args[0] ?? 0 );
 		if ( $id > 0 && Plugin::instance()->consumer()->requeue( $id ) ) {
+			\WorkflowCaptain\Audit::record( 'requeue', array( 'event' => $id, 'via' => 'wp-cli' ) );
 			\WP_CLI::success( 'Requeued.' );
 			return;
 		}
@@ -83,6 +84,9 @@ final class Command {
 	public function reconcile( array $args, array $assoc ): void {
 		$p = Plugin::instance();
 		$r = ( new \WorkflowCaptain\Consumer\Reconcile( $p->store(), $p->adapters(), $p->consumer() ) )->run( isset( $assoc['requeue'] ) );
+		if ( $r['requeued'] > 0 ) {
+			\WorkflowCaptain\Audit::record( 'requeue', array( 'events' => $r['requeued'], 'via' => 'wp-cli reconcile' ) );
+		}
 		\WP_CLI::line( sprintf( 'checked %d: %d still hold, %d changed at the provider, %d without adapter, %d errors, %d requeued', $r['checked'], $r['holds'], $r['changed'], $r['no_adapter'], $r['error'], $r['requeued'] ) );
 		if ( array() !== $r['changed_ids'] ) {
 			\WP_CLI::line( 'Changed at the provider (decide by hand): ' . implode( ', ', array_slice( $r['changed_ids'], 0, 50 ) ) );
@@ -94,10 +98,22 @@ final class Command {
 	 * Creates or updates the tables of this site.
 	 */
 	public function migrate(): void {
-		if ( Install::SCHEMA_NEWER === Install::schema_state( get_option( Install::DB_OPTION ), WORKFLOW_CAPTAIN_DB_VERSION ) ) {
+		$r = Install::upgrade();
+		if ( \WorkflowCaptain\Migrator::NEWER === $r['state'] ) {
 			\WP_CLI::error( 'The stored schema is newer than this plugin (downgrade). Install the newer version; nothing was changed.' );
 		}
-		Install::create_tables();
+		if ( \WorkflowCaptain\Migrator::BUSY === $r['state'] ) {
+			\WP_CLI::error( 'Another request is upgrading this site right now. Try again in a few minutes; an upgrade that stopped half-way is taken over after ' . \WorkflowCaptain\Migrator::STALE_SECONDS . ' seconds.' );
+		}
+		if ( \WorkflowCaptain\Migrator::CURRENT === $r['state'] ) {
+			Install::ensure_tables(); // Completes missing tables, e.g. after a partial restore.
+		}
+		if ( $r['resumed'] ) {
+			\WP_CLI::warning( 'An earlier upgrade had stopped half-way; it was repeated.' );
+		}
+		if ( array() !== $r['steps'] ) {
+			\WP_CLI::line( 'Data steps run: ' . implode( ', ', $r['steps'] ) );
+		}
 		\WP_CLI::success( 'Schema ' . WORKFLOW_CAPTAIN_DB_VERSION . ' in place.' );
 	}
 

@@ -39,6 +39,9 @@ final class EventsPage {
 		$id = isset( $_POST['event'] ) ? absint( wp_unslash( $_POST['event'] ) ) : 0;
 		check_admin_referer( 'workflow_captain_requeue_' . $id );
 		$ok = $id > 0 && $this->plugin->consumer()->requeue( $id );
+		if ( $ok ) {
+			\WorkflowCaptain\Audit::record( 'requeue', array( 'event' => $id ) );
+		}
 		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'requeued' => $ok ? '1' : '0' ), admin_url( 'admin.php' ) ) );
 		exit;
 	}
@@ -50,6 +53,9 @@ final class EventsPage {
 		check_admin_referer( 'workflow_captain_requeue_bulk' );
 		$ids   = isset( $_POST['events'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['events'] ) ) : array();
 		$count = $this->plugin->consumer()->requeue_many( $ids );
+		if ( $count > 0 ) {
+			\WorkflowCaptain\Audit::record( 'requeue', array( 'events' => $count ) );
+		}
 		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'requeued_many' => $count ), admin_url( 'admin.php' ) ) );
 		exit;
 	}
