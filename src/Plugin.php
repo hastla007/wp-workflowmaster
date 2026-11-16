@@ -26,6 +26,8 @@ final class Plugin {
 
 	private ?Consumer $consumer = null;
 
+	private ?\WorkflowCaptain\Engine\Engine $engine = null;
+
 	private AdapterRegistry $adapters;
 
 	public static function instance(): Plugin {
@@ -67,7 +69,7 @@ final class Plugin {
 			 * @since 0.1.0
 			 * @param Dispatcher $dispatcher
 			 */
-			$dispatcher = apply_filters( 'workflow_captain_dispatcher', new NullDispatcher() );
+			$dispatcher = apply_filters( 'workflow_captain_dispatcher', $this->engine() );
 			if ( ! $dispatcher instanceof Dispatcher ) {
 				$dispatcher = new NullDispatcher();
 			}
@@ -79,8 +81,41 @@ final class Plugin {
 				get_current_blog_id(),
 				array( self::class, 'record_rejection' )
 			);
+			if ( $dispatcher === $this->engine ) {
+				$this->engine->set_consumer( $this->consumer );
+			}
 		}
 		return $this->consumer;
+	}
+
+	/** The workflow engine of the free core with the actions of 8.1; add-ons add actions on "workflow_captain_actions_v1". */
+	public function engine(): \WorkflowCaptain\Engine\Engine {
+		if ( null === $this->engine ) {
+			global $wpdb;
+			$clock     = new Clock();
+			$store     = new \WorkflowCaptain\Engine\WpdbEngineStore( $wpdb );
+			$directory = new \WorkflowCaptain\Engine\WpDirectory();
+			$actions   = new \WorkflowCaptain\Engine\ActionRegistry();
+			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyAdmin( $directory ) );
+			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyUser( $directory ) );
+			$actions->add( new \WorkflowCaptain\Engine\Actions\Tag( $store, $clock ) );
+			$actions->add( new \WorkflowCaptain\Engine\Actions\Tag( $store, $clock, true ) );
+			$actions->add( new \WorkflowCaptain\Engine\Actions\Note( $store, $clock ) );
+			/**
+			 * Register further actions: $registry->add( new My_Action() ). Only commands of SPEC-suite-events 8.1.
+			 *
+			 * @since 0.2.0
+			 * @param \WorkflowCaptain\Engine\ActionRegistry $registry
+			 */
+			do_action( 'workflow_captain_actions_v1', $actions );
+			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, wp_timezone_string() );
+		}
+		return $this->engine;
+	}
+
+	public function workflows(): \WorkflowCaptain\Engine\Workflows {
+		$engine = $this->engine();
+		return new \WorkflowCaptain\Engine\Workflows( $engine->store(), $engine->actions(), new \WorkflowCaptain\Engine\WpDirectory(), new Clock() );
 	}
 
 	public function store(): \WorkflowCaptain\Store\EventStore {
@@ -124,6 +159,8 @@ final class Plugin {
 		 */
 		$limit = max( 1, min( 200, (int) apply_filters( 'workflow_captain_worker_batch', 25 ) ) );
 		$this->consumer()->process( $limit );
+		$this->consumer(); // Makes sure the engine knows the consumer before steps run (C-9).
+		$this->engine()->process( $limit );
 	}
 
 	public function run_maintenance(): void {

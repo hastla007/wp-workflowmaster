@@ -385,5 +385,7 @@ $a->consumer->capture( $a->adapter, checkin() );
 check( 'C-16 site B sees no event of site A', array() === $b->store->find( array(), 10, 0 ) && 1 === count( $a->store->find( array(), 10, 0 ) ) );
 check( 'C-16 the same event on site B is not a duplicate', Consumer::CAPTURED === $b->consumer->capture( $b->adapter, checkin() ) );
 
+require __DIR__ . '/engine-tests.php';
+
 echo "\n{$passed} passed, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );

@@ -3,7 +3,7 @@
  * Plugin Name:       Workflow Captain
  * Plugin URI:        https://github.com/hastla007/wp-workflowmaster
  * Description:       Automatisierungsbaukasten der Captain Suite. Diese Fassung enthält den Ereignis-Abnehmer (Consumer): Speicher, Wiederholung, Schleifenschutz und die Anmeldeschnittstelle für Adapter.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Captain Suite
@@ -15,8 +15,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WORKFLOW_CAPTAIN_VERSION', '0.1.0' );
-define( 'WORKFLOW_CAPTAIN_DB_VERSION', '1' );
+define( 'WORKFLOW_CAPTAIN_VERSION', '0.2.0' );
+define( 'WORKFLOW_CAPTAIN_DB_VERSION', '2' );
 /*
  * Version of the interface at which adapters register (docs/SPEC-suite-events.md, R-13.7; name as proposed in F-03).
  * Independent of the plugin version. MAJOR = generation of the adapter interface, MINOR rises when methods or hooks are

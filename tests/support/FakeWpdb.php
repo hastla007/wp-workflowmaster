@@ -12,6 +12,7 @@ final class FakeWpdb {
 
 	public string $prefix;
 	public string $last_error = '';
+	public int $insert_id = 0;
 	private PDO $pdo;
 
 	public function __construct( PDO $pdo, string $prefix = 'wp_' ) {
@@ -45,6 +46,17 @@ final class FakeWpdb {
 				depth INTEGER NOT NULL, expires_at TEXT NOT NULL
 			)"
 		);
+	}
+
+	/** Creates the engine tables for this prefix (mirrors Install::create_tables). */
+	public function create_engine_tables(): void {
+		$p = $this->prefix . 'workflow_captain_';
+		$this->pdo->exec( "CREATE TABLE {$p}workflows ( id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, status TEXT NOT NULL, draft TEXT NOT NULL, published_version_id INTEGER NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL )" );
+		$this->pdo->exec( "CREATE TABLE {$p}versions ( id INTEGER PRIMARY KEY AUTOINCREMENT, workflow_id INTEGER NOT NULL, version INTEGER NOT NULL, graph TEXT NOT NULL, trigger_type TEXT NOT NULL, authorized_by_user_id INTEGER NOT NULL, created_at TEXT NOT NULL, UNIQUE (workflow_id, version) )" );
+		$this->pdo->exec( "CREATE TABLE {$p}runs ( id INTEGER PRIMARY KEY AUTOINCREMENT, workflow_id INTEGER NOT NULL, version_id INTEGER NOT NULL, event_row_id INTEGER NOT NULL, event_key TEXT NOT NULL, context TEXT NOT NULL, actor_user_id INTEGER NULL, state TEXT NOT NULL, last_error TEXT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE (version_id, event_key) )" );
+		$this->pdo->exec( "CREATE TABLE {$p}steps ( id INTEGER PRIMARY KEY AUTOINCREMENT, run_id INTEGER NOT NULL, node_id TEXT NOT NULL, step_key TEXT NOT NULL UNIQUE, state TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, effect TEXT NOT NULL DEFAULT 'none', due_at TEXT NOT NULL, lease_owner TEXT NULL, lease_until TEXT NULL, result TEXT NULL, last_error TEXT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL )" );
+		$this->pdo->exec( "CREATE TABLE {$p}tags ( id INTEGER PRIMARY KEY AUTOINCREMENT, product TEXT NOT NULL, subject_type TEXT NOT NULL, subject_id TEXT NOT NULL, tag TEXT NOT NULL, workflow_id INTEGER NOT NULL, created_at TEXT NOT NULL, UNIQUE (product, subject_type, subject_id, tag) )" );
+		$this->pdo->exec( "CREATE TABLE {$p}notes ( id INTEGER PRIMARY KEY AUTOINCREMENT, note_key TEXT NOT NULL UNIQUE, product TEXT NOT NULL, subject_type TEXT NOT NULL, subject_id TEXT NOT NULL, note TEXT NOT NULL, workflow_id INTEGER NOT NULL, run_id INTEGER NOT NULL, created_at TEXT NOT NULL )" );
 	}
 
 	public function suppress_errors( $suppress = true ) {
@@ -116,7 +128,11 @@ final class FakeWpdb {
 		$cols = array_keys( $data );
 		$sql  = 'INSERT INTO ' . $table . ' (' . implode( ',', $cols ) . ') VALUES (' . implode( ',', array_map( fn( $v ) => null === $v ? 'NULL' : $this->pdo->quote( (string) $v ), $data ) ) . ')';
 		$res  = $this->query( $sql );
-		return false === $res ? false : 1;
+		if ( false === $res ) {
+			return false;
+		}
+		$this->insert_id = (int) $this->pdo->lastInsertId();
+		return 1;
 	}
 
 	public function update( $table, array $data, array $where ) {

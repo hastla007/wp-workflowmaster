@@ -9,10 +9,12 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 define( 'WORKFLOW_CAPTAIN_PATH', __DIR__ . '/' );
 if ( ! defined( 'WORKFLOW_CAPTAIN_DB_VERSION' ) ) {
-	define( 'WORKFLOW_CAPTAIN_DB_VERSION', '1' );
+	define( 'WORKFLOW_CAPTAIN_DB_VERSION', '2' );
 }
 require_once __DIR__ . '/src/Store/EventStore.php';
 require_once __DIR__ . '/src/Store/WpdbEventStore.php';
+require_once __DIR__ . '/src/Engine/EngineStore.php';
+require_once __DIR__ . '/src/Engine/WpdbEngineStore.php';
 require_once __DIR__ . '/src/Install.php';
 
 if ( is_multisite() ) {

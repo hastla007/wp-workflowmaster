@@ -95,3 +95,58 @@ final class FixedClock extends Clock {
 		$this->time += $seconds;
 	}
 }
+
+final class FakeDirectory implements \WorkflowCaptain\Engine\Directory {
+
+	/** @var array<int,string[]> Capabilities per user. */
+	public array $caps = array( 1 => array( 'activate_workflows', 'manage_options' ) );
+	public array $emails = array( 17 => 'person@example.com', 1 => 'admin@example.com' );
+	public array $sent = array();
+	public int $fail_mails = 0;
+	public bool $crash_after_send = false;
+
+	public function user_can( int $user_id, string $capability ): bool {
+		return in_array( $capability, $this->caps[ $user_id ] ?? array(), true );
+	}
+
+	public function email_of( int $user_id ): ?string {
+		return $this->emails[ $user_id ] ?? null;
+	}
+
+	public function emails_with_capability( string $capability ): array {
+		$out = array();
+		foreach ( $this->caps as $id => $caps ) {
+			if ( in_array( $capability, $caps, true ) && isset( $this->emails[ $id ] ) ) {
+				$out[] = $this->emails[ $id ];
+			}
+		}
+		return $out;
+	}
+
+	public function site_admin_email(): string {
+		return 'site@example.com';
+	}
+
+	public function mail( string $to, string $subject, string $message ): bool {
+		if ( $this->fail_mails > 0 ) {
+			--$this->fail_mails;
+			return false;
+		}
+		$this->sent[] = array( $to, $subject, $message );
+		if ( $this->crash_after_send ) {
+			throw new \LogicException( 'worker died after sending' );
+		}
+		return true;
+	}
+}
+
+/** An action that writes in a provider and needs a capability (stands in for voucher.void in tests). */
+final class CapAction implements \WorkflowCaptain\Engine\Action {
+	public int $runs = 0;
+	public function key(): string { return 'test.write'; }
+	public function label(): string { return 'test'; }
+	public function capability(): ?string { return 'vcap_manage_vouchers'; }
+	public function idempotent(): bool { return true; }
+	public function validate_config( array $config ): array { return array(); }
+	public function execute( \WorkflowCaptain\Engine\ActionContext $context ): array { ++$this->runs; return array( 'ok' => 1, 'mail' => 'leak@example.com' ); }
+}
