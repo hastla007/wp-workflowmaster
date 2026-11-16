@@ -42,6 +42,10 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 | Testlauf ohne Seiteneffekte, Providerverfügbarkeit | automatisch | `tests/engine-tests.php` |
 | Datenfluss ohne persönliche Daten (WF-SEC-04) | automatisch | `tests/engine-tests.php` |
 | Canvas: Knoten, Verbinden, Dann/Sonst, Tastatur, Rückgängig, Bedingungsformular, Platzhalter, Zoom | automatisch (Chromium) | `tests/builder.test.js` |
+| Vertragsversion je Provider im Snapshot, Pause bei MAJOR-Wechsel (WF-CORE-02) | automatisch | `tests/engine-tests.php` |
+| Zeitplan-Auslöser: lokale Uhrzeit, Sommerzeit, einmal nachholen, nur eigener Workflow, doppelter Zeitgeber (WF-CORE-04) | automatisch | `tests/engine-tests.php`, Formular in `tests/builder.test.js` |
+| Mögliche Doppelmail zur Kernmail (R-9.4) | automatisch (Chromium) | `tests/builder.test.js` |
+| Einstellungen: Feldfehler, Warnung bei ungespeicherten Änderungen, Zurücksetzen (WF-SET-13) | automatisch | `tests/engine-tests.php`, `tests/settings.test.js` |
 | Canvas: Speichern, Veröffentlichen und Wiederöffnen in WordPress | offen | braucht WordPress |
 | Admin-Seiten (Ereignisse, Workflows, Läufe, Provider, Einstellungen) im Browser | offen | braucht WordPress |
 
@@ -51,8 +55,11 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 |---|---|---|
 | Ausgehende Ziele: privat, Metadaten, Schreibweisen, IPv6, Ausnahme je Verbindung | automatisch | `tests/security-tests.php` |
 | Tresor: Kontext, Rotation, Manipulation, Redaktion | automatisch | `tests/security-tests.php` |
-| Weiterleitungen und Proxy beim echten HTTP-Aufruf | offen | kommt mit den Webhooks |
-| REST-Einstiege, Rate-Limits (WF-SEC-03) | offen | es gibt noch keine REST-Einstiege |
+| Ausgehende Anfragen: Profile, IP-Festnageln, geprüfte Weiterleitungen, Fehlercodes ohne URL (`SafeHttp`) | automatisch (mit Fake-Transport) | `tests/security-tests.php` |
+| Eingehende Anfragen: Größe, Rate-Limit, Zeitfenster, HMAC, Replay, Allowlist (`InboundGuard`) | automatisch | `tests/security-tests.php` |
+| Echter HTTP-Aufruf mit cURL-Festnageln und Proxy | offen | braucht WordPress und ein Ziel |
+| Keine Frontend-Ausgabe, keine Yoast-Interna, keine Beitrags-Schreibzugriffe (WF-SEO-03 bis -05) | automatisch | `tests/security-tests.php` |
+| REST-Einstiege von Pro mit `InboundGuard` | offen | kommen mit Workflow Captain Pro |
 
 ## Adapter (14.2) und Provider
 
@@ -64,6 +71,16 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 | Timeout nach erfolgreichem Zielaufruf, Replay, Doppelte | Kern-Seite automatisch (R-8.12, C-4, C-10); Gutschein-Befehle offen (VC-1) |
 | Refund, Woo HPOS/Classic, Checkout Blocks | offen (braucht WooCommerce und Adapter) |
 | Wiederherstellung aus Backup | Verfahren in `docs/RUNBOOK.md`; Konsistenzprüfung automatisch getestet; Durchlauf mit echter Sicherung offen |
+
+## WordPress, WooCommerce und eigene Connectoren
+
+| Fall | Stand | Fundstelle |
+|---|---|---|
+| Sieben Ereignisse aus WordPress und WooCommerce: gültiger Umschlag, nur Katalogfelder, keine personenbezogenen Daten, Diskriminator, Gegenlesen, Ausnahmen bleiben im Adapter (F-20) | automatisch (mit Fake-WooCommerce) | `tests/provider-tests.php` |
+| WooCommerce fehlt oder zu alt: Adapter meldet sich nicht an | automatisch | `tests/provider-tests.php` |
+| Echte Bestellung, HPOS und klassisch, Checkout Blocks, Erstattung | offen | braucht WooCommerce |
+| Connector: Manifest, Gründe der Ablehnung, Freigabe, nicht deklarierte und personenbezogene Felder, Typ/Produkt, Lauf startet, Starter-Connector (F-22) | automatisch | `tests/connector-tests.php` |
+| Workflow fehlt, deaktiviert, Lizenz abgelaufen (Pro), Vertrags-MAJOR | Kern-Seite automatisch (C-15, Snapshot, Connector-Gründe); Pro-Seite in `captain-pro` | – |
 
 ## Multisite
 
