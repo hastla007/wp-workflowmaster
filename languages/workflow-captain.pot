@@ -33,6 +33,22 @@ msgstr ""
 msgid "%s (Kopie)"
 msgstr ""
 
+#: src/Admin/HelpPage.php:28
+msgid "1. Unter „Provider“ prüfen, welche Plugins Ereignisse liefern. WordPress und WooCommerce sind eingebaut; die Captain-Produkte kommen mit Workflow Captain Pro."
+msgstr ""
+
+#: src/Admin/HelpPage.php:29
+msgid "2. Unter „Vorlagen“ einen Ablauf als Entwurf übernehmen oder unter „Workflows“ einen neuen anlegen."
+msgstr ""
+
+#: src/Admin/HelpPage.php:30
+msgid "3. Im Editor einen Testlauf mit Beispieldaten starten. Er führt nichts aus."
+msgstr ""
+
+#: src/Admin/HelpPage.php:31
+msgid "4. Veröffentlichen. Ab dann startet jedes passende Ereignis einen Lauf; die Version bleibt für laufende Läufe unverändert."
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:377
 msgid "Abgebrochen"
 msgstr ""
@@ -55,6 +71,10 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:256
 msgid "Administratoren haben immer alle Rechte. Shop-Manager bekommen keine Rechte automatisch."
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:76
+msgid "Aktion"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:375
@@ -110,6 +130,10 @@ msgstr ""
 msgid "Als Entwurf speichern"
 msgstr ""
 
+#: src/Admin/TemplatesPage.php:82
+msgid "Als Entwurf übernehmen"
+msgstr ""
+
 #. translators: %s: comma separated product keys
 #: src/Admin/EventsPage.php:82
 msgid "Angemeldete Adapter: %s"
@@ -135,7 +159,7 @@ msgstr ""
 msgid "Ausgewählte erneut einreihen"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:220
+#: src/Admin/TemplatesPage.php:76 src/Admin/WorkflowsPage.php:220
 msgid "Auslöser"
 msgstr ""
 
@@ -145,6 +169,10 @@ msgstr ""
 
 #: src/Admin/WorkflowsPage.php:320 src/Privacy/Privacy.php:102
 msgid "Begonnen (UTC)"
+msgstr ""
+
+#: src/Admin/HelpPage.php:33
+msgid "Begriffe"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:261
@@ -176,7 +204,7 @@ msgstr ""
 msgid "Brauchen eine Entscheidung"
 msgstr ""
 
-#: src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:263 src/Admin/WorkflowsPage.php:84 src/Admin/WorkflowsPage.php:95 src/Admin/WorkflowsPage.php:108 src/Admin/WorkflowsPage.php:114 src/Admin/WorkflowsPage.php:125 src/Admin/WorkflowsPage.php:138 src/Admin/WorkflowsPage.php:154 src/Admin/WorkflowsPage.php:168 src/Plugin.php:259 src/Plugin.php:274
+#: src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:263 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:84 src/Admin/WorkflowsPage.php:95 src/Admin/WorkflowsPage.php:108 src/Admin/WorkflowsPage.php:114 src/Admin/WorkflowsPage.php:125 src/Admin/WorkflowsPage.php:138 src/Admin/WorkflowsPage.php:154 src/Admin/WorkflowsPage.php:168 src/Plugin.php:261 src/Plugin.php:276
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
@@ -249,6 +277,10 @@ msgstr ""
 msgid "Die Nachricht wurde vielleicht schon gesendet. Erneut senden?"
 msgstr ""
 
+#: src/Admin/HelpPage.php:41
+msgid "Die Notfallpause auf der Übersicht hält sofort alle Schritte an; Ereignisse werden weiter gespeichert."
+msgstr ""
+
 #: src/Notifications.php:80
 msgid "Die Notfallpause ist aktiv."
 msgstr ""
@@ -301,6 +333,10 @@ msgstr ""
 msgid "Ein eigener Schlüssel für Geheimnisse ist gesetzt."
 msgstr ""
 
+#: src/Admin/TemplatesPage.php:75
+msgid "Eine Vorlage wird als Entwurf übernommen. Prüfen, Testlauf starten, dann veröffentlichen. Vorlagen nutzen nur die Aktionen der Version 1 und ersetzen keine Mail eines Kern-Plugins."
+msgstr ""
+
 #: src/Admin/SettingsPage.php:59 src/Admin/SettingsPage.php:59 src/Admin/SettingsPage.php:76
 msgid "Einstellungen"
 msgstr ""
@@ -333,6 +369,10 @@ msgstr ""
 msgid "Empfänger und Arten"
 msgstr ""
 
+#: src/Admin/HelpPage.php:36
+msgid "Entscheidung: ein Lauf hält an, wenn unklar ist, ob eine Nachricht schon hinausging, oder wenn ein Schritt zu lange überfällig ist. Ein Mensch setzt fort oder bricht ab."
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:361
 msgid "Entwurf"
 msgstr ""
@@ -344,6 +384,10 @@ msgstr ""
 #. translators: %d: event number
 #: src/Admin/EventsPage.php:115
 msgid "Ereignis %d auswählen"
+msgstr ""
+
+#: src/Admin/HelpPage.php:34
+msgid "Ereignis: etwas, das in einem Plugin passiert ist, zum Beispiel „Bestellung bezahlt“. Ereignisse enthalten keine Namen, E-Mail-Adressen oder Codes."
 msgstr ""
 
 #: src/Admin/EventsPage.php:32 src/Admin/EventsPage.php:32 src/Admin/EventsPage.php:68
@@ -404,6 +448,10 @@ msgstr ""
 msgid "Erneut einreihen"
 msgstr ""
 
+#: src/Admin/HelpPage.php:27
+msgid "Erste Schritte"
+msgstr ""
+
 #. translators: 1: number, 2: option name
 #: src/Admin/SettingsPage.php:334
 msgid "Es bleiben die letzten %1$d Einträge in der Option %2$s."
@@ -437,6 +485,10 @@ msgstr ""
 msgid "Fehlgeschlagene Ereignisse (Queue-Ausfall)"
 msgstr ""
 
+#: src/Admin/HelpPage.php:40
+msgid "Fehlgeschlagene Ereignisse lassen sich unter „Ereignisse“ auswählen und erneut einreihen."
+msgstr ""
+
 #: src/Admin/SettingsPage.php:113
 msgid "Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)"
 msgstr ""
@@ -447,6 +499,10 @@ msgstr ""
 
 #: src/Admin/WorkflowsPage.php:338
 msgid "Fällig (UTC)"
+msgstr ""
+
+#: src/Admin/HelpPage.php:42
+msgid "Für den Support: „Ereignisse → Diagnose herunterladen“. Die Datei enthält keine persönlichen Daten und keine Geheimnisse."
 msgstr ""
 
 #. translators: %s: option name
@@ -464,6 +520,10 @@ msgstr ""
 
 #: src/Admin/WorkflowsPage.php:320 src/Admin/WorkflowsPage.php:338
 msgid "Grund"
+msgstr ""
+
+#: src/Admin/HelpPage.php:21 src/Admin/HelpPage.php:21 src/Admin/HelpPage.php:54
+msgid "Hilfe"
 msgstr ""
 
 #. translators: %d: number of running runs
@@ -511,7 +571,7 @@ msgstr ""
 msgid "Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows."
 msgstr ""
 
-#: src/Plugin.php:295
+#: src/Plugin.php:297
 msgid "Jede Minute (Workflow Captain)"
 msgstr ""
 
@@ -540,6 +600,10 @@ msgstr ""
 msgid "Knoten: trigger, condition, action, delay, end. Verfügbare Aktionen: %s. Platzhalter in Texten: {{type}}, {{occurred_at}}, {{subject.id}}, {{data.feld}}."
 msgstr ""
 
+#: src/Admin/HelpPage.php:44
+msgid "Kommandozeile"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:100
 msgid "Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen."
 msgstr ""
@@ -556,6 +620,10 @@ msgstr ""
 
 #: src/Admin/WorkflowsPage.php:355
 msgid "Lauf abbrechen"
+msgstr ""
+
+#: src/Admin/HelpPage.php:35
+msgid "Lauf: eine Ausführung eines Workflows für ein Ereignis, mit Schritten."
 msgstr ""
 
 #: src/Admin/OverviewPage.php:43
@@ -722,7 +790,7 @@ msgstr ""
 msgid "Produkt"
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:76
+#: src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:76 src/Admin/TemplatesPage.php:76
 msgid "Provider"
 msgstr ""
 
@@ -814,6 +882,14 @@ msgstr ""
 msgid "Vorher prüfen, ob die Ursache (Adapter, Lizenz, Provider) behoben ist."
 msgstr ""
 
+#: src/Admin/TemplatesPage.php:76
+msgid "Vorlage"
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:28 src/Admin/TemplatesPage.php:28 src/Admin/TemplatesPage.php:74
+msgid "Vorlagen"
+msgstr ""
+
 #. translators: %s: list of waiting times
 #: src/Admin/SettingsPage.php:171
 msgid "Vorübergehende Fehler werden nach festem Plan wiederholt: %s. Danach wird ein Ereignis als fehlgeschlagen angezeigt; ein Schritt braucht eine Entscheidung. Nachrichten werden nach einem unklaren Ausgang nie von selbst wiederholt."
@@ -837,6 +913,14 @@ msgstr ""
 
 #: src/Admin/EventsPage.php:137
 msgid "Wartet auf Wiederholung"
+msgstr ""
+
+#: src/Admin/HelpPage.php:38
+msgid "Wenn etwas hängt"
+msgstr ""
+
+#: src/Admin/HelpPage.php:39
+msgid "Werkzeuge → Website-Zustand zeigt, ob der Worker läuft. Einstellungen → Status zeigt den nächsten Lauf und hängende Schritte."
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:292
@@ -981,8 +1065,16 @@ msgstr ""
 msgid "nicht gesetzt – empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php"
 msgstr ""
 
+#: src/Admin/TemplatesPage.php:79
+msgid "nicht verfügbar – Entwurf möglich, Veröffentlichen erst mit Provider"
+msgstr ""
+
 #: src/Admin/OverviewPage.php:47
 msgid "prüfen"
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:79
+msgid "verfügbar"
 msgstr ""
 
 #: src/Admin/EventsPage.php:127

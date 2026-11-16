@@ -67,7 +67,7 @@ final class WorkflowsPage {
 		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( array( 'actions' => $actions, 'events' => array_values( array_unique( $events ) ), 'fields' => is_array( $fields ) ? $fields : new \stdClass(), 'coreMails' => is_array( $mails ) && is_array( $mails['events'] ?? null ) ? $mails['events'] : new \stdClass(), 'path' => $path, 'errorNode' => is_array( $dry ) ? $dry['result']['error_node'] : null, 'i18n' => new \stdClass() ) ) . ';', 'before' );
 	}
 
-	private static function url( string $page, array $args = array() ): string {
+	public static function url( string $page, array $args = array() ): string {
 		return add_query_arg( array( 'page' => $page ) + $args, admin_url( 'admin.php' ) );
 	}
 

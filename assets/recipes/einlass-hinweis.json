@@ -1,0 +1,67 @@
+{
+  "format": "workflow-captain/workflow",
+  "format_version": 1,
+  "name": "Einlass: Hinweis an den Betreiber",
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "trigger",
+        "event": "pass.ticket.checked_in"
+      },
+      {
+        "id": "scanner",
+        "type": "condition",
+        "rules": {
+          "op": "and",
+          "items": [
+            {
+              "field": "data.checkin_source",
+              "operator": "eq",
+              "value": "scanner"
+            }
+          ]
+        },
+        "missing": "false"
+      },
+      {
+        "id": "mail",
+        "type": "action",
+        "action": "notify.admin",
+        "config": {
+          "subject": "Einlass {{subject.id}}",
+          "message": "Ticket {{subject.id}} wurde um {{occurred_at}} am Gerät {{data.device_id}} eingecheckt.",
+          "to": "site_admin"
+        }
+      },
+      {
+        "id": "ende",
+        "type": "end"
+      },
+      {
+        "id": "ende_sonst",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "from": "start",
+        "to": "scanner"
+      },
+      {
+        "from": "scanner",
+        "to": "mail",
+        "branch": "then"
+      },
+      {
+        "from": "scanner",
+        "to": "ende_sonst",
+        "branch": "else"
+      },
+      {
+        "from": "mail",
+        "to": "ende"
+      }
+    ]
+  }
+}

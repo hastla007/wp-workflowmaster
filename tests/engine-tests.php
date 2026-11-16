@@ -862,3 +862,25 @@ check( 'WF-SET-06 notify: test mail carries no event data', ! str_contains( Noti
 
 // ----- WF-SET-05: time budget per worker run
 check( 'WF-SET-05 settings: runtime per worker run 5 to 120 seconds, default 20', 20 === Settings::defaults()['max_seconds'] && 120 === Settings::sanitize( array( 'max_seconds' => 999 ) )['max_seconds'] && 5 === Settings::sanitize( array( 'max_seconds' => 1 ) )['max_seconds'] );
+
+// ----- WF-SET-02: templates page and help page
+if ( ! function_exists( 'sanitize_key' ) ) {
+	function sanitize_key( $key ) {
+		return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $key ) );
+	}
+}
+$tpl = \WorkflowCaptain\Admin\TemplatesPage::templates( glob( WORKFLOW_CAPTAIN_PATH . 'assets/recipes/*.json' ) );
+check( 'WF-SET-02 templates: all shipped recipes listed with name and trigger', 4 === count( $tpl ) && 'pass.ticket.checked_in' === $tpl['einlass-hinweis']['event'] );
+$same = true;
+foreach ( glob( WORKFLOW_CAPTAIN_PATH . 'docs/recipes/*.json' ) as $doc ) {
+	$same = $same && is_file( WORKFLOW_CAPTAIN_PATH . 'assets/recipes/' . basename( $doc ) ) && file_get_contents( $doc ) === file_get_contents( WORKFLOW_CAPTAIN_PATH . 'assets/recipes/' . basename( $doc ) );
+}
+check( 'WF-SET-02 templates: shipped copies equal docs/recipes', $same && count( glob( WORKFLOW_CAPTAIN_PATH . 'docs/recipes/*.json' ) ) === count( glob( WORKFLOW_CAPTAIN_PATH . 'assets/recipes/*.json' ) ) );
+$bad = tempnam( sys_get_temp_dir(), 'wfc' );
+file_put_contents( $bad, '{"format":"other"}' );
+check( 'WF-SET-02 templates: files in another format are skipped', array() === \WorkflowCaptain\Admin\TemplatesPage::templates( array( $bad, '/does/not/exist.json' ) ) );
+unlink( $bad );
+$wf_before = count( $e->store->list_workflows( 1000, 0 ) );
+$imported  = \WorkflowCaptain\Engine\Transfer::import( (string) file_get_contents( $tpl['einlass-hinweis']['file'] ), $e->workflows );
+check( 'WF-SET-02 templates: a template imports as a draft', $imported['ok'] && $wf_before + 1 === count( $e->store->list_workflows( 1000, 0 ) ) );
+check( 'WF-SET-02 help: four sections with text', 4 === count( \WorkflowCaptain\Admin\HelpPage::sections() ) );

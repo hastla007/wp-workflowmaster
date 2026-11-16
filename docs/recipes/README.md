@@ -1,6 +1,6 @@
 # Beispiel-Workflows
 
-Importierbare Beispiele im Exportformat von Workflow Captain (`src/Engine/Transfer.php`). Zum Übernehmen die Datei unter „Workflows → Workflow importieren“ hochladen oder `wp workflow-captain import <datei>` aufrufen; sie wird ein Entwurf. Dann Testlauf starten und veröffentlichen. Veröffentlichen geht erst, wenn ein Adapter für den Auslöser angemeldet ist.
+Importierbare Beispiele im Exportformat von Workflow Captain (`src/Engine/Transfer.php`). Zum Übernehmen unter „Workflow Captain → Vorlagen“ auf „Als Entwurf übernehmen“ klicken (das Plugin liefert Kopien in `assets/recipes/` mit; ein Test prüft, dass sie gleich sind), die Datei unter „Workflows → Workflow importieren“ hochladen oder `wp workflow-captain import <datei>` aufrufen; sie wird ein Entwurf. Dann Testlauf starten und veröffentlichen. Veröffentlichen geht erst, wenn ein Adapter für den Auslöser angemeldet ist.
 
 | Datei | Auslöser | Ablauf |
 |---|---|---|
