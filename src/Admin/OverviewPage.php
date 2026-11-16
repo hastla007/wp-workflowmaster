@@ -65,6 +65,24 @@ final class OverviewPage {
 			echo '<span style="display:block;font-size:13px;color:#50575e">' . esc_html( $card['label'] ) . '</span><strong style="font-size:24px">' . esc_html( (string) $card['value'] ) . '</strong></a>';
 		}
 		echo '</div>';
+		if ( current_user_can( 'manage_workflow_captain' ) ) {
+			$pause = \WorkflowCaptain\EmergencyPause::state();
+			$open  = (int) ( $d['runs']['running'] ?? 0 );
+			echo '<h2>' . esc_html__( 'Notfallpause', 'workflow-captain' ) . '</h2><form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_pause">';
+			wp_nonce_field( 'workflow_captain_pause' );
+			if ( $pause['active'] ) {
+				/* translators: %s: time in UTC */
+				echo '<p>' . esc_html( sprintf( __( 'Aktiv seit %s (UTC). Kein Schritt wird ausgeführt; Ereignisse werden weiter gespeichert.', 'workflow-captain' ), (string) $pause['since'] ) ) . '</p>';
+				echo '<button class="button button-primary" name="pause" value="0">' . esc_html__( 'Notfallpause aufheben', 'workflow-captain' ) . '</button>';
+			} else {
+				/* translators: %d: number of running runs */
+				echo '<p>' . esc_html( sprintf( __( 'Hält sofort alle Schritte an. Betroffen: %d laufende Läufe. Überfällige Schritte brauchen danach eine Entscheidung.', 'workflow-captain' ), $open ) ) . '</p>';
+				$ask = isset( $_GET['pause_confirm'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+				echo '<label><input type="checkbox" name="confirm" value="1"' . ( $ask ? ' autofocus' : '' ) . '> ' . esc_html__( 'Ja, alle Abläufe anhalten', 'workflow-captain' ) . '</label><br>';
+				echo '<button class="button" name="pause" value="1">' . esc_html__( 'Notfallpause aktivieren', 'workflow-captain' ) . '</button>';
+			}
+			echo '</form>';
+		}
 		$runs = $this->plugin->engine()->store()->find_runs( array( 'state' => EngineStore::RUN_ACTION_REQUIRED ), 10, 0 );
 		if ( array() !== $runs ) {
 			echo '<h2>' . esc_html__( 'Läufe, die eine Entscheidung brauchen', 'workflow-captain' ) . '</h2><ul style="list-style:disc;margin-left:2em">';

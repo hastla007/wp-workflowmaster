@@ -8,6 +8,7 @@
  *     wp workflow-captain migrate
  *     wp workflow-captain diagnostics
  *     wp workflow-captain verify
+ *     wp workflow-captain pause <on|off>
  *
  * Read-only except process, requeue and migrate; requeue is the same human decision as in the admin (7.4).
  *
@@ -94,6 +95,18 @@ final class Command {
 		if ( ! $found ) {
 			\WP_CLI::success( 'No inconsistencies found.' );
 		}
+	}
+
+	/**
+	 * Sets or lifts the global emergency pause (no step runs while it is set).
+	 *
+	 * <on|off>
+	 * : on = pause, off = lift.
+	 */
+	public function pause( array $args ): void {
+		$on = 'on' === ( $args[0] ?? '' );
+		\WorkflowCaptain\EmergencyPause::set( $on, 0 );
+		\WP_CLI::success( $on ? 'Emergency pause on.' : 'Emergency pause off.' );
 	}
 
 	/**

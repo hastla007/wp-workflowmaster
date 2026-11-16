@@ -31,6 +31,9 @@ final class Engine implements Dispatcher {
 
 	private ?Consumer $consumer = null;
 
+	/** Global emergency pause (WF-SET-11): no step runs while it is set. */
+	private bool $paused = false;
+
 	/** Limits of konzept 15.3 "Parallelität und Reihenfolge"; start values, adjustable in the settings. */
 	private array $limits = array(
 		'site'     => 5,
@@ -51,6 +54,10 @@ final class Engine implements Dispatcher {
 				$this->limits[ $key ] = (int) $value;
 			}
 		}
+	}
+
+	public function set_paused( bool $paused ): void {
+		$this->paused = $paused;
 	}
 
 	public function limits(): array {
@@ -134,6 +141,9 @@ final class Engine implements Dispatcher {
 	 * start order. Returns the number handled.
 	 */
 	public function process( int $limit = 25 ): int {
+		if ( $this->paused ) {
+			return 0;
+		}
 		$owner   = Uuid::v4();
 		$handled = 0;
 		$per_wf  = array();

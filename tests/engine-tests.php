@@ -740,3 +740,17 @@ check( 'consistency: reporting changes nothing', 1 === count( $e->store->find_ru
 $cards = \WorkflowCaptain\Admin\OverviewPage::cards( array( 'environment' => array( 'next_worker_run' => gmdate( 'Y-m-d\TH:i:s\Z', time() + 30 ), 'secret_key_own' => true ), 'workflows' => array( 'active' => 3 ), 'runs' => array( 'running' => 2, 'action_required' => 1, 'paused' => 1 ), 'events' => array( 'dead_letter' => 0 ), 'stuck' => array( 'expired_leases' => 0, 'runs_without_steps' => 0 ) ) );
 $by    = array_column( $cards, null, 'label' );
 check( 'overview: counts and tones', 3 === $by['Aktive Workflows']['value'] && 2 === $by['Brauchen eine Entscheidung']['value'] && 'warn' === $by['Brauchen eine Entscheidung']['tone'] && 'ok' === $by['Fehlgeschlagene Ereignisse']['tone'] && 'läuft' === $by['Worker']['value'] );
+
+// ----- WF-SET-11: emergency pause ------------------------------------------------------------------------------
+
+$e = engine_site();
+publish( $e, sample_graph() );
+$e->engine->set_paused( true );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+check( 'pause: event stored and run created, but no step runs', 1 === count( $e->store->find_runs( array(), 10, 0 ) ) && array() === $e->dir->sent && EngineStore::STEP_QUEUED === steps_of( $e )[0]['state'] );
+$e->engine->set_paused( false );
+drain( $e );
+check( 'pause lifted: the run continues', EngineStore::RUN_SUCCEEDED === run_of( $e )['state'] && 1 === count( $e->dir->sent ) );
+$r = SiteHealth::evaluate( array( 'environment' => array( 'emergency_pause' => true, 'next_worker_run' => gmdate( 'Y-m-d\TH:i:s\Z', time() + 30 ), 'secret_key_own' => true ) ), time() );
+check( 'site health: active pause is critical', 'critical' === $r['pause']['status'] );

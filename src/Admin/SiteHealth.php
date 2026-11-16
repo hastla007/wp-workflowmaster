@@ -22,7 +22,7 @@ final class SiteHealth {
 	}
 
 	public function tests( array $tests ): array {
-		foreach ( array( 'cron', 'schema', 'attention', 'secret_key' ) as $key ) {
+		foreach ( array( 'cron', 'schema', 'attention', 'secret_key', 'pause' ) as $key ) {
 			$tests['direct'][ 'workflow_captain_' . $key ] = array(
 				'label' => __( 'Workflow Captain', 'workflow-captain' ),
 				'test'  => function () use ( $key ): array {
@@ -52,6 +52,7 @@ final class SiteHealth {
 			'schema'     => Install::SCHEMA_NEWER === $schema ? array( 'status' => 'critical', 'code' => 'newer' ) : array( 'status' => 'good', 'code' => 'ok' ),
 			'attention'  => $attention > 0 ? array( 'status' => 'recommended', 'code' => 'needs_attention' ) : array( 'status' => 'good', 'code' => 'ok' ),
 			'secret_key' => empty( $env['secret_key_own'] ) ? array( 'status' => 'recommended', 'code' => 'salts' ) : array( 'status' => 'good', 'code' => 'ok' ),
+			'pause'      => ! empty( $env['emergency_pause'] ) ? array( 'status' => 'critical', 'code' => 'active' ) : array( 'status' => 'good', 'code' => 'ok' ),
 		);
 	}
 
@@ -66,6 +67,8 @@ final class SiteHealth {
 			'attention:ok'               => __( 'Keine fehlgeschlagenen Ereignisse oder Läufe, die eine Entscheidung brauchen.', 'workflow-captain' ),
 			'attention:needs_attention'  => __( 'Es gibt fehlgeschlagene Ereignisse, hängende Schritte oder Läufe, die eine Entscheidung brauchen (Workflow Captain → Ereignisse und Läufe).', 'workflow-captain' ),
 			'secret_key:ok'              => __( 'Ein eigener Schlüssel für Geheimnisse ist gesetzt.', 'workflow-captain' ),
+			'pause:ok'                   => __( 'Die Notfallpause von Workflow Captain ist nicht aktiv.', 'workflow-captain' ),
+			'pause:active'               => __( 'Die Notfallpause von Workflow Captain ist aktiv: Kein Schritt wird ausgeführt.', 'workflow-captain' ),
 			'secret_key:salts'           => __( 'Kein eigener Schlüssel gesetzt; Geheimnisse hängen an den WordPress-Salts. Empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php.', 'workflow-captain' ),
 		);
 		return array(

@@ -47,6 +47,16 @@ final class Plugin {
 		// Schema changes run in the admin, in cron or in WP-CLI, never on a front-end request (konzept 5, Datenmodell).
 		$may_migrate  = is_admin() || wp_doing_cron() || ( defined( 'WP_CLI' ) && WP_CLI );
 		$this->schema = $may_migrate ? Install::maybe_upgrade() : Install::schema_state( get_option( Install::DB_OPTION ), WORKFLOW_CAPTAIN_DB_VERSION );
+		if ( EmergencyPause::active() ) {
+			add_action(
+				'admin_notices',
+				static function (): void {
+					if ( current_user_can( 'view_workflow_logs' ) ) {
+						echo '<div class="notice notice-warning"><p>' . esc_html__( 'Workflow Captain: Die Notfallpause ist aktiv. Ereignisse werden gespeichert, aber kein Schritt wird ausgeführt.', 'workflow-captain' ) . '</p></div>';
+					}
+				}
+			);
+		}
 		if ( Install::SCHEMA_NEWER === $this->schema ) {
 			add_action(
 				'admin_notices',
@@ -68,6 +78,7 @@ final class Plugin {
 			\WP_CLI::add_command( 'workflow-captain', \WorkflowCaptain\Cli\Command::class );
 		}
 		add_action( 'admin_post_workflow_captain_diagnostics', array( $this, 'download_diagnostics' ) );
+		add_action( 'admin_post_workflow_captain_pause', array( $this, 'handle_pause' ) );
 		if ( is_admin() ) {
 			( new \WorkflowCaptain\Admin\OverviewPage( $this ) )->register();
 			( new EventsPage( $this ) )->register();
@@ -133,6 +144,7 @@ final class Plugin {
 			 */
 			do_action( 'workflow_captain_actions_v1', $actions );
 			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, wp_timezone_string(), Settings::engine_limits( Settings::get() ) );
+			$this->engine->set_paused( EmergencyPause::active() );
 		}
 		return $this->engine;
 	}
@@ -228,9 +240,25 @@ final class Plugin {
 				'wp_cron_disabled'  => defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON,
 				'next_worker_run'   => wp_next_scheduled( Install::CRON_PROCESS ) ? gmdate( 'Y-m-d\TH:i:s\Z', (int) wp_next_scheduled( Install::CRON_PROCESS ) ) : null,
 				'secret_key_own'    => \WorkflowCaptain\Security\Vault::own_key_configured(),
+				'emergency_pause'   => EmergencyPause::active(),
 				'rejected_envelopes' => (array) get_option( self::REJECTED_OPTION, array() ),
 			)
 		);
+	}
+
+	public function handle_pause(): void {
+		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
+			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		check_admin_referer( 'workflow_captain_pause' );
+		$on = ! empty( $_POST['pause'] );
+		if ( $on && empty( $_POST['confirm'] ) ) {
+			wp_safe_redirect( add_query_arg( array( 'page' => 'workflow-captain', 'pause_confirm' => 1 ), admin_url( 'admin.php' ) ) );
+			exit;
+		}
+		EmergencyPause::set( $on, get_current_user_id() );
+		wp_safe_redirect( add_query_arg( array( 'page' => 'workflow-captain' ), admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	public function download_diagnostics(): void {

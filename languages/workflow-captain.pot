@@ -38,6 +38,11 @@ msgstr ""
 msgid "Aktiv"
 msgstr ""
 
+#. translators: %s: time in UTC
+#: src/Admin/OverviewPage.php:75
+msgid "Aktiv seit %s (UTC). Kein Schritt wird ausgeführt; Ereignisse werden weiter gespeichert."
+msgstr ""
+
 #: src/Admin/OverviewPage.php:42 src/Admin/ProvidersPage.php:82
 msgid "Aktive Workflows"
 msgstr ""
@@ -95,7 +100,7 @@ msgstr ""
 msgid "Brauchen eine Entscheidung"
 msgstr ""
 
-#: src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/WorkflowsPage.php:81 src/Admin/WorkflowsPage.php:92 src/Admin/WorkflowsPage.php:105 src/Admin/WorkflowsPage.php:111 src/Admin/WorkflowsPage.php:122 src/Plugin.php:236
+#: src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/WorkflowsPage.php:81 src/Admin/WorkflowsPage.php:92 src/Admin/WorkflowsPage.php:105 src/Admin/WorkflowsPage.php:111 src/Admin/WorkflowsPage.php:122 src/Plugin.php:251 src/Plugin.php:266
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
@@ -119,15 +124,15 @@ msgstr ""
 msgid "Datenschutz & Aufbewahrung"
 msgstr ""
 
-#: src/Admin/SiteHealth.php:60
+#: src/Admin/SiteHealth.php:61
 msgid "Der Worker von Workflow Captain ist geplant."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:61
+#: src/Admin/SiteHealth.php:62
 msgid "Der Worker von Workflow Captain ist nicht geplant. Plugin deaktivieren und wieder aktivieren oder wp workflow-captain process per System-Cron aufrufen."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:62
+#: src/Admin/SiteHealth.php:63
 msgid "Der Worker von Workflow Captain ist überfällig: WP-Cron läuft nicht zuverlässig. Einen System-Cron einrichten."
 msgstr ""
 
@@ -139,7 +144,7 @@ msgstr ""
 msgid "Diagnose herunterladen (ohne persönliche Daten)"
 msgstr ""
 
-#: src/Admin/SiteHealth.php:65
+#: src/Admin/SiteHealth.php:66
 msgid "Die Datenbank stammt von einer neueren Version von Workflow Captain; die Verarbeitung ist angehalten."
 msgstr ""
 
@@ -147,7 +152,15 @@ msgstr ""
 msgid "Die Nachricht wurde vielleicht schon gesendet. Erneut senden?"
 msgstr ""
 
-#: src/Admin/SiteHealth.php:64
+#: src/Admin/SiteHealth.php:71
+msgid "Die Notfallpause von Workflow Captain ist aktiv: Kein Schritt wird ausgeführt."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:70
+msgid "Die Notfallpause von Workflow Captain ist nicht aktiv."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:65
 msgid "Die Tabellen von Workflow Captain sind aktuell."
 msgstr ""
 
@@ -159,7 +172,7 @@ msgstr ""
 msgid "Ein Schritt, der länger überfällig ist (zum Beispiel weil WP-Cron nicht lief), wird nicht von selbst ausgeführt, sondern zur Entscheidung angezeigt."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:68
+#: src/Admin/SiteHealth.php:69
 msgid "Ein eigener Schlüssel für Geheimnisse ist gesetzt."
 msgstr ""
 
@@ -233,7 +246,7 @@ msgstr ""
 msgid "Erneut einreihen"
 msgstr ""
 
-#: src/Admin/SiteHealth.php:67
+#: src/Admin/SiteHealth.php:68
 msgid "Es gibt fehlgeschlagene Ereignisse, hängende Schritte oder Läufe, die eine Entscheidung brauchen (Workflow Captain → Ereignisse und Läufe)."
 msgstr ""
 
@@ -278,6 +291,11 @@ msgstr ""
 msgid "Grund"
 msgstr ""
 
+#. translators: %d: number of running runs
+#: src/Admin/OverviewPage.php:79
+msgid "Hält sofort alle Schritte an. Betroffen: %d laufende Läufe. Überfällige Schritte brauchen danach eine Entscheidung."
+msgstr ""
+
 #: src/Admin/SettingsPage.php:101
 msgid "Hängende Schritte (Sperrfrist über einen Tag abgelaufen)"
 msgstr ""
@@ -306,7 +324,11 @@ msgstr ""
 msgid "In Arbeit"
 msgstr ""
 
-#: src/Plugin.php:257
+#: src/Admin/OverviewPage.php:81
+msgid "Ja, alle Abläufe anhalten"
+msgstr ""
+
+#: src/Plugin.php:287
 msgid "Jede Minute (Workflow Captain)"
 msgstr ""
 
@@ -314,7 +336,7 @@ msgstr ""
 msgid "Kein Adapter angemeldet. Ereignisse der Captain-Produkte kommen erst an, wenn ein Add-on einen Adapter anmeldet."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:69
+#: src/Admin/SiteHealth.php:72
 msgid "Kein eigener Schlüssel gesetzt; Geheimnisse hängen an den WordPress-Salts. Empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php."
 msgstr ""
 
@@ -326,7 +348,7 @@ msgstr ""
 msgid "Keine Läufe."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:66
+#: src/Admin/SiteHealth.php:67
 msgid "Keine fehlgeschlagenen Ereignisse oder Läufe, die eine Entscheidung brauchen."
 msgstr ""
 
@@ -336,7 +358,7 @@ msgid "Knoten: trigger, condition, action, delay, end. Verfügbare Aktionen: %s.
 msgstr ""
 
 #. translators: 1: run number, 2: reason code
-#: src/Admin/OverviewPage.php:72
+#: src/Admin/OverviewPage.php:90
 msgid "Lauf %1$d – %2$s"
 msgstr ""
 
@@ -365,7 +387,7 @@ msgstr ""
 msgid "Läufe ohne offenen Schritt"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:70
+#: src/Admin/OverviewPage.php:88
 msgid "Läufe, die eine Entscheidung brauchen"
 msgstr ""
 
@@ -419,6 +441,18 @@ msgstr ""
 
 #: src/Admin/WorkflowsPage.php:173
 msgid "Noch keine Workflows."
+msgstr ""
+
+#: src/Admin/OverviewPage.php:71
+msgid "Notfallpause"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:82
+msgid "Notfallpause aktivieren"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:76
+msgid "Notfallpause aufheben"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:51
@@ -513,7 +547,7 @@ msgstr ""
 msgid "WP-Cron abgeschaltet"
 msgstr ""
 
-#: src/Admin/SiteHealth.php:63
+#: src/Admin/SiteHealth.php:64
 msgid "WP-Cron ist abgeschaltet. Ein System-Cron muss wp-cron.php oder wp workflow-captain process jede Minute aufrufen."
 msgstr ""
 
@@ -533,12 +567,16 @@ msgstr ""
 msgid "Workflow"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:57 src/Admin/SiteHealth.php:27 src/Admin/SiteHealth.php:74 src/Admin/SiteHealth.php:91
+#: src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:57 src/Admin/SiteHealth.php:27 src/Admin/SiteHealth.php:77 src/Admin/SiteHealth.php:94
 msgid "Workflow Captain"
 msgstr ""
 
-#: src/Plugin.php:53
+#: src/Plugin.php:65
 msgid "Workflow Captain: Die Datenbank stammt von einer neueren Version des Plugins. Ereignisse und Schritte werden nicht verarbeitet, bis die neuere Version wieder installiert ist. Es wurde nichts gelöscht."
+msgstr ""
+
+#: src/Plugin.php:55
+msgid "Workflow Captain: Die Notfallpause ist aktiv. Ereignisse werden gespeichert, aber kein Schritt wird ausgeführt."
 msgstr ""
 
 #: src/Privacy/Privacy.php:87
