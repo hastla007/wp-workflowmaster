@@ -396,6 +396,7 @@ check( 'C-16 the same event on site B is not a duplicate', Consumer::CAPTURED ==
 
 require __DIR__ . '/engine-tests.php';
 require __DIR__ . '/security-tests.php';
+require __DIR__ . '/connector-tests.php';
 
 echo "\n{$passed} passed, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );
