@@ -1,8 +1,8 @@
 # Offene Fragen zur Suite-Spezifikation
 
-Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.2. Die Folgeentscheidungen D8b, D11b und D13 und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
+Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.3. Die Folgeentscheidungen D8b, D11b und D13 und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
-**Noch offen:** F-01 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18, F-19 (ohne Form) und W-1 bis W-9, W-11 (Teil Form), W-12 (nur die Zahlen), W-13.
+**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18, F-19 (ohne Form) und W-1 bis W-9, W-11 (Teil Form), W-13.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -37,15 +37,20 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Annahme der Spezifikation:** erledigte Ereignisse 30 Tage, `dead_letter` und `paused` 90 Tage; Benutzer-ID und Nutzdaten werden geleert, sobald kein Lauf mehr darauf wartet (R-12.4).
 - **Empfehlung:** Diese Zahlen als Voreinstellung, vom Betreiber nur nach unten änderbar. Die Frist gehört in die Rechtsprüfung (A6).
 
-### F-05 · Zahlen der Grenzen für die vier Gutschein-Befehle
+### F-05 · Zahlen der Grenzen für die vier Gutschein-Befehle — **Entschieden am 16.11.2026**
 
-- **Frage:** Wie hoch sind die Grenzen für `voucher.issue`, `voucher.void`, `voucher.reactivate` und `voucher.redeem`? D11 und D11b verlangen Grenzen, Protokoll und Missbrauchsschutz für alle vier, nennen aber keine Zahlen.
-- **Annahme der Spezifikation:** Was begrenzt wird, steht in Abschnitt 8.3; die Zahlen sind offen.
-- **Empfehlung (ausdrücklich nur ein Vorschlag, keine Entscheidung):**
-  - `voucher.issue`: Höchstwert 50 Einheiten der Shopwährung je Gutschein; 20 je Tag und Website; 1 je Tag und Empfänger.
-  - `voucher.void` und `voucher.reactivate`: je 20 je Tag und Website; höchstens ein Wechsel je Gutschein und Tag; nie mit Erstattung.
-  - `voucher.redeem`: vorsichtig beginnen. Ein Workflow löst nur Gutscheine ein, die **derselbe Workflow-Lauf ausgestellt hat**; falls der Inhaber mehr will, höchstens bis zum Höchstwert von `voucher.issue` (50) je Einlösung, 20 je Tag und Website und 1 je Tag und Gutschein. Begründung: Eine Einlösung verbraucht Geldwert, den ein Kunde bezahlt haben kann; ein falsch gebauter Workflow würde sonst fremde Gutscheine entwerten.
-  - Alle vier Befehle sind ab Werk ausgeschaltet; der Betreiber schaltet sie im Voucher-Kern einzeln ein. Die Zahlen sind feste Obergrenzen des Kerns; der Betreiber kann sie nur senken.
+- **Frage war:** Wie hoch sind die Grenzen für `voucher.issue`, `voucher.void`, `voucher.reactivate` und `voucher.redeem`?
+- **Entscheidung des Inhabers:** Voreinstellungen im Voucher-Kern, der Betreiber kann sie nur senken, alle vier Befehle ab Werk ausgeschaltet.
+  - `voucher.issue`: höchstens 100 EUR je Gutschein; 50 je Tag und Website; 1 je Tag und Empfänger.
+  - `voucher.void` und `voucher.reactivate`: je 50 je Tag und Website.
+  - `voucher.redeem`: **jeder** Gutschein, nicht nur ein selbst ausgestellter; höchstens 100 EUR je Einlösung; 50 je Tag und Website.
+- **In der Spezifikation:** Tabelle in Abschnitt 8.3.1. Die frühere Empfehlung dieses Dokuments (50, 20, nur selbst ausgestellte Gutscheine, ein Wechsel je Gutschein und Tag) ist damit überholt.
+
+### F-05a · Höchstbeträge in Shops ohne Euro
+
+- **Frage:** Die Höchstbeträge sind in Euro entschieden. Was gilt in einem Shop mit anderer Währung?
+- **Annahme der Spezifikation:** Ohne eigenen Eintrag des Betreibers lehnt der Einstiegspunkt Beträge in einer anderen Währung ab (Abschnitt 8.3.1).
+- **Empfehlung:** Der Kern rechnet nicht um und kennt keine Wechselkurse. Er führt je Währung einen festen Höchstbetrag: für EUR 100; für andere Währungen dieselbe Zahl 100 in der Shopwährung nur für eine kurze, im Kern gepflegte Liste von Währungen mit ähnlichem Wert (zum Beispiel CHF, USD, GBP), sonst muss der Betreiber den Betrag einmal selbst eintragen, und bis dahin bleiben `voucher.issue` und `voucher.redeem` aus. Hängt an der offenen Entscheidung zu mehreren Währungen (G6).
 
 ### F-06 · Eine Funktion braucht das Recht eines anderen Add-ons
 
@@ -82,6 +87,7 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 ### F-11 · Der vorläufige Workflow-Provider im Affiliate-Kern — **Entschieden am 16.11.2026 (D13)**
 
 - **Frage war:** Was geschieht mit `wpac_workflow_event` und `wpac_workflow_read()`, die der Affiliate-Kern bereits enthält? Zur Wahl standen: nicht normativ behalten (a), als Quelle der Suite übernehmen (b), vor dem Release abschalten (c).
+- **Umgesetzt im Affiliate-Kern** (Commit `a928a14`, Stand `23f06be`, Wächtertest, Wiedereinführung als AFF-WF-08; 0.15.0 erscheint ohne Provider).
 - **Entscheidung:** Die vorläufigen Workflow-Provider werden vor dem Release aus den kostenlosen Kernen genommen und auf einem geparkten Branch aufbewahrt: im Affiliate-Kern `wpac_workflow_event`, `wpac_workflow_read()` und `docs/WORKFLOW-PROVIDER.md`; im Voucher-Kern der Provider aus Pull Request 16. Sie kommen zurück, wenn diese Spezifikation abgenommen ist.
 - **In der Spezifikation:** Abschnitt 4.4.1, R-4.4 bis R-4.6. `wpac_workflow_read()` ist keine anerkannte Lesefunktion mehr.
 - **Folgefrage, offen:** In welcher Form die Provider-Seiten zurückkehren. Empfehlung: nur als Lesefunktionen (für Gegenlesen und Empfängerauflösung, F-13), nicht als eigener Umschlag; dafür eine MINOR-Version dieser Spezifikation.
@@ -151,5 +157,5 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 | W-9 | D4 gegen den Stand | „Vertragskonstante je Kern, wie Affiliate, Voucher und Pass sie haben“: Der Lizenzserver wird durch D2 Provider und hat keine. Pass Captain versioniert zusätzlich über `_v1` im Namen | R-3.1 gilt für jeden Provider (F-03); `_v1` im Namen bleibt daneben erlaubt |
 | W-10 **(entschieden am 16.11.2026, D13)** | D5 und D9 gegen C5 und den Stand in Affiliate | Entschieden war, dass die Workflow-Schnittstelle des Affiliate-Kerns auf die Workflow-Antworten wartet (C5). Sie wurde vorher nach `main` gemergt (`AC:TODO.md`, E9) und baut einen Umschlag im Kern | aufgelöst: Der Provider wird vor dem Release entfernt (F-11) |
 | W-11 **(für Voucher entschieden, D13; für Form offen)** | D10 gegen den Stand in Form Captain | Keine Übergabe von Mails. Form Captain hat sie auf seinem Branch gebaut | F-12 |
-| W-12 **(Umfang entschieden am 16.11.2026, D11b; Zahlen offen)** | D11 und D11b in sich | D11b legt vier Befehle mit Grenzen fest, nennt aber weder Zahlen noch den Bezug von „je Tag“ (Website, Empfänger, Gutschein) und nicht, welche Gutscheine ein Workflow einlösen darf | Abschnitt 8.3 nennt, was begrenzt wird; Zahlen als Empfehlung in F-05 |
+| W-12 **(entschieden am 16.11.2026: D11b und Antwort zu F-05)** | D11 und D11b in sich | D11b legt vier Befehle mit Grenzen fest, nennt aber weder Zahlen noch den Bezug von „je Tag“ (Website, Empfänger, Gutschein) und nicht, welche Gutscheine ein Workflow einlösen darf | aufgelöst: Zahlen und Bezug stehen in Abschnitt 8.3.1; offen bleibt nur die Währung (F-05a) |
 | W-13 | D9 gegen D7 | „Speichern und Wiederholen beim Abnehmer“ garantiert nichts vor dem Speichern. Die Review-Einladung hängt an genau diesen Ereignissen | Verlust wird hingenommen und benannt (R-7.2, F-14) |

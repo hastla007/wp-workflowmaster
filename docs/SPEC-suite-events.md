@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | **1.0.0-draft.2** |
+| Version | **1.0.0-draft.3** |
 | Stand | 16.11.2026 |
 | Status | Entwurf zur Abnahme durch den Inhaber. Gebaut ist davon nichts. |
 | Ort | `hastla007/wp-workflowmaster`, `docs/SPEC-suite-events.md` (Entscheidung D1) |
@@ -25,7 +25,7 @@ Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D1
 |---|---|---|---|---|
 | VC | `wp-couponmaster` (Voucher Captain) | `claude/sharp-mendel-xiiwf3` | `df3eee2` | 1.2.0 (`voucher-captain.php:6`) |
 | PC | `wp-passmaster` (Pass Captain) | `claude/sharp-mendel-xiiwf3` | `bca8d85a` | 1.5.0 (`pass-captain.php:6`) |
-| AC | `wpaffiliatemaster` (Affiliate Captain) | `claude/sharp-mendel-xiiwf3` | `dbb319d` (gelesen zwischen `70c23b7` und `dbb319d`) | 0.15.0 (`affiliate-captain.php:6`) |
+| AC | `wpaffiliatemaster` (Affiliate Captain) | `claude/sharp-mendel-xiiwf3` | `23f06be` (Katalog gelesen zwischen `70c23b7` und `dbb319d`; Entfernung des Workflow-Providers geprüft an `23f06be`) | 0.15.0 (`affiliate-captain.php:6`) |
 | LIC | `wp-license` (Lizenzserver) | `claude/sharp-mendel-xiiwf3` | `241ae7a` (committeter Stand) | 0.2.0 (`wp-license.php:23`) |
 | CP | `captain-pro` (Add-ons, Kernel) | `claude/sharp-mendel-xiiwf3` | `5e333f7` (Arbeitsverzeichnis mit uncommitteten Änderungen) | – |
 | FC | `wp-formmaster` (Form Captain) | `claude/youthful-babbage-wkrqyv` | `0017025` | 1.0.0-dev |
@@ -253,23 +253,23 @@ Geldbeträge sind erlaubt (D8b): Der Adapter KANN bei `affiliate.sale.attributed
 
 Nicht im Katalog: `wpac_mail_sent`, `wpac_mail_failed` und `wpac_contract_not_queued` (enthalten Kundendaten, `AC:docs/CONTRACT.md:210`), `wpac_referral_captured`, `wpac_refund_after_correction`, `wpac_statement_generated`, `wpac_storno_generated`.
 
-#### 4.4.1 Der vorläufige Workflow-Provider im Affiliate-Kern: wird vor dem Release 0.15.0 entfernt (D13)
+#### 4.4.1 Der vorläufige Workflow-Provider im Affiliate-Kern: entfernt (D13)
 
-Der Stand von Affiliate Captain, der für diese Spezifikation gelesen wurde, enthält eine eigene Provider-Seite für Workflow Captain: `wpac_workflow_event( array $envelope )` (`AC:src/Core/WorkflowEvents.php:179`), `wpac_workflow_read()` und `wpac_workflow_event_types()` (`AC:src/functions.php:384`, `:396`) sowie `AC:docs/WORKFLOW-PROVIDER.md`. Sie entstand vor den Entscheidungen des Inhabers.
+Affiliate Captain enthielt bis zum 16.11.2026 eine eigene Provider-Seite für Workflow Captain (`wpac_workflow_event( array $envelope )`, `wpac_workflow_read()`, `wpac_workflow_event_types()`, `docs/WORKFLOW-PROVIDER.md`). Sie entstand vor den Entscheidungen des Inhabers.
 
-**Entschieden (D13, 16.11.2026):** Die vorläufigen Workflow-Provider werden vor dem Release aus den kostenlosen Kernen genommen und auf einem geparkten Branch aufbewahrt: im Affiliate-Kern die drei genannten Funktionen und das Dokument, im Voucher-Kern der Provider aus Pull Request 16 (Umschlag `vcap_workflow_event`, Lizenzwissen `edition`/`entitlement`, Mail-Übergabe). Sie kommen frühestens zurück, wenn diese Spezifikation abgenommen ist, und dann nur in einer Form, die ihr entspricht.
+**Stand (D13, umgesetzt am 16.11.2026):** Die Provider-Seite ist aus dem Affiliate-Kern entfernt (Commit `a928a14`, Stand `23f06be`). Im Code und in den Dokumenten des Kerns kommt `wpac_workflow` nicht mehr vor; ein Wächtertest in `AC:tests/run.php:365-372` schlägt fehl, sobald die Schnittstelle zurückkehrt, bevor die Aufgabe AFF-WF-08 abgehakt ist. Affiliate Captain 0.15.0 erscheint **ohne** Workflow-Provider; der Vertrag bleibt 1.4.0 (`AC:affiliate-captain.php:41`). Die Wiedereinführung ist dort als AFF-WF-08 geführt und setzt voraus, dass die drei Add-ons im Verkauf sind (D12) und diese Spezifikation abgenommen ist. Für den Voucher-Kern gilt dieselbe Entscheidung für den Provider aus Pull Request 16 (Umschlag `vcap_workflow_event`, Lizenzwissen, Mail-Übergabe); ob sie dort schon umgesetzt ist, ist zu prüfen (Z-16).
 
-- R-4.4 `wpac_workflow_event`, `wpac_workflow_read()`, `wpac_workflow_event_types()` und `vcap_workflow_event` sind **nicht normativ**. Kein Adapter, kein Consumer und kein Dokument DARF sich auf sie verlassen. Quelle der Affiliate-Ereignisse sind allein die 21 Actions der Tabelle oben.
+- R-4.4 `wpac_workflow_event`, `wpac_workflow_read()`, `wpac_workflow_event_types()` und `vcap_workflow_event` gibt es in keinem veröffentlichten Kern. Sie sind **nicht normativ**; kein Adapter, kein Consumer und kein Dokument DARF sie voraussetzen. Quelle der Affiliate-Ereignisse sind allein die 21 Actions der Tabelle oben.
 - R-4.5 Kein Kern baut einen eigenen Umschlag für die Suite (D5, D9, R-6.1). Ein Kern, der später wieder eine Provider-Seite bekommt, braucht dafür eine MINOR-Version dieser Spezifikation, die sie beschreibt.
-- R-4.6 `wpac_workflow_read()` ist **keine** anerkannte Lesefunktion. Welche Lesefunktionen ein Adapter für Affiliate Captain nutzt, ist eine offene Aufgabe (Abschnitt 8.1, Z-07).
+- R-4.6 `wpac_workflow_read()` existiert nicht mehr und ist keine Lesefunktion im Sinn von 8.1. Welche Lesefunktionen ein Adapter für Affiliate Captain nutzt, ist eine offene Aufgabe (Abschnitt 8.1, Z-07).
 
-Zur Einordnung der vier im Affiliate-Repository geführten Abweichungen (dort AFF-WF-07), falls die Provider-Seite später zurückkehrt:
+Für die Wiedereinführung (AFF-WF-08) gilt zu den vier dort geführten Abweichungen (AFF-WF-07):
 
 | Nr. | Abweichung | Regel dieser Spezifikation |
 |---|---|---|
 | a | Umschlag des Kerns ohne Benutzer-ID | unerheblich: `actor_user_id` ist optional und für Affiliate-Ereignisse in Version 1 nicht gesetzt |
 | b | `code_request.*` enthält den Partnercode | **erlaubt** (D8b): Der öffentliche Partnercode ist kein geheimer Code |
-| c | `AC:docs/WORKFLOW-PROVIDER.md:155` erlaubt `wpac_create_adjustment()` nach einer menschlichen Aktion | **bleibt verboten** in Version 1 (D11, D11b, Abschnitt 8.2) |
+| c | das entfernte Dokument erlaubte `wpac_create_adjustment()` nach einer menschlichen Aktion | **bleibt verboten** in Version 1 (D11, D11b, Abschnitt 8.2) |
 | d | eigene Namen und eigener Umschlag (`version`, `object`, `site_id`, UUID Version 5, Zeit ohne `T` und `Z`, fünf Statuswechsel als `commission.status_changed`, kein Produktpräfix) | es gelten die Namen aus 4.4 und der Umschlag aus Abschnitt 6 |
 
 `subject`: Affiliate Captain nutzt Datensatznummern (`affiliate_id`, `commission_id`, `payout_id`); `id_kind` = `record` (F-02).
@@ -394,7 +394,7 @@ Stand je Provider:
 |---|---|---|
 | Voucher Captain | ja für alle Actions mit Vermerk „after COMMIT“ (9 der 15 Actions in 4.3); für die sechs ohne Vermerk zu prüfen (Z-05) | `VC:docs/HOOKS.md:5-6`, `VC:CONNECTORS.md:39` |
 | Pass Captain | ja für 9 der 13 Actions in 4.2 (zum Teil nur für einen von mehreren Auslöseorten); 4 zu prüfen | Fundstellen in 4.2 |
-| Affiliate Captain | ja für alle 21 | `AC:docs/CONTRACT.md:210` |
+| Affiliate Captain | ja für alle 21. Der Kern feuert nur diese fachlichen Actions; eine zusätzliche Workflow-Action gibt es seit der Entfernung nach D13 nicht mehr | `AC:docs/CONTRACT.md:210` |
 | Lizenzserver | zu prüfen für alle 3; der Lizenzserver sagt selbst „keine Garantie nach dem Commit“ | `LIC:docs/TODO.md`, Abschnitt 12 |
 
 ### 7.3 Idempotenzschlüssel
@@ -472,7 +472,7 @@ Mit Wirkung im Provider, genau vier, alle im Voucher-Kern (D11b):
 | `voucher.reactivate` | einen gesperrten Gutschein reaktivieren |
 | `voucher.redeem` | einen Gutschein ganz oder teilweise einlösen |
 
-Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`); `wpac_workflow_read()` zählt nicht dazu (R-4.6). Für Voucher Captain (`VC:API.md`) und Pass Captain (Klassen des Kerns, `PC:docs/SUITE-EVENTS.md:24-25`) sind die genauen Funktionen zu prüfen (Z-07). Im Lizenzserver fehlt eine Lesefassade (`LIC:docs/TODO.md`, WFC-LIC-05). Die Liste der anerkannten Lesefunktionen je Provider ist eine offene Aufgabe dieses Repositorys (`TODO.md`, WF-SPEC-15).
+Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`); `wpac_workflow_read()` gibt es nicht mehr (R-4.6). Für Voucher Captain (`VC:API.md`) und Pass Captain (Klassen des Kerns, `PC:docs/SUITE-EVENTS.md:24-25`) sind die genauen Funktionen zu prüfen (Z-07). Im Lizenzserver fehlt eine Lesefassade (`LIC:docs/TODO.md`, WFC-LIC-05). Die Liste der anerkannten Lesefunktionen je Provider ist eine offene Aufgabe dieses Repositorys (`TODO.md`, WF-SPEC-15).
 
 Markierungen und Notizen liegen in Version 1 nur im Consumer. Eine Notiz im Provider ist kein Befehl der Version 1.
 
@@ -505,11 +505,22 @@ Ein Adapter, der einen dieser Wege anbietet, erfüllt diese Spezifikation nicht.
 - R-8.3a Ein zweiter Aufruf mit demselben `idempotency_key` bewirkt nichts und liefert das Ergebnis des ersten.
 - R-8.3b Zählen und Ausführen sind im Kern atomar: Zwei gleichzeitige Aufrufe dürfen keine Grenze gemeinsam überschreiten.
 - R-8.3c Jeder Aufruf, auch ein abgelehnter, steht im Protokoll des Kerns mit Befehl, Workflow, Lauf, Schritt, Gutschein-ID, Betrag, Ergebnis und Zeitpunkt; ohne Code.
-- R-8.3d Der Betreiber KANN jede Grenze senken und jeden der vier Befehle einzeln abschalten. Er KANN keine Grenze über den festen Höchstwert des Kerns anheben. Ab Werk sind alle vier ausgeschaltet (Empfehlung, F-05).
+- R-8.3d Der Betreiber KANN jede Grenze senken und jeden der vier Befehle einzeln abschalten. Er KANN keine Grenze über den festen Höchstwert des Kerns anheben. Ab Werk sind alle vier ausgeschaltet (entschieden, F-05).
 - R-8.3e Das Ergebnis enthält `voucher_id` und Zustand, nie den Code. Mails zu Ausstellung, Sperre und Einlösung versendet der Kern nach seinen eigenen Regeln (D10).
 - R-8.3f Die Einstiegspunkte kommen ohne jede Lizenz- oder Rechteprüfung aus (R-2.4).
 
-Die Zahlen der Grenzen hat der Inhaber nicht festgelegt. Die Spalte „Grenze“ unten nennt, was begrenzt wird; die Zahlen sind Empfehlungen in F-05.
+**Feste Grenzen (Entscheidung des Inhabers vom 16.11.2026 zu F-05).** Die Zahlen sind Voreinstellung und zugleich Obergrenze im Voucher-Kern; der Betreiber kann sie nur senken. Alle vier Befehle sind ab Werk ausgeschaltet.
+
+| Befehl | Höchstbetrag | Anzahl je Kalendertag und Website | Weitere Grenze |
+|---|---|---|---|
+| `voucher.issue` | 100 EUR je Gutschein | 50 | 1 je Kalendertag und Empfänger |
+| `voucher.void` | – | 50 | – |
+| `voucher.reactivate` | – | 50 | – |
+| `voucher.redeem` | 100 EUR je Einlösung | 50 | – ; **jeder** Gutschein darf eingelöst werden, nicht nur ein vom Workflow ausgestellter |
+
+Ein Aufruf über dem Höchstbetrag wird abgelehnt, nicht gekürzt. Der Kalendertag richtet sich nach der Zeitzone der Website; gezählt wird über alle Workflows zusammen. Die Tageszähler für Sperren und Reaktivieren sind getrennt.
+
+Die Beträge sind in Euro entschieden. Was in einem Shop mit anderer Währung gilt, ist nicht entschieden (F-05a). Bis dahin gilt: Der Einstiegspunkt lehnt Beträge ab, wenn die Shopwährung nicht EUR ist und der Betreiber keinen eigenen, niedrigeren oder gleichen Höchstbetrag in seiner Währung eingetragen hat.
 
 #### 8.3.2 `voucher.issue`
 
@@ -519,7 +530,7 @@ Die Zahlen der Grenzen hat der Inhaber nicht festgelegt. Die Spalte „Grenze“
 | `amount_minor`, `currency` | ja | fester Betrag in der Währung des Shops; keine Prozent-Gutscheine |
 | `product_id` | nein | Gutscheinprodukt, dessen Einstellungen gelten |
 
-Grenzen: Höchstwert je Gutschein (darüber wird abgelehnt, nicht gekürzt); Anzahl je Kalendertag und Website; Anzahl je Kalendertag und Empfänger.
+Grenzen: siehe Tabelle in 8.3.1.
 
 Stand im Kern heute, `Issuer::issue_standalone( array $args )` (`VC:src/Issuer.php:987`):
 
@@ -540,7 +551,7 @@ Der neue Einstiegspunkt MUSS zusätzlich einen eigenen Code des Aufrufers, `allo
 |---|---|---|
 | `voucher_id` | ja | der Gutschein |
 
-Grenzen: Anzahl je Kalendertag und Website, getrennt für Sperren und Reaktivieren; höchstens ein Wechsel je Gutschein und Tag (verhindert Pendeln). `voucher.void` löst **keine** Erstattung aus und bucht nichts zurück (8.2); `voucher.reactivate` gilt nur für Gutscheine, die nicht wegen einer Erstattung gesperrt wurden.
+Grenzen: siehe Tabelle in 8.3.1. `voucher.void` löst **keine** Erstattung aus und bucht nichts zurück (8.2); `voucher.reactivate` gilt nur für Gutscheine, die nicht wegen einer Erstattung gesperrt wurden.
 
 Stand im Kern heute: `Issuer::void( Voucher $voucher, string $note = '', bool $refund = false ): bool` (`VC:src/Issuer.php:2012`) und `Issuer::reactivate( Voucher $voucher, bool $after_refund = false ): bool` (`VC:src/Issuer.php:2072`). Beide nehmen ein `Voucher`-Objekt, eine freie Notiz und einen Schalter für den Erstattungsfall. Ob sie eine Berechtigung prüfen, einen Idempotenzschlüssel kennen und was `$refund = true` bucht, ist zu prüfen (Z-15). Tageszähler fehlen. Der Branch von Pull Request 16 soll eigene Dienste für Sperren und Reaktivieren enthalten; das war im gelesenen Stand nicht prüfbar (Z-15).
 
@@ -554,7 +565,7 @@ Der neue Einstiegspunkt MUSS `$refund` beziehungsweise `$after_refund` fest auf 
 | `amount_minor`, `currency` | ja | einzulösender Betrag; nie mehr als der Restwert |
 | `target` | ja | fester Schlüssel des Adapters dafür, wofür eingelöst wird |
 
-Grenzen: Höchstbetrag je Einlösung; Anzahl je Kalendertag und Website; Anzahl je Kalendertag und Gutschein. Dazu die Einschränkung, welche Gutscheine ein Workflow überhaupt einlösen darf (Empfehlung in F-05: nur Gutscheine, die derselbe Workflow-Lauf ausgestellt hat, oder bis zum Höchstwert aus `voucher.issue`).
+Grenzen: siehe Tabelle in 8.3.1. Eingelöst wird nie mehr als der Restwert des Gutscheins.
 
 Stand im Kern heute: Die Einlöse-API `API\V1\RedemptionService` arbeitet in zwei Schritten und **über den Code**: `reserve( string $code, array $args )` (`VC:src/API/V1/RedemptionService.php:150`), danach `commit( string $key, array $args )` (`:378`); dazu `release()` (`:389`) und `refund()` (`:408`). Sie hat einen Idempotenzschlüssel (`redemption_key`) und feuert `vcap_voucher_redeemed` genau einmal nach dem Commit (`VC:docs/HOOKS.md:53`). Einen Weg über die `voucher_id`, Tageszähler und einen Höchstbetrag gibt es nicht; ob die API eine Berechtigung prüft, ist zu prüfen (Z-15).
 
@@ -694,7 +705,7 @@ Drei Versionen sind voneinander unabhängig:
 - R-13.3 Der Consumer MUSS unbekannte Felder in `data` hinnehmen und unbekannte Ereignistypen speichern, ohne einen Workflow zu starten.
 - R-13.4 Ein Adapter nennt je Provider die niedrigste Vertragsversion, die er braucht, und die MAJOR-Version, die er kennt. Ist der Vertrag des Providers älter oder hat er eine höhere MAJOR-Version, meldet sich der Adapter nicht an und zeigt den Grund. In `captain-pro` geschieht das über `Feature::requires()` mit dem Eintrag `constants` (`CP:packages/addon-kernel/src/CoreCapabilities.php:35-36`, `:92`).
 - R-13.5 Ändert ein Provider eine Action des Katalogs additiv (neues Argument am Ende, neues Feld im Array), bleibt der Katalog gültig. Der Adapter gibt neue Werte erst weiter, wenn eine MINOR-Version dieser Spezifikation sie erlaubt (R-5.2).
-- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0. Für die vier Gutschein-Befehle zusätzlich die Vertragsversion von Voucher Captain, die die Einstiegspunkte aus 8.3 bringt. Die Mindestversion von Affiliate Captain ist das erste Release ohne den vorläufigen Workflow-Provider (D13); ob es die Nummer 0.15.0 trägt, entscheidet jenes Repository.
+- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0 (erscheint ohne Workflow-Provider, D13). Für die vier Gutschein-Befehle zusätzlich die Vertragsversion von Voucher Captain, die die Einstiegspunkte aus 8.3 bringt.
 - R-13.7 Der Consumer führt selbst eine Vertragskonstante für die Schnittstelle, an der sich Adapter anmelden. Ihr Name ist offen (F-03).
 - R-13.8 Ein Dokument eines anderen Repositorys, das Ereignisse dieses Katalogs beschreibt, verweist auf diese Spezifikation und legt keine eigenen Namen, Umschläge oder Garantien für die Suite fest.
 
@@ -770,11 +781,13 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 | Z-12 | Ob der Code von Review Captain die Actions für Anfragen auslöst, die sein Workflow-Vertrag nennt | Review Captain: `src/`, `docs/hooks.md` |
 | Z-13 | Der Stand von `captain-pro` wurde im Arbeitsverzeichnis gelesen, das uncommittete Änderungen enthielt; in Affiliate Captain war während des Lesens zeitweise eine Datei uncommittet | nach dem nächsten Commit dort gegenprüfen |
 | Z-15 | Für Sperren, Reaktivieren und Einlösen im Voucher-Kern: Berechtigungsprüfung, Idempotenz, Wirkung von `$refund`/`$after_refund`; ob der Branch von Pull Request 16 dafür eigene Dienste enthält | Voucher Captain: `src/Issuer.php:2012-2110`, `src/API/V1/RedemptionService.php`, Branch `hvollo-refactors` |
+| Z-16 | Ob der vorläufige Workflow-Provider aus Pull Request 16 im Voucher-Kern schon entfernt ist (D13) | Voucher Captain: Branches `hvollo-refactors` und `main` |
 | Z-14 | Die Aufgabenstellung nennt 129 Hooks im Lizenzserver; gezählt wurden 36 Actions und 94 Filter, zusammen 130 | Lizenzserver: `docs/EXTENSION-POINTS.md` |
 
 ## 16. Änderungsverlauf
 
 | Version | Datum | Änderung |
 |---|---|---|
+| 1.0.0-draft.3 | 16.11.2026 | F-05 entschieden: feste Grenzen der vier Gutschein-Befehle als Tabelle in 8.3.1 (100 EUR und 50 je Tag; Einlösen jedes Gutscheins); neue Teilfrage F-05a für Shops ohne Euro. D13 im Affiliate-Kern umgesetzt: 4.4.1, R-4.4 bis R-4.6, 7.2 und R-13.6 nennen die Entfernung als Stand; neue Stelle Z-16 für den Voucher-Kern. |
 | 1.0.0-draft.2 | 16.11.2026 | Folgeentscheidungen eingearbeitet. D13: Abschnitt 4.4.1 neu, die vorläufigen Workflow-Provider werden vor dem Release aus den Kernen entfernt, `wpac_workflow_read()` ist keine anerkannte Lesefunktion. D8b: öffentlicher Partnercode und Geldbeträge erlaubt (R-5.1a, Katalog 4.4, Schema, zwei neue Beispiele). D11b: vier Gutschein-Befehle statt einem (Abschnitt 8 neu, Verbotsliste, Lizenzmatrix, R-13.6, P-8, A-9, neue Stelle Z-15). **Berichtigung:** Abschnitt 7.2 nannte für Voucher Captain „10 der 15“ Actions nach Commit und „fünf“ ohne Vermerk; richtig sind 9 und sechs. |
 | 1.0.0-draft | 16.11.2026 | Erste Fassung nach den Entscheidungen D1, D2 und D4 bis D12 vom 16.11.2026. Katalog: Pass Captain 13, Voucher Captain 16, Affiliate Captain 21, Lizenzserver 3 Ereignisse. Schema und vier Beispiele. |
