@@ -2,7 +2,7 @@
 
 Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
-**Noch offen:** F-02 bis F-04, F-05a, F-06, F-08 bis F-10, F-13 bis F-16, F-19 (ohne Form), F-21 und W-1 bis W-9, W-13. **Am 16.11.2026 entschieden:** F-01, F-07, F-12 (Form und Review), F-18a, F-20, F-22, W-11; dazu: Lizenzserver liest über `LicenseReader` (Branch `claude/zen-babbage-7q4nac`), die eigene Lesefassade `ReadFacade` ist zurückgezogen; Pass Captain 1.6.0 und Voucher Captain 1.3.0 erhöhen ihre Plugin-Version für die neuen Lesefunktionen.
+**Noch offen:** F-02 bis F-04, F-05a, F-06, F-08 bis F-10, F-13 bis F-16, F-19 (ohne Form), F-21, F-23 und W-1 bis W-9, W-13. **Am 16.11.2026 entschieden:** F-01, F-07, F-12 (Form und Review), F-18a, F-20, F-22, W-11; dazu: Lizenzserver liest über `LicenseReader` (Branch `claude/zen-babbage-7q4nac`), die eigene Lesefassade `ReadFacade` ist zurückgezogen; Pass Captain 1.6.0 und Voucher Captain 1.3.0 erhöhen ihre Plugin-Version für die neuen Lesefunktionen.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -77,6 +77,7 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 
 - **Frage:** Liegt der Adapter für ein Produkt in Workflow Captain Pro oder im Add-on des Produkts? Und wer plant eine Review-Einladung: ein Workflow oder Review Captain Pro?
 - **Stand:** D7 sagt „nur in Add-ons“. `konzept.md` legt alle Suite-Provider in Workflow Captain Pro. Review Captain plant eigene Adapter in Review Captain Pro (`RC:docs/contracts/workflow-provider-v1.md`).
+- **Stand 16.11.2026 (Spezifikation 1.0.0-draft.8):** Review Captain hat auf `main` (`863b92b`) die Kern-Schnittstelle `plan_request()`/`cancel_request()`, die an einen Planer von Review Captain Pro delegiert (Filter `review_captain_request_planner_v1`); Review Captain Pro (Branch `claude/review-captain-pro`, Pull Request 10) meldet noch keinen Planer an. Der Katalog `review.*` (4.6.3) steht; der Adapter liegt in Workflow Captain Pro (`ReviewAdapter`) und verlangt zusätzlich Review Captain Pro. Ob ein Workflow Einladungen planen darf, ist F-23.
 - **Empfehlung:** Adapter für Workflow liegen in Workflow Captain Pro, je Produkt eine Funktion, die zusätzlich die Lizenz des Produkt-Add-ons verlangt (F-06). So gibt es eine Stelle, die den Umschlag kennt. Die Review-Einladung aus Einlass und Einlösung plant in der ersten Version der Adapter in Review Captain Pro nach denselben Regeln (Katalog, verbotene Werte); ein Workflow bekommt die Review-Ereignisse später als Auslöser.
 
 ### F-09 · Was heißt „Pro-Lizenz des Produkts“
@@ -189,6 +190,13 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Frage:** Wie heißen Ereignisse eines eigenen Connectors (zum Beispiel der Projektprodukte für BoatingSchool und LearnBoating), wenn das Schema in `type` und `source.product` nur die Captain-Produkte zulässt?
 - **Stand:** Adapter- und Aktions-Schnittstelle des Kerns (Plugin 0.2.0) passen auch für Connectoren; nur das Schema schließt sie aus. `TODO.md` WF-CONNECTOR-01 verlangt einen öffentlichen, versionierten Connector-Vertrag.
 - **Empfehlung:** Präfix `x<schlüssel>` für die Typen und der Connector-Schlüssel als `source.product`, als MINOR-Version der Spezifikation; alle übrigen Regeln unverändert. Entwurf: [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md).
+
+### F-23 · Darf ein Workflow eine Review-Einladung planen oder einen Bewertungsentwurf anlegen?
+
+- **Frage:** Review Captain bietet seit `main` `863b92b` im Container-Service `workflow` `plan_request()`/`cancel_request()` (Einladung planen oder abbrechen; Einwilligung, Opt-out, Sperrliste, Frequenzgrenze und Plattformziel prüft der Planer von Review Captain Pro, Rückgabe mit Status) und `create_draft()`/`cancel_draft()` (genau ein lokaler, nicht veröffentlichter Entwurf, idempotent). Sollen das Befehle der Suite werden (`review.request.plan`, `review.request.cancel`, `review.draft.create`)?
+- **Stand:** 8.1 lässt in Version 1 nur die vier Gutschein-Befehle mit Wirkung im Provider zu (D11b); 8.2 verbietet das Unterdrücken oder erneute Auslösen von Mails eines Kerns. Eine Einladung ist eine Mail an einen Kunden (Abschnitt 9, D10). Der Planer von Review Captain Pro ist noch nicht gebaut; ohne ihn antwortet der Kern `rc.contract.unavailable`.
+- **Annahme der Spezifikation:** keine Befehle für Review Captain in Version 1 (R-4.30); der Adapter bietet die Methoden nicht an.
+- **Empfehlung:** Für Version 1 so bestätigen. Eine Einladung plant Review Captain Pro aus seinen eigenen Quellen (F-08). Später in einer MINOR-Version höchstens `review.request.plan` und `review.request.cancel` zulassen, nur über den Planer von Review Captain Pro mit allen Schutzregeln, idempotent über den Schlüssel des Aufrufers, mit Rückgabe des Status und ohne Kontaktdaten im Workflow; `create_draft()` nicht als Befehl, weil ein Entwurf Bewertungstext und Namen bräuchte (R-5.1).
 
 ## Teil 2: Widersprüche zwischen den Entscheidungen vom 16.11.2026
 

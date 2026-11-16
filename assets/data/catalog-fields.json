@@ -288,6 +288,43 @@
   "event_id": "integer",
   "reason_class": "string"
  },
+ "review.review.created": {
+  "kind": "string",
+  "platform": "string",
+  "origin": "string",
+  "status": "string",
+  "verification": "string",
+  "context_type": "string",
+  "context_id": "string",
+  "experience_source": "string",
+  "rating_value": "number",
+  "rating_scale_min": "number",
+  "rating_scale_max": "number"
+ },
+ "review.review.removed": {
+  "kind": "string",
+  "platform": "string",
+  "origin": "string",
+  "status": "string",
+  "context_type": "string",
+  "context_id": "string",
+  "experience_source": "string",
+  "removal": "string"
+ },
+ "review.review.status_changed": {
+  "kind": "string",
+  "platform": "string",
+  "origin": "string",
+  "status": "string",
+  "previous_status": "string",
+  "verification": "string",
+  "context_type": "string",
+  "context_id": "string",
+  "experience_source": "string",
+  "rating_value": "number",
+  "rating_scale_min": "number",
+  "rating_scale_max": "number"
+ },
  "voucher.gift_card.topped_up": {
   "amount_minor": "integer",
   "currency": "currency",

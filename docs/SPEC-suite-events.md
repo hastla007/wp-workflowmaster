@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | **1.0.0-draft.7** |
+| Version | **1.0.0-draft.8** |
 | Stand | 16.11.2026 |
 | Status | Entwurf zur Abnahme durch den Inhaber. Seit dem 16.11.2026 gebaut (Plugin `workflow-captain` 0.2.x, Abweichung von D12). |
 | Ort | `hastla007/wp-workflowmaster`, `docs/SPEC-suite-events.md` (Entscheidung D1) |
@@ -29,7 +29,7 @@ Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D1
 | LIC | `wp-license` (Lizenzserver) | `claude/sharp-mendel-xiiwf3` | `241ae7a` (committeter Stand); Z-10 und Z-14 am 16.11.2026 an `241ae7a`, `a113568` und `main` `c269e07` geprüft | 0.2.0 (`wp-license.php:23`) |
 | CP | `captain-pro` (Add-ons, Kernel) | `claude/sharp-mendel-xiiwf3` | `5e333f7` (Arbeitsverzeichnis mit uncommitteten Änderungen); am 16.11.2026 gegengeprüft an `07b5365` und `main` `2f23da7`: alle Fundstellen in `packages/addon-kernel` unverändert | – |
 | FC | `wp-formmaster` (Form Captain) | `claude/youthful-babbage-wkrqyv` | `0017025`; Z-11 am 16.11.2026 an `main` `6f4785f` und `0e6aea1` geprüft; Katalog 4.6.1 an `main` `6f4785f` und `claude/plugin-todo-liste-2a83v4` `fc1f206` | 1.0.0-dev |
-| RC | `wp-reviewmaster` (Review Captain) | `claude/sleepy-gates-6mm217` | `faa5f89`; Z-12 am 16.11.2026 an `b35fb95` geprüft (`main` `33d1362` enthält keinen PHP-Code, 4.6.3) | 0.1.0-dev |
+| RC | `wp-reviewmaster` (Review Captain) | `main` | `863b92b` (Pull Request 3, 16.11.2026; Katalog 4.6.3), Vertragskonstante am Branch `claude/plugin-todo-liste-2a83v4`; früher `claude/sleepy-gates-6mm217` `faa5f89`, Z-12 an `b35fb95` | 0.1.0-dev |
 | CC | `wp-coursemaster` (Course Captain) | `claude/blissful-curie-tuuf7q` | `ae1bce9` | kein Code |
 
 **Begriffe.**
@@ -102,11 +102,11 @@ Stand der Konstanten:
 | Pass Captain 1.5.0 | `WPCAP_CONTRACT_VERSION` | `1.1.0` | `PC:pass-captain.php:166` | `PC:docs/EXTENSIONS.md:33-41` |
 | Affiliate Captain 0.15.0 | `WPAC_CONTRACT_VERSION` | `1.4.0` | `AC:affiliate-captain.php:41` | `AC:docs/CONTRACT.md:5` |
 | Form Captain 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` | `1.0.0` | `FC:form-captain.php:29` | `FC:docs/RELEASE.md:16` |
-| Review Captain 0.1.0-dev | fehlt | – | nur `REVIEW_CAPTAIN_VERSION` (`RC:review-captain.php:20`) | Stabilitätsstufen je Hook in `RC:docs/adr/0007-oeffentliche-hooks-v1.md` |
+| Review Captain 0.1.0-dev | `REVIEW_CAPTAIN_CONTRACT_VERSION` (Branch `claude/plugin-todo-liste-2a83v4`; auf `main` `863b92b` fehlt sie) | `1.0.0` | `RC:review-captain.php:22` (Branch); auf `main` nur `REVIEW_CAPTAIN_VERSION` (`RC:review-captain.php:20`) und `WorkflowService::CONTRACT` = `1.0` | `RC:docs/contracts/README.md` („Vertragsversion“, Branch), Stabilitätsstufen je Hook in `RC:docs/adr/0007-oeffentliche-hooks-v1.md` |
 | Course Captain | fehlt | – | kein Code | – |
 | Lizenzserver 0.2.0 | fehlt | – | nur `WPLC_VERSION` (`LIC:wp-license.php:23`) | – |
 
-Die drei vorhandenen Kerne erfüllen R-3.1. Für Review Captain, Course Captain und den Lizenzserver ist die Konstante eine Aufgabe des jeweiligen Repositorys (F-03).
+Die drei vorhandenen Kerne erfüllen R-3.1. Review Captain erfüllt R-3.1 auf seinem Branch `claude/plugin-todo-liste-2a83v4` (RC-2), noch nicht auf `main`. Für Course Captain und den Lizenzserver ist die Konstante eine Aufgabe des jeweiligen Repositorys (F-03).
 
 ### 3.2 „Seit“-Tabelle
 
@@ -367,7 +367,7 @@ Weitere vorhandene Actions (zum Beispiel `wplc/license_owner_changed`, `wplc/act
 
 ### 4.6 Form, Review und Course Captain
 
-Die Präfixe `form.`, `review.` und `course.` sind reserviert. Seit 1.0.0-draft.7 (MINOR nach R-13.1: neuer Provider) hat Form Captain einen Katalog (4.6.1, 4.6.2). Review Captain und Course Captain haben noch keinen (4.6.3, 4.6.4). Eigene Workflow-Verträge dieser Kerne sind nicht normativ (F-12 wie D13, R-13.8): `FC:docs/WORKFLOW-CONTRACT.md` ist zurückgezogen, die Mail-Übergabe `form_captain_mail_handoff` ist entfernt (`FC` `fc1f206`, D10).
+Die Präfixe `form.`, `review.` und `course.` sind reserviert. Seit 1.0.0-draft.7 (MINOR nach R-13.1: neuer Provider) hat Form Captain einen Katalog (4.6.1, 4.6.2), seit 1.0.0-draft.8 Review Captain (4.6.3). Course Captain hat noch keinen (4.6.4). Eigene Workflow-Verträge dieser Kerne sind nicht normativ (F-12 wie D13, R-13.8): `FC:docs/WORKFLOW-CONTRACT.md` ist zurückgezogen, die Mail-Übergabe `form_captain_mail_handoff` ist entfernt (`FC` `fc1f206`, D10); `RC:docs/contracts/workflow-provider-v1.md` ist als nicht normativ gekennzeichnet (RC-1).
 
 #### 4.6.1 Form Captain (`source.product` = `form-captain`, 8 Actions, 8 Ereignisse)
 
@@ -426,9 +426,41 @@ Antworten einer Einsendung sind personenbezogene Daten oder Freitext. Sie gehen 
 - R-4.25 Der Feldname in `data` ist `answer_` und der Schlüssel des Feldes. Fällt der Name unter ein verbotenes Muster des Schemas (zum Beispiel `answer_email`, `answer_name`, Endung `_code`), entfällt die Antwort. Höchstens zwölf Antworten je Ereignis, nach Schlüssel sortiert; jeder Wert höchstens 191 Zeichen. Maschinenlesbar: `data_field_prefix` = `answer_` mit `data_field_prefix_types` (`string`, `number`, `boolean`) im Katalog.
 - R-4.26 Freigegebene Antworten sind ein Recht des Betreibers, keine Pflicht des Adapters. Die Datenschutzbewertung der Freigabe trägt der Betreiber (R-12.8); sie steht unter dem Vorbehalt aus Abschnitt 12.
 
-#### 4.6.3 Review Captain (vorgesehen, wartet auf RC-2 und F-08)
+#### 4.6.3 Review Captain (`source.product` = `review-captain`, 3 Actions, 3 Ereignisse)
 
-Auf `main` von `wp-reviewmaster` (`33d1362`, geprüft am 16.11.2026) gibt es keinen PHP-Code, keine öffentliche Action und keine Vertragskonstante, nur `README.md`, `TODO.md`, `konzept.md` und Entwürfe. Der Katalog `review.*` ist deshalb **vorgesehen, aber leer**. Er kommt in einer MINOR-Version dieser Spezifikation, wenn auf `main` (1) die Vertragskonstante `REVIEW_CAPTAIN_CONTRACT_VERSION` steht, (2) Code und Dokumentation der Actions übereinstimmen (dort RC-2; Z-12: die Actions für Anfragen aus `RC:docs/contracts/workflow-provider-v1.md:62-74` löst der Code auf den Nebenbranches nicht aus) und (3) F-08 beantwortet ist (wo der Adapter liegt und wer eine Review-Einladung plant). Auf den Nebenbranches gibt es `review_captain_review_created_v1`, `review_captain_review_status_changed_v1` und `review_captain_review_removed_v1` (`b35fb95`); sie sind kein Teil dieses Katalogs. Bis dahin DARF kein Adapter Ereignisse mit dem Präfix `review.` erzeugen. Für Review Captain gelten schon jetzt: kein Ereignis trägt Bewertungstext, Name oder E-Mail-Adresse eines Bewertenden (R-5.1); Einwilligung, Opt-out, Sperrliste, Frequenzgrenze, Plattformziel und Moderation bleiben im Kern, kein Befehl umgeht sie (8.2).
+Seit 1.0.0-draft.8 (MINOR nach R-13.1: neuer Provider, nach F-12 wie D13). Grundlage sind die öffentlichen Hooks der Stufe V aus `RC:docs/adr/0007-oeffentliche-hooks-v1.md` und `RC:docs/hooks.md` (generiert) mit dem Payload `review_captain.review.v1` aus `RC:src/Events/Events.php:30-45`. Gelesen am 16.11.2026 an `main` `863b92b` (Pull Request 3) und am Branch `claude/plugin-todo-liste-2a83v4` (gleiches `src/`, dazu die Vertragskonstante). Die Fundstellen unten gelten für `863b92b`. Der eigene Workflow-Vertrag `RC:docs/contracts/workflow-provider-v1.md` ist nicht normativ (F-12; dort als nicht normativ gekennzeichnet, RC-1).
+
+Vertragskonstante: `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.0.0` steht auf dem Branch `claude/plugin-todo-liste-2a83v4` in `RC:review-captain.php:22` (RC-2), auf `main` noch nicht; dort gibt es nur `REVIEW_CAPTAIN_VERSION` = `0.1.0-dev` und die Klassenkonstanten `ReviewCaptain\Workflow\WorkflowService::CONTRACT` = `1.0` und `ReviewCaptain\Events\Events::SCHEMA` = `review_captain.review.v1`. Ein Adapter verlangt Vertrag 1.0.0 und MAJOR 1 (R-13.4). Fehlt die Konstante (Stand `main`), meldet er sich nach R-3.3 nur an, wenn `REVIEW_CAPTAIN_VERSION` definiert ist und `Events::SCHEMA` genau `review_captain.review.v1` lautet; `source.contract_version` ist dann `null`. Wie jeder Adapter eines Captain-Produkts verlangt er zusätzlich die Pro-Lizenz von Review Captain Pro (D6, R-10.1); dieses Add-on liegt in `captain-pro` nur auf dem Branch `claude/review-captain-pro` (Pull Request 10, nicht gemergt), bis dahin bleibt der Adapter aus.
+
+Alle drei Actions feuern nach dem Schreibvorgang im Autocommit: `src/` von Review Captain öffnet keine Transaktion (kein `START TRANSACTION`, `COMMIT` oder `ROLLBACK`), die Actions folgen auf den erfolgreichen `INSERT`, das bedingte `UPDATE` (Statuswechsel mit Vergleich auf den alten Status) oder `DELETE`.
+
+| Suite-Ereignis | PHP-Action | Seit | Argumente heute | Nicht weiterreichen | Nach Commit |
+|---|---|---|---|---|---|
+| `review.review.created` | `review_captain_review_created_v1` | 1.0.0 | `array $payload` (`schema`, `event_id`, `review_uuid`, `kind`, `platform`, `origin`, `status`, `previous_status`, `verification`, `context_type`, `context_id`, `experience_id`, `occurred_at`) | `event_id` (bei jedem Aufruf neu, keine stabile Kennung); `experience_id` (freies Format der Quelle, kann eine Gutschein- oder Bestellreferenz enthalten; nur sein Präfix als `experience_source`); `context_id`, wenn er nicht nur aus Ziffern und Doppelpunkten besteht | ja, Autocommit (`RC:src/Repository/ReviewRepository.php:117`) |
+| `review.review.status_changed` | `review_captain_review_status_changed_v1` | 1.0.0 | wie oben, `previous_status` gesetzt | wie oben | ja, nach dem bedingten `UPDATE` (`RC:src/Repository/ReviewRepository.php:302`) |
+| `review.review.removed` | `review_captain_review_removed_v1` | 1.0.0 | wie oben; `status` ist der letzte Status | wie oben | ja, nach dem Statuswechsel auf `removed` (`:304`) oder dem `DELETE` (`:324`, `:353`) |
+
+Der Payload enthält nach `RC:src/Events/Events.php:17` nie Bewertungstext, Titel, Name, E-Mail-Adresse oder Token. Personenbezogen sind in Review Captain der Anzeigename (`author_name`), die E-Mail-Adresse (`author_email`), die Benutzer-ID des Verfassers (`author_user_id`), Titel und Text (`title`, `body`), Fotos, IP-bezogene Daten der Ratenbegrenzung und Einwilligungszeitpunkte; keines davon steht im Payload, keines geht in ein Suite-Ereignis.
+
+**Ausdrücklich kein Suite-Ereignis:** alle übrigen Hooks aus `RC:docs/hooks.md` (Lebenszyklus `review_captain_loaded`, `review_captain_installed`, die Register `_connectors_v1`, `_providers_v1`, `_widgets_v1`, `review_captain_process_job_v1`, `review_captain_budget_warning`, `review_captain_instance_confirmed`, alle Filter einschließlich `review_captain_request_planner_v1`). Für Einladungen (Anfragen) löst Core v1 keine Action aus: `review_captain_request_status_changed_v1`, `_reminder_sent_v1`, `_responded_v1` und `review_captain_recipient_opted_out_v1` sind nur reserviert (`RC:docs/adr/0007-oeffentliche-hooks-v1.md`, „Spezifizierte, aber nicht implementierte Namen“; Z-12). Einen Katalog `review.request.*` gibt es deshalb nicht.
+
+`subject`: Eine Bewertung hat eine `review_uuid` (UUID Version 4, zufällig, eindeutig; bei veröffentlichten Bewertungen im HTML sichtbar, `RC:templates/review-card.php:17`, und im Schema-Markup, `RC:src/Seo/SchemaBuilder.php:78`); `subject.type` = `review`, `id_kind` = `public`. Die Datensatznummer wird nicht verwendet.
+
+**Erlaubte Felder in `data` und Bedeutung von `actor_user_id`.** Positivliste nach R-5.2. „nicht gesetzt“ heißt: Das Feld `actor_user_id` fehlt.
+
+| Suite-Ereignis | `subject` | Erlaubte Felder in `data` | `actor_user_id` | Diskriminator |
+|---|---|---|---|---|
+| `review.review.created` | `review` | `kind` (`review`, `testimonial`), `platform` (`local`, `google`, `trustpilot`, `trusted_shops`, `app_store`, `google_play`, `other`), `origin` (`local_submission`, `manual`, `csv_import`, `provider_sync`, `connector`), `status`, `verification` (`unverified`, `purchase_verified`, `attendance_confirmed`, `external_platform`), `context_type` (`post`, `product`, `event`, `voucher`, `app`, `form`, `course`, `organization`), `context_id`, `experience_source`, `rating_value`, `rating_scale_min`, `rating_scale_max` | angemeldeter Benutzer (Moderator, Kunde mit Konto), sonst nicht gesetzt | `once` |
+| `review.review.status_changed` | `review` | wie `review.review.created` und `previous_status` | angemeldeter Benutzer (Moderator), sonst nicht gesetzt (Synchronisation, Aufbewahrung, Abgleich) | alter Status, neuer Status und `occurred_at` auf die Sekunde |
+| `review.review.removed` | `review` | `kind`, `platform`, `origin`, `status` (letzter Status), `context_type`, `context_id`, `experience_source`, `removal` (`tombstoned`, `deleted`) | angemeldeter Benutzer, sonst nicht gesetzt | `deleted` bei `removal` = `deleted`; sonst `removal` und `occurred_at` auf die Sekunde |
+
+Status sind die Werte von `RC:src/Domain/ReviewStatus.php` (`pending`, `approved`, `rejected`, `archived`, `flagged`, `removed`); ein anderer Wert wird `other`. Für die übrigen aufgezählten Felder gilt dasselbe.
+
+- R-4.27 **Sterne.** Der Payload enthält keine Bewertung in Sternen. Der Adapter liest `rating_value`, `rating_scale_min` und `rating_scale_max` nach dem Ereignis über `ReviewCaptain\Plugin::instance()->reviews()->find_by_uuid()` (`RC:src/Repository/ReviewRepository.php:52`). Das ist eine Lesefunktion ohne Vertrag (8.1): nur lesend, nur diese drei Felder, alle übrigen Felder des gelesenen Objekts (Text, Name, E-Mail) verwirft er im selben Aufruf (R-5.3). Ist die Bewertung nicht lesbar oder hat sie keine Sterne, fehlen die drei Felder. `rating_value` steht auf der Originalskala der Plattform, nie umgerechnet. Bis Review Captain eine dokumentierte Lesefunktion oder die Sterne im Payload liefert (dort RC-4), nennt der Adapter diese Nutzung in seiner Kompatibilitätsangabe (R-13.4).
+- R-4.28 **Entfernt.** `review_captain_review_removed_v1` feuert beim Statuswechsel auf `removed` (Grabstein, zusätzlich zu `review.review.status_changed`) und beim endgültigen Löschen (Löschauftrag, Aufbewahrung, Rücknahme eines Imports, Abbruch eines Workflow-Entwurfs). Der Adapter unterscheidet beides mit derselben Lesefunktion: Ist die Bewertung noch lesbar, ist `removal` = `tombstoned`, sonst `deleted`. Ist die Lesefunktion nicht vorhanden, fehlt `removal` und der Diskriminator ist `occurred_at` auf die Sekunde. `review.review.removed` mit `removal` = `deleted` ist ein Löschsignal; der Consumer KANN gespeicherte Ereignisse mit demselben `subject` dann wie nach R-12.5 leeren.
+- R-4.29 **Kennungen der Quelle.** `context_id` geht nur weiter, wenn er aus Ziffern und höchstens drei Doppelpunkten besteht (`^\d{1,20}(:\d{1,20}){0,3}$`), sonst entfällt er. Aus `experience_id` (Format `<quelle>:<referenz>`, `RC:docs/contracts/experience-event-v1.md`) geht nur die Quelle als `experience_source` weiter (`^[a-z][a-z0-9_-]{0,31}$`, zum Beispiel `voucher`, `pass`, `pass-captain`, `woo`); die Referenz kann bei Voucher Captain die Gutscheinreferenz sein, die nach R-4.7 nicht weitergereicht wird.
+- R-4.30 **Keine Befehle.** Für Review Captain gibt es in Version 1 keinen Befehl mit Wirkung im Provider (8.1, D11b). Der Container-Service `workflow` von Review Captain (`RC:src/Workflow/WorkflowService.php`) bietet `create_draft()`, `cancel_draft()`, `plan_request()` und `cancel_request()`; ein Adapter DARF sie nicht als Workflow-Aktion anbieten (F-23). Lesend nutzbar sind `aggregates()` und `request_capabilities()` (8.1). Einwilligung, Opt-out, Sperrliste, Frequenzgrenze, Plattformziel und Moderation bleiben im Kern bzw. im Planer von Review Captain Pro; kein Weg dieser Spezifikation umgeht sie (8.2).
+- R-4.31 Eine Einladung zur Bewertung plant in Version 1 nicht ein Workflow, sondern Review Captain Pro nach seinen eigenen Regeln (Empfehlung zu F-08). Ein Workflow bekommt die Ereignisse `review.*` als Auslöser, zum Beispiel für eine Nachricht an den Betreiber bei einer neuen Bewertung mit wenigen Sternen (`notify.admin`).
 
 #### 4.6.4 Course Captain (vorgemerkt)
 
@@ -506,7 +538,7 @@ Der zweite Halbsatz von D8 („Datenschutzbewertung → Rechtsprüfung“) gilt 
 | `id` | String, UUID Version 4 | ja | Consumer | Kennung dieses gespeicherten Ereignisses. Zufällig; taugt nicht zum Erkennen von Doppelten (dafür `idempotency_key`) |
 | `type` | String | ja | Adapter | Name nach R-4.1 |
 | `spec_version` | String `MAJOR.MINOR` | ja | Consumer | Version dieser Spezifikation, hier `1.0` |
-| `source.product` | String | ja | Consumer | Ordner und Textdomain des Providers: `voucher-captain`, `pass-captain`, `affiliate-captain`, `wp-license`, `form-captain`, `workflow-captain`, künftig `review-captain`, `course-captain` |
+| `source.product` | String | ja | Consumer | Ordner und Textdomain des Providers: `voucher-captain`, `pass-captain`, `affiliate-captain`, `wp-license`, `form-captain`, `review-captain`, `workflow-captain`, künftig `course-captain` |
 | `source.core_version` | String | ja | Consumer | Plugin-Version des Providers beim Erfassen |
 | `source.contract_version` | String oder `null` | ja | Consumer | Wert der Vertragskonstante; `null`, solange der Provider keine hat |
 | `occurred_at` | String, RFC 3339, UTC mit `Z` | ja | Consumer | Zeitpunkt, zu dem die Action feuerte |
@@ -534,11 +566,12 @@ Weitere Felder auf der obersten Ebene sind nicht erlaubt.
 | `license.*` | der Kunde, dem die Lizenz gehört (Abschnitt 11) |
 | alle Ereignisse von Pass Captain und Voucher Captain | wie in den Feldtabellen in 4.2 und 4.3 angegeben (16.11.2026); diese gehen den Zeilen oben vor |
 | alle Ereignisse von Form Captain (`form.*`) | wie in der Feldtabelle in 4.6.1 angegeben; bei `form.entry.created` nie gesetzt |
+| alle Ereignisse von Review Captain (`review.*`) | wie in der Feldtabelle in 4.6.3 angegeben; nie der Verfasser einer Bewertung ohne Anmeldung |
 | alle anderen | nicht gesetzt, solange die Tabelle hier nichts nennt |
 
 Der Gast eines Tickets und der Empfänger eines Gutscheins haben oft kein WordPress-Konto. Für sie gibt es dann keine Benutzer-ID; der Adapter erreicht sie nur über die Lesefunktionen des Providers (R-5.6, F-13).
 
-**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für Pass Captain und Voucher Captain stehen die Listen in den Feldtabellen in 4.2 und 4.3, für Form Captain in 4.6.1 und 4.6.2; maschinenlesbar in [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json), dort mit dem Datentyp je Feld (`data_types`: `integer`, `number`, `boolean`, `string`, `currency`, `datetime`). Außerdem gilt:
+**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für Pass Captain und Voucher Captain stehen die Listen in den Feldtabellen in 4.2 und 4.3, für Form Captain in 4.6.1 und 4.6.2, für Review Captain in 4.6.3; maschinenlesbar in [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json), dort mit dem Datentyp je Feld (`data_types`: `integer`, `number`, `boolean`, `string`, `currency`, `datetime`). Außerdem gilt:
 
 | Ereignistyp | Felder |
 |---|---|
@@ -576,6 +609,7 @@ Stand je Provider:
 | Pass Captain | ja für alle 13 Actions in 4.2, an allen Auslöseorten nach COMMIT oder im Autocommit (Z-02, geprüft 16.11.2026); bei `wpcap_occurrence_rescheduled` und der Admin-Absage eines Termins feuert die Action auch, wenn das UPDATE fehlschlug, daher dort Gegenlesen | Fundstellen in 4.2 |
 | Affiliate Captain | ja für alle 21. Der Kern feuert nur diese fachlichen Actions; eine zusätzliche Workflow-Action gibt es seit der Entfernung nach D13 nicht mehr | `AC:docs/CONTRACT.md:210` |
 | Lizenzserver | alle 3 nach dem Commit oder im Autocommit, keine in einer offenen Transaktion (Z-10, geprüft 16.11.2026); eine Zusage gibt es nicht, der Lizenzserver sagt selbst „keine Garantie nach dem Commit“; daher Gegenlesen | `LIC:docs/TODO.md`, Abschnitt 12 |
+| Review Captain | ja für alle 3 Actions in 4.6.3, im Autocommit (keine Transaktion in `RC:src/`). Kein Gegenlesen; der Adapter liest nur die Sterne und die Art der Entfernung nach (R-4.27, R-4.28) | Fundstellen in 4.6.3 |
 | Form Captain | ja für alle 8 Actions in 4.6.1, nach dem Commit oder im Autocommit (Z-11). Ausnahme Savepoint-Modus von `form_captain_entry_created_v1`: vor dem Commit des Aufrufers; der Schreibvorgang des Consumers gehört dann zur selben Transaktion (R-4.21). Kein Gegenlesen (R-4.19) | Fundstellen in 4.6.1 |
 
 ### 7.3 Idempotenzschlüssel
@@ -591,6 +625,7 @@ Stand je Provider:
 | `voucher.voucher.redeemed`, `voucher.redemption.*` | `redemption_key`, wenn nicht leer; sonst `committed_at` |
 | `voucher.redemption.reversed` | die Journal-ID |
 | Ereignisse von Form Captain (`form.*`) | wie in der Feldtabelle in 4.6.1 angegeben |
+| Ereignisse von Review Captain (`review.*`) | wie in der Feldtabelle in 4.6.3 angegeben |
 | alle anderen | `occurred_at` auf die Sekunde |
 
 - R-7.10 Der Speicher des Consumers hat einen eindeutigen Index über `site.blog_id` und `idempotency_key`. Ein zweites Ereignis mit demselben Schlüssel wird nicht gespeichert und startet nichts.
@@ -654,7 +689,7 @@ Mit Wirkung im Provider, genau vier, alle im Voucher-Kern (D11b):
 | `voucher.reactivate` | einen gesperrten Gutschein reaktivieren |
 | `voucher.redeem` | einen Gutschein ganz oder teilweise einlösen |
 
-Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`, Vertrag seit 1.3.0, „Rückgabe stabil innerhalb von Version 1“, `AC:docs/CONTRACT.md:306-308`; geprüft am 16.11.2026, Z-07). Sie prüfen den angemeldeten Benutzer nicht. `wpac_get_affiliate()` liefert auch Name und E-Mail-Adresse, `wpac_get_payout()` auch `paypal_email` und `claim`; der Adapter liest daraus nur die Felder der Positivliste. Es fehlen Lesefunktionen für Gutschriften, Werbemittel, den Hauptcode eines Partners und Provisionen je Bestellung; `wpac_workflow_read()` gibt es nicht mehr (R-4.6). Im Lizenzserver gibt es seit dem 16.11.2026 die Lesefassade `WPLC\License\ReadFacade::get()` (Branch `claude/plugin-todo-liste-2a83v4`, noch nicht gemergt).
+Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`, Vertrag seit 1.3.0, „Rückgabe stabil innerhalb von Version 1“, `AC:docs/CONTRACT.md:306-308`; geprüft am 16.11.2026, Z-07). Sie prüfen den angemeldeten Benutzer nicht. `wpac_get_affiliate()` liefert auch Name und E-Mail-Adresse, `wpac_get_payout()` auch `paypal_email` und `claim`; der Adapter liest daraus nur die Felder der Positivliste. Es fehlen Lesefunktionen für Gutschriften, Werbemittel, den Hauptcode eines Partners und Provisionen je Bestellung; `wpac_workflow_read()` gibt es nicht mehr (R-4.6). Review Captain hat im Container-Service `workflow` (`ReviewCaptain\Plugin::instance()->workflow()`, `RC:src/Workflow/WorkflowService.php`, Vertrag `WorkflowService::CONTRACT` = `1.0`) die lesenden Methoden `aggregates()` (Zähler je Plattform, Status und Monat, Zellen unter 5 maskiert, nie Texte, Namen oder Kennungen einzelner Bewertungen) und `request_capabilities()` (ob ein Planer von Review Captain Pro angemeldet ist); beide prüfen den angemeldeten Benutzer nicht. Eine dokumentierte Lesefunktion für eine einzelne Bewertung gibt es nicht; `reviews()->find_by_uuid()` ist eine Funktion ohne Vertrag (R-4.27, Anforderung RC-4). Im Lizenzserver gibt es seit dem 16.11.2026 die Lesefassade `WPLC\License\ReadFacade::get()` (Branch `claude/plugin-todo-liste-2a83v4`, noch nicht gemergt).
 
 **Anerkannte Lesefunktionen für Voucher Captain und Pass Captain (WF-SPEC-15, geprüft am 16.11.2026, Z-07).** *[Nachtrag 16.11.2026: Beide Kerne haben auf dem Branch `claude/plugin-todo-liste-2a83v4` eine dokumentierte Lesefassade für Zustände mit Vertrag 1.2.0: Pass Captain `wpcap_get_order_state()`, `_ticket_state()`, `_refund_state()`, `_occurrence_state()`, `_event_state()`; Voucher Captain `vcap_read_voucher()`, `_gift_card()`, `_store_credit()`, `_redemption()`, `_redemptions()`, `_order_vouchers()`. Nach dem Merge ersetzen sie die Zeilen „ohne Vertrag“ unten für Zustände; Kontakt und Einwilligung bleiben offen (F-13).]* „Vertrag“ heißt: im Kern als öffentliche Schnittstelle dokumentiert. Eine Funktion ohne Vertrag DARF ein Adapter nur bis zu einer dokumentierten Lesefassade nutzen, nur lesend und nur mit Positivliste (R-5.2, R-5.3); jede Nutzung nennt er in seiner Kompatibilitätsangabe (R-13.4).
 
@@ -938,7 +973,7 @@ Drei Versionen sind voneinander unabhängig:
 - R-13.3 Der Consumer MUSS unbekannte Felder in `data` hinnehmen und unbekannte Ereignistypen speichern, ohne einen Workflow zu starten.
 - R-13.4 Ein Adapter nennt je Provider die niedrigste Vertragsversion, die er braucht, und die MAJOR-Version, die er kennt. Ist der Vertrag des Providers älter oder hat er eine höhere MAJOR-Version, meldet sich der Adapter nicht an und zeigt den Grund. In `captain-pro` geschieht das über `Feature::requires()` mit dem Eintrag `constants` (`CP:packages/addon-kernel/src/CoreCapabilities.php:35-36`, `:92`).
 - R-13.5 Ändert ein Provider eine Action des Katalogs additiv (neues Argument am Ende, neues Feld im Array), bleibt der Katalog gültig. Der Adapter gibt neue Werte erst weiter, wenn eine MINOR-Version dieser Spezifikation sie erlaubt (R-5.2).
-- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0 (erscheint ohne Workflow-Provider, D13); Form Captain mit Vertrag 1.0.0 (seit 1.0.0-draft.7, 4.6.1). Für die vier Gutschein-Befehle zusätzlich die Vertragsversion von Voucher Captain, die die Einstiegspunkte aus 8.3 bringt.
+- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0 (erscheint ohne Workflow-Provider, D13); Form Captain mit Vertrag 1.0.0 (seit 1.0.0-draft.7, 4.6.1); Review Captain mit Vertrag 1.0.0 oder, solange `main` keine Konstante hat, Plugin 0.1.0-dev mit `Events::SCHEMA` = `review_captain.review.v1` (seit 1.0.0-draft.8, 4.6.3). Für die vier Gutschein-Befehle zusätzlich die Vertragsversion von Voucher Captain, die die Einstiegspunkte aus 8.3 bringt.
 - R-13.7 Der Consumer führt selbst eine Vertragskonstante für die Schnittstelle, an der sich Adapter anmelden. Ihr Name ist offen (F-03).
 - R-13.8 Ein Dokument eines anderen Repositorys, das Ereignisse dieses Katalogs beschreibt, verweist auf diese Spezifikation und legt keine eigenen Namen, Umschläge oder Garantien für die Suite fest.
 
@@ -1021,6 +1056,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 
 | Version | Datum | Änderung |
 |---|---|---|
+| 1.0.0-draft.8 | 16.11.2026 | MINOR nach R-13.1 (neuer Provider), nach F-12 (wie D13): Katalog `review.*` mit 3 Ereignissen aus den öffentlichen Hooks der Stufe V von Review Captain (`main` `863b92b`, 4.6.3, R-4.27 bis R-4.31): Positivliste ohne Namen, E-Mail-Adressen, Texte und IP-Adressen; Sterne über eine Lesefunktion ohne Vertrag (R-4.27); Grabstein und endgültiges Löschen unterschieden (R-4.28); `experience_id` nur als Quelle (R-4.29). Keine Befehle für Review Captain in Version 1 (R-4.30, neue Frage F-23). Vertragskonstante `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.0.0` auf dem Branch von Review Captain (3.1, RC-2); ohne sie Rückfall nach R-3.3. Angepasst: 0 (Belege), 3.1, 6, 7.2, 7.3, 8.1, R-13.6. Katalog: 3 Ereignisse und Beispiele. |
 | 1.0.0-draft.7 (Nachtrag) | 16.11.2026 | Abschnitt 17: R-17.10 bis R-17.15 (Routing-Vertrag mit netzwerkfähigen Ereignissen und Datenschutzklassen, Netzwerkvertrag einer Aktion, Benutzer, Grenzen des Ziels, Betrieb je Website, Plätze je Unterwebsite). Keine Änderung am Umschlag, am Schema oder am Katalog. |
 | 1.0.0-draft.7 | 16.11.2026 | MINOR nach R-13.1 (neuer Provider), nach F-12 (wie D13): Katalog `form.*` mit 8 Ereignissen aus den öffentlichen Actions von Form Captain (4.6.1), Feldklassen, Einwilligung und freigegebene Antworten `answer_<schlüssel>` (4.6.2, R-4.19 bis R-4.26), Savepoint-Modus von `form_captain_entry_created_v1` geklärt (R-4.21). `review.*` vorgesehen, aber leer, bis RC-2 und F-08 (4.6.3; `main` von Review Captain hat keinen Code). Angepasst: 6 (`source.product`, `actor_user_id`), 7.2, 7.3, R-13.6. Katalog: 8 Ereignisse und Beispiele, neue Angaben `data_field_prefix` und `data_field_prefix_types`; der Validator und das Prüfkit für Adapter kennen sie. |
 | 1.0.0-draft.6 | 16.11.2026 | Entscheidungen F-07, F-20 und F-22 eingearbeitet: neue Abschnitte 4.7 (WordPress und WooCommerce, Adapter im freien Kern), 4.8 (eigene Connectoren mit Präfix `x<schlüssel>`, R-4.10 bis R-4.13) und 17 (netzwerkweite Abläufe). R-4.1, R-12.6 und die Nichtziele angepasst. Abschnitt 4.9 (Zeitpläne des Kerns, `workflow.schedule.due`), Abschnitt 4.10 (eingehende Aufrufe, `workflow_captain_event_processed_v1`). Schema: `type` und `source.product` erweitert. Katalog um sieben Ereignisse und Beispiele ergänzt. |
