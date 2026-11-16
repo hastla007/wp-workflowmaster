@@ -26,6 +26,7 @@ Stand: Plugin 0.2.x. Aufgabe WF-CORE-10. Für Betreiber und Support.
 ## Wiederherstellung aus einem Backup
 
 1. Datenbank und `wp-config.php` gemeinsam zurückspielen. Ohne dieselbe `WORKFLOW_CAPTAIN_SECRET_KEY` (oder dieselben Salts) sind gespeicherte Geheimnisse nicht lesbar; die betroffenen Verbindungen pausieren.
+   Nach einem gewollten Schlüsselwechsel: alten Schlüssel als `WORKFLOW_CAPTAIN_SECRET_KEY_PREVIOUS` setzen, `wp workflow-captain secrets --dry-run`, dann `wp workflow-captain secrets`; danach den alten Schlüssel entfernen.
 2. `wp workflow-captain migrate` stellt das Schema her (nur aufwärts), `wp workflow-captain verify` meldet Läufe ohne Version, Schritte ohne Lauf und aktive Workflows ohne Version.
 3. Läufe, die beim Backup offen waren, laufen weiter. Schritte, deren Nachricht schon vor dem Backup hinausging, erkennt das Plugin nicht. Bei Zweifel die offenen Läufe in **Läufe** prüfen und abbrechen.
 4. Ereignisse, die zwischen Backup und Wiederherstellung entstanden, fehlen. Die Kerne wiederholen nicht für die Suite (R-7.3).

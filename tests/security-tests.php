@@ -236,3 +236,15 @@ check( 'SEC-03 inbound: timestamp outside the window refused', 'stale_timestamp'
 $sig = InboundGuard::sign( 's3cr3t-value', $now, 'wwwwwwwwwwwwwwww', $body );
 check( 'SEC-03 inbound: trigger not on the allowlist refused', 'trigger_not_allowed' === $guard->check( $req( array( 'nonce' => 'wwwwwwwwwwwwwwww', 'signature' => $sig, 'trigger' => 'user.delete' ) ), $body, $now )['reason'] );
 check( 'SEC-03 inbound: revoked or unknown connection refused, oversized body refused first', 'unknown_connection' === $guard->check( $req( array( 'connection' => 'old' ) ), $body, $now )['reason'] && 'unknown_connection' === $guard->check( $req( array( 'connection' => 'nope' ) ), $body, $now )['reason'] && 413 === $guard->check( $req(), str_repeat( 'a', InboundGuard::MAX_BYTES + 1 ), $now )['status'] );
+
+// ----- WF-SEC-02: re-encryption after a key change
+use WorkflowCaptain\Security\SecretStores;
+$old_vault = new Vault( 'old-key-for-test' );
+$saved     = array( 'a' => $old_vault->encrypt( 'token-a', 'webhook' ), 'b' => 'wcv1:garbage', 'c' => ( new Vault( 'new-key-for-test' ) )->encrypt( 'token-c', 'webhook' ) );
+$store     = array( 'webhooks' => array( 'context' => 'webhook', 'load' => function () use ( &$saved ) { return $saved; }, 'save' => function ( $id, $v ) use ( &$saved ) { $saved[ $id ] = $v; } ) );
+$rot       = new Vault( 'new-key-for-test', 'old-key-for-test' );
+$dry       = SecretStores::rekey( $rot, $store, true );
+check( 'SEC-02 rekey dry run counts and changes nothing', array( 'current' => 1, 'rekeyed' => 1, 'unreadable' => 1 ) === $dry['webhooks'] && null !== $old_vault->decrypt( $saved['a'], 'webhook' ) );
+SecretStores::rekey( $rot, $store );
+check( 'SEC-02 rekey: old values readable with the new key only afterwards', 'token-a' === ( new Vault( 'new-key-for-test' ) )->decrypt( $saved['a'], 'webhook' ) && null === $old_vault->decrypt( $saved['a'], 'webhook' ) );
+check( 'SEC-02 rekey result carries no secret', ! str_contains( (string) json_encode( SecretStores::rekey( $rot, $store, true ) ), 'token' ) );

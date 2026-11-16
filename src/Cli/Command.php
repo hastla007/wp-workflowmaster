@@ -146,6 +146,30 @@ final class Command {
 	}
 
 	/**
+	 * Re-encrypts stored secrets after a key change (WF-SEC-02). Counts only, never values.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--dry-run]
+	 * : Only count what would be re-encrypted.
+	 */
+	public function secrets( array $args, array $assoc ): void {
+		$vault = new \WorkflowCaptain\Security\Vault();
+		if ( ! $vault->available() ) {
+			\WP_CLI::error( 'No key available (WORKFLOW_CAPTAIN_SECRET_KEY or salts) or sodium missing.' );
+		}
+		$result = \WorkflowCaptain\Security\SecretStores::rekey( $vault, \WorkflowCaptain\Security\SecretStores::registered(), isset( $assoc['dry-run'] ) );
+		if ( array() === $result ) {
+			\WP_CLI::success( 'No secret stores registered.' );
+			return;
+		}
+		foreach ( $result as $name => $c ) {
+			\WP_CLI::line( sprintf( '%s: %d current, %d %s, %d unreadable', $name, $c['current'], $c['rekeyed'], isset( $assoc['dry-run'] ) ? 'to re-encrypt' : 're-encrypted', $c['unreadable'] ) );
+		}
+		\WP_CLI::success( 'Done. Unreadable values need the old key (WORKFLOW_CAPTAIN_SECRET_KEY_PREVIOUS) or must be entered again.' );
+	}
+
+	/**
 	 * Prints the support diagnostics as JSON (no personal data, no secrets).
 	 */
 	public function diagnostics(): void {
