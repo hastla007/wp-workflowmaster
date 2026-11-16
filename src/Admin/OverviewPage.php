@@ -78,7 +78,7 @@ final class OverviewPage {
 				/* translators: %d: number of running runs */
 				echo '<p>' . esc_html( sprintf( __( 'Hält sofort alle Schritte an. Betroffen: %d laufende Läufe. Überfällige Schritte brauchen danach eine Entscheidung.', 'workflow-captain' ), $open ) ) . '</p>';
 				$ask = isset( $_GET['pause_confirm'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
-				echo '<label><input type="checkbox" name="confirm" value="1"' . ( $ask ? ' autofocus' : '' ) . '> ' . esc_html__( 'Ja, alle Abläufe anhalten', 'workflow-captain' ) . '</label><br>';
+				echo '<label class="wfc-confirm"><input type="checkbox" name="confirm" value="1"' . ( $ask ? ' autofocus' : '' ) . '> ' . esc_html__( 'Ja, alle Abläufe anhalten', 'workflow-captain' ) . '</label><br>';
 				echo '<button class="button" name="pause" value="1">' . esc_html__( 'Notfallpause aktivieren', 'workflow-captain' ) . '</button>';
 			}
 			echo '</form>';

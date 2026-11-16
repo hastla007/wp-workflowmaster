@@ -344,7 +344,7 @@ final class WorkflowsPage {
 				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_run"><input type="hidden" name="run" value="' . (int) $run['id'] . '"><input type="hidden" name="step" value="' . (int) $step['id'] . '">';
 				wp_nonce_field( 'workflow_captain_run_' . (int) $run['id'] );
 				if ( EngineStore::EFFECT_STARTED === $step['effect'] ) {
-					echo '<label><input type="checkbox" name="confirm" value="1"> ' . esc_html__( 'Die Nachricht wurde vielleicht schon gesendet. Erneut senden?', 'workflow-captain' ) . '</label><br>';
+					echo '<label class="wfc-confirm"><input type="checkbox" name="confirm" value="1"> ' . esc_html__( 'Die Nachricht wurde vielleicht schon gesendet. Erneut senden?', 'workflow-captain' ) . '</label><br>';
 				}
 				echo '<button class="button button-small" name="do" value="continue">' . esc_html__( 'Fortsetzen', 'workflow-captain' ) . '</button></form>';
 			}
