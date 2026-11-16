@@ -7,6 +7,8 @@ Exit code 0: the schema is a valid draft 2020-12 schema, every example is valid,
 example equals its "type", every counter-example below is rejected, and the catalog holds: every example
 type is in the catalog with the matching product and subject, its data carries only catalog fields, every
 catalog field name passes the schema, and every type of a product marked "example_required" has an example.
+An event with "data_field_prefix" (form.entry.created, spec 4.6.2) also allows fields named <prefix><key> of one of
+the types in "data_field_prefix_types"; they are checked against the schema like any other field.
 """
 import copy
 import glob
@@ -51,6 +53,9 @@ def check_catalog(validator, docs):
             if not validator.is_valid(probe):
                 print("FAIL catalog: a data field of", event["type"], "is rejected by the schema")
                 failed += 1
+            if event.get("data_field_prefix") and not validator.is_valid(mutate(probe, ["data", event["data_field_prefix"] + "x"], 1)):
+                print("FAIL catalog: the data_field_prefix of", event["type"], "is rejected by the schema")
+                failed += 1
             if entry.get("example_required") and event["type"] + ".json" not in docs:
                 print("FAIL catalog: no example for", event["type"])
                 failed += 1
@@ -67,13 +72,25 @@ def check_catalog(validator, docs):
         if doc["subject"]["type"] not in event["subject_type"].split("|") or doc["subject"]["id_kind"] != event["id_kind"]:
             print("FAIL catalog:", name, "subject does not match the catalog")
             failed += 1
-        extra = sorted(set(doc["data"]) - set(event["data_fields"]))
+        prefix = event.get("data_field_prefix", "")
+        extra = sorted(f for f in set(doc["data"]) - set(event["data_fields"]) if not (prefix and f.startswith(prefix) and len(f) > len(prefix)))
         types = event.get("data_types", {})
         if set(types) != set(event["data_fields"]):
             print("FAIL catalog:", event["type"], "data_types does not cover exactly the data_fields")
             failed += 1
         for field, value in doc["data"].items():
             want = types.get(field)
+            if want is None and prefix and field.startswith(prefix):
+                allowed = event.get("data_field_prefix_types", [])
+                ok_prefix = any({
+                    "string": isinstance(value, str),
+                    "number": isinstance(value, (int, float)) and not isinstance(value, bool),
+                    "boolean": isinstance(value, bool),
+                }.get(kind, False) for kind in allowed)
+                if not ok_prefix:
+                    print("FAIL catalog:", name, "field", field, "is not of one of the types", ", ".join(allowed))
+                    failed += 1
+                continue
             ok = {
                 "integer": isinstance(value, int) and not isinstance(value, bool),
                 "number": isinstance(value, (int, float)) and not isinstance(value, bool),
@@ -194,6 +211,8 @@ def main():
         "workflow without causation": mutate(base, ["caused_by_workflow_id"], 12),
         "depth without causation": mutate(base, ["chain_depth"], 2),
         "spec version of another major": mutate(base, ["spec_version"], "2.0"),
+        "released form answer that is an e-mail": mutate(docs["form.entry.created.json"], ["data", "answer_email"], "x"),
+        "released form answer under a name field": mutate(docs["form.entry.created.json"], ["data", "answer_last_name"], "x"),
     }
     for label, doc in counter.items():
         if validator.is_valid(doc):

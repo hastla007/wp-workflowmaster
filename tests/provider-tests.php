@@ -426,3 +426,21 @@ check( 'A-4 conformance: hooks are the catalog hooks', array() === array_merge( 
 check( 'R-7.5 hook priority above 10', CoreAdapter::PRIORITY > 10 );
 check( 'a second registration of the same product is refused', array() === CoreAdapter::register( $registry, array( new WordPressAdapter( $noop, '6.6.2' ) ) ) );
 $GLOBALS['wfc_test_filters'] = array();
+
+// --- Adapter kit: released form answers (spec 4.6.2, data_field_prefix) --------------------------------------------
+
+$form_adapter = new TestAdapter( 'form-captain', '1.0.0' );
+$form_event   = array(
+	'type'          => 'form.entry.created',
+	'subject'       => array( 'type' => 'entry', 'id' => '123', 'id_kind' => 'record' ),
+	'data'          => array( 'form_id' => 7, 'form_version' => 3, 'status' => 'new', 'answer_interest' => 'sailing', 'answer_participants' => 2, 'answer_newsletter_consent' => true ),
+	'discriminator' => 'once',
+);
+check( 'kit: released form answers answer_<key> pass the form catalog', array() === AdapterConformance::check_event( $form_adapter, $form_event ) );
+$bad                    = $form_event;
+$bad['data']['answers'] = 'x';
+$bad['data']['answer_'] = 'x';
+check( 'kit: other unknown form fields and a bare prefix are refused', 2 === count( AdapterConformance::check_event( $form_adapter, $bad ) ) );
+$bad                         = $form_event;
+$bad['data']['answer_email'] = 'x';
+check( 'kit: a released answer named like an e-mail field fails the schema', array() !== AdapterConformance::check_event( $form_adapter, $bad ) );

@@ -1,6 +1,6 @@
 {
-  "$comment": "Machine-readable part of docs/SPEC-suite-events.md (sections 4.2 to 4.7, 6, 11). The spec text is normative; this file must match it. Checked by bin/validate-spec-examples.py.",
-  "spec_version": "1.0.0-draft.6",
+  "$comment": "Machine-readable part of docs/SPEC-suite-events.md (sections 4.2 to 4.10, 6, 11). The spec text is normative; this file must match it. Checked by bin/validate-spec-examples.py.",
+  "spec_version": "1.0.0-draft.7",
   "catalog_version": "1.0",
   "products": {
     "pass-captain": {
@@ -1178,6 +1178,186 @@
             "product": "string",
             "plan": "string",
             "status": "string"
+          }
+        }
+      ]
+    },
+    "form-captain": {
+      "contract_constant": "FORM_CAPTAIN_CONTRACT_VERSION",
+      "min_contract": "1.0.0",
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "form.form.created",
+          "hook": "form_captain_form_created_v1",
+          "since": "1.0.0",
+          "subject_type": "form",
+          "id_kind": "public",
+          "data_fields": [
+            "form_id",
+            "status",
+            "form_version",
+            "field_count"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "status": "string",
+            "form_version": "integer",
+            "field_count": "integer"
+          }
+        },
+        {
+          "type": "form.form.updated",
+          "hook": "form_captain_form_updated_v1",
+          "since": "1.0.0",
+          "subject_type": "form",
+          "id_kind": "public",
+          "data_fields": [
+            "form_id",
+            "status",
+            "form_version",
+            "field_count",
+            "change"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "status": "string",
+            "form_version": "integer",
+            "field_count": "integer",
+            "change": "string"
+          }
+        },
+        {
+          "type": "form.entry.created",
+          "hook": "form_captain_entry_created_v1",
+          "since": "1.0.0",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "form_public_id",
+            "form_version",
+            "status",
+            "context_purpose",
+            "context_ref_type",
+            "context_ref_id",
+            "context_verified"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes_savepoint_before_caller_commit",
+          "data_types": {
+            "form_id": "integer",
+            "form_public_id": "string",
+            "form_version": "integer",
+            "status": "string",
+            "context_purpose": "string",
+            "context_ref_type": "string",
+            "context_ref_id": "string",
+            "context_verified": "boolean"
+          },
+          "data_field_prefix": "answer_",
+          "data_field_prefix_types": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        },
+        {
+          "type": "form.entry.status_changed",
+          "hook": "form_captain_entry_status_changed_v1",
+          "since": "1.0.0",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "status",
+            "previous_status"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "status": "string",
+            "previous_status": "string"
+          }
+        },
+        {
+          "type": "form.entry.deleted",
+          "hook": "form_captain_entry_deleted_v1",
+          "since": "1.0.0",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "deletion_reason"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "deletion_reason": "string"
+          }
+        },
+        {
+          "type": "form.form.entries_imported",
+          "hook": "form_captain_entries_imported_v1",
+          "since": "1.0.0 (added without MINOR bump, FC-2)",
+          "subject_type": "form",
+          "id_kind": "public",
+          "data_fields": [
+            "form_id",
+            "imported_count"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "imported_count": "integer"
+          }
+        },
+        {
+          "type": "form.entry.consent_withdrawn",
+          "hook": "form_captain_consent_withdrawn_v1",
+          "since": "1.0.0 (added without MINOR bump, FC-2)",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "withdrawal_source",
+            "follow_up",
+            "withdrawn_at"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "withdrawal_source": "string",
+            "follow_up": "string",
+            "withdrawn_at": "datetime"
+          }
+        },
+        {
+          "type": "form.entry.notification_failed",
+          "hook": "form_captain_notification_failed_v1",
+          "since": "1.0.0",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "notification_type",
+            "error_class"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "notification_type": "string",
+            "error_class": "string"
           }
         }
       ]

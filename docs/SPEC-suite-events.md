@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | **1.0.0-draft.6** |
+| Version | **1.0.0-draft.7** |
 | Stand | 16.11.2026 |
 | Status | Entwurf zur Abnahme durch den Inhaber. Seit dem 16.11.2026 gebaut (Plugin `workflow-captain` 0.2.x, Abweichung von D12). |
 | Ort | `hastla007/wp-workflowmaster`, `docs/SPEC-suite-events.md` (Entscheidung D1) |
@@ -28,8 +28,8 @@ Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D1
 | AC | `wpaffiliatemaster` (Affiliate Captain) | `claude/sharp-mendel-xiiwf3` | `23f06be` (Katalog gelesen zwischen `70c23b7` und `dbb319d`; Entfernung des Workflow-Providers geprüft an `23f06be`); Z-07 bis Z-13 am 16.11.2026 an `6600392` und `main` `2a77ed3` geprüft | 0.15.0 (`affiliate-captain.php:6`) |
 | LIC | `wp-license` (Lizenzserver) | `claude/sharp-mendel-xiiwf3` | `241ae7a` (committeter Stand); Z-10 und Z-14 am 16.11.2026 an `241ae7a`, `a113568` und `main` `c269e07` geprüft | 0.2.0 (`wp-license.php:23`) |
 | CP | `captain-pro` (Add-ons, Kernel) | `claude/sharp-mendel-xiiwf3` | `5e333f7` (Arbeitsverzeichnis mit uncommitteten Änderungen); am 16.11.2026 gegengeprüft an `07b5365` und `main` `2f23da7`: alle Fundstellen in `packages/addon-kernel` unverändert | – |
-| FC | `wp-formmaster` (Form Captain) | `claude/youthful-babbage-wkrqyv` | `0017025`; Z-11 am 16.11.2026 an `main` `6f4785f` und `0e6aea1` geprüft | 1.0.0-dev |
-| RC | `wp-reviewmaster` (Review Captain) | `claude/sleepy-gates-6mm217` | `faa5f89`; Z-12 am 16.11.2026 an `b35fb95` geprüft (`main` enthält keinen PHP-Code) | 0.1.0-dev |
+| FC | `wp-formmaster` (Form Captain) | `claude/youthful-babbage-wkrqyv` | `0017025`; Z-11 am 16.11.2026 an `main` `6f4785f` und `0e6aea1` geprüft; Katalog 4.6.1 an `main` `6f4785f` und `claude/plugin-todo-liste-2a83v4` `fc1f206` | 1.0.0-dev |
+| RC | `wp-reviewmaster` (Review Captain) | `claude/sleepy-gates-6mm217` | `faa5f89`; Z-12 am 16.11.2026 an `b35fb95` geprüft (`main` `33d1362` enthält keinen PHP-Code, 4.6.3) | 0.1.0-dev |
 | CC | `wp-coursemaster` (Course Captain) | `claude/blissful-curie-tuuf7q` | `ae1bce9` | kein Code |
 
 **Begriffe.**
@@ -365,13 +365,74 @@ Siehe Abschnitt 11 für Rahmen und fehlende Actions. Der Lizenzserver hat keine 
 
 Weitere vorhandene Actions (zum Beispiel `wplc/license_owner_changed`, `wplc/activation_transferred`, `wplc/chargeback`) sind in Version 1 nicht im Katalog.
 
-### 4.6 Form, Review und Course Captain (vorgemerkt, kein Teil von v1)
+### 4.6 Form, Review und Course Captain
 
-Die Präfixe `form.`, `review.` und `course.` sind reserviert. Ihre Kataloge kommen in einer Minor-Version dieser Spezifikation, sobald der jeweilige Kern veröffentlicht ist. Stand:
+Die Präfixe `form.`, `review.` und `course.` sind reserviert. Seit 1.0.0-draft.7 (MINOR nach R-13.1: neuer Provider) hat Form Captain einen Katalog (4.6.1, 4.6.2). Review Captain und Course Captain haben noch keinen (4.6.3, 4.6.4). Eigene Workflow-Verträge dieser Kerne sind nicht normativ (F-12 wie D13, R-13.8): `FC:docs/WORKFLOW-CONTRACT.md` ist zurückgezogen, die Mail-Übergabe `form_captain_mail_handoff` ist entfernt (`FC` `fc1f206`, D10).
 
-- **Form Captain:** `FC:docs/spec/api-v1.md:23-34` nennt auf `main` (`6f4785f`) acht Actions „nach Commit“: `form_captain_form_created_v1`, `form_captain_form_updated_v1`, `form_captain_entry_created_v1`, `form_captain_entry_status_changed_v1`, `form_captain_entry_deleted_v1`, `form_captain_entries_imported_v1`, `form_captain_consent_withdrawn_v1`, `form_captain_notification_failed_v1`; die beiden mittleren sind neu, `FORM_CAPTAIN_CONTRACT_VERSION` blieb `1.0.0`. Geprüft am 16.11.2026 (Z-11): Der Code löst alle acht aus, nach dem Commit oder im Autocommit. Ausnahme: Läuft `form_captain_entry_created_v1` innerhalb der Transaktion eines Aufrufers, ist das „Commit“ nur ein Savepoint und die Action feuert vor dessen Commit (`FC:src/Storage/EntryRepository.php:59`, `:366-380`). Die Übergabe der Mails an einen Workflow (`form_captain_mail_handoff`, `FC:src/Mail/MailJobHandler.php:112`) ist auf allen Branches noch vorhanden (F-12, W-11).
-- **Review Captain:** Im Code belegt sind `review_captain_review_created_v1`, `review_captain_review_status_changed_v1` und `review_captain_review_removed_v1`. `RC:docs/contracts/workflow-provider-v1.md:62-74` nennt weitere Actions für Anfragen (`review_captain_request_status_changed_v1`, `_request_reminder_sent_v1`, `_request_responded_v1`, `_recipient_opted_out_v1`); geprüft am 16.11.2026 an `b35fb95` (Z-12): Der Code löst **keine** davon aus, sie stehen nur in `docs/`. Eine Vertragskonstante hat Review Captain weiter nicht. Der Vertrag dort beschreibt einen eigenen Descriptor und eigene Nutzdaten und ist an diese Spezifikation anzupassen (F-12).
-- **Course Captain:** kein Code. Produktschlüssel `course-captain-pro` und Präfix `course.` kennt der Lizenzserver an `241ae7a` und `main` nicht (`LIC:src/Catalog/EntitlementCatalog.php:179-183` nennt nur Workflow, Form und Review); auf `a113568` gibt es inzwischen `catalogs/course-captain-pro.json` (F-16).
+#### 4.6.1 Form Captain (`source.product` = `form-captain`, 8 Actions, 8 Ereignisse)
+
+Grundlage ist der öffentliche Vertrag `FC:docs/spec/api-v1.md:23-80` (Ereignisse, Payloads, Lesefunktionen) und `FC:docs/CONNECTORS.md` (sensible Felder, gesperrte Feldtypen, Einwilligungswiderruf). Gelesen am 16.11.2026 an `main` `6f4785f` und am Branch `claude/plugin-todo-liste-2a83v4` `fc1f206` (gleiches `src/` bis auf die entfernte Mail-Übergabe); die Fundstellen unten gelten für `fc1f206`. Vertragskonstante `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` (`FC:form-captain.php:29`). `entries_imported_v1` und `consent_withdrawn_v1` kamen ohne MINOR-Erhöhung dazu; die Erhöhung ist Aufgabe von Form Captain (dort FC-2). Ein Adapter verlangt Vertrag 1.0.0 und MAJOR 1 (R-13.4) und, wie jeder Adapter eines Captain-Produkts, die Pro-Lizenz von Form Captain Pro (D6, R-10.1); dieses Add-on gibt es noch nicht (`captain-pro` FR-02), bis dahin bleibt der Adapter aus. Alle acht Actions feuern nach dem Commit oder im Autocommit (Z-11); zur einen Ausnahme siehe R-4.21.
+
+| Suite-Ereignis | PHP-Action | Seit | Argumente heute | Nicht weiterreichen | Nach Commit |
+|---|---|---|---|---|---|
+| `form.form.created` | `form_captain_form_created_v1` | 1.0.0 | `array $form` (Form-DTO `{id, public_id, title, status, version, fields}`) | `title`, `fields` (Beschriftungen, Optionstexte) | ja (`FC:src/Service/FormService.php:102`, `:391`, `:547`) |
+| `form.form.updated` | `form_captain_form_updated_v1` | 1.0.0 | `array $form`, `string $change` (`saved`, `published`, `paused`, `unpublished`, `archived`) | wie oben | ja (`FC:src/Service/FormService.php:194`, `:225`, `:316`, `:347`) |
+| `form.entry.created` | `form_captain_entry_created_v1` | 1.0.0 | `array $event` (`entry_id`, `form_id`, `form_public_id`, `form_version`, `status`, `created_gmt`, `request_id`, `context`, `values`) | `request_id`; `values` bis auf freigegebene Antworten nach 4.6.2; `context.ref_id`, wenn er nicht nur aus Ziffern und Doppelpunkten besteht | ja (`FC:src/Service/SubmissionService.php:241`, `:496`); im Savepoint-Modus vor dem Commit des Aufrufers (R-4.21). Nie für Spam |
+| `form.entry.status_changed` | `form_captain_entry_status_changed_v1` | 1.0.0 | `int $entry_id, string $old, string $new, int $form_id` | – | ja (`FC:src/Service/EntryService.php:97`, `:120`) |
+| `form.entry.deleted` | `form_captain_entry_deleted_v1` | 1.0.0 | `int $entry_id, int $form_id, string $reason` (`manual`, `retention`, `erasure`, `anonymized`, `form_deleted`, `consent_withdrawn`, `import_reverted`) | – | ja (`FC:src/Service/EntryDeletionService.php:84`, `FC:src/Privacy/PrivacyIntegration.php:330`, `:378`) |
+| `form.form.entries_imported` | `form_captain_entries_imported_v1` | 1.0.0 (nachgetragen, FC-2) | `string $import_id, int $form_id, int $count` | `$import_id` (Hash über Formular und Dateiinhalt, `FC:src/Import/ImportService.php:238-240`; nur als Hash im Diskriminator) | ja (`FC:src/Import/ImportService.php:403`, nach `commit()` `:398`) |
+| `form.entry.consent_withdrawn` | `form_captain_consent_withdrawn_v1` | 1.0.0 (nachgetragen, FC-2) | `int $entry_id, int $form_id, string $source, array $event` (`withdrawn_gmt`, `source`, `then`) | – | ja (`FC:src/Service/ConsentService.php:91`) |
+| `form.entry.notification_failed` | `form_captain_notification_failed_v1` | 1.0.0 | `int $entry_id, int $form_id, string $job_type, string $error_code` | `$error_code` nur als fester Schlüssel | ja (`FC:src/Jobs/JobRunner.php:110`, nach dem Dead-letter eines `mail.*`-Jobs) |
+
+**Ausdrücklich kein Suite-Ereignis:** `form_captain_loaded_v1` und `form_captain_admin_menu_built_v1` (Lebenszyklus), alle Filter (`form_captain_event_value_allowlist_v1` ist die Freigabe aus 4.6.2, keine Quelle), die Jobs der Outbox (`connector.action`, `core.*`; kein Event, `FC:docs/WORKFLOW-CONTRACT.md` 1), Spam (feuert keine Action).
+
+`subject`: Ein Formular hat eine `public_id` (16 Zeichen `[a-z0-9]`, zufällig, eindeutig, in Shortcode, Block und REST öffentlich; `FC:docs/spec/datenmodell.md:14`, `FC:src/Repository/FormRepository.php:39`); `subject.type` = `form`, `id_kind` = `public`. Ein Eintrag hat keine öffentliche Kennung: `subject.type` = `entry`, `subject.id` = `entry_id`, `id_kind` = `record`. Die `public_id` eines Formulars gewährt keinen Zugriff auf Einträge.
+
+**Erlaubte Felder in `data` und Bedeutung von `actor_user_id`.** Positivliste nach R-5.2. „nicht gesetzt“ heißt: Das Feld `actor_user_id` fehlt.
+
+| Suite-Ereignis | `subject` | Erlaubte Felder in `data` | `actor_user_id` | Diskriminator |
+|---|---|---|---|---|
+| `form.form.created` | `form` | `form_id`, `status`, `form_version`, `field_count` | angemeldeter Benutzer, sonst nicht gesetzt | `once` |
+| `form.form.updated` | `form` | `form_id`, `status`, `form_version`, `field_count`, `change` (`saved`, `published`, `paused`, `unpublished`, `archived`) | angemeldeter Benutzer, sonst nicht gesetzt | `change`, `form_version` und `occurred_at` auf die Sekunde |
+| `form.entry.created` | `entry` | `form_id`, `form_public_id`, `form_version`, `status`, `context_purpose`, `context_ref_type`, `context_ref_id`, `context_verified` (Boolean); dazu freigegebene Antworten `answer_<schlüssel>` nach 4.6.2 | nicht gesetzt (Besucher, Servercode oder Import) | `once` |
+| `form.entry.status_changed` | `entry` | `form_id`, `status`, `previous_status` | angemeldeter Benutzer (Admin; die Kernaktion `core.set_status` läuft im Hintergrund, dann nicht gesetzt) | alter Status, neuer Status und `occurred_at` auf die Sekunde |
+| `form.entry.deleted` | `entry` | `form_id`, `deletion_reason` (Liste oben, sonst `other`) | angemeldeter Benutzer, sonst nicht gesetzt | `deletion_reason` (eine Anonymisierung und eine spätere Löschung sind zwei Ereignisse) |
+| `form.form.entries_imported` | `form` | `form_id`, `imported_count` | angemeldeter Benutzer, sonst nicht gesetzt | SHA-256 von `$import_id` (16 Hex-Zeichen), `$count` und `occurred_at` auf die Sekunde (je Importschritt ein Ereignis) |
+| `form.entry.consent_withdrawn` | `entry` | `form_id`, `withdrawal_source` (`admin`, `api`, `cli`, `privacy_request`, `system`, sonst `other`), `follow_up` (`keep`, `anonymize`, `delete`), `withdrawn_at` | angemeldeter Benutzer, sonst nicht gesetzt | `once` |
+| `form.entry.notification_failed` | `entry` | `form_id`, `notification_type` (`admin` für `mail.admin`, `confirmation` für `mail.confirmation`, sonst `other`), `error_class` (fester Schlüssel aus `$error_code`, `a-z0-9_-`, sonst `other`) | nicht gesetzt (Hintergrundaufgabe) | `$job_type` und `occurred_at` auf die Sekunde |
+
+- R-4.19 Für einen Eintrag kennt der Adapter nur, was die Action übergibt, und das Form-DTO aus `form_captain_get_form_v1()`. `form_captain_get_entry_v1()` verlangt das Recht `form_captain_read_entries` oder eine Job-Freigabe (`FC:src/Api/ContractApi.php:105-111`); der Consumer läuft ohne angemeldeten Benutzer (R-8.5). Der Adapter liest deshalb keine Einträge nach und gleicht keine Eintragsereignisse gegen (R-7.4 entfällt, weil alle Actions belegt nach dem Commit feuern).
+- R-4.20 `form_public_id` und `form_version` stehen in `data`, damit ein Workflow ein Formular ohne Lesezugriff erkennt. Titel, Beschriftungen und Optionstexte eines Formulars sind Freitext und werden nie weitergereicht (R-5.1).
+- R-4.21 **Savepoint-Modus.** Läuft `form_captain_submit_v1()` innerhalb einer Transaktion des Aufrufers (`@@autocommit` = 0), setzt Form Captain einen Savepoint statt einer eigenen Transaktion und löst `form_captain_entry_created_v1` nach dessen `RELEASE`, also vor dem Commit des Aufrufers aus (`FC:src/Service/SubmissionService.php:356-388`, `:224-241`). Rollt der Aufrufer danach zurück, gibt es den Eintrag nicht. Das ist für die Suite unschädlich, solange der Consumer im selben Aufruf über dieselbe Datenbankverbindung schreibt (R-7.6, R-7.7): Sein Schreibvorgang gehört dann zur Transaktion des Aufrufers und wird mit ihr zurückgerollt. Der Adapter öffnet und schließt keine Transaktion und reicht das Ereignis nicht verzögert weiter. Form Captain dokumentiert das Verhalten (dort FC-2) und ändert es nicht.
+- R-4.22 Nach `form.entry.consent_withdrawn` erzeugt Form Captain für diesen Eintrag keine Jobs mehr (`FC:docs/spec/datenschutz.md` 6.5). Ein Workflow, der Daten eines Eintrags weiterverarbeitet, SOLL auf dieses Ereignis hören und seine Läufe für den Eintrag beenden. `form.entry.deleted` mit `deletion_reason` `erasure`, `anonymized` oder `consent_withdrawn` ist zugleich ein Löschsignal; der Consumer KANN gespeicherte Ereignisse mit demselben `subject` dann wie nach R-12.5 leeren.
+
+`form.entry.created` gibt es nicht für importierte Einträge; dafür steht `form.form.entries_imported` (`FC:docs/spec/api-v1.md:32`).
+
+#### 4.6.2 Feldklassen, Einwilligung und freigegebene Antworten
+
+Antworten einer Einsendung sind personenbezogene Daten oder Freitext. Sie gehen grundsätzlich **nicht** in ein Suite-Ereignis. Ausnahme sind Antworten, die der Betreiber freigibt und deren Feldklasse keinen Wert nach R-5.1 tragen kann.
+
+| Feldklasse | Feldtypen von Form Captain (`FC:docs/spec/formularschema.md`) | In `data` |
+|---|---|---|
+| `choice` | `select`, `radio`, `checkbox` | nach Freigabe: der Optionswert (`^[A-Za-z0-9_-]{1,64}$`, vom Betreiber festgelegter Schlüssel, nicht die Beschriftung); mehrere Werte sortiert und mit Komma verbunden; ein Wert, der keine Option des Feldes ist, entfällt |
+| `number` | `number` | nach Freigabe: als Zahl |
+| `consent` | `consent` | nach Freigabe: Boolean (erteilt oder nicht). Nie Einwilligungstext, Revision, Hash oder Zeitpunkt; der Nachweis bleibt im Kern (`FC:docs/spec/datenschutz.md` 5) |
+| `contact` | `email`, `tel` | **nie** |
+| `free_text` | `text`, `textarea`, `hidden`, `date` | **nie** (Freitext; ein Datum kann ein Geburtsdatum sein) |
+| `blocked` | `html`, `file`, `password`, `payment`, `signature` und jeder andere oder unbekannte Typ (auch Feldtypen von Pro) | **nie** |
+
+- R-4.23 **Freigabe.** Eine Antwort ist freigegeben, wenn der Schlüssel ihres Feldes für dieses Formular am Filter `form_captain_event_value_allowlist_v1` steht (Standard: leer, `FC:docs/spec/api-v1.md:51`, `:174`). Nur dann übergibt Form Captain den Wert überhaupt; sensible Felder (`sensitive: true`) übergibt es nie (`FC:src/Service/SubmissionService.php:472-482`). Ein Adapter DARF diesen Filter nicht selbst erweitern.
+- R-4.24 Der Adapter prüft jede übergebene Antwort zusätzlich gegen das Form-DTO aus `form_captain_get_form_v1()`: Feld mit diesem Schlüssel vorhanden, nicht sensibel, Feldklasse `choice`, `number` oder `consent`. Sonst entfällt die Antwort. Ist das DTO nicht lesbar, entfallen alle Antworten; das Ereignis kommt ohne sie.
+- R-4.25 Der Feldname in `data` ist `answer_` und der Schlüssel des Feldes. Fällt der Name unter ein verbotenes Muster des Schemas (zum Beispiel `answer_email`, `answer_name`, Endung `_code`), entfällt die Antwort. Höchstens zwölf Antworten je Ereignis, nach Schlüssel sortiert; jeder Wert höchstens 191 Zeichen. Maschinenlesbar: `data_field_prefix` = `answer_` mit `data_field_prefix_types` (`string`, `number`, `boolean`) im Katalog.
+- R-4.26 Freigegebene Antworten sind ein Recht des Betreibers, keine Pflicht des Adapters. Die Datenschutzbewertung der Freigabe trägt der Betreiber (R-12.8); sie steht unter dem Vorbehalt aus Abschnitt 12.
+
+#### 4.6.3 Review Captain (vorgesehen, wartet auf RC-2 und F-08)
+
+Auf `main` von `wp-reviewmaster` (`33d1362`, geprüft am 16.11.2026) gibt es keinen PHP-Code, keine öffentliche Action und keine Vertragskonstante, nur `README.md`, `TODO.md`, `konzept.md` und Entwürfe. Der Katalog `review.*` ist deshalb **vorgesehen, aber leer**. Er kommt in einer MINOR-Version dieser Spezifikation, wenn auf `main` (1) die Vertragskonstante `REVIEW_CAPTAIN_CONTRACT_VERSION` steht, (2) Code und Dokumentation der Actions übereinstimmen (dort RC-2; Z-12: die Actions für Anfragen aus `RC:docs/contracts/workflow-provider-v1.md:62-74` löst der Code auf den Nebenbranches nicht aus) und (3) F-08 beantwortet ist (wo der Adapter liegt und wer eine Review-Einladung plant). Auf den Nebenbranches gibt es `review_captain_review_created_v1`, `review_captain_review_status_changed_v1` und `review_captain_review_removed_v1` (`b35fb95`); sie sind kein Teil dieses Katalogs. Bis dahin DARF kein Adapter Ereignisse mit dem Präfix `review.` erzeugen. Für Review Captain gelten schon jetzt: kein Ereignis trägt Bewertungstext, Name oder E-Mail-Adresse eines Bewertenden (R-5.1); Einwilligung, Opt-out, Sperrliste, Frequenzgrenze, Plattformziel und Moderation bleiben im Kern, kein Befehl umgeht sie (8.2).
+
+#### 4.6.4 Course Captain (vorgemerkt)
+
+Kein Code. Produktschlüssel `course-captain-pro` und Präfix `course.` kennt der Lizenzserver an `241ae7a` und `main` nicht (`LIC:src/Catalog/EntitlementCatalog.php:179-183` nennt nur Workflow, Form und Review); auf `a113568` gibt es inzwischen `catalogs/course-captain-pro.json` (F-16).
 
 ### 4.7 WordPress und WooCommerce (`source.product` = `wordpress` bzw. `woocommerce`, F-20)
 
@@ -445,7 +506,7 @@ Der zweite Halbsatz von D8 („Datenschutzbewertung → Rechtsprüfung“) gilt 
 | `id` | String, UUID Version 4 | ja | Consumer | Kennung dieses gespeicherten Ereignisses. Zufällig; taugt nicht zum Erkennen von Doppelten (dafür `idempotency_key`) |
 | `type` | String | ja | Adapter | Name nach R-4.1 |
 | `spec_version` | String `MAJOR.MINOR` | ja | Consumer | Version dieser Spezifikation, hier `1.0` |
-| `source.product` | String | ja | Consumer | Ordner und Textdomain des Providers: `voucher-captain`, `pass-captain`, `affiliate-captain`, `wp-license`, künftig `form-captain`, `review-captain`, `course-captain`, `workflow-captain` |
+| `source.product` | String | ja | Consumer | Ordner und Textdomain des Providers: `voucher-captain`, `pass-captain`, `affiliate-captain`, `wp-license`, `form-captain`, `workflow-captain`, künftig `review-captain`, `course-captain` |
 | `source.core_version` | String | ja | Consumer | Plugin-Version des Providers beim Erfassen |
 | `source.contract_version` | String oder `null` | ja | Consumer | Wert der Vertragskonstante; `null`, solange der Provider keine hat |
 | `occurred_at` | String, RFC 3339, UTC mit `Z` | ja | Consumer | Zeitpunkt, zu dem die Action feuerte |
@@ -472,11 +533,12 @@ Weitere Felder auf der obersten Ebene sind nicht erlaubt.
 | `voucher.store_credit.changed` | der Kunde, dessen Guthaben sich geändert hat |
 | `license.*` | der Kunde, dem die Lizenz gehört (Abschnitt 11) |
 | alle Ereignisse von Pass Captain und Voucher Captain | wie in den Feldtabellen in 4.2 und 4.3 angegeben (16.11.2026); diese gehen den Zeilen oben vor |
+| alle Ereignisse von Form Captain (`form.*`) | wie in der Feldtabelle in 4.6.1 angegeben; bei `form.entry.created` nie gesetzt |
 | alle anderen | nicht gesetzt, solange die Tabelle hier nichts nennt |
 
 Der Gast eines Tickets und der Empfänger eines Gutscheins haben oft kein WordPress-Konto. Für sie gibt es dann keine Benutzer-ID; der Adapter erreicht sie nur über die Lesefunktionen des Providers (R-5.6, F-13).
 
-**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für Pass Captain und Voucher Captain stehen die Listen in den Feldtabellen in 4.2 und 4.3; maschinenlesbar in [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json), dort mit dem Datentyp je Feld (`data_types`: `integer`, `number`, `boolean`, `string`, `currency`, `datetime`). Außerdem gilt:
+**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für Pass Captain und Voucher Captain stehen die Listen in den Feldtabellen in 4.2 und 4.3, für Form Captain in 4.6.1 und 4.6.2; maschinenlesbar in [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json), dort mit dem Datentyp je Feld (`data_types`: `integer`, `number`, `boolean`, `string`, `currency`, `datetime`). Außerdem gilt:
 
 | Ereignistyp | Felder |
 |---|---|
@@ -514,6 +576,7 @@ Stand je Provider:
 | Pass Captain | ja für alle 13 Actions in 4.2, an allen Auslöseorten nach COMMIT oder im Autocommit (Z-02, geprüft 16.11.2026); bei `wpcap_occurrence_rescheduled` und der Admin-Absage eines Termins feuert die Action auch, wenn das UPDATE fehlschlug, daher dort Gegenlesen | Fundstellen in 4.2 |
 | Affiliate Captain | ja für alle 21. Der Kern feuert nur diese fachlichen Actions; eine zusätzliche Workflow-Action gibt es seit der Entfernung nach D13 nicht mehr | `AC:docs/CONTRACT.md:210` |
 | Lizenzserver | alle 3 nach dem Commit oder im Autocommit, keine in einer offenen Transaktion (Z-10, geprüft 16.11.2026); eine Zusage gibt es nicht, der Lizenzserver sagt selbst „keine Garantie nach dem Commit“; daher Gegenlesen | `LIC:docs/TODO.md`, Abschnitt 12 |
+| Form Captain | ja für alle 8 Actions in 4.6.1, nach dem Commit oder im Autocommit (Z-11). Ausnahme Savepoint-Modus von `form_captain_entry_created_v1`: vor dem Commit des Aufrufers; der Schreibvorgang des Consumers gehört dann zur selben Transaktion (R-4.21). Kein Gegenlesen (R-4.19) | Fundstellen in 4.6.1 |
 
 ### 7.3 Idempotenzschlüssel
 
@@ -527,6 +590,7 @@ Stand je Provider:
 | `pass.ticket.checked_in`, `pass.ticket.checked_out` | `idempotency_key` aus `$context`, wenn gesetzt; sonst `occurred_at` auf die Sekunde |
 | `voucher.voucher.redeemed`, `voucher.redemption.*` | `redemption_key`, wenn nicht leer; sonst `committed_at` |
 | `voucher.redemption.reversed` | die Journal-ID |
+| Ereignisse von Form Captain (`form.*`) | wie in der Feldtabelle in 4.6.1 angegeben |
 | alle anderen | `occurred_at` auf die Sekunde |
 
 - R-7.10 Der Speicher des Consumers hat einen eindeutigen Index über `site.blog_id` und `idempotency_key`. Ein zweites Ereignis mit demselben Schlüssel wird nicht gespeichert und startet nichts.
@@ -874,7 +938,7 @@ Drei Versionen sind voneinander unabhängig:
 - R-13.3 Der Consumer MUSS unbekannte Felder in `data` hinnehmen und unbekannte Ereignistypen speichern, ohne einen Workflow zu starten.
 - R-13.4 Ein Adapter nennt je Provider die niedrigste Vertragsversion, die er braucht, und die MAJOR-Version, die er kennt. Ist der Vertrag des Providers älter oder hat er eine höhere MAJOR-Version, meldet sich der Adapter nicht an und zeigt den Grund. In `captain-pro` geschieht das über `Feature::requires()` mit dem Eintrag `constants` (`CP:packages/addon-kernel/src/CoreCapabilities.php:35-36`, `:92`).
 - R-13.5 Ändert ein Provider eine Action des Katalogs additiv (neues Argument am Ende, neues Feld im Array), bleibt der Katalog gültig. Der Adapter gibt neue Werte erst weiter, wenn eine MINOR-Version dieser Spezifikation sie erlaubt (R-5.2).
-- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0 (erscheint ohne Workflow-Provider, D13). Für die vier Gutschein-Befehle zusätzlich die Vertragsversion von Voucher Captain, die die Einstiegspunkte aus 8.3 bringt.
+- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0 (erscheint ohne Workflow-Provider, D13); Form Captain mit Vertrag 1.0.0 (seit 1.0.0-draft.7, 4.6.1). Für die vier Gutschein-Befehle zusätzlich die Vertragsversion von Voucher Captain, die die Einstiegspunkte aus 8.3 bringt.
 - R-13.7 Der Consumer führt selbst eine Vertragskonstante für die Schnittstelle, an der sich Adapter anmelden. Ihr Name ist offen (F-03).
 - R-13.8 Ein Dokument eines anderen Repositorys, das Ereignisse dieses Katalogs beschreibt, verweist auf diese Spezifikation und legt keine eigenen Namen, Umschläge oder Garantien für die Suite fest.
 
@@ -957,6 +1021,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 
 | Version | Datum | Änderung |
 |---|---|---|
+| 1.0.0-draft.7 | 16.11.2026 | MINOR nach R-13.1 (neuer Provider), nach F-12 (wie D13): Katalog `form.*` mit 8 Ereignissen aus den öffentlichen Actions von Form Captain (4.6.1), Feldklassen, Einwilligung und freigegebene Antworten `answer_<schlüssel>` (4.6.2, R-4.19 bis R-4.26), Savepoint-Modus von `form_captain_entry_created_v1` geklärt (R-4.21). `review.*` vorgesehen, aber leer, bis RC-2 und F-08 (4.6.3; `main` von Review Captain hat keinen Code). Angepasst: 6 (`source.product`, `actor_user_id`), 7.2, 7.3, R-13.6. Katalog: 8 Ereignisse und Beispiele, neue Angaben `data_field_prefix` und `data_field_prefix_types`; der Validator und das Prüfkit für Adapter kennen sie. |
 | 1.0.0-draft.6 | 16.11.2026 | Entscheidungen F-07, F-20 und F-22 eingearbeitet: neue Abschnitte 4.7 (WordPress und WooCommerce, Adapter im freien Kern), 4.8 (eigene Connectoren mit Präfix `x<schlüssel>`, R-4.10 bis R-4.13) und 17 (netzwerkweite Abläufe). R-4.1, R-12.6 und die Nichtziele angepasst. Abschnitt 4.9 (Zeitpläne des Kerns, `workflow.schedule.due`), Abschnitt 4.10 (eingehende Aufrufe, `workflow_captain_event_processed_v1`). Schema: `type` und `source.product` erweitert. Katalog um sieben Ereignisse und Beispiele ergänzt. |
 | 1.0.0-draft.5 | 16.11.2026 | Alle übrigen Stellen „zu prüfen“ geklärt: Affiliate Captain (Z-07, Z-08, Z-09, Z-13), Lizenzserver (Z-10, Z-14), Form Captain (Z-11), Review Captain (Z-12). Erlaubte Felder für die 21 Ereignistypen von Affiliate Captain (4.4) und Beispiele; neue Frage F-21 (beantragter Partnercode). Lesefunktionen von Affiliate Captain in 8.1; Lesen von Lizenzen ohne Fassade in 11. Berichtigt: Hook-Zahlen des Lizenzservers (3.2), acht statt sechs Actions in Form Captain (4.6), Course Captain im Katalog auf `a113568`. Erster Code des Consumers (Plugin 0.1.0) setzt diese Fassung um. |
 | 1.0.0-draft.4 | 16.11.2026 | Stellen „zu prüfen“ für Pass Captain (Z-01 bis Z-04), Voucher Captain (Z-05, Z-06, Z-15, Z-16), Lesefunktionen (Z-07 für beide) und `captain-pro` (Z-13) am Code geklärt und Tabellen 3.2, 4.2, 4.3, 7.2, 8.3.3, 8.3.4 und R-8.6 berichtigt. Erlaubte Felder und `actor_user_id` für alle 29 Ereignistypen von Pass und Voucher Captain (4.2, 4.3), je ein Beispiel, maschinenlesbarer Katalog `catalog/suite-events-v1.json`. Neue Regel R-4.7 (`reference`, `redemption_key` nicht weiterreichen); Beispiele `voucher.voucher.issued_standalone` und `voucher.voucher.redeemed` entsprechend ohne diese Felder; `public_id` im Beispiel im Format des Kerns. Tabelle der Lesefunktionen in 8.1 (WF-SPEC-15). Neuer Abschnitt 8.5 mit den Eigenschaften je Befehl und R-8.11 bis R-8.13. Offen bleiben die Stellen für Affiliate, Lizenzserver, Form und Review. Nachträge am selben Tag: Beispiele `license.license.issued` und `license.license.plan_changed`; Hinweis auf `Reconciliation::orders()` (Pass Captain, nicht gemergt) in 8.1. |

@@ -1,0 +1,27 @@
+{
+  "id": "7a5c0f4e-9b6d-4c2e-9f1a-5e6b7c8d9e0f",
+  "type": "form.entry.deleted",
+  "spec_version": "1.0",
+  "source": {
+    "product": "form-captain",
+    "core_version": "1.0.0-dev",
+    "contract_version": "1.0.0"
+  },
+  "occurred_at": "2026-11-17T02:00:09Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "entry",
+    "id": "123",
+    "id_kind": "record"
+  },
+  "data": {
+    "form_id": 7,
+    "deletion_reason": "retention"
+  },
+  "idempotency_key": "28ef0db635545b969f4de84739581b67ec0212d581272c44c0b063a3758f0e28",
+  "correlation_id": "7a5c0f4e-9b6d-4c2e-9f1a-5e6b7c8d9e0f",
+  "causation_id": null,
+  "chain_depth": 0
+}

@@ -15,7 +15,8 @@ Ein **Anbieter** (Provider) ist ein Plugin, dessen Ereignisse Workflows auslöse
 | Voucher Captain | 16: Gutscheine ausgestellt, zugestellt, Zustellung fehlgeschlagen, Rückläufer, eingelöst, Reservierung, Freigabe, Erstattung, Storno, abgelaufen, neu ausgestellt, ungültig, reaktiviert, Guthaben, Aufladung | Lesen; Gutschein ausstellen, sperren, verlängern, gutschreiben (8.1, braucht eine neue Version von Voucher Captain) | Workflow Captain Pro | Adapter und Befehle offen |
 | Affiliate Captain | 21: Partner angelegt, Statuswechsel, geworben, gelöscht, Verkauf zugeordnet, Provisionen (angelegt, geprüft, freigegeben, abgelehnt, bezahlt, angepasst, erneut geprüft), Auszahlungen, Korrekturen, Werbemittel, Code-Anfragen | Lesen | Workflow Captain Pro | Adapter offen |
 | Lizenzserver | 3: Lizenz ausgestellt, Statuswechsel, Plan gewechselt | Lesen | Workflow Captain Pro | Adapter offen; Vertragskonstante fehlt im Lizenzserver (F-03) |
-| Form Captain, Review Captain, Course Captain | in Version 1 keine (4.6) | – | – | später |
+| Form Captain | 8: Formular angelegt, geändert, Einträge importiert; Eintrag angelegt, Statuswechsel, gelöscht, Einwilligung widerrufen, Benachrichtigung fehlgeschlagen (`form.*`, 4.6.1). Antworten nur, wenn der Betreiber das Feld freigibt, und nur Auswahl, Zahl oder Einwilligung, nie Kontaktdaten oder Freitext (4.6.2) | Lesen | Workflow Captain Pro; braucht zusätzlich Form Captain Pro (gibt es noch nicht) | Katalog seit Spezifikation 1.0.0-draft.7; Adapter gebaut, bleibt bis Form Captain Pro aus |
+| Review Captain, Course Captain | keine (4.6.3, 4.6.4); Review Captain hat auf `main` noch keinen Code | – | – | später |
 | Eigene Connectoren und Kundenconnectoren | eigene Ereignisse nach dem öffentlichen Vertrag | eigene | eigene Projektprodukte mit eigener Lizenz (Entscheidung 17) | Vertrag in [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md) |
 
 ## Was der Betreiber sieht

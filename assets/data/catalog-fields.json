@@ -125,6 +125,53 @@
   "source": "string",
   "attribution_method": "string"
  },
+ "form.entry.consent_withdrawn": {
+  "form_id": "integer",
+  "withdrawal_source": "string",
+  "follow_up": "string",
+  "withdrawn_at": "datetime"
+ },
+ "form.entry.created": {
+  "form_id": "integer",
+  "form_public_id": "string",
+  "form_version": "integer",
+  "status": "string",
+  "context_purpose": "string",
+  "context_ref_type": "string",
+  "context_ref_id": "string",
+  "context_verified": "boolean"
+ },
+ "form.entry.deleted": {
+  "form_id": "integer",
+  "deletion_reason": "string"
+ },
+ "form.entry.notification_failed": {
+  "form_id": "integer",
+  "notification_type": "string",
+  "error_class": "string"
+ },
+ "form.entry.status_changed": {
+  "form_id": "integer",
+  "status": "string",
+  "previous_status": "string"
+ },
+ "form.form.created": {
+  "form_id": "integer",
+  "status": "string",
+  "form_version": "integer",
+  "field_count": "integer"
+ },
+ "form.form.entries_imported": {
+  "form_id": "integer",
+  "imported_count": "integer"
+ },
+ "form.form.updated": {
+  "form_id": "integer",
+  "status": "string",
+  "form_version": "integer",
+  "field_count": "integer",
+  "change": "string"
+ },
  "license.license.issued": {
   "product": "string",
   "plan": "string",

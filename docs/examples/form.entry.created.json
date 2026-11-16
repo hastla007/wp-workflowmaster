@@ -1,0 +1,36 @@
+{
+  "id": "5e3a8d2c-7f4b-4a0c-9d9e-3c4f5a6b7c8d",
+  "type": "form.entry.created",
+  "spec_version": "1.0",
+  "source": {
+    "product": "form-captain",
+    "core_version": "1.0.0-dev",
+    "contract_version": "1.0.0"
+  },
+  "occurred_at": "2026-11-16T10:00:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "entry",
+    "id": "123",
+    "id_kind": "record"
+  },
+  "data": {
+    "form_id": 7,
+    "form_public_id": "k3m9q2x7p4a8c1z6",
+    "form_version": 3,
+    "status": "new",
+    "context_purpose": "pass.event_registration",
+    "context_ref_type": "event",
+    "context_ref_id": "1187",
+    "context_verified": true,
+    "answer_interest": "sailing,motorboat",
+    "answer_participants": 2,
+    "answer_newsletter_consent": true
+  },
+  "idempotency_key": "d0207d1cb9c15ae511d2aaa5cb9daf15a2255570fb73ea0097fe775566d87e2e",
+  "correlation_id": "5e3a8d2c-7f4b-4a0c-9d9e-3c4f5a6b7c8d",
+  "causation_id": null,
+  "chain_depth": 0
+}

@@ -1,0 +1,30 @@
+{
+  "id": "9c7e2b6a-1d8f-4e4a-9b3c-7a8d9e0f1b2c",
+  "type": "form.entry.consent_withdrawn",
+  "spec_version": "1.0",
+  "source": {
+    "product": "form-captain",
+    "core_version": "1.0.0-dev",
+    "contract_version": "1.0.0"
+  },
+  "occurred_at": "2026-11-16T15:30:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "entry",
+    "id": "123",
+    "id_kind": "record"
+  },
+  "actor_user_id": 2,
+  "data": {
+    "form_id": 7,
+    "withdrawal_source": "admin",
+    "follow_up": "anonymize",
+    "withdrawn_at": "2026-11-16T15:30:00Z"
+  },
+  "idempotency_key": "ffebd9615dd4456a173e8237f1d208805bb5e5e55fdf89affeeb8525fd7fde3c",
+  "correlation_id": "9c7e2b6a-1d8f-4e4a-9b3c-7a8d9e0f1b2c",
+  "causation_id": null,
+  "chain_depth": 0
+}
