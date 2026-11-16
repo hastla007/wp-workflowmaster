@@ -456,7 +456,7 @@ final class Engine implements Dispatcher {
 	}
 
 	/** Results keep only scalar values and no address-like strings (run log, R-12.3). */
-	private static function redact( array $result ): array {
+	public static function redact( array $result ): array {
 		$clean = array();
 		foreach ( $result as $key => $value ) {
 			if ( is_scalar( $value ) && ! ( is_string( $value ) && str_contains( $value, '@' ) ) ) {

@@ -95,7 +95,7 @@ final class Plugin {
 			add_action(
 				'admin_head',
 				static function (): void {
-					echo '<style>@media (max-width:782px){body[class*="workflow-captain"] .wrap table.widefat,body[class*="workflow-captain"] .wrap table.form-table{display:block;max-width:100%;overflow-x:auto}}</style>';
+					echo '<style>@media (max-width:782px){body[class*="workflow-captain"] .wrap table.widefat,body[class*="workflow-captain"] .wrap table.form-table{display:block;max-width:100%;overflow-x:auto;position:relative}}</style>';
 				}
 			);
 			( new \WorkflowCaptain\Admin\HelpPage() )->register();

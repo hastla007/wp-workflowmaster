@@ -13,15 +13,16 @@ Legende: **gebaut** = im Code und im Bildschirmfoto belegt; **fehlt** = im Konze
 | Seite | Spalten | Filter / Aktionen | Bild |
 |---|---|---|---|
 | Übersicht | Kacheln: aktive Workflows, laufende Läufe, Entscheidungen, fehlgeschlagene Ereignisse, hängende Schritte, Worker; Liste „Brauchen eine Entscheidung“ (höchstens 10) | Notfallpause mit Bestätigung | `screenshot-3.png` |
-| Ereignisse | Nr., Ereignis, Objekt, Zeitpunkt (UTC), Zustand, Versuche, letzter Fehler | Filter je Zustand mit Zahl, Seiten „Ältere“, Auswahl und „Ausgewählte erneut einreihen“, Diagnose-Download | `screenshot-4.png` |
-| Workflows | Name, Zustand, Auslöser, Version | Neu, Export, Import als Entwurf | – |
-| Läufe | Nr., Workflow, Ereignis, Zustand, begonnen (UTC), Netzwerk | Filter je Zustand | – |
+| Ereignisse | Nr., Ereignis, Objekt, Zeitpunkt (UTC), Zustand, Versuche, letzter Fehler | Filter je Zustand mit Zahl, Filter nach Korrelation, seitenweise (50 je Seite, Gesamtzahl), Auswahl und „Ausgewählte erneut einreihen“, Diagnose-Download | `screenshot-4.png` (vor der Seitennavigation) |
+| Workflows | Name, Zustand, Auslöser, Version | Neu, Export, Import als Entwurf, seitenweise (50 je Seite, Gesamtzahl) | – |
+| Läufe | Nr., Workflow, Ereignis, Zustand, Grund, begonnen (UTC) | Filter je Zustand mit Zahl, nach Workflow und nach Korrelation, seitenweise (50 je Seite, Gesamtzahl) | – |
 | Provider | Produkt, Adapter, Plugin/Vertrag, Ereignistypen, gespeicherte Ereignisse, aktive Workflows | – | `screenshot-5.png` |
 | Vorlagen | Vorlage, Auslöser, Provider, Verfügbarkeit | „Als Entwurf übernehmen“ | `screenshot-6.png` |
 
+Seitenweise Anzeige (konzept.md 10, gebaut am 16.11.2026): Workflows, Läufe und Ereignisse blättern wie die Listen von WordPress (Markup und Parameter `paged` von `WP_List_Table`, Gesamtzahl, Erste/Vorherige/Nächste/Letzte Seite mit Text für Screenreader, `src/Admin/Pagination.php`). Gesetzte Filter (Zustand, Workflow, Korrelation) bleiben in den Links erhalten; eine Seite hinter dem Ende zeigt die letzte. Die Speicher zählen mit `count()`, `count_workflows()` und `count_runs()` (gleiche Bedingungen wie die Abfrage, getestet auf SQLite in `tests/admin-list-tests.php`).
+
 **Fehlt**
 
-- Seitenweise Anzeige für **Workflows** und **Läufe**: beide zeigen höchstens 100 Zeilen, ohne Weiterblättern (konzept.md 10: „Admin-Listen paginiert“). Die Ereignisse haben es.
 - Spalte „Letzter Lauf“ und Zahl der Fehler je Workflow (Entwurf `dashboard.svg`, „Zuletzt bearbeitete Workflows“).
 - Filter der Läufe nach Workflow und Zeitraum.
 - Kachel „Läufe · 30 Tage“ und Providerstatus auf der Übersicht (Entwurf `dashboard.svg`); heute steht der Providerstatus nur auf der Seite „Provider“.
@@ -115,7 +116,9 @@ Zuletzt ausgelöst: Mo 16.11.2026 07:30 (Lauf 41)
 - Läufe: Schritt „Fortsetzen“ bei „Aktion erforderlich“ und „Pausiert“, mit Häkchen „Erneut senden?“ bei unklarem Ausgang einer Nachricht; „Lauf abbrechen“ mit Hinweis, dass Erledigtes nicht rückgängig gemacht wird.
 - Der Testlauf markiert den Knoten, an dem er scheitert, im Canvas.
 
-**Fehlt gegenüber `run-details.svg`**: Korrelations-ID und Idempotenzschlüssel im Lauf, Zeitleiste mit Uhrzeit je Schritt, Ansicht der (redigierten) Ereignisdaten, „Lauf exportieren“, Sprung vom Lauf zum Knoten im Editor. Die Daten liegen vor (Umschlag im Lauf, `correlation_id` im Umschlag); es fehlt nur die Anzeige.
+- Laufansicht (gebaut am 16.11.2026): Angaben zum Lauf (Workflow mit Link zum Editor und zu allen Läufen dieses Workflows, Version, Ereignis, Objekt, eingetreten, begonnen, beendet bzw. zuletzt geändert, Grund), Korrelations-ID mit Links „Läufe mit dieser Korrelation“ und „Ereignisse mit dieser Korrelation“, Idempotenzschlüssel. Zeitleiste der Schritte mit angelegt, wartet bis (Wartezeit oder Wiederholung), beendet bzw. angehalten, Versuchen, redigiertem Ergebnis und Fehlercode; „Fortsetzen“ steht in der Zeile des Schritts. „Ereignisdaten (redigiert)“ zum Aufklappen: nur die Felder des Umschlags ohne `actor_user_id` und aus `data` nur Felder, die der Katalog für den Ereignistyp nennt (Kernkatalog und nicht personenbezogene Connector-Felder), ohne `…_user_id`, ohne adressähnliche oder zusammengesetzte Werte (`Engine::redact`), Geheimnisse ersetzt (`Redact::scrub`); die Zahl der ausgeblendeten Felder steht dabei (`src/Privacy/EnvelopeView.php`).
+
+**Fehlt gegenüber `run-details.svg`**: „Lauf exportieren“ und Sprung vom Lauf zum Knoten im Editor. Uhrzeiten stehen in UTC wie in den übrigen Listen.
 
 **Entwurf: Lauf**
 
@@ -139,10 +142,12 @@ Korrelation 72f3…91c0   Ereignis 9b1e…  (Ereignisse → Nr. 118)
 
 Der kostenlose Kern kennt keine Lizenz (Wächtertest `tests/license-guard.php`). Was der Betreiber bei einer abgelaufenen Lizenz sieht, zeigt Workflow Captain Pro auf seiner Lizenzseite (siehe `captain-pro/docs/WORKFLOW-PRO.md`). Im Kern wird es nur mittelbar sichtbar: Der Adapter meldet sich ab, die Seite „Provider“ zeigt ihn nicht mehr als angemeldet, neue Ereignisse liegen als „Pausiert“ (`adapter_unregistered`) in „Ereignisse“, und Workflows mit diesem Auslöser zeigen „Provider nicht verfügbar“. Nach der Verlängerung reiht der Betreiber gezielt wieder ein (Abschnitt 5).
 
+Barrierefreiheit der neuen Teile (16.11.2026): Tabellen mit Beschriftung (`caption` für Screenreader), Spalten- und Zeilenköpfen und ohne leere Kopfzellen; Filter mit `aria-current`; Seitennavigation als beschriftetes `nav`; Zeiten als `time`. Auf schmalen Bildschirmen scrollen die Tabellen in sich (vorhandene Regel in `Plugin.php`, ergänzt um `position:relative`, damit versteckte Screenreader-Texte die Seite nicht verbreitern) und sind per Tastatur erreichbar (`tabindex="0"`). Geprüft mit axe-core (WCAG 2.2 AA und Best Practice) auf den gerenderten Seiten Läufe, Lauf (auch mit „Aktion erforderlich“), Ereignisse, Workflows bei 1280 und 360 Pixel Breite: keine Verstöße, kein waagerechtes Scrollen der Seite. Noch nicht in der echten Testinstallation geprüft (dort läuft ein anderer Stand).
+
 ## Offene Punkte für die Umsetzung
 
-1. Seitenweise Anzeige von Workflows und Läufen (Abschnitt 1) – Fehler gegen konzept.md 10, klein.
-2. Laufansicht mit Korrelation, Zeitleiste und redigierten Daten (Abschnitt 5) – größter Nutzen für den Support.
+1. ~~Seitenweise Anzeige von Workflows und Läufen (Abschnitt 1)~~ – gebaut am 16.11.2026, auch für die Ereignisse.
+2. ~~Laufansicht mit Korrelation, Zeitleiste und redigierten Daten (Abschnitt 5)~~ – gebaut am 16.11.2026; offen nur „Lauf exportieren“ und der Sprung zum Knoten.
 3. Herkunft und Kurzbeschreibung am Knoten, Kopfzeile des Editors (Abschnitt 2).
 4. Terminvorschau im Zeitplan (Abschnitt 4).
 5. Feldauswahl als Liste mit Beispiel (Abschnitt 3).

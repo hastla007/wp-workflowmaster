@@ -128,6 +128,7 @@ Keine. Workflow Captain ruft keinen externen Dienst auf.
 * Export, Import, Duplizieren und Archivieren von Workflows; WP-CLI-Befehle; Action Scheduler, wenn vorhanden.
 * Auslöser für WordPress, WooCommerce, Zeitplan und eingehende Auslöser von Add-ons; Anmeldung eigener Connectoren.
 * Datenbank-Aktualisierung mit Sperre und sicherer Wiederholung; Protokoll der Eingriffe; Einstellung „Läufe nacheinander“ im Editor.
+* Workflows, Läufe und Ereignisse seitenweise mit Gesamtzahl; Laufansicht mit Korrelation, Zeitleiste der Schritte und redigierten Ereignisdaten.
 
 = 0.1.0 =
 * Erster Stand des Consumers nach docs/SPEC-suite-events.md (Entwurf 1.0.0-draft.5).

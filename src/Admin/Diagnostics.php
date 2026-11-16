@@ -28,7 +28,7 @@ final class Diagnostics {
 	public static function report( EventStore $events, EngineStore $engine, AdapterRegistry $adapters, array $environment ): array {
 		$runs = array();
 		foreach ( array( EngineStore::RUN_RUNNING, EngineStore::RUN_ACTION_REQUIRED, EngineStore::RUN_PAUSED, EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_FAILED, EngineStore::RUN_CANCELLED ) as $state ) {
-			$runs[ $state ] = count( $engine->find_runs( array( 'state' => $state ), 1000, 0 ) );
+			$runs[ $state ] = $engine->count_runs( array( 'state' => $state ) );
 		}
 		$reasons = array();
 		foreach ( $engine->find_runs( array( 'state' => EngineStore::RUN_ACTION_REQUIRED ), 200, 0 ) as $run ) {
@@ -49,7 +49,7 @@ final class Diagnostics {
 			'stuck'        => self::stuck( $engine ),
 			'consistency'  => array_map( 'count', $engine->consistency() ),
 			'workflows'    => array(
-				'total'  => count( $workflows ),
+				'total'  => $engine->count_workflows(),
 				'active' => count( array_filter( $workflows, static fn( $w ) => EngineStore::WF_ACTIVE === $w['status'] ) ),
 				'paused' => count( array_filter( $workflows, static fn( $w ) => EngineStore::WF_PAUSED === $w['status'] ) ),
 			),

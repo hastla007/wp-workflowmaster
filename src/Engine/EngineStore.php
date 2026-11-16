@@ -55,6 +55,9 @@ interface EngineStore {
 	/** @return array<int,array<string,mixed>> */
 	public function list_workflows( int $limit, int $offset ): array;
 
+	/** Number of workflows list_workflows() can return (pagination, konzept 10). */
+	public function count_workflows(): int;
+
 	public function set_workflow_status( int $id, string $status, string $now ): bool;
 
 	/** Adds an immutable published version and makes it the workflow's current one. Returns the version ID. */
@@ -124,8 +127,20 @@ interface EngineStore {
 
 	public function set_run_state( int $id, string $state, ?string $last_error, string $now ): bool;
 
-	/** @return array<int,array<string,mixed>> */
+	/**
+	 * Runs, newest first.
+	 *
+	 * @param array{workflow_id?:int,state?:string,correlation_id?:string} $filter
+	 * @return array<int,array<string,mixed>>
+	 */
 	public function find_runs( array $filter, int $limit, int $offset ): array;
+
+	/**
+	 * Number of runs find_runs() would return without limit (pagination, konzept 10).
+	 *
+	 * @param array{workflow_id?:int,state?:string,correlation_id?:string} $filter
+	 */
+	public function count_runs( array $filter ): int;
 
 	/** Creates the step for a node of a run unless it exists (key unique, R-8.4). Returns the step ID. */
 	public function ensure_step( int $run_id, string $node_id, string $key, string $due_at, string $now ): int;

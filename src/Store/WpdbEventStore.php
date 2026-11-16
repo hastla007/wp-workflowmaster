@@ -155,6 +155,28 @@ final class WpdbEventStore implements EventStore {
 	}
 
 	public function find( array $filter, int $limit, int $offset ): array {
+		list( $where, $args ) = self::where( $filter );
+		$args[]               = $limit;
+		$args[]               = $offset;
+		$rows                 = $this->db->get_results(
+			$this->db->prepare( "SELECT * FROM {$this->t()} WHERE {$where} ORDER BY id DESC LIMIT %d OFFSET %d", $args ),
+			ARRAY_A
+		);
+		return array_map( array( self::class, 'hydrate' ), (array) $rows );
+	}
+
+	public function count( array $filter ): int {
+		list( $where, $args ) = self::where( $filter );
+		$sql                  = "SELECT COUNT(*) FROM {$this->t()} WHERE {$where}";
+		return (int) $this->db->get_var( array() === $args ? $sql : $this->db->prepare( $sql, $args ) );
+	}
+
+	/**
+	 * WHERE clause of find() and count(). A correlation ID that is no UUID matches nothing.
+	 *
+	 * @return array{0:string,1:array<int,mixed>}
+	 */
+	private static function where( array $filter ): array {
 		$where = array( '1=1' );
 		$args  = array();
 		if ( ! empty( $filter['state'] ) ) {
@@ -165,13 +187,16 @@ final class WpdbEventStore implements EventStore {
 			$where[] = 'product = %s';
 			$args[]  = (string) $filter['product'];
 		}
-		$args[] = $limit;
-		$args[] = $offset;
-		$rows   = $this->db->get_results(
-			$this->db->prepare( "SELECT * FROM {$this->t()} WHERE " . implode( ' AND ', $where ) . ' ORDER BY id DESC LIMIT %d OFFSET %d', $args ),
-			ARRAY_A
-		);
-		return array_map( array( self::class, 'hydrate' ), (array) $rows );
+		if ( isset( $filter['correlation_id'] ) && '' !== (string) $filter['correlation_id'] ) {
+			if ( preg_match( \WorkflowCaptain\Envelope\Validator::UUID4, (string) $filter['correlation_id'] ) ) {
+				// The envelope is stored as JSON by encode(); a UUID holds no LIKE wildcards.
+				$where[] = 'envelope LIKE %s';
+				$args[]  = '%"correlation_id":"' . $filter['correlation_id'] . '"%';
+			} else {
+				$where[] = '1=0';
+			}
+		}
+		return array( implode( ' AND ', $where ), $args );
 	}
 
 	public function count_by_state(): array {

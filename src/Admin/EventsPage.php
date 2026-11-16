@@ -67,9 +67,17 @@ final class EventsPage {
 		$store  = $this->plugin->consumer()->store();
 		$state  = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : '';
 		$state  = in_array( $state, EventStore::STATES, true ) ? $state : '';
-		$paged  = isset( $_GET['paged'] ) ? max( 1, absint( wp_unslash( $_GET['paged'] ) ) ) : 1;
+		$corr   = self::correlation_param();
+		$filter = array_filter( array( 'state' => $state, 'correlation_id' => $corr ) );
 		$counts = $store->count_by_state();
-		$rows   = $store->find( '' === $state ? array() : array( 'state' => $state ), self::PER_PAGE, ( $paged - 1 ) * self::PER_PAGE );
+		if ( '' !== $corr ) {
+			// Counts of the filtered list, so the numbers match what a click shows.
+			foreach ( array_keys( $counts ) as $key ) {
+				$counts[ $key ] = $store->count( array( 'state' => $key, 'correlation_id' => $corr ) );
+			}
+		}
+		$pages  = Pagination::state( $store->count( $filter ), self::PER_PAGE, Pagination::requested() );
+		$rows   = $store->find( $filter, self::PER_PAGE, $pages['offset'] );
 
 		echo '<div class="wrap"><h1>' . esc_html__( 'Ereignisse', 'workflow-captain' ) . '</h1>';
 		if ( isset( $_GET['requeued'] ) ) {
@@ -96,10 +104,17 @@ final class EventsPage {
 		if ( current_user_can( 'manage_workflow_captain' ) ) {
 			echo '<p><a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=workflow_captain_diagnostics' ), 'workflow_captain_diagnostics' ) ) . '">' . esc_html__( 'Diagnose herunterladen (ohne persönliche Daten)', 'workflow-captain' ) . '</a></p>';
 		}
+		if ( '' !== $corr ) {
+			echo '<div class="notice notice-info inline"><p>';
+			/* translators: %s: correlation ID */
+			echo esc_html( sprintf( __( 'Nur Ereignisse mit der Korrelation %s.', 'workflow-captain' ), $corr ) ) . ' ';
+			echo '<a href="' . esc_url( WorkflowsPage::url( WorkflowsPage::SLUG_RUNS, array( 'correlation' => $corr ) ) ) . '">' . esc_html__( 'Läufe mit dieser Korrelation', 'workflow-captain' ) . '</a> | ';
+			echo '<a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'state' => $state ) ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Filter entfernen', 'workflow-captain' ) . '</a></p></div>';
+		}
 		echo '<ul class="subsubsub">';
-		$links = array( '<a href="' . esc_url( add_query_arg( array( 'page' => self::SLUG ), admin_url( 'admin.php' ) ) ) . '"' . ( '' === $state ? ' class="current"' : '' ) . '>' . esc_html__( 'Alle', 'workflow-captain' ) . ' (' . (int) array_sum( $counts ) . ')</a>' );
+		$links = array( '<a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'correlation' => $corr ) ), admin_url( 'admin.php' ) ) ) . '"' . ( '' === $state ? ' class="current" aria-current="page"' : '' ) . '>' . esc_html__( 'Alle', 'workflow-captain' ) . ' (' . (int) array_sum( $counts ) . ')</a>' );
 		foreach ( $counts as $key => $count ) {
-			$links[] = '<a href="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'state' => $key ), admin_url( 'admin.php' ) ) ) . '"' . ( $state === $key ? ' class="current"' : '' ) . '>' . esc_html( self::state_label( $key ) ) . ' (' . (int) $count . ')</a>';
+			$links[] = '<a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'state' => $key, 'correlation' => $corr ) ), admin_url( 'admin.php' ) ) ) . '"' . ( $state === $key ? ' class="current" aria-current="page"' : '' ) . '>' . esc_html( self::state_label( $key ) ) . ' (' . (int) $count . ')</a>';
 		}
 		echo '<li>' . implode( ' | </li><li>', $links ) . '</li></ul>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts above.
 
@@ -109,10 +124,11 @@ final class EventsPage {
 			wp_nonce_field( 'workflow_captain_requeue_bulk' );
 			echo '<p><button class="button" type="submit">' . esc_html__( 'Ausgewählte erneut einreihen', 'workflow-captain' ) . '</button> <span class="description">' . esc_html__( 'Vorher prüfen, ob die Ursache (Adapter, Lizenz, Provider) behoben ist.', 'workflow-captain' ) . '</span></p></form>';
 		}
-		echo '<table class="widefat striped"><thead><tr>';
-		foreach ( array( __( 'Nr.', 'workflow-captain' ), __( 'Ereignis', 'workflow-captain' ), __( 'Objekt', 'workflow-captain' ), __( 'Zeitpunkt (UTC)', 'workflow-captain' ), __( 'Zustand', 'workflow-captain' ), __( 'Versuche', 'workflow-captain' ), __( 'Letzter Fehler', 'workflow-captain' ), '' ) as $head ) {
+		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Gespeicherte Ereignisse, neueste zuerst', 'workflow-captain' ) . '</caption><thead><tr>';
+		foreach ( array( __( 'Nr.', 'workflow-captain' ), __( 'Ereignis', 'workflow-captain' ), __( 'Objekt', 'workflow-captain' ), __( 'Zeitpunkt (UTC)', 'workflow-captain' ), __( 'Zustand', 'workflow-captain' ), __( 'Versuche', 'workflow-captain' ), __( 'Letzter Fehler', 'workflow-captain' ) ) as $head ) {
 			echo '<th scope="col">' . esc_html( $head ) . '</th>';
 		}
+		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Aktionen', 'workflow-captain' ) . '</span></th>';
 		echo '</tr></thead><tbody>';
 		if ( array() === $rows ) {
 			echo '<tr><td colspan="8">' . esc_html__( 'Keine Ereignisse.', 'workflow-captain' ) . '</td></tr>';
@@ -129,10 +145,14 @@ final class EventsPage {
 			echo '</td></tr>';
 		}
 		echo '</tbody></table>';
-		if ( count( $rows ) === self::PER_PAGE ) {
-			echo '<p><a class="button" href="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'state' => $state, 'paged' => $paged + 1 ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Ältere', 'workflow-captain' ) . '</a></p>';
-		}
+		echo Pagination::render( $pages, array( 'page' => self::SLUG, 'state' => $state, 'correlation' => $corr ), __( 'Seiten der Ereignisliste', 'workflow-captain' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in Pagination::render().
 		echo '</div>';
+	}
+
+	/** The correlation filter from the query string: a UUID or ''. */
+	public static function correlation_param(): string {
+		$value = isset( $_GET['correlation'] ) ? sanitize_key( wp_unslash( $_GET['correlation'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter only.
+		return 1 === preg_match( \WorkflowCaptain\Envelope\Validator::UUID4, $value ) ? $value : '';
 	}
 
 	public static function state_label( string $state ): string {

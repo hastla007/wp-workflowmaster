@@ -68,6 +68,10 @@ final class WpdbEngineStore implements EngineStore {
 		return array_map( array( self::class, 'workflow_row' ), (array) $rows );
 	}
 
+	public function count_workflows(): int {
+		return (int) $this->db->get_var( $this->db->prepare( "SELECT COUNT(*) FROM {$this->t( 'workflows' )} WHERE status <> %s", self::WF_NETWORK ) );
+	}
+
 	public function set_workflow_status( int $id, string $status, string $now ): bool {
 		return false !== $this->db->update( $this->t( 'workflows' ), array( 'status' => $status, 'updated_at' => $now ), array( 'id' => $id ) );
 	}
@@ -273,6 +277,25 @@ final class WpdbEngineStore implements EngineStore {
 	}
 
 	public function find_runs( array $filter, int $limit, int $offset ): array {
+		list( $where, $args ) = self::run_where( $filter );
+		$args[]               = $limit;
+		$args[]               = $offset;
+		$rows                 = $this->db->get_results( $this->db->prepare( "SELECT * FROM {$this->t( 'runs' )} WHERE {$where} ORDER BY id DESC LIMIT %d OFFSET %d", $args ), ARRAY_A );
+		return array_map( array( self::class, 'run_row' ), (array) $rows );
+	}
+
+	public function count_runs( array $filter ): int {
+		list( $where, $args ) = self::run_where( $filter );
+		$sql                  = "SELECT COUNT(*) FROM {$this->t( 'runs' )} WHERE {$where}";
+		return (int) $this->db->get_var( array() === $args ? $sql : $this->db->prepare( $sql, $args ) );
+	}
+
+	/**
+	 * WHERE clause of find_runs() and count_runs(). A correlation ID that is no UUID matches nothing.
+	 *
+	 * @return array{0:string,1:array<int,mixed>}
+	 */
+	private static function run_where( array $filter ): array {
 		$where = array( '1=1' );
 		$args  = array();
 		if ( ! empty( $filter['workflow_id'] ) ) {
@@ -283,10 +306,16 @@ final class WpdbEngineStore implements EngineStore {
 			$where[] = 'state = %s';
 			$args[]  = (string) $filter['state'];
 		}
-		$args[] = $limit;
-		$args[] = $offset;
-		$rows   = $this->db->get_results( $this->db->prepare( "SELECT * FROM {$this->t( 'runs' )} WHERE " . implode( ' AND ', $where ) . ' ORDER BY id DESC LIMIT %d OFFSET %d', $args ), ARRAY_A );
-		return array_map( array( self::class, 'run_row' ), (array) $rows );
+		if ( isset( $filter['correlation_id'] ) && '' !== (string) $filter['correlation_id'] ) {
+			if ( preg_match( \WorkflowCaptain\Envelope\Validator::UUID4, (string) $filter['correlation_id'] ) ) {
+				// The context (the event snapshot) is stored as JSON by json(); a UUID holds no LIKE wildcards.
+				$where[] = 'context LIKE %s';
+				$args[]  = '%"correlation_id":"' . $filter['correlation_id'] . '"%';
+			} else {
+				$where[] = '1=0';
+			}
+		}
+		return array( implode( ' AND ', $where ), $args );
 	}
 
 	// ----- Steps ----------------------------------------------------------------------------------------------

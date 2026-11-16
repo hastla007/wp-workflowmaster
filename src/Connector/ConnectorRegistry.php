@@ -165,11 +165,12 @@ final class ConnectorRegistry {
 
 	/**
 	 * Data fields with their data type per event type of the enabled connectors, in the format of
-	 * assets/data/catalog-fields.json (type => field => data type). Personal fields only when enabled.
+	 * assets/data/catalog-fields.json (type => field => data type). Personal fields only when enabled, and never with
+	 * $with_personal false (redacted run view).
 	 *
 	 * @return array<string,array<string,string>>
 	 */
-	public function builder_fields(): array {
+	public function builder_fields( bool $with_personal = true ): array {
 		$out = array();
 		foreach ( $this->connectors as $key => $connector ) {
 			if ( ! $this->is_enabled( $key ) ) {
@@ -178,7 +179,7 @@ final class ConnectorRegistry {
 			foreach ( (array) $connector->manifest()['events'] as $type => $spec ) {
 				$fields = array();
 				foreach ( (array) $spec['fields'] as $field => $def ) {
-					if ( 'personal' !== $def['class'] || $this->personal_allowed( $key, (string) $type, (string) $field ) ) {
+					if ( 'personal' !== $def['class'] || ( $with_personal && $this->personal_allowed( $key, (string) $type, (string) $field ) ) ) {
 						$fields[ (string) $field ] = (string) $def['type'];
 					}
 				}

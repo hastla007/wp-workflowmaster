@@ -67,10 +67,17 @@ interface EventStore {
 	/**
 	 * Rows for the admin, newest first.
 	 *
-	 * @param array{state?:string,product?:string} $filter
+	 * @param array{state?:string,product?:string,correlation_id?:string} $filter
 	 * @return array<int,array<string,mixed>>
 	 */
 	public function find( array $filter, int $limit, int $offset ): array;
+
+	/**
+	 * Number of rows find() would return without limit (pagination, konzept 10).
+	 *
+	 * @param array{state?:string,product?:string,correlation_id?:string} $filter
+	 */
+	public function count( array $filter ): int;
 
 	/** @return array<string,int> Count per state. */
 	public function count_by_state(): array;
