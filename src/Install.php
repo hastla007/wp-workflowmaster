@@ -129,7 +129,23 @@ final class Install {
 		if ( $result['resumed'] && class_exists( Audit::class ) ) {
 			Audit::record( 'upgrade_resumed', array( 'from' => $result['from'], 'to' => $result['to'] ) );
 		}
+		if ( Migrator::DONE === $result['state'] ) {
+			self::$last_done = $result;
+		}
 		return $result;
+	}
+
+	/** @var array{state:string,resumed:bool,from:string,to:string,steps:array<int,int>}|null */
+	private static ?array $last_done = null;
+
+	/**
+	 * The last upgrade of this request that changed something, or null. boot() upgrades before any WP-CLI command runs,
+	 * so "wp workflow-captain migrate" reports from here what that upgrade did (E2E third run).
+	 *
+	 * @return array{state:string,resumed:bool,from:string,to:string,steps:array<int,int>}|null
+	 */
+	public static function last_done(): ?array {
+		return self::$last_done;
 	}
 
 	/**

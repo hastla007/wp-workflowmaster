@@ -560,7 +560,27 @@
 			body.appendChild( this.inspector() );
 			this.root.appendChild( body );
 			this.root.appendChild( this.list() );
+			this.fitNodeTexts();
 			this.restoreFocus( restore );
+		}
+
+		/**
+		 * Shortens the texts of the nodes that are wider than the node with the real fonts (with "…"; the full text is in
+		 * the tooltip and the accessible name). The character limits in canvas() are only a first cut: with the wp-admin
+		 * fonts "WORKFLOW CAPTAIN · AUSLÖSER" ran over the right edge (E2E third run). Needs layout, so only when shown.
+		 */
+		fitNodeTexts() {
+			const max = W - 14; // text starts at x 12; a 2 px margin to the right edge
+			this.root.querySelectorAll( '.wfc-node-kicker, .wfc-node-title, .wfc-node-sub' ).forEach( ( t ) => {
+				if ( 'function' !== typeof t.getComputedTextLength || ! t.getClientRects().length ) {
+					return;
+				}
+				let text = t.textContent;
+				while ( text.length > 1 && t.getComputedTextLength() > max ) {
+					text = text.replace( /…$/, '' ).slice( 0, -1 ).trimEnd();
+					t.textContent = text + '…';
+				}
+			} );
 		}
 
 		focusables() {

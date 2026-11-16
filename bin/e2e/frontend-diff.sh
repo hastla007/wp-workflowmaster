@@ -23,6 +23,10 @@ fetch() {
 	done
 }
 wp plugin is-active workflow-captain
+# Action Scheduler deletes its migration flag whenever any plugin is deactivated (deactivate_plugin hook), and without
+# the flag it registers its post statuses, which show up in the REST index. Start both fetches without the flag, so the
+# deactivation below does not change the front end by itself (E2E third run).
+wp option delete action_scheduler_migration_status >/dev/null 2>&1 || true
 fetch active
 wp plugin deactivate workflow-captain >/dev/null
 fetch inactive

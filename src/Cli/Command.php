@@ -107,6 +107,11 @@ final class Command {
 		}
 		if ( \WorkflowCaptain\Migrator::CURRENT === $r['state'] ) {
 			Install::ensure_tables(); // Completes missing tables, e.g. after a partial restore.
+			// The plugin upgraded already while WP-CLI loaded it; report what that upgrade did.
+			$r = Install::last_done() ?? $r;
+		}
+		if ( \WorkflowCaptain\Migrator::DONE === $r['state'] ) {
+			\WP_CLI::line( sprintf( 'Upgraded from schema %s to %s.', '' === $r['from'] ? '-' : $r['from'], $r['to'] ) );
 		}
 		if ( $r['resumed'] ) {
 			\WP_CLI::warning( 'An earlier upgrade had stopped half-way; it was repeated.' );

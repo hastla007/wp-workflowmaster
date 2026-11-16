@@ -216,6 +216,8 @@ $prov_src  = array(
 $status    = \WorkflowCaptain\Admin\OverviewPage::provider_status( $prov_rows, $prov_src );
 check( 'provider status: label, state text, tone and counts per product', array( 'Pass Captain', 'angemeldet', 'ok', 2, 0 ) === array( $status[0]['label'], $status[0]['state'], $status[0]['tone'], $status[0]['events'], $status[0]['actions'] ) && array( 'kein Adapter', 'warn', 2 ) === array( $status[1]['state'], $status[1]['tone'], $status[1]['actions'] ) && 'bad' === $status[2]['tone'] );
 $ptable = \WorkflowCaptain\Admin\OverviewPage::provider_table( $status );
+$ptable1 = \WorkflowCaptain\Admin\OverviewPage::provider_table( array( array( 'product' => 'workflow-captain', 'label' => 'Workflow Captain', 'state' => 'angemeldet', 'tone' => 'ok', 'events' => 1, 'actions' => 1 ) ) );
+check( 'provider status table: singular for one event type and one action (E2E third run showed "1 Ereignistypen")', str_contains( $ptable1, '1 Ereignistyp · 1 Aktion<' ) );
 check( 'provider status table: caption, row headers, state as text (colour only repeats it)', str_contains( $ptable, '<caption class="screen-reader-text">Providerstatus</caption>' ) && str_contains( $ptable, '<th scope="row">Pass Captain</th>' ) && str_contains( $ptable, '</span>abgelehnt</td>' ) && str_contains( $ptable, '2 Ereignistypen · 0 Aktionen' ) && str_contains( $ptable, 'aria-hidden="true"' ) );
 
 // ----- Overview of all schedules (docs/UI-ENTWUERFE.md, section 4) ---------------------------------------------
@@ -254,6 +256,8 @@ $fmt   = static fn( string $f, int $ts ): string => ( new DateTimeImmutable( '@'
 $lines = \WorkflowCaptain\Admin\SchedulesPage::table_rows( array_values( $sched ), $fmt, true );
 check( 'schedules table: row header links to the editor, times as time elements in the site time zone', 3 === count( $lines ) && str_contains( $lines[2], '<th scope="row"><a href="https://example.test/wp-admin/admin.php?page=workflow-captain-workflows&amp;edit=' . $w_week . '">Wochenbericht</a></th>' ) && str_contains( $lines[2], '<time datetime="2026-10-26T06:30:00Z">Mon, 26.10.2026 07:30</time>' ) && str_contains( $lines[2], 'workflow=' . $w_week . '">Läufe</a>' ) );
 check( 'schedules table: paused says so, never fired is a dash for screen readers, differing draft is noted', str_contains( $lines[1], 'keiner (pausiert)' ) && str_contains( $lines[0], 'keine Angabe' ) && str_contains( $lines[0], 'Der Entwurf weicht ab' ) );
+check( 'schedules table: the link to the runs inside the cell text is underlined (WCAG 1.4.1, axe link-in-text-block in the E2E third run)', str_contains( $lines[2], '(<a class="wfc-text-link" href=' ) && str_contains( (string) file_get_contents( __DIR__ . '/../src/Plugin.php' ), 'a.wfc-text-link{text-decoration:underline}' ) );
+check( 'WCAG 1.4.10: text fields of the plugin pages stay inside the page on narrow screens (E2E: name field 1-2 px wider at 390 px)', str_contains( (string) file_get_contents( __DIR__ . '/../src/Plugin.php' ), '.wrap input.regular-text{max-width:calc(100% - 2px)}' ) );
 check( 'schedules table: without editor right no link', ! str_contains( \WorkflowCaptain\Admin\SchedulesPage::table_rows( array_values( $sched ), $fmt, false )[2], 'edit=' ) );
 
 // ----- Builder: codes of the last check per node (docs/UI-ENTWUERFE.md, section 3) -----------------------------

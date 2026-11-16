@@ -245,6 +245,45 @@ $wfc_log2 = json_decode( (string) end( $wfc_out2 ), true );
 $wfc_cut  = is_array( $wfc_log2 ) ? array_search( '--', $wfc_log2, true ) : false;
 check( 'WF-MS new site while network-active: tables, schema option, caps and worker plan on that site; nothing when not network-active', 0 === $wfc_code2 && false !== $wfc_cut && in_array( 'table:wp_7_workflow_captain_events', $wfc_log2, true ) && in_array( 'option:workflow_captain_db_version@7', $wfc_log2, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log2, true ) && in_array( 'cron:workflow_captain_daily_maintenance@7', $wfc_log2, true ) && count( $wfc_log2 ) - 1 === $wfc_cut && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/workflow-captain.php' ), "add_action( 'wp_initialize_site', array( '\\WorkflowCaptain\\Install', 'initialize_site' )" ) );
 
+// WF-CORE-07: "wp workflow-captain migrate" reports what the upgrade did, although boot() already ran it while WP-CLI
+// loaded the plugin. Found in the E2E third run (docs/E2E-RESULTS.md): a resumed upgrade (stale lock) and the upgrade
+// from an older schema were done silently; migrate only said "Schema 4 in place".
+$wfc_dir = sys_get_temp_dir() . '/wfc-migrate-' . bin2hex( random_bytes( 4 ) );
+mkdir( $wfc_dir . '/wp-admin/includes', 0777, true );
+file_put_contents( $wfc_dir . '/wp-admin/includes/upgrade.php', '<?php function dbDelta( $q ) {}' );
+file_put_contents(
+	$wfc_dir . '/run.php',
+	'<?php
+define( "ABSPATH", ' . var_export( $wfc_dir . '/', true ) . ' );
+define( "WP_CLI", true );
+define( "WORKFLOW_CAPTAIN_DB_VERSION", "4" );
+spl_autoload_register( static function ( $c ) { $f = ' . var_export( dirname( __DIR__ ) . '/src/', true ) . ' . str_replace( "\\\\", "/", substr( $c, 16 ) ) . ".php"; if ( str_starts_with( $c, "WorkflowCaptain\\\\" ) && is_readable( $f ) ) { require_once $f; } } );
+$GLOBALS["opt"] = array( "workflow_captain_db_version" => "3", "workflow_captain_upgrade_lock" => (string) ( time() - 700 ) );
+$GLOBALS["cli"] = array();
+final class Stub_Db { public $prefix = "wp_"; public function get_charset_collate() { return ""; } }
+final class WP_CLI { public static function line( $m ) { $GLOBALS["cli"][] = "line:" . $m; } public static function warning( $m ) { $GLOBALS["cli"][] = "warning:" . $m; } public static function success( $m ) { $GLOBALS["cli"][] = "success:" . $m; } public static function error( $m ) { $GLOBALS["cli"][] = "error:" . $m; throw new RuntimeException( $m ); } }
+$wpdb = new Stub_Db();
+function get_option( $o, $d = false ) { return $GLOBALS["opt"][ $o ] ?? $d; }
+function add_option( $o, $v = "", $x = "", $a = null ) { if ( isset( $GLOBALS["opt"][ $o ] ) ) { return false; } $GLOBALS["opt"][ $o ] = $v; return true; }
+function update_option( $o, $v, $a = null ) { $GLOBALS["opt"][ $o ] = $v; return true; }
+function delete_option( $o ) { unset( $GLOBALS["opt"][ $o ] ); return true; }
+function get_current_user_id() { return 0; }
+function get_role( $r ) { return null; }
+\WorkflowCaptain\Install::maybe_upgrade(); // What boot() does in every WP-CLI process.
+( new \WorkflowCaptain\Cli\Command() )->migrate();
+echo json_encode( array( "cli" => $GLOBALS["cli"], "version" => $GLOBALS["opt"]["workflow_captain_db_version"], "lock" => isset( $GLOBALS["opt"]["workflow_captain_upgrade_lock"] ) ) );
+'
+);
+exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $wfc_dir . '/run.php' ) . ' 2>&1', $wfc_out3, $wfc_code3 );
+unlink( $wfc_dir . '/run.php' );
+unlink( $wfc_dir . '/wp-admin/includes/upgrade.php' );
+rmdir( $wfc_dir . '/wp-admin/includes' );
+rmdir( $wfc_dir . '/wp-admin' );
+rmdir( $wfc_dir );
+$wfc_r3 = json_decode( (string) end( $wfc_out3 ), true );
+$wfc_c3 = is_array( $wfc_r3 ) ? implode( "\n", $wfc_r3['cli'] ) : implode( "\n", $wfc_out3 );
+check( 'WF-CORE-07 migrate reports the upgrade that boot() ran in the same WP-CLI process (from 3 to 4, resumed after a stale lock)', 0 === $wfc_code3 && '4' === ( $wfc_r3['version'] ?? '' ) && false === ( $wfc_r3['lock'] ?? true ) && str_contains( $wfc_c3, 'line:Upgraded from schema 3 to 4.' ) && str_contains( $wfc_c3, 'warning:An earlier upgrade had stopped half-way' ) && str_contains( $wfc_c3, 'success:Schema 4 in place.' ) );
+
 // WF-BUILDER-09 / WF-SET-15: every visible form control the admin pages print has an accessible name. Found by axe-core in
 // the E2E run (docs/E2E-RESULTS.md): the import file field of the workflow list had no label.
 $wfc_unlabelled = array();
@@ -264,6 +303,34 @@ foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
 	}
 }
 check( 'WF-BUILDER-09 admin form controls have a label (wrapped, for=id or aria-label)' . ( $wfc_unlabelled ? ': ' . implode( '; ', $wfc_unlabelled ) : '' ), array() === $wfc_unlabelled );
+
+// Found in the E2E third run with the wp-admin styles (docs/E2E-RESULTS.md, "Dritter Lauf"):
+// - WF-SET-13: every audit entry the core writes has a readable label on the status tab ("run_export" showed its key).
+$wfc_settings = (string) file_get_contents( __DIR__ . '/../src/Admin/SettingsPage.php' );
+$wfc_nolabel  = array();
+foreach ( glob( __DIR__ . '/../src/{,*/}*.php', GLOB_BRACE ) as $wfc_file ) {
+	preg_match_all( "/Audit::record\\(\\s*'([a-z_]+)'\\s*,/", (string) file_get_contents( $wfc_file ), $wfc_m );
+	foreach ( $wfc_m[1] as $wfc_key ) {
+		if ( ! preg_match( "/'" . $wfc_key . "'\\s*=>\\s*__\\(/", $wfc_settings ) ) {
+			$wfc_nolabel[] = $wfc_key;
+		}
+	}
+}
+check( 'WF-SET-13 every audit entry written by the core has a label on the status tab' . ( $wfc_nolabel ? ': ' . implode( ', ', array_unique( $wfc_nolabel ) ) : '' ), array() === $wfc_nolabel );
+// - WCAG 2.1.1: below 782 px every data table scrolls in its own box, so each one must be focusable (axe
+//   "scrollable-region-focusable" on the status tab: status and audit tables had no focusable content).
+$wfc_notab = array();
+foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
+	preg_match_all( '/<table class="widefat[^>]*>/', (string) file_get_contents( $wfc_file ), $wfc_m );
+	foreach ( $wfc_m[0] as $wfc_tag ) {
+		if ( ! str_contains( $wfc_tag, 'tabindex="0"' ) ) {
+			$wfc_notab[] = basename( $wfc_file );
+		}
+	}
+}
+check( 'WF-BUILDER-09 data tables of the admin pages are focusable scroll regions (tabindex="0")' . ( $wfc_notab ? ': ' . implode( ', ', $wfc_notab ) : '' ), array() === $wfc_notab );
+// - WCAG 2.5.8: the small text buttons of the builder (× of a rule) are targets of at least 24 x 24 px.
+check( 'WF-BUILDER-09 small text buttons of the builder are at least 24 x 24 px', 1 === preg_match( '/\.wfc-builder \.button-link \{[^}]*min-height: 24px;[^}]*min-width: 24px;/', (string) file_get_contents( __DIR__ . '/../assets/css/builder.css' ) ) );
 
 // WF-BUILDER-09 / WCAG 2.5.8: a confirmation checkbox (16 px) sits in a label of class wfc-confirm, which the admin style
 // makes 24 px high; the E2E second run measured the pause box 10 px from the next button (docs/E2E-RESULTS.md).

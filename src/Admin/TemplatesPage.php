@@ -73,7 +73,7 @@ final class TemplatesPage {
 		$available = $this->plugin->available_event_types();
 		echo '<div class="wrap"><h1>' . esc_html__( 'Vorlagen', 'workflow-captain' ) . '</h1>';
 		echo '<p>' . esc_html__( 'Eine Vorlage wird als Entwurf übernommen. Prüfen, Testlauf starten, dann veröffentlichen. Vorlagen nutzen nur die Aktionen der Version 1 und ersetzen keine Mail eines Kern-Plugins.', 'workflow-captain' ) . '</p>';
-		echo '<table class="widefat striped"><thead><tr><th scope="col">' . esc_html__( 'Vorlage', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Auslöser', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Provider', 'workflow-captain' ) . '</th><th scope="col"><span class="screen-reader-text">' . esc_html__( 'Aktion', 'workflow-captain' ) . '</span></th></tr></thead><tbody>';
+		echo '<table class="widefat striped" tabindex="0"><thead><tr><th scope="col">' . esc_html__( 'Vorlage', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Auslöser', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Provider', 'workflow-captain' ) . '</th><th scope="col"><span class="screen-reader-text">' . esc_html__( 'Aktion', 'workflow-captain' ) . '</span></th></tr></thead><tbody>';
 		foreach ( self::templates() as $key => $t ) {
 			$ready = in_array( $t['event'], $available, true );
 			echo '<tr><td>' . esc_html( $t['name'] ) . '</td><td><code>' . esc_html( $t['event'] ) . '</code></td><td>' . esc_html( $ready ? __( 'verfügbar', 'workflow-captain' ) : __( 'nicht verfügbar – Entwurf möglich, Veröffentlichen erst mit Provider', 'workflow-captain' ) ) . '</td><td>';

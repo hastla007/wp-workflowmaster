@@ -109,14 +109,15 @@ Keine. Workflow Captain ruft keinen externen Dienst auf.
 
 == Screenshots ==
 
-1. Visueller Editor: Auslöser, Wenn/Sonst mit Dann- und Sonst-Pfad, Aktionen, Wartezeit und Ende; rechts das Formular der Bedingung.
-2. Zeitplan als Auslöser: wöchentlich zu einer Uhrzeit in der Zeitzone der Website.
-3. Übersicht: aktive Workflows, laufende Läufe, Entscheidungen, Fehler, Zustand des Workers und Notfallpause.
-4. Ereignisse mit Filtern je Zustand und Diagnose-Download ohne persönliche Daten.
-5. Provider: angemeldete Adapter mit Versionen und Ereignistypen.
-6. Vorlagen, die als Entwurf übernommen werden.
-7. Einstellungen „Ausführung“: Grenzen für Parallelität, Batch und Laufzeit.
-8. Einstellungen „Status“: Schema, Worker, Schlüssel und Protokoll der Eingriffe.
+1. Visueller Editor: Bedingung mit Gruppe („A und (B oder C)“), Herkunft am Knoten, Kopfzeile mit Auslöser, Provider und letztem Lauf.
+2. Zeitplan als Auslöser: wöchentlich, mit den nächsten drei Terminen in der Zeitzone der Website.
+3. Übersicht: Läufe der letzten 30 Tage, Entscheidungen, Fehler, Zustand des Workers, Providerstatus und Notfallpause.
+4. Workflows mit letztem Lauf und den Fehlern der letzten 30 Tage.
+5. Läufe mit Filtern nach Zustand und Zeitraum und mit Blättern.
+6. Ein Lauf: Korrelation, Zeitleiste der Schritte, redigierte Ereignisdaten und Export ohne persönliche Daten.
+7. Ereignisse eines Anbieters mit Filtern nach Zustand und Blättern.
+8. Zeitpläne: Regel, nächster Termin und zuletzt ausgelöst.
+9. Einstellungen „Status“: Schema, Datenbank-Aktualisierung, Worker und Protokoll der Eingriffe.
 
 == Changelog ==
 
