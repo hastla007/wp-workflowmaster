@@ -243,6 +243,14 @@ check( 'starter: invalid label refused by validate_config', array( 'label:invali
 $e->release = array();
 check( 'starter: action unavailable again once the connector is switched off', null === $e->actions->get( 'xstarterconnector.ticket.note' ) );
 check( 'starter: connector is not shipped (export-ignore) and not inside src/', str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . '.gitattributes' ), '/examples export-ignore' ) && ! is_dir( WORKFLOW_CAPTAIN_PATH . 'src/Connector/starter-connector' ) );
+// E2E suite 16.11.2026: plugins load alphabetically, "starter-connector" before "workflow-captain". Loading the main
+// file without the core's interfaces must not fatal; the classes load inside the core's hooks only.
+$starter_probe = '<?php define( "ABSPATH", "/" ); function add_action( ...$a ) {} include ' . var_export( WORKFLOW_CAPTAIN_PATH . 'examples/starter-connector/wfc-starter-connector.php', true ) . '; echo interface_exists( "WorkflowCaptain\\Adapter\\Adapter", false ) ? "core" : "ok";';
+$starter_file  = tempnam( sys_get_temp_dir(), 'wfc-starter' );
+file_put_contents( $starter_file, $starter_probe );
+exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $starter_file ) . ' 2>&1', $starter_out, $starter_code );
+unlink( $starter_file );
+check( 'starter: main file loads before Workflow Captain without a fatal (classes load in the hooks)', 0 === $starter_code && 'ok' === trim( implode( "\n", $starter_out ) ) );
 check( 'install: manage_workflow_integrations is a capability of the core', in_array( 'manage_workflow_integrations', \WorkflowCaptain\Install::CAPS, true ) );
 
 // ----- WF-CONNECTOR-12: Pro can bind the connector runtime to workflow.custom_connectors
