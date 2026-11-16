@@ -2,7 +2,7 @@
 
 Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.4. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
-**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18a, F-19 (ohne Form) und W-1 bis W-9, W-11 (Teil Form), W-13.
+**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18a, F-19 (ohne Form), F-20 und W-1 bis W-9, W-11 (Teil Form), W-13.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -150,6 +150,12 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Entschieden:** Form Captain Pro kostet 59, 129 und 249 Euro pro Jahr netto, zzgl. USt., für 1, 5 und 25 Websites (`single`, `business`, `agency`; Entscheidung des Inhabers vom 16.11.2026, berichtigt von brutto auf netto).
 - **Offen:** die Preise aller anderen Produkte. `konzept.md` und `TODO.md` dieses Repositorys nennen für Workflow Captain Pro 129, 229 und 399 Euro als festgelegt; bestätigt sind die Beträge nicht. Entschieden am 16.11.2026: Alle Preise aller Pro-Add-ons und Tarife sind netto, zzgl. USt.
 - **Empfehlung:** Keine; Geschäftsentscheidung. Bis dahin gelten die Beträge für Workflow als Vorschlag.
+
+### F-20 · Format für Ereignisse aus WordPress und WooCommerce an externe Ziele
+
+- **Frage:** In welchem Format sendet Workflow Captain Ereignisse aus WordPress und WooCommerce (zum Beispiel „Bestellung bezahlt“) an n8n und andere Webhook-Ziele?
+- **Stand:** Der Umschlag dieser Spezifikation gilt nur für Ereignisse der Captain-Produkte; das Schema erlaubt in `type` nur deren Präfixe. `konzept.md` 17.12 nennt „WooCommerce-Bestellung bezahlt → n8n“ als Szenario der Version 1.
+- **Empfehlung:** Denselben Umschlag verwenden und im Schema die Präfixe `wordpress` und `woocommerce` zulassen (`source.product` = `wordpress` bzw. `woocommerce`, `contract_version` = Version von WordPress bzw. WooCommerce). Die erlaubten Felder je Typ legt dann eine MINOR-Version dieser Spezifikation fest; die Regeln für verbotene Werte gelten unverändert. So brauchen Empfänger nur ein Format.
 
 ## Teil 2: Widersprüche zwischen den Entscheidungen vom 16.11.2026
 

@@ -17,6 +17,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`docs/catalog/suite-events-v1.json`](docs/catalog/suite-events-v1.json) | Maschinenlesbarer Ereigniskatalog (Typ, Hook, erlaubte Felder, Bedeutung von `actor_user_id`); Vorstufe der Providerregistry (WF-INT-01). |
 | [`konzept.md`](konzept.md) | Produktkonzept. Wo es der Spezifikation widerspricht, gilt die Spezifikation; überholte Stellen sind gekennzeichnet. |
 | [`TODO.md`](TODO.md) | Umsetzungsliste. |
+| [`docs/n8n/`](docs/n8n/) | Entwürfe von n8n-Vorlagen ohne Zugangsdaten (WF-N8N-10). |
 | [`docs/KOMPATIBILITAET.md`](docs/KOMPATIBILITAET.md) | Entwurf der Kompatibilitätsmatrix: welche Stände der Kerne die Spezifikation voraussetzt. |
 | [`docs/ANFORDERUNGEN-andere-repos.md`](docs/ANFORDERUNGEN-andere-repos.md) | Anforderungen der Spezifikation an die anderen Repositories, fertig zum Anlegen dort (WF-SPEC-14). |
 | [`docs/UEBERGABE-E17-kundenconnectoren.md`](docs/UEBERGABE-E17-kundenconnectoren.md) | Übergabe der Aufgaben der Kundenconnectoren BoatingSchool und LearnBoating an die Projekt-Repositories (Entscheidung 17). |

@@ -76,6 +76,37 @@ def check_catalog(validator, docs):
     return failed
 
 
+def check_n8n_templates():
+    """The n8n templates parse, carry no credentials and deduplicate on the event id. Returns the failure count."""
+    failed = 0
+    paths = sorted(glob.glob(os.path.join(ROOT, "docs", "n8n", "*.json")))
+    for path in paths:
+        name = os.path.basename(path)
+        with open(path, encoding="utf-8") as handle:
+            flow = json.load(handle)
+        nodes = flow.get("nodes", [])
+        if any("credentials" in node for node in nodes):
+            print("FAIL n8n:", name, "contains credentials")
+            failed += 1
+        hooks = [n for n in nodes if n.get("type") == "n8n-nodes-base.webhook"]
+        if not hooks or any(h["parameters"].get("authentication") != "headerAuth" for h in hooks):
+            print("FAIL n8n:", name, "needs a webhook with header authentication")
+            failed += 1
+        dedupe = [n for n in nodes if n.get("type") == "n8n-nodes-base.removeDuplicates"]
+        if not dedupe or "$json.body.id" not in dedupe[0]["parameters"].get("dedupeValue", ""):
+            print("FAIL n8n:", name, "does not deduplicate on the event id")
+            failed += 1
+        names = {n["name"] for n in nodes}
+        for source, outputs in flow.get("connections", {}).items():
+            targets = [c["node"] for branch in outputs["main"] for c in branch]
+            if source not in names or any(t not in names for t in targets):
+                print("FAIL n8n:", name, "connection to an unknown node")
+                failed += 1
+    if paths and not failed:
+        print("ok   n8n: %d template(s)" % len(paths))
+    return failed
+
+
 def main():
     with open(SCHEMA, encoding="utf-8") as handle:
         schema = json.load(handle)
@@ -101,6 +132,7 @@ def main():
             print("ok  ", name)
 
     failed += check_catalog(validator, docs)
+    failed += check_n8n_templates()
 
     base = docs["pass.ticket.checked_in.json"]
     caused = next(d for d in docs.values() if d["causation_id"])

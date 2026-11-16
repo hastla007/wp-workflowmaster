@@ -1,0 +1,187 @@
+{
+  "name": "Workflow Captain: Gutschein ausgestellt → Kundenservice",
+  "nodes": [
+    {
+      "id": "9a69daa8-02c6-6860-8995-0c59508d4b4e",
+      "name": "Workflow Captain",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "workflow-captain-voucher-issued",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "notes": "Header-Authentifizierung: Zugangsdaten in n8n anlegen und hier auswählen. Diese Vorlage enthält keine Zugangsdaten. Produktions-URL erst nach Aktivierung des Workflows in Workflow Captain eintragen."
+    },
+    {
+      "id": "aab9255e-487d-e8cb-909d-45839878482e",
+      "name": "Doppelte verwerfen (Ereignis-id)",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "removeItemsRepeatedInPreviousExecutions",
+        "dedupeValue": "={{ $json.body.id }}",
+        "options": {}
+      },
+      "notes": "Workflow Captain wiederholt mit derselben id. Dieser Schritt sorgt dafür, dass ein Ereignis nur einmal verarbeitet wird."
+    },
+    {
+      "id": "f8d35e00-2276-1392-4d4c-056218338ae7",
+      "name": "Nur voucher.voucher.issued_standalone",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "3dff6b7e-8096-2e4e-088a-175ae040fbe2",
+              "leftValue": "={{ $json.body.type }}",
+              "rightValue": "voucher.voucher.issued_standalone",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "39b4b3e1-7e16-fd53-30f5-fc02ce52e7e1",
+      "name": "Felder auswählen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        -100
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fe6e6bd4-c6cf-695d-8599-a47d1f3b3d9c",
+              "name": "event_id",
+              "value": "={{ $json.body.id }}",
+              "type": "string"
+            },
+            {
+              "id": "2cac75bc-5902-e845-58e4-a05819044e99",
+              "name": "voucher_id",
+              "value": "={{ $json.body.subject.id }}",
+              "type": "string"
+            },
+            {
+              "id": "ed3e01b7-e00b-0f1d-1471-d714b88196fc",
+              "name": "amount_minor",
+              "value": "={{ $json.body.data.amount_minor }}",
+              "type": "number"
+            },
+            {
+              "id": "bde6f06a-3ec3-1ed7-ba90-beaf519d344e",
+              "name": "currency",
+              "value": "={{ $json.body.data.currency }}",
+              "type": "string"
+            },
+            {
+              "id": "2dd9e1a5-bde6-fed6-6937-0914fd8b61ff",
+              "name": "issue_source",
+              "value": "={{ $json.body.data.issue_source }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "notes": "Nur die Felder weitergeben, die der nächste Schritt braucht."
+    },
+    {
+      "id": "57faa4f5-9888-59e0-dc19-b835be5fc5b9",
+      "name": "Ihr nächster Schritt",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {},
+      "notes": "Zum Beispiel Ticket im Helpdesk anlegen. Ausstellen, Sperren oder Einlösen von Gutscheinen bleibt in Voucher Captain."
+    }
+  ],
+  "connections": {
+    "Workflow Captain": {
+      "main": [
+        [
+          {
+            "node": "Doppelte verwerfen (Ereignis-id)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doppelte verwerfen (Ereignis-id)": {
+      "main": [
+        [
+          {
+            "node": "Nur voucher.voucher.issued_standalone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nur voucher.voucher.issued_standalone": {
+      "main": [
+        [
+          {
+            "node": "Felder auswählen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Felder auswählen": {
+      "main": [
+        [
+          {
+            "node": "Ihr nächster Schritt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
