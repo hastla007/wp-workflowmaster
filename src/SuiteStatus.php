@@ -26,7 +26,7 @@ final class SuiteStatus {
 	const VERSION = 1;
 
 	/**
-	 * @return array{version:int,product:string,adapter:string,reason:?string,contract_version:?string,active_workflows:int,events:array<string,int>,last_correlation_id:?string,links:array<string,string>}
+	 * @return array{version:int,product:string,adapter:string,reason:?string,contract_version:?string,active_workflows:int,events:array<string,int>,last_correlation_id:?string,links:array<string,?string>}
 	 */
 	public static function for_product( string $product, AdapterRegistry $adapters, EventStore $events, EngineStore $engine, ?callable $url = null ): array {
 		$adapter = $adapters->get( $product );
@@ -52,6 +52,7 @@ final class SuiteStatus {
 				'runs'      => $link( 'workflow-captain-runs' ),
 				'events'    => $link( 'workflow-captain-events', array( 'product' => $product ) ),
 				'providers' => $link( 'workflow-captain-providers' ),
+				'correlation' => is_string( $last ) ? $link( 'workflow-captain-events', array( 'correlation' => $last ) ) : null,
 			),
 		);
 	}

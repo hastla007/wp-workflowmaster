@@ -67,13 +67,15 @@ final class EventsPage {
 		$store  = $this->plugin->consumer()->store();
 		$state  = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : '';
 		$state  = in_array( $state, EventStore::STATES, true ) ? $state : '';
-		$corr   = self::correlation_param();
-		$filter = array_filter( array( 'state' => $state, 'correlation_id' => $corr ) );
+		$corr    = self::correlation_param();
+		$product = isset( $_GET['product'] ) ? sanitize_key( wp_unslash( $_GET['product'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter only.
+		$product = preg_match( '/^[a-z0-9][a-z0-9-]{0,63}$/', $product ) ? $product : '';
+		$filter  = array_filter( array( 'state' => $state, 'correlation_id' => $corr, 'product' => $product ) );
 		$counts = $store->count_by_state();
-		if ( '' !== $corr ) {
+		if ( '' !== $corr || '' !== $product ) {
 			// Counts of the filtered list, so the numbers match what a click shows.
 			foreach ( array_keys( $counts ) as $key ) {
-				$counts[ $key ] = $store->count( array( 'state' => $key, 'correlation_id' => $corr ) );
+				$counts[ $key ] = $store->count( array_filter( array( 'state' => $key, 'correlation_id' => $corr, 'product' => $product ) ) );
 			}
 		}
 		$pages  = Pagination::state( $store->count( $filter ), self::PER_PAGE, Pagination::requested() );
@@ -104,17 +106,21 @@ final class EventsPage {
 		if ( current_user_can( 'manage_workflow_captain' ) ) {
 			echo '<p><a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=workflow_captain_diagnostics' ), 'workflow_captain_diagnostics' ) ) . '">' . esc_html__( 'Diagnose herunterladen (ohne persönliche Daten)', 'workflow-captain' ) . '</a></p>';
 		}
+		if ( '' !== $product ) {
+			/* translators: %s: product key of a provider */
+			echo '<div class="notice notice-info inline"><p>' . esc_html( sprintf( __( 'Nur Ereignisse von %s.', 'workflow-captain' ), $product ) ) . ' <a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'state' => $state, 'correlation' => $corr ) ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Alle Anbieter', 'workflow-captain' ) . '</a></p></div>';
+		}
 		if ( '' !== $corr ) {
 			echo '<div class="notice notice-info inline"><p>';
 			/* translators: %s: correlation ID */
 			echo esc_html( sprintf( __( 'Nur Ereignisse mit der Korrelation %s.', 'workflow-captain' ), $corr ) ) . ' ';
 			echo '<a href="' . esc_url( WorkflowsPage::url( WorkflowsPage::SLUG_RUNS, array( 'correlation' => $corr ) ) ) . '">' . esc_html__( 'Läufe mit dieser Korrelation', 'workflow-captain' ) . '</a> | ';
-			echo '<a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'state' => $state ) ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Filter entfernen', 'workflow-captain' ) . '</a></p></div>';
+			echo '<a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'state' => $state, 'product' => $product ) ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Filter entfernen', 'workflow-captain' ) . '</a></p></div>';
 		}
 		echo '<ul class="subsubsub">';
-		$links = array( '<a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'correlation' => $corr ) ), admin_url( 'admin.php' ) ) ) . '"' . ( '' === $state ? ' class="current" aria-current="page"' : '' ) . '>' . esc_html__( 'Alle', 'workflow-captain' ) . ' (' . (int) array_sum( $counts ) . ')</a>' );
+		$links = array( '<a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'correlation' => $corr, 'product' => $product ) ), admin_url( 'admin.php' ) ) ) . '"' . ( '' === $state ? ' class="current" aria-current="page"' : '' ) . '>' . esc_html__( 'Alle', 'workflow-captain' ) . ' (' . (int) array_sum( $counts ) . ')</a>' );
 		foreach ( $counts as $key => $count ) {
-			$links[] = '<a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'state' => $key, 'correlation' => $corr ) ), admin_url( 'admin.php' ) ) ) . '"' . ( $state === $key ? ' class="current" aria-current="page"' : '' ) . '>' . esc_html( self::state_label( $key ) ) . ' (' . (int) $count . ')</a>';
+			$links[] = '<a href="' . esc_url( add_query_arg( array_filter( array( 'page' => self::SLUG, 'state' => $key, 'correlation' => $corr, 'product' => $product ) ), admin_url( 'admin.php' ) ) ) . '"' . ( $state === $key ? ' class="current" aria-current="page"' : '' ) . '>' . esc_html( self::state_label( $key ) ) . ' (' . (int) $count . ')</a>';
 		}
 		echo '<li>' . implode( ' | </li><li>', $links ) . '</li></ul>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts above.
 
@@ -145,7 +151,7 @@ final class EventsPage {
 			echo '</td></tr>';
 		}
 		echo '</tbody></table>';
-		echo Pagination::render( $pages, array( 'page' => self::SLUG, 'state' => $state, 'correlation' => $corr ), __( 'Seiten der Ereignisliste', 'workflow-captain' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in Pagination::render().
+		echo Pagination::render( $pages, array( 'page' => self::SLUG, 'state' => $state, 'correlation' => $corr, 'product' => $product ), __( 'Seiten der Ereignisliste', 'workflow-captain' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in Pagination::render().
 		echo '</div>';
 	}
 
