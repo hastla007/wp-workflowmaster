@@ -244,6 +244,26 @@ $wfc_log2 = json_decode( (string) end( $wfc_out2 ), true );
 $wfc_cut  = is_array( $wfc_log2 ) ? array_search( '--', $wfc_log2, true ) : false;
 check( 'WF-MS new site while network-active: tables, schema option, caps and worker plan on that site; nothing when not network-active', 0 === $wfc_code2 && false !== $wfc_cut && in_array( 'table:wp_7_workflow_captain_events', $wfc_log2, true ) && in_array( 'option:workflow_captain_db_version@7', $wfc_log2, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log2, true ) && in_array( 'cron:workflow_captain_daily_maintenance@7', $wfc_log2, true ) && count( $wfc_log2 ) - 1 === $wfc_cut && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/workflow-captain.php' ), "add_action( 'wp_initialize_site', array( '\\WorkflowCaptain\\Install', 'initialize_site' )" ) );
 
+// WF-BUILDER-09 / WF-SET-15: every visible form control the admin pages print has an accessible name. Found by axe-core in
+// the E2E run (docs/E2E-RESULTS.md): the import file field of the workflow list had no label.
+$wfc_unlabelled = array();
+foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
+	$wfc_src = (string) file_get_contents( $wfc_file );
+	foreach ( explode( "\n", $wfc_src ) as $wfc_line ) {
+		if ( ! preg_match( '/<(input|select|textarea)\b/', $wfc_line ) || preg_match( '/<input type="(hidden|submit|button)"/', $wfc_line ) ) {
+			continue;
+		}
+		$wfc_id = preg_match( '/<(?:input|select|textarea)\b[^\n]*?\bid="([^"\']+)"/', $wfc_line, $wfc_i ) ? $wfc_i[1] : null;
+		$wfc_ok = str_contains( $wfc_line, '<label' ) || str_contains( $wfc_line, 'aria-label' ) || str_contains( $wfc_line, 'aria-labelledby' )
+			|| ( null !== $wfc_id && str_contains( $wfc_src, 'for="' . $wfc_id . '"' ) )
+			|| preg_match( '/\bid="\' \. esc_attr\( \$id \)/', $wfc_line ); // Settings fields: label for="$id" printed by the same helper.
+		if ( ! $wfc_ok ) {
+			$wfc_unlabelled[] = basename( $wfc_file ) . ': ' . trim( substr( trim( $wfc_line ), 0, 80 ) );
+		}
+	}
+}
+check( 'WF-BUILDER-09 admin form controls have a label (wrapped, for=id or aria-label)' . ( $wfc_unlabelled ? ': ' . implode( '; ', $wfc_unlabelled ) : '' ), array() === $wfc_unlabelled );
+
 // ---------------------------------------------------------------------------------------------------------------
 // Capture
 

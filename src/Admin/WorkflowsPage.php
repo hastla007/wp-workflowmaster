@@ -233,7 +233,7 @@ final class WorkflowsPage {
 		echo '</tbody></table>';
 		echo '<h2>' . esc_html__( 'Workflow importieren', 'workflow-captain' ) . '</h2><form method="post" enctype="multipart/form-data" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_import">';
 		wp_nonce_field( 'workflow_captain_import' );
-		echo '<p><input type="file" name="file" accept="application/json,.json"> <button class="button">' . esc_html__( 'Als Entwurf importieren', 'workflow-captain' ) . '</button></p><p class="description">' . esc_html__( 'Ein Import wird immer ein Entwurf. Veröffentlicht wird erst nach Prüfung und Testlauf.', 'workflow-captain' ) . '</p></form></div>';
+		echo '<p><label for="wfc-import-file">' . esc_html__( 'Workflow-Datei (JSON)', 'workflow-captain' ) . '</label> <input id="wfc-import-file" type="file" name="file" accept="application/json,.json"> <button class="button">' . esc_html__( 'Als Entwurf importieren', 'workflow-captain' ) . '</button></p><p class="description">' . esc_html__( 'Ein Import wird immer ein Entwurf. Veröffentlicht wird erst nach Prüfung und Testlauf.', 'workflow-captain' ) . '</p></form></div>';
 	}
 
 	private function render_editor( ?array $wf ): void {
