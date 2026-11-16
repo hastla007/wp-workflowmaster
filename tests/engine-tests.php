@@ -1099,3 +1099,20 @@ foreach ( $dst->events->find( array(), 20, 0 ) as $row ) {
 check( 'R-17.7 caused event on the target: chain depth counts across sites, correlation of the source event', null !== $caused && 2 === $caused['chain_depth'] && $source_env['correlation_id'] === $caused['correlation_id'] && 3 === $caused['site']['blog_id'] );
 check( 'R-7.14 caused event on the target: caused_by_workflow_id is the anchor, which no local workflow has', null !== $caused && $q5['anchor'] === $caused['caused_by_workflow_id'] && EngineStore::WF_NETWORK === $dst->store->get_workflow( $q5['anchor'] )['status'] );
 check( 'anchors: one per origin, reused', $q['anchor'] === ForeignRuns::enqueue( $dst->store, $fgraph, $source_env, $wrapper, hash( 'sha256', 'other' ), 'network:12', 'Netzwerk: Test', $dst->clock->mysql() )['anchor'] );
+
+// A foreign step whose action failed temporarily until the plan ran out: a human continues it without confirmation.
+$dst->engine->foreign()->set_resolver( fn( array $n ) => array( 'graph' => $fgraph, 'version' => 2, 'authorized_by_user_id' => 1 ) );
+$dst->dir->fail_mails = 100;
+$k5  = hash( 'sha256', 'network-run-44|target-3' );
+$q6  = ForeignRuns::enqueue( $dst->store, $fgraph, $source_env, array( 'workflow_id' => 16 ) + $wrapper, $k5, 'network:16', 'Netzwerk: E', $dst->clock->mysql() );
+for ( $i = 0; $i < 10; $i++ ) {
+	$dst->engine->process( 10 );
+	$dst->clock->advance( DAY_IN_SECONDS );
+}
+$st6 = $dst->store->steps_for_run( $q6['run_id'] )[0];
+check( 'R-8.12 after the last temporary failure the effect booking is cleared (the action said nothing happened)', EngineStore::STEP_ACTION_REQUIRED === $st6['state'] && EngineStore::EFFECT_NONE === $st6['effect'] );
+$dst->dir->fail_mails = 0;
+$sent_before          = count( $dst->dir->sent );
+check( 'foreign run: resume also requeues a step that needs a decision', 1 === ForeignRuns::resume( $dst->store, $k5, $dst->clock->mysql() ) );
+drain( $dst );
+check( 'foreign run: the resumed step runs once', EngineStore::RUN_SUCCEEDED === $dst->store->get_run( $q6['run_id'] )['state'] && $sent_before + 1 === count( $dst->dir->sent ) );

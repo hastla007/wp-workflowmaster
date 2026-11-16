@@ -185,8 +185,9 @@ final class ForeignRuns {
 	}
 
 	/**
-	 * A human resumes a paused run (after a new consent or a renewed license): its paused steps go back into the queue.
-	 * Steps with a started side effect stay where they are (R-8.12). Returns the number requeued.
+	 * A human resumes a paused run (after a new consent or a renewed license) or one that needs a decision: its paused
+	 * and action_required steps go back into the queue. Steps with a started side effect stay where they are (R-8.12).
+	 * Returns the number requeued.
 	 */
 	public static function resume( EngineStore $store, string $key, string $now ): int {
 		$found = self::find( $store, $key );
@@ -195,7 +196,8 @@ final class ForeignRuns {
 		}
 		$count = 0;
 		foreach ( $found['steps'] as $step ) {
-			if ( EngineStore::STEP_PAUSED === $step['state'] && EngineStore::EFFECT_STARTED !== $step['effect'] && $store->requeue_step( (int) $step['id'], false, $now ) ) {
+			$waiting = in_array( $step['state'], array( EngineStore::STEP_PAUSED, EngineStore::STEP_ACTION_REQUIRED ), true );
+			if ( $waiting && EngineStore::EFFECT_STARTED !== $step['effect'] && $store->requeue_step( (int) $step['id'], false, $now ) ) {
 				++$count;
 			}
 		}

@@ -332,6 +332,10 @@ final class Engine implements Dispatcher {
 			$unclear = ! $e instanceof TransientFailure && null !== $action && ! $action->idempotent() && EngineStore::EFFECT_STARTED === ( $fresh['effect'] ?? '' );
 			$delay   = $unclear ? null : RetryPlan::delay( $attempts );
 			if ( null === $delay ) {
+				if ( $e instanceof TransientFailure && EngineStore::EFFECT_STARTED === ( $fresh['effect'] ?? '' ) ) {
+					// The action said nothing happened: a human may continue without accepting a repeated side effect.
+					$this->store->set_effect( (int) $step['id'], $owner, EngineStore::EFFECT_NONE, $this->clock->mysql() );
+				}
 				$this->stop( $step, $owner, $run, EngineStore::STEP_ACTION_REQUIRED, EngineStore::RUN_ACTION_REQUIRED, self::code( $unclear ? 'unclear_outcome' : $reason ), $attempts );
 				return;
 			}
