@@ -63,7 +63,8 @@ final class WpdbEngineStore implements EngineStore {
 	}
 
 	public function list_workflows( int $limit, int $offset ): array {
-		$rows = $this->db->get_results( $this->db->prepare( "SELECT * FROM {$this->t( 'workflows' )} ORDER BY id DESC LIMIT %d OFFSET %d", $limit, $offset ), ARRAY_A );
+		// Anchors of runs from other sites (status "network") are not workflows of this site and are not listed.
+		$rows = $this->db->get_results( $this->db->prepare( "SELECT * FROM {$this->t( 'workflows' )} WHERE status <> %s ORDER BY id DESC LIMIT %d OFFSET %d", self::WF_NETWORK, $limit, $offset ), ARRAY_A );
 		return array_map( array( self::class, 'workflow_row' ), (array) $rows );
 	}
 
@@ -125,6 +126,7 @@ final class WpdbEngineStore implements EngineStore {
 				'context'       => self::json( $run['context'] ),
 				'actor_user_id' => $run['actor_user_id'] ?? null,
 				'serial_key'    => $run['serial_key'] ?? null,
+				'network'       => isset( $run['network'] ) && is_array( $run['network'] ) ? self::json( $run['network'] ) : null,
 				'state'         => self::RUN_RUNNING,
 				'created_at'    => $now,
 				'updated_at'    => $now,
@@ -140,6 +142,31 @@ final class WpdbEngineStore implements EngineStore {
 			return array( (int) $existing, false );
 		}
 		return array( (int) $this->db->insert_id, true );
+	}
+
+	public function ensure_anchor( string $origin, string $name, string $now ): int {
+		$origin = substr( $origin, 0, 64 );
+		$found  = $this->db->get_var( $this->db->prepare( "SELECT id FROM {$this->t( 'workflows' )} WHERE status = %s AND draft = %s", self::WF_NETWORK, self::json( array( 'origin' => $origin ) ) ) );
+		if ( null !== $found ) {
+			$this->db->update( $this->t( 'workflows' ), array( 'name' => substr( $name, 0, 191 ) ), array( 'id' => (int) $found ) );
+			return (int) $found;
+		}
+		$this->db->insert(
+			$this->t( 'workflows' ),
+			array(
+				'name'       => substr( $name, 0, 191 ),
+				'status'     => self::WF_NETWORK,
+				'draft'      => self::json( array( 'origin' => $origin ) ),
+				'created_at' => $now,
+				'updated_at' => $now,
+			)
+		);
+		return (int) $this->db->insert_id;
+	}
+
+	public function foreign_run( string $event_key ): ?array {
+		$row = $this->db->get_row( $this->db->prepare( "SELECT * FROM {$this->t( 'runs' )} WHERE version_id = 0 AND event_key = %s", $event_key ), ARRAY_A );
+		return $row ? self::run_row( $row ) : null;
 	}
 
 	public function get_run( int $id ): ?array {
@@ -216,7 +243,8 @@ final class WpdbEngineStore implements EngineStore {
 		$st  = $this->t( 'steps' );
 		$ids = fn( string $sql ): array => array_map( 'intval', (array) $this->db->get_col( $sql . ' LIMIT 100' ) );
 		return array(
-			'runs_without_version'      => $ids( "SELECT r.id FROM {$r} r LEFT JOIN {$v} v ON v.id = r.version_id WHERE v.id IS NULL" ),
+			// Runs from another site of the network have no version here (version_id 0, ForeignRuns).
+			'runs_without_version'      => $ids( "SELECT r.id FROM {$r} r LEFT JOIN {$v} v ON v.id = r.version_id WHERE v.id IS NULL AND r.network IS NULL" ),
 			'steps_without_run'         => $ids( "SELECT s.id FROM {$st} s LEFT JOIN {$r} r ON r.id = s.run_id WHERE r.id IS NULL" ),
 			'versions_without_workflow' => $ids( "SELECT v.id FROM {$v} v LEFT JOIN {$w} w ON w.id = v.workflow_id WHERE w.id IS NULL" ),
 			'active_without_version'    => $ids( "SELECT w.id FROM {$w} w LEFT JOIN {$v} v ON v.id = w.published_version_id WHERE w.status = 'active' AND v.id IS NULL" ),
@@ -485,6 +513,7 @@ final class WpdbEngineStore implements EngineStore {
 			'context'       => self::decode( $row['context'] ),
 			'actor_user_id' => isset( $row['actor_user_id'] ) ? (int) $row['actor_user_id'] : null,
 			'serial_key'    => isset( $row['serial_key'] ) ? (string) $row['serial_key'] : null,
+			'network'       => isset( $row['network'] ) && '' !== (string) $row['network'] ? self::decode( $row['network'] ) : null,
 			'state'         => (string) $row['state'],
 			'last_error'    => isset( $row['last_error'] ) ? (string) $row['last_error'] : null,
 			'created_at'    => (string) $row['created_at'],

@@ -17,6 +17,8 @@ interface EngineStore {
 	const WF_ACTIVE = 'active';
 	const WF_PAUSED   = 'paused';
 	const WF_ARCHIVED = 'archived';
+	/** Anchor of runs whose definition lives outside this site (ForeignRuns, network workflows R-17): never edited here. */
+	const WF_NETWORK = 'network';
 
 	// Run states.
 	const RUN_RUNNING         = 'running';
@@ -67,10 +69,20 @@ interface EngineStore {
 	/**
 	 * Creates a run unless one exists for this version and event (C-10).
 	 *
-	 * @param array{workflow_id:int,version_id:int,event_row_id:int,event_key:string,context:array,actor_user_id:?int,serial_key?:?string} $run
+	 * @param array{workflow_id:int,version_id:int,event_row_id:int,event_key:string,context:array,actor_user_id:?int,serial_key?:?string,network?:?array} $run
 	 * @return array{0:int,1:bool} Run ID and whether it was created now.
 	 */
 	public function create_run( array $run, string $now ): array;
+
+	/**
+	 * The anchor workflow of an outside origin (ForeignRuns): created once per origin with status WF_NETWORK, never
+	 * listed, never published, never started by a local event. Its ID is the workflow of the runs of that origin, so
+	 * caused events carry a workflow ID of this site that no local workflow has (R-7.14).
+	 */
+	public function ensure_anchor( string $origin, string $name, string $now ): int;
+
+	/** @return array<string,mixed>|null The run of an outside origin with this key (version_id 0). */
+	public function foreign_run( string $event_key ): ?array;
 
 	/** @return array<string,mixed>|null */
 	public function get_run( int $id ): ?array;

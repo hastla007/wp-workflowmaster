@@ -91,6 +91,7 @@ Bis zum visuellen Editor werden Workflows als JSON bearbeitet (Admin „Workflow
 | `workflow_captain_register_adapters_v1` | Action | Adapter anmelden (`init`, Priorität 20). Die eingebauten Adapter `wordpress` und `woocommerce` sind dann schon angemeldet; ein zweiter Adapter für dasselbe Produkt wird abgelehnt (`already_registered`) |
 | `workflow_captain_actions_v1` | Action | Aktionen anmelden |
 | `workflow_captain_dispatcher` | Filter | eigene Engine statt der des Kerns (selten) |
+| `workflow_captain_foreign_runs_v1` | Action | Läufe von einer anderen Website des Netzwerks: Resolver, Gate und Beobachter an `Engine\ForeignRuns` setzen (Abschnitt 5b) |
 | `workflow_captain_worker_batch` | Filter | Ereignisse und Schritte je Worker-Durchlauf (1 bis 200, Standard 25) |
 | `workflow_captain_retention_days` | Filter | Aufbewahrung nur verkürzen (`finished`, `stuck`) |
 
@@ -101,6 +102,24 @@ Bis zum visuellen Editor werden Workflows als JSON bearbeitet (Admin „Workflow
 - `WorkflowCaptain\Security\Vault`: Geheimnisse verschlüsselt speichern, rotieren, redigieren.
 
 Der Kern selbst registriert keine REST-Route und macht keinen ausgehenden Aufruf; die Routen und Verbindungen liegen in Workflow Captain Pro.
+
+## 5b. Läufe von einer anderen Website des Netzwerks (für Add-ons, Spezifikation Abschnitt 17)
+
+Der Kern speichert keine netzwerkweiten Workflows; er bietet nur den Einstieg, über den ein Add-on einen Lauf in die Warteschlange der Ziel-Website legt. Netzwerk-Workflows, Freigaben und Elternläufe liegen im Add-on (Workflow Captain Pro).
+
+- `Engine\ForeignRuns::enqueue( $store, $graph, $envelope, $network, $key, $origin, $name, $now )` legt auf der **aktuellen** Website einen Lauf mit seinem ersten Schritt an, einmal je `$key` (64 Hex-Zeichen, aus Netzwerklauf und Ziel-Website). Das Add-on wechselt dafür mit `switch_to_blog()` in `try`/`finally` auf die Ziel-Website; ausgeführt wird der Schritt später vom Worker der Ziel-Website mit deren Plugins, Aktionen und Rechten (R-17.4).
+- `$network` ist die Hülle neben dem Umschlag (R-17.5): genau `network_id`, `source_blog_id`, `workflow_id`, `version`, `run_id`, jeweils positive Ganzzahlen. Sie steht in der Spalte `network` des Laufs, nicht im Umschlag. `actor_user_id` und `caused_by_workflow_id` entfernt der Kern aus dem Umschlag (R-17.3).
+- Alle Läufe einer Herkunft (`$origin`, z. B. `network:12`) gehören zu einem Anker-Workflow der Ziel-Website mit dem Status `network`: nie gelistet, nie bearbeitbar, nie veröffentlicht, von keinem lokalen Ereignis gestartet. Ereignisse, die ein Schritt auslöst, tragen Korrelation und Kettentiefe des Quellereignisses weiter; die Kette zählt über Websites hinweg (R-17.7).
+- Vor jedem Aktionsschritt eines solchen Laufs gilt: Die Aktion implementiert `Engine\NetworkSafe` (sonst Pause `action_not_network_safe`), das Gate des Add-ons stimmt zu, und `NetworkSafe::network_check()` stimmt zu (`notify.user` z. B. nur für Mitglieder der Ziel-Website, `user_not_member`). Die fünf Aktionen des Kerns sind netzwerkfähig (`network_safe` in `docs/catalog/actions-v1.json`). Ohne Resolver pausiert der Schritt (`foreign_unavailable`).
+- Der Beobachter hört jeden Zustand des Laufs (`running`, `succeeded`, `paused` mit Grund, …). `ForeignRuns::find()`, `resume()` und `cancel()` lesen, setzen fort oder brechen ab, ebenfalls auf der aktuellen Website.
+
+```php
+add_action( 'workflow_captain_foreign_runs_v1', function ( \WorkflowCaptain\Engine\ForeignRuns $foreign ) {
+	$foreign->set_resolver( fn( array $network, array $run ) => my_definition_for_this_site( $network ) ); // graph, version, authorized_by_user_id
+	$foreign->set_gate( fn( array $network, array $run, array $node ) => my_consent_ok( $network, $node ) ? null : 'paused_site_consent' );
+	$foreign->set_observer( fn( array $run, string $state, ?string $reason ) => my_child_step_update( $run, $state, $reason ) );
+} );
+```
 
 ## 6. Datenfluss und Datenschutz
 

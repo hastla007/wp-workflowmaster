@@ -11,12 +11,13 @@ namespace WorkflowCaptain\Engine\Actions;
 use WorkflowCaptain\Consumer\TransientFailure;
 use WorkflowCaptain\Engine\Action;
 use WorkflowCaptain\Engine\ActionContext;
+use WorkflowCaptain\Engine\NetworkSafe;
 use WorkflowCaptain\Engine\Directory;
 use WorkflowCaptain\Engine\Template;
 
 defined( 'ABSPATH' ) || exit;
 
-final class NotifyAdmin implements Action {
+final class NotifyAdmin implements Action, NetworkSafe {
 
 	/** Capabilities whose holders may be addressed. */
 	const RECIPIENT_CAPS = array( 'manage_options', 'manage_woocommerce', 'manage_workflow_captain' );
@@ -46,6 +47,11 @@ final class NotifyAdmin implements Action {
 			$v[] = 'to:invalid';
 		}
 		return $v;
+	}
+
+	/** Writes only on the site it runs on and needs no user of the source site (R-17.4). */
+	public function network_check( ActionContext $context ): ?string {
+		return null;
 	}
 
 	public function execute( ActionContext $context ): array {

@@ -12,11 +12,13 @@ use WorkflowCaptain\Consumer\TransientFailure;
 use WorkflowCaptain\Engine\Action;
 use WorkflowCaptain\Engine\ActionContext;
 use WorkflowCaptain\Engine\Directory;
+use WorkflowCaptain\Engine\NetworkSafe;
+use WorkflowCaptain\Engine\SiteMembers;
 use WorkflowCaptain\Engine\Template;
 
 defined( 'ABSPATH' ) || exit;
 
-final class NotifyUser implements Action {
+final class NotifyUser implements Action, NetworkSafe {
 
 	public function __construct( private Directory $directory ) {}
 
@@ -45,12 +47,29 @@ final class NotifyUser implements Action {
 		return $v;
 	}
 
-	public function execute( ActionContext $context ): array {
+	/**
+	 * In a run from another site only a user ID from a released data field can be addressed (the actor never crosses,
+	 * R-17.3), and only a member of this site (R-17.4). Without a user ID the step runs and sends nothing.
+	 */
+	public function network_check( ActionContext $context ): ?string {
+		$user_id = $this->recipient( $context );
+		if ( null === $user_id ) {
+			return null;
+		}
+		return $this->directory instanceof SiteMembers && $this->directory->is_member( $user_id ) ? null : 'user_not_member';
+	}
+
+	private function recipient( ActionContext $context ): ?int {
 		$field   = (string) ( $context->config['user_field'] ?? 'actor_user_id' );
 		$user_id = 'actor_user_id' === $field
 			? ( $context->envelope['actor_user_id'] ?? null )
 			: ( $context->envelope['data'][ substr( $field, 5 ) ] ?? null );
-		$address = is_int( $user_id ) && $user_id > 0 ? $this->directory->email_of( $user_id ) : null;
+		return is_int( $user_id ) && $user_id > 0 ? $user_id : null;
+	}
+
+	public function execute( ActionContext $context ): array {
+		$user_id = $this->recipient( $context );
+		$address = null === $user_id ? null : $this->directory->email_of( $user_id );
 		if ( null === $address ) {
 			return array( 'sent' => 0, 'skipped' => 'no_recipient' );
 		}

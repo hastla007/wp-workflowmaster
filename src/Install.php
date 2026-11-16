@@ -172,6 +172,7 @@ final class Install {
   context longtext NOT NULL,
   actor_user_id bigint(20) unsigned DEFAULT NULL,
   serial_key char(64) DEFAULT NULL,
+  network text DEFAULT NULL,
   state varchar(20) NOT NULL,
   last_error varchar(191) DEFAULT NULL,
   created_at datetime NOT NULL,

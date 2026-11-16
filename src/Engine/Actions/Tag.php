@@ -10,11 +10,12 @@ namespace WorkflowCaptain\Engine\Actions;
 use WorkflowCaptain\Clock;
 use WorkflowCaptain\Engine\Action;
 use WorkflowCaptain\Engine\ActionContext;
+use WorkflowCaptain\Engine\NetworkSafe;
 use WorkflowCaptain\Engine\EngineStore;
 
 defined( 'ABSPATH' ) || exit;
 
-final class Tag implements Action {
+final class Tag implements Action, NetworkSafe {
 
 	public function __construct( private EngineStore $store, private Clock $clock, private bool $remove = false ) {}
 
@@ -36,6 +37,11 @@ final class Tag implements Action {
 
 	public function validate_config( array $config ): array {
 		return is_string( $config['tag'] ?? null ) && preg_match( '/^[a-z0-9][a-z0-9_-]{0,63}$/', $config['tag'] ) ? array() : array( 'tag:invalid' );
+	}
+
+	/** Writes only on the site it runs on and needs no user of the source site (R-17.4). */
+	public function network_check( ActionContext $context ): ?string {
+		return null;
 	}
 
 	public function execute( ActionContext $context ): array {
