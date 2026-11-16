@@ -692,3 +692,15 @@ foreach ( glob( WORKFLOW_CAPTAIN_PATH . 'docs/recipes/*.json' ) as $file ) {
 	preg_match_all( '/data\.([a-z0-9_]+)/', json_encode( $graph ), $m );
 	check( 'recipe ' . basename( $file ) . ' uses only catalog fields of ' . $type, isset( $fields[ $type ] ) && array() === array_diff( array_unique( $m[1] ), $fields[ $type ] ) );
 }
+
+// ----- Bulk requeue (WF-CORE-10) -------------------------------------------------------------------------------
+
+$s = site();
+$s->consumer->capture( $s->adapter, checkin() );
+$s->consumer->capture( $s->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'b' ) );
+$s->consumer->capture( $s->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'c' ) );
+$s->consumer->pause_product( 'pass-captain' );
+$ids = array_map( fn( $r ) => $r['id'], $s->store->find( array(), 10, 0 ) );
+$s->consumer->requeue( $ids[2] );
+check( 'bulk requeue: only dead_letter/paused events count, duplicates once', 2 === $s->consumer->requeue_many( array( $ids[0], $ids[1], $ids[1], $ids[2], 999 ) ) );
+check( 'bulk requeue: all back in the queue', 3 === count( $s->store->find( array( 'state' => EventStore::RECEIVED ), 10, 0 ) ) );

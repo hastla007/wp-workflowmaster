@@ -140,6 +140,22 @@ final class Consumer {
 		return $this->store->requeue( $id, $this->clock->mysql() );
 	}
 
+	/**
+	 * Requeues several dead_letter or paused events, a human decision after looking at the list (7.4, WF-CORE-10).
+	 *
+	 * @param int[] $ids
+	 * @return int Number requeued; ids in other states are skipped.
+	 */
+	public function requeue_many( array $ids ): int {
+		$count = 0;
+		foreach ( array_unique( array_map( 'intval', $ids ) ) as $id ) {
+			if ( $id > 0 && $this->store->requeue( $id, $this->clock->mysql() ) ) {
+				++$count;
+			}
+		}
+		return $count;
+	}
+
 	public function store(): EventStore {
 		return $this->store;
 	}

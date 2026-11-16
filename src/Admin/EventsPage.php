@@ -25,6 +25,7 @@ final class EventsPage {
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'menu' ) );
 		add_action( 'admin_post_workflow_captain_requeue', array( $this, 'handle_requeue' ) );
+		add_action( 'admin_post_workflow_captain_requeue_bulk', array( $this, 'handle_requeue_bulk' ) );
 	}
 
 	public function menu(): void {
@@ -51,6 +52,17 @@ final class EventsPage {
 		exit;
 	}
 
+	public function handle_requeue_bulk(): void {
+		if ( ! current_user_can( 'retry_workflow_runs' ) ) {
+			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		check_admin_referer( 'workflow_captain_requeue_bulk' );
+		$ids   = isset( $_POST['events'] ) ? array_map( 'absint', (array) wp_unslash( $_POST['events'] ) ) : array();
+		$count = $this->plugin->consumer()->requeue_many( $ids );
+		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'requeued_many' => $count ), admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
 	public function render(): void {
 		if ( ! current_user_can( 'view_workflow_logs' ) ) {
 			return;
@@ -66,6 +78,10 @@ final class EventsPage {
 		if ( isset( $_GET['requeued'] ) ) {
 			$ok = '1' === sanitize_key( wp_unslash( $_GET['requeued'] ) );
 			echo '<div class="notice notice-' . ( $ok ? 'success' : 'error' ) . '"><p>' . esc_html( $ok ? __( 'Das Ereignis ist wieder eingereiht.', 'workflow-captain' ) : __( 'Das Ereignis ließ sich nicht wieder einreihen.', 'workflow-captain' ) ) . '</p></div>';
+		}
+		if ( isset( $_GET['requeued_many'] ) ) {
+			/* translators: %d: number of events */
+			echo '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d Ereignisse wieder eingereiht.', 'workflow-captain' ), absint( wp_unslash( $_GET['requeued_many'] ) ) ) ) . '</p></div>';
 		}
 		$adapters = $this->plugin->adapters()->products();
 		echo '<p>' . esc_html(
@@ -90,6 +106,12 @@ final class EventsPage {
 		}
 		echo '<li>' . implode( ' | </li><li>', $links ) . '</li></ul>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts above.
 
+		$bulk = in_array( $state, array( EventStore::DEAD_LETTER, EventStore::PAUSED ), true ) && current_user_can( 'retry_workflow_runs' ) && array() !== $rows;
+		if ( $bulk ) {
+			echo '<form id="wfc-bulk" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_requeue_bulk">';
+			wp_nonce_field( 'workflow_captain_requeue_bulk' );
+			echo '<p><button class="button" type="submit">' . esc_html__( 'Ausgewählte erneut einreihen', 'workflow-captain' ) . '</button> <span class="description">' . esc_html__( 'Vorher prüfen, ob die Ursache (Adapter, Lizenz, Provider) behoben ist.', 'workflow-captain' ) . '</span></p></form>';
+		}
 		echo '<table class="widefat striped"><thead><tr>';
 		foreach ( array( __( 'Nr.', 'workflow-captain' ), __( 'Ereignis', 'workflow-captain' ), __( 'Objekt', 'workflow-captain' ), __( 'Zeitpunkt (UTC)', 'workflow-captain' ), __( 'Zustand', 'workflow-captain' ), __( 'Versuche', 'workflow-captain' ), __( 'Letzter Fehler', 'workflow-captain' ), '' ) as $head ) {
 			echo '<th scope="col">' . esc_html( $head ) . '</th>';
@@ -99,7 +121,8 @@ final class EventsPage {
 			echo '<tr><td colspan="8">' . esc_html__( 'Keine Ereignisse.', 'workflow-captain' ) . '</td></tr>';
 		}
 		foreach ( $rows as $row ) {
-			echo '<tr><td>' . (int) $row['id'] . '</td><td><code>' . esc_html( $row['type'] ) . '</code></td><td>' . esc_html( $row['subject_type'] . ' ' . $row['subject_id'] ) . '</td><td>' . esc_html( (string) ( $row['envelope']['occurred_at'] ?? $row['created_at'] ) ) . '</td><td>' . esc_html( self::state_label( $row['state'] ) ) . '</td><td>' . (int) $row['attempts'] . '</td><td>' . esc_html( (string) $row['last_error'] ) . '</td><td>';
+			$check = $bulk ? '<input type="checkbox" form="wfc-bulk" name="events[]" value="' . (int) $row['id'] . '" aria-label="' . esc_attr( sprintf( /* translators: %d: event number */ __( 'Ereignis %d auswählen', 'workflow-captain' ), (int) $row['id'] ) ) . '"> ' : '';
+			echo '<tr><td>' . $check . (int) $row['id'] . '</td><td><code>' . esc_html( $row['type'] ) . '</code></td><td>' . esc_html( $row['subject_type'] . ' ' . $row['subject_id'] ) . '</td><td>' . esc_html( (string) ( $row['envelope']['occurred_at'] ?? $row['created_at'] ) ) . '</td><td>' . esc_html( self::state_label( $row['state'] ) ) . '</td><td>' . (int) $row['attempts'] . '</td><td>' . esc_html( (string) $row['last_error'] ) . '</td><td>';
 			if ( in_array( $row['state'], array( EventStore::DEAD_LETTER, EventStore::PAUSED ), true ) && current_user_can( 'retry_workflow_runs' ) ) {
 				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 				echo '<input type="hidden" name="action" value="workflow_captain_requeue"><input type="hidden" name="event" value="' . (int) $row['id'] . '">';
