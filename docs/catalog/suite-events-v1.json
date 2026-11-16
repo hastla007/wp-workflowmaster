@@ -1,6 +1,6 @@
 {
-  "$comment": "Machine-readable part of docs/SPEC-suite-events.md (sections 4.2, 4.3, 6, 11). The spec text is normative; this file must match it. Checked by bin/validate-spec-examples.py.",
-  "spec_version": "1.0.0-draft.5",
+  "$comment": "Machine-readable part of docs/SPEC-suite-events.md (sections 4.2 to 4.7, 6, 11). The spec text is normative; this file must match it. Checked by bin/validate-spec-examples.py.",
+  "spec_version": "1.0.0-draft.6",
   "catalog_version": "1.0",
   "products": {
     "pass-captain": {
@@ -1178,6 +1178,169 @@
             "product": "string",
             "plan": "string",
             "status": "string"
+          }
+        }
+      ]
+    },
+    "woocommerce": {
+      "contract_constant": null,
+      "contract_version_source": "WC_VERSION",
+      "min_contract": null,
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "woocommerce.order.created",
+          "hook": "woocommerce_new_order",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "status",
+            "currency",
+            "total_minor",
+            "item_count",
+            "created_via",
+            "customer_user_id"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "status": "string",
+            "currency": "currency",
+            "total_minor": "integer",
+            "item_count": "integer",
+            "created_via": "string",
+            "customer_user_id": "integer"
+          }
+        },
+        {
+          "type": "woocommerce.order.paid",
+          "hook": "woocommerce_payment_complete",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "currency",
+            "total_minor",
+            "item_count",
+            "payment_method",
+            "customer_user_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "after_save",
+          "data_types": {
+            "currency": "currency",
+            "total_minor": "integer",
+            "item_count": "integer",
+            "payment_method": "string",
+            "customer_user_id": "integer"
+          }
+        },
+        {
+          "type": "woocommerce.order.status_changed",
+          "hook": "woocommerce_order_status_changed",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "from_status",
+            "to_status",
+            "currency",
+            "total_minor"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "from_status": "string",
+            "to_status": "string",
+            "currency": "currency",
+            "total_minor": "integer"
+          }
+        },
+        {
+          "type": "woocommerce.order.refunded",
+          "hook": "woocommerce_order_refunded",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "refund_id",
+            "amount_minor",
+            "currency",
+            "refunded_total_minor",
+            "full_refund"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "refund_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency",
+            "refunded_total_minor": "integer",
+            "full_refund": "boolean"
+          }
+        },
+        {
+          "type": "woocommerce.order.cancelled",
+          "hook": "woocommerce_order_status_cancelled",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "from_status",
+            "currency",
+            "total_minor"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "from_status": "string",
+            "currency": "currency",
+            "total_minor": "integer"
+          }
+        }
+      ]
+    },
+    "wordpress": {
+      "contract_constant": null,
+      "contract_version_source": "$wp_version (X.Y.Z)",
+      "min_contract": null,
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "wordpress.user.registered",
+          "hook": "user_register",
+          "since": "WP 6.4",
+          "subject_type": "user",
+          "id_kind": "record",
+          "data_fields": [
+            "role"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "role": "string"
+          }
+        },
+        {
+          "type": "wordpress.post.published",
+          "hook": "transition_post_status",
+          "since": "WP 6.4",
+          "subject_type": "post",
+          "id_kind": "record",
+          "data_fields": [
+            "post_type",
+            "author_user_id",
+            "previous_status"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "post_type": "string",
+            "author_user_id": "integer",
+            "previous_status": "string"
           }
         }
       ]

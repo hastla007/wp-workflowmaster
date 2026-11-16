@@ -131,6 +131,15 @@ foreach ( $counter as $label => $doc ) {
 }
 check( 'violation codes carry no value', ! str_contains( implode( ',', Validator::violations( $counter['data carries an e-mail'] ) ), 'example.com' ) );
 check( 'partner_code is allowed (D8b)', Validator::is_valid( $mut( $base, array( 'data', 'partner_code' ), 'MARIA10' ) ) );
+// F-20 and F-22: WordPress, WooCommerce and own connectors (4.7, 4.8)
+$woo = $mut( $mut( $base, array( 'type' ), 'woocommerce.order.paid' ), array( 'source', 'product' ), 'woocommerce' );
+check( 'F-20 woocommerce.* with source.product woocommerce is valid', Validator::is_valid( $woo ) );
+$x = $mut( $mut( $base, array( 'type' ), 'xlearnboatingconnector.entitlement.changed' ), array( 'source', 'product' ), 'learnboating-connector' );
+check( 'F-22 connector type x<key> with its key as product is valid', Validator::is_valid( $x ) );
+check( 'F-22 connector type with another connector key is rejected', in_array( 'type:product_mismatch', Validator::violations( $mut( $x, array( 'source', 'product' ), 'other-connector' ) ), true ) );
+check( 'F-22 connector type from a Captain product is rejected', in_array( 'type:product_mismatch', Validator::violations( $mut( $x, array( 'source', 'product' ), 'pass-captain' ) ), true ) );
+check( 'F-22 Captain type from a connector key is rejected', in_array( 'type:product_mismatch', Validator::violations( $mut( $base, array( 'source', 'product' ), 'learnboating-connector' ) ), true ) );
+check( 'F-22 connector key rules: no upper case, no leading hyphen, not a suite product', ! Validator::is_connector( 'Shop' ) && ! Validator::is_connector( '-shop' ) && ! Validator::is_connector( 'pass-captain' ) && Validator::is_connector( 'shop' ) );
 
 // Idempotency key (R-7.8)
 check( 'idempotency key matches R-7.8', hash( 'sha256', '1|1|pass.order.paid|order|abc|once' ) === IdempotencyKey::make( 1, 1, 'pass.order.paid', 'order', 'abc', IdempotencyKey::ONCE ) );

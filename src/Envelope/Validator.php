@@ -20,9 +20,22 @@ final class Validator {
 
 	const UUID4 = '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/';
 
-	const TYPE = '/^(voucher|pass|affiliate|license|form|review|course|workflow)\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/';
+	const TYPE = '/^(voucher|pass|affiliate|license|form|review|course|workflow|wordpress|woocommerce|x[a-z0-9]{2,39})\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/';
 
-	const PRODUCTS = array( 'voucher-captain', 'pass-captain', 'affiliate-captain', 'form-captain', 'review-captain', 'course-captain', 'workflow-captain', 'wp-license' );
+	const PRODUCTS = array( 'voucher-captain', 'pass-captain', 'affiliate-captain', 'form-captain', 'review-captain', 'course-captain', 'workflow-captain', 'wp-license', 'wordpress', 'woocommerce' );
+
+	/** Key of an own connector (F-22, 4.8): it is also source.product; its types use the prefix "x" + key without hyphens. */
+	const CONNECTOR_KEY = '/^[a-z0-9][a-z0-9-]{1,39}$/';
+
+	/** Prefix of the event types of a connector key. */
+	public static function connector_prefix( string $key ): string {
+		return 'x' . str_replace( '-', '', $key );
+	}
+
+	/** Whether a product key names an own connector rather than a Captain product, WordPress or WooCommerce. */
+	public static function is_connector( string $product ): bool {
+		return ! in_array( $product, self::PRODUCTS, true ) && 1 === preg_match( self::CONNECTOR_KEY, $product ) && strlen( self::connector_prefix( $product ) ) <= 40;
+	}
 
 	const TOP_LEVEL = array( 'id', 'type', 'spec_version', 'source', 'occurred_at', 'site', 'subject', 'actor_user_id', 'data', 'idempotency_key', 'correlation_id', 'causation_id', 'caused_by_workflow_id', 'chain_depth' );
 
@@ -57,6 +70,13 @@ final class Validator {
 		self::uuid( $envelope, 'id', false, $v );
 		if ( isset( $envelope['type'] ) && ! self::matches( $envelope['type'], self::TYPE, 96 ) ) {
 			$v[] = 'type:invalid';
+		} elseif ( isset( $envelope['type'], $envelope['source']['product'] ) && is_string( $envelope['source']['product'] ) ) {
+			// Connector types and connector products belong together (F-22, R-4.10).
+			$prefix    = strstr( $envelope['type'], '.', true );
+			$connector = self::is_connector( $envelope['source']['product'] );
+			if ( ( 'x' === $prefix[0] ) !== $connector || ( $connector && self::connector_prefix( $envelope['source']['product'] ) !== $prefix ) ) {
+				$v[] = 'type:product_mismatch';
+			}
 		}
 		if ( isset( $envelope['spec_version'] ) && ! self::matches( $envelope['spec_version'], '/^1\.(0|[1-9][0-9]*)$/' ) ) {
 			$v[] = 'spec_version:invalid';
@@ -124,7 +144,7 @@ final class Validator {
 			$v[] = 'source:invalid';
 			return;
 		}
-		if ( ! isset( $source['product'] ) || ! in_array( $source['product'], self::PRODUCTS, true ) ) {
+		if ( ! isset( $source['product'] ) || ! is_string( $source['product'] ) || ! ( in_array( $source['product'], self::PRODUCTS, true ) || self::is_connector( $source['product'] ) ) ) {
 			$v[] = 'source.product:invalid';
 		}
 		if ( ! isset( $source['core_version'] ) || ! self::matches( $source['core_version'], '/^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$/' ) ) {

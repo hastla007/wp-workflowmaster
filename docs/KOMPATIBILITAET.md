@@ -1,6 +1,6 @@
 # Kompatibilitätsmatrix der Provider (Entwurf)
 
-Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.5. Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“.
+Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6. Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“.
 
 **Entwurf.** Veröffentlicht wird die Matrix erst mit dem ersten Release von Workflow Captain Pro. Bis dahin hält sie fest, welche Stände der Kerne die Spezifikation voraussetzt und was davon am Code belegt ist. Es gibt noch keinen Adapter (der Consumer existiert seit Plugin 0.1.0); „Mindestvertrag“ ist das, was ein Adapter nach R-13.4 verlangen müsste, um den Katalog der Spezifikation vollständig abzudecken.
 

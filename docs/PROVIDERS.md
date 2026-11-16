@@ -1,6 +1,6 @@
 # Anbieterübersicht
 
-Stand: 16.11.2026, Plugin 0.2.x, Spezifikation 1.0.0-draft.5. Für Betreiber, Vertrieb und Support. Technische Einzelheiten: [`SPEC-suite-events.md`](SPEC-suite-events.md), Versionen: [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md), Ereignisse und Felder: [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json).
+Stand: 16.11.2026, Plugin 0.2.x, Spezifikation 1.0.0-draft.6. Für Betreiber, Vertrieb und Support. Technische Einzelheiten: [`SPEC-suite-events.md`](SPEC-suite-events.md), Versionen: [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md), Ereignisse und Felder: [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json).
 
 ## Wer liefert was
 

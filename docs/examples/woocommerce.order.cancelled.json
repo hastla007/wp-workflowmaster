@@ -1,0 +1,28 @@
+{
+  "id": "a1f27da0-fed4-4e3c-a176-bc52133b70a7",
+  "type": "woocommerce.order.cancelled",
+  "spec_version": "1.0",
+  "source": {
+    "product": "woocommerce",
+    "core_version": "8.9.3",
+    "contract_version": "8.9.3"
+  },
+  "occurred_at": "2026-11-16T18:02:11Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "5124",
+    "id_kind": "record"
+  },
+  "data": {
+    "from_status": "pending",
+    "currency": "EUR",
+    "total_minor": 2500
+  },
+  "idempotency_key": "bc3e74af6722473c4b814815d3474872b7c272aa4750ba4123721d592f2d2556",
+  "correlation_id": "a1f27da0-fed4-4e3c-a176-bc52133b70a7",
+  "causation_id": null,
+  "chain_depth": 0
+}

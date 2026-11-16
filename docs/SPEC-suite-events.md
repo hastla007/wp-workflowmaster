@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| Version | **1.0.0-draft.5** |
+| Version | **1.0.0-draft.6** |
 | Stand | 16.11.2026 |
-| Status | Entwurf zur Abnahme durch den Inhaber. Gebaut ist davon nichts. |
+| Status | Entwurf zur Abnahme durch den Inhaber. Seit dem 16.11.2026 gebaut (Plugin `workflow-captain` 0.2.x, Abweichung von D12). |
 | Ort | `hastla007/wp-workflowmaster`, `docs/SPEC-suite-events.md` (Entscheidung D1) |
 | Maschinenlesbar | [`schema/suite-event-v1.schema.json`](schema/suite-event-v1.schema.json), Katalog [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json), Beispiele unter [`examples/`](examples/) |
 | Offene Punkte | [`SPEC-open-questions.md`](SPEC-open-questions.md) |
@@ -58,11 +58,11 @@ Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D1
 - Lizenzereignisse werden nicht an Websites von Kunden zugestellt (D2).
 - Keine Übergabe von Mails oder Erinnerungen eines Kerns an einen Workflow (D10).
 - Keine geldwirksamen Befehle außer den vier Gutschein-Befehlen Ausstellen, Sperren, Reaktivieren und Einlösen in festen Grenzen (D11, D11b).
-- WordPress- und WooCommerce-Ereignisse, eigene Connectoren von Kunden, Webhooks nach außen, n8n und netzwerkweite Abläufe in Multisite sind nicht Teil dieser Fassung. Sie brauchen eigene Abschnitte in einer späteren Minor-Version.
+- Webhooks nach außen und n8n regeln `konzept.md` und [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md); sie nutzen denselben Umschlag. WordPress- und WooCommerce-Ereignisse stehen seit draft.6 in 4.7 (F-20), Ereignisse eigener Connectoren in 4.8 (F-22), netzwerkweite Abläufe in Abschnitt 17 (F-07).
 - Der Aufbau des Workflow-Editors, der Tabellen und der Oberfläche steht in `konzept.md`.
 - Preise. Die in `konzept.md` genannten Beträge sind nicht bestätigt.
 
-**Rangfolge der Arbeit (D12).** Diese Spezifikation darf jetzt geschrieben und abgenommen werden. Gebaut wird erst nach dem Verkaufsstart der drei vorhandenen Add-ons.
+**Rangfolge der Arbeit (D12).** Diese Spezifikation darf jetzt geschrieben und abgenommen werden. Gebaut wird erst nach dem Verkaufsstart der drei vorhandenen Add-ons. *[Auf Anweisung des Inhabers vom 16.11.2026 wird schon vorher gebaut.]*
 
 ## 2. Rollen
 
@@ -149,7 +149,7 @@ Lücken gegenüber R-3.4: „seit“ je `wpcap_*`-Action in Pass Captain (Werte 
 
 ### 4.1 Namensregel
 
-- R-4.1 Ein Suite-Ereignis heißt `<produkt>.<objekt>.<ereignis>` in Kleinbuchstaben mit Unterstrichen. `<produkt>` ist `voucher`, `pass`, `affiliate`, `license`, `form`, `review`, `course` oder `workflow`. `<ereignis>` steht in der Vergangenheitsform.
+- R-4.1 Ein Suite-Ereignis heißt `<produkt>.<objekt>.<ereignis>` in Kleinbuchstaben mit Unterstrichen. `<produkt>` ist `voucher`, `pass`, `affiliate`, `license`, `form`, `review`, `course`, `workflow`, `wordpress` oder `woocommerce` (4.7) oder `x<schlüssel>` für einen eigenen Connector (4.8). `<ereignis>` steht in der Vergangenheitsform.
 - R-4.2 Der Name ist vom Namen der PHP-Action unabhängig. Die Zuordnung steht in den Tabellen unten und nur dort.
 - R-4.3 Der Katalog enthält nur Actions, die es heute im Code gibt. Eine Action, die hier nicht steht, ist kein Suite-Ereignis; ein Adapter DARF sie nicht weiterreichen.
 
@@ -372,6 +372,34 @@ Die Präfixe `form.`, `review.` und `course.` sind reserviert. Ihre Kataloge kom
 - **Form Captain:** `FC:docs/spec/api-v1.md:23-34` nennt auf `main` (`6f4785f`) acht Actions „nach Commit“: `form_captain_form_created_v1`, `form_captain_form_updated_v1`, `form_captain_entry_created_v1`, `form_captain_entry_status_changed_v1`, `form_captain_entry_deleted_v1`, `form_captain_entries_imported_v1`, `form_captain_consent_withdrawn_v1`, `form_captain_notification_failed_v1`; die beiden mittleren sind neu, `FORM_CAPTAIN_CONTRACT_VERSION` blieb `1.0.0`. Geprüft am 16.11.2026 (Z-11): Der Code löst alle acht aus, nach dem Commit oder im Autocommit. Ausnahme: Läuft `form_captain_entry_created_v1` innerhalb der Transaktion eines Aufrufers, ist das „Commit“ nur ein Savepoint und die Action feuert vor dessen Commit (`FC:src/Storage/EntryRepository.php:59`, `:366-380`). Die Übergabe der Mails an einen Workflow (`form_captain_mail_handoff`, `FC:src/Mail/MailJobHandler.php:112`) ist auf allen Branches noch vorhanden (F-12, W-11).
 - **Review Captain:** Im Code belegt sind `review_captain_review_created_v1`, `review_captain_review_status_changed_v1` und `review_captain_review_removed_v1`. `RC:docs/contracts/workflow-provider-v1.md:62-74` nennt weitere Actions für Anfragen (`review_captain_request_status_changed_v1`, `_request_reminder_sent_v1`, `_request_responded_v1`, `_recipient_opted_out_v1`); geprüft am 16.11.2026 an `b35fb95` (Z-12): Der Code löst **keine** davon aus, sie stehen nur in `docs/`. Eine Vertragskonstante hat Review Captain weiter nicht. Der Vertrag dort beschreibt einen eigenen Descriptor und eigene Nutzdaten und ist an diese Spezifikation anzupassen (F-12).
 - **Course Captain:** kein Code. Produktschlüssel `course-captain-pro` und Präfix `course.` kennt der Lizenzserver an `241ae7a` und `main` nicht (`LIC:src/Catalog/EntitlementCatalog.php:179-183` nennt nur Workflow, Form und Review); auf `a113568` gibt es inzwischen `catalogs/course-captain-pro.json` (F-16).
+
+### 4.7 WordPress und WooCommerce (`source.product` = `wordpress` bzw. `woocommerce`, F-20)
+
+Entschieden am 16.11.2026 (F-20): Ereignisse aus WordPress und WooCommerce nutzen denselben Umschlag. Der Adapter liegt im **kostenlosen Kern** `workflow-captain`; er braucht keine Lizenz (R-2.4 gilt unverändert). `source.core_version` und `source.contract_version` sind die Version von WordPress (`$wp_version`, auf drei Stellen ergänzt) bzw. WooCommerce (`WC_VERSION`). Eine Vertragskonstante gibt es nicht; die Mindestversionen sind WordPress 6.4 und WooCommerce 8.2.
+
+- R-4.8 WooCommerce-Bestellungen werden nur über die CRUD-Klassen gelesen (`wc_get_order()`), nie über `wp_posts` oder `wc_orders` direkt. So gilt dasselbe für HPOS und die klassische Speicherung.
+- R-4.9 Felder mit Personenbezug (Rechnungs- und Lieferadresse, E-Mail, Telefon, Name, IP, Kundennotiz, Kupon-Codes) werden nie weitergereicht. `customer_user_id` ist erlaubt, wie bei Pass Captain.
+
+| Ereignis | Hook | Gegenstand | Erlaubte Felder in `data` | `actor_user_id` |
+|---|---|---|---|---|
+| `woocommerce.order.created` | `woocommerce_new_order` | `order` (`record`) | `status`, `currency`, `total_minor`, `item_count`, `created_via`, `customer_user_id` | angemeldeter Benutzer, sonst nicht gesetzt |
+| `woocommerce.order.paid` | `woocommerce_payment_complete` | `order` | `currency`, `total_minor`, `item_count`, `payment_method` (Kennung des Gateways), `customer_user_id` | nicht gesetzt (oft ein Webhook) |
+| `woocommerce.order.status_changed` | `woocommerce_order_status_changed` | `order` | `from_status`, `to_status`, `currency`, `total_minor` | angemeldeter Benutzer |
+| `woocommerce.order.refunded` | `woocommerce_order_refunded` | `order` | `refund_id`, `amount_minor`, `currency`, `refunded_total_minor`, `full_refund` | angemeldeter Benutzer |
+| `woocommerce.order.cancelled` | `woocommerce_order_status_cancelled` | `order` | `from_status`, `currency`, `total_minor` | angemeldeter Benutzer |
+| `wordpress.user.registered` | `user_register` | `user` | `role` | angemeldeter Benutzer (z. B. ein Admin), sonst nicht gesetzt |
+| `wordpress.post.published` | `transition_post_status` (neu `publish`, vorher nicht `publish`) | `post` | `post_type`, `author_user_id`, `previous_status` | angemeldeter Benutzer |
+
+Die Hooks feuern nach dem Speichern, aber nicht zugesagt nach einem Commit; der Adapter liest deshalb gegen (R-7.4). Diskriminator: `woocommerce.order.status_changed` nutzt `to_status`, `woocommerce.order.refunded` die `refund_id`, alle anderen keinen (ein Ereignis je Gegenstand).
+
+### 4.8 Eigene Connectoren (`source.product` = Schlüssel des Connectors, F-22)
+
+Entschieden am 16.11.2026 (F-22).
+
+- R-4.10 Ein Connector hat einen festen Schlüssel aus Kleinbuchstaben, Ziffern und Bindestrich (2 bis 40 Zeichen, nicht mit Bindestrich beginnend, nicht der Schlüssel eines Captain-Produkts, nicht `wordpress` oder `woocommerce`). Der Schlüssel ist `source.product`. Seine Ereignistypen beginnen mit `x` und dem Schlüssel ohne Bindestriche, zum Beispiel `learnboating-connector` → `xlearnboatingconnector.entitlement.changed`. Typ und Produkt MÜSSEN zusammenpassen; der Consumer lehnt sonst ab (`type:product_mismatch`).
+- R-4.11 Alle übrigen Regeln gelten unverändert: Umschlag (6), verbotene Werte (5), Idempotenz (7.3), Zustellung und Schleifenschutz (7.6).
+- R-4.12 Ein Connector meldet sich mit einem Manifest an (Schlüssel, Name, Version, eigene Vertragsversion, Mindestversion von Workflow Captain, je Ereignistyp die erlaubten Felder mit Datentyp und Datenklasse, je Befehl Berechtigung und Idempotenz). Felder der Datenklasse „personenbezogen“ sind ab Werk aus. Einzelheiten: [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md).
+- R-4.13 Ob Connector-Ereignisse Workflow Captain Pro voraussetzen, ist F-18a. Der Kern prüft keine Lizenz (R-2.4).
 
 ## 5. Regeln für verbotene Werte (D8)
 
@@ -808,7 +836,7 @@ Dazu für alle Lizenz-Actions des Katalogs: eine Vertragskonstante (R-3.1), „s
 - R-12.3 **Sparsamkeit.** Es gilt Abschnitt 5. Der Speicher des Consumers enthält keine E-Mail-Adressen, Namen oder Codes, auch nicht in Protokollen und Fehlermeldungen.
 - R-12.4 **Aufbewahrung.** Der Consumer löscht gespeicherte Ereignisse nach einer festen Frist. Vorschlag: erledigte Ereignisse nach 30 Tagen, `dead_letter` und `paused` nach 90 Tagen; `actor_user_id` und `data` werden schon geleert, sobald kein Lauf mehr darauf wartet. Die Fristen sind offen (F-04) und gehören in die Rechtsprüfung. Laufprotokolle haben eigene Fristen (`konzept.md`).
 - R-12.5 **Auskunft und Löschung.** Der Consumer MUSS sich bei WordPress als Exporteur und als Löscher persönlicher Daten anmelden (`wp_privacy_personal_data_exporters`, `wp_privacy_personal_data_erasers`) und dabei alle gespeicherten Ereignisse, Markierungen und Notizen mit der Benutzer-ID der Person liefern beziehungsweise entfernen oder anonymisieren. Er MUSS außerdem auf das Löschen eines Benutzerkontos (`deleted_user`) und auf `affiliate.affiliate.erased` reagieren.
-- R-12.6 **Mandantentrennung.** Daten liegen je Website (`site.blog_id`). Ein Ereignis verlässt seine Website nicht (F-07).
+- R-12.6 **Mandantentrennung.** Daten liegen je Website (`site.blog_id`). Ein Ereignis verlässt seine Website nur in einem netzwerkweiten Ablauf nach Abschnitt 17, mit den dort freigegebenen Feldern.
 - R-12.7 **Shop des Herstellers.** Lizenzereignisse betreffen Kunden des Herstellers. Verantwortlich ist dort der Hersteller selbst; die Datenschutzhinweise des Shops müssen die Verarbeitung nennen.
 - R-12.8 Der Betreiber einer Website ist für den Inhalt seiner Workflows verantwortlich, insbesondere für zusätzliche Nachrichten (R-9.5).
 
@@ -910,8 +938,23 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 
 | Version | Datum | Änderung |
 |---|---|---|
+| 1.0.0-draft.6 | 16.11.2026 | Entscheidungen F-07, F-20 und F-22 eingearbeitet: neue Abschnitte 4.7 (WordPress und WooCommerce, Adapter im freien Kern), 4.8 (eigene Connectoren mit Präfix `x<schlüssel>`, R-4.10 bis R-4.13) und 17 (netzwerkweite Abläufe). R-4.1, R-12.6 und die Nichtziele angepasst. Schema: `type` und `source.product` erweitert. Katalog um sieben Ereignisse und Beispiele ergänzt. |
 | 1.0.0-draft.5 | 16.11.2026 | Alle übrigen Stellen „zu prüfen“ geklärt: Affiliate Captain (Z-07, Z-08, Z-09, Z-13), Lizenzserver (Z-10, Z-14), Form Captain (Z-11), Review Captain (Z-12). Erlaubte Felder für die 21 Ereignistypen von Affiliate Captain (4.4) und Beispiele; neue Frage F-21 (beantragter Partnercode). Lesefunktionen von Affiliate Captain in 8.1; Lesen von Lizenzen ohne Fassade in 11. Berichtigt: Hook-Zahlen des Lizenzservers (3.2), acht statt sechs Actions in Form Captain (4.6), Course Captain im Katalog auf `a113568`. Erster Code des Consumers (Plugin 0.1.0) setzt diese Fassung um. |
 | 1.0.0-draft.4 | 16.11.2026 | Stellen „zu prüfen“ für Pass Captain (Z-01 bis Z-04), Voucher Captain (Z-05, Z-06, Z-15, Z-16), Lesefunktionen (Z-07 für beide) und `captain-pro` (Z-13) am Code geklärt und Tabellen 3.2, 4.2, 4.3, 7.2, 8.3.3, 8.3.4 und R-8.6 berichtigt. Erlaubte Felder und `actor_user_id` für alle 29 Ereignistypen von Pass und Voucher Captain (4.2, 4.3), je ein Beispiel, maschinenlesbarer Katalog `catalog/suite-events-v1.json`. Neue Regel R-4.7 (`reference`, `redemption_key` nicht weiterreichen); Beispiele `voucher.voucher.issued_standalone` und `voucher.voucher.redeemed` entsprechend ohne diese Felder; `public_id` im Beispiel im Format des Kerns. Tabelle der Lesefunktionen in 8.1 (WF-SPEC-15). Neuer Abschnitt 8.5 mit den Eigenschaften je Befehl und R-8.11 bis R-8.13. Offen bleiben die Stellen für Affiliate, Lizenzserver, Form und Review. Nachträge am selben Tag: Beispiele `license.license.issued` und `license.license.plan_changed`; Hinweis auf `Reconciliation::orders()` (Pass Captain, nicht gemergt) in 8.1. |
 | 1.0.0-draft.3 | 16.11.2026 | F-05 entschieden: feste Grenzen der vier Gutschein-Befehle als Tabelle in 8.3.1 (100 EUR und 50 je Tag; Einlösen jedes Gutscheins); neue Teilfrage F-05a für Shops ohne Euro. D13 im Affiliate-Kern umgesetzt: 4.4.1, R-4.4 bis R-4.6, 7.2 und R-13.6 nennen die Entfernung als Stand; neue Stelle Z-16 für den Voucher-Kern. |
 | 1.0.0-draft.2 | 16.11.2026 | Folgeentscheidungen eingearbeitet. D13: Abschnitt 4.4.1 neu, die vorläufigen Workflow-Provider werden vor dem Release aus den Kernen entfernt, `wpac_workflow_read()` ist keine anerkannte Lesefunktion. D8b: öffentlicher Partnercode und Geldbeträge erlaubt (R-5.1a, Katalog 4.4, Schema, zwei neue Beispiele). D11b: vier Gutschein-Befehle statt einem (Abschnitt 8 neu, Verbotsliste, Lizenzmatrix, R-13.6, P-8, A-9, neue Stelle Z-15). **Berichtigung:** Abschnitt 7.2 nannte für Voucher Captain „10 der 15“ Actions nach Commit und „fünf“ ohne Vermerk; richtig sind 9 und sechs. |
 | 1.0.0-draft | 16.11.2026 | Erste Fassung nach den Entscheidungen D1, D2 und D4 bis D12 vom 16.11.2026. Katalog: Pass Captain 13, Voucher Captain 16, Affiliate Captain 21, Lizenzserver 3 Ereignisse. Schema und vier Beispiele. |
+
+## 17. Netzwerkweite Abläufe in Multisite (F-07)
+
+Entschieden am 16.11.2026 (F-07): Netzwerkweite Abläufe werden gebaut. Sie sind eine Funktion von Workflow Captain Pro (Recht `workflow.multisite_network`, F-01) und laufen nur, wenn Kern und Pro netzwerkweit aktiviert sind. Ohne sie gilt alles je Website.
+
+- R-17.1 **Umfang.** Ein Netzwerk-Workflow hört auf ein Ereignis einer ausdrücklich gewählten Quell-Website und führt Schritte auf einer oder mehreren vorab festgelegten Ziel-Websites aus. Ziele sind feste Blog-IDs; „alle Websites“ gibt es nicht.
+- R-17.2 **Freigabe.** Jede beteiligte Website gibt ihre Teilnahme selbst frei: die Quelle je Ereignisfamilie und Feld, das Ziel je Befehl. Ein Widerruf wirkt sofort; laufende Schritte dieser Website pausieren (`paused_site_consent`).
+- R-17.3 **Daten.** Über die Website-Grenze gehen nur die freigegebenen Felder aus `data` sowie `type`, `subject`, `occurred_at` und die IDs aus 17.5. `actor_user_id` geht nie über die Grenze.
+- R-17.4 **Ausführung.** Auf der Ziel-Website läuft ein Schritt in deren eigener Warteschlange und mit deren Berechtigungen. Der veröffentlichende Benutzer ist Super-Admin; vor jedem Schritt prüft die Engine zusätzlich, dass die Aktion auf der Ziel-Website erlaubt ist (R-8.8 sinngemäß). `switch_to_blog()` wird nur zum Einplanen genutzt und immer in `try`/`finally` zurückgesetzt.
+- R-17.5 **Kennungen.** Der Umschlag eines Netzwerkschritts trägt `network.network_id`, `network.source_blog_id`, `network.workflow_id` und `network.run_id` in einer eigenen Hülle neben dem Umschlag, nicht im Umschlag (der Umschlag bleibt unverändert, R-13.1).
+- R-17.6 **Saga statt Transaktion.** Ein Netzwerklauf hat einen Elternlauf und je Ziel-Website einen Kindschritt. Zustände: `accepted`, `waiting_site_worker`, `running`, `succeeded`, `partial_failure`, `paused_site_consent`, `blocked_provider`, `cancelled`. Ein Fehlschlag auf einer Website hält die anderen nicht an.
+- R-17.7 **Schleifen.** Die Kausalkette zählt über Websites hinweg; das Limit aus R-7.14 gilt netzwerkweit.
+- R-17.8 **Lebenszyklus.** Wird eine Ziel-Website archiviert, gelöscht oder ihre Blog-ID wiederverwendet, pausiert der Netzwerk-Workflow, bis ein Super-Admin das Ziel neu bestätigt.
+- R-17.9 **Lizenz.** Jede beteiligte Website belegt einen Platz der Lizenz (B2). Läuft die Lizenz ab, starten keine neuen Netzwerkläufe; offene pausieren (10.3).

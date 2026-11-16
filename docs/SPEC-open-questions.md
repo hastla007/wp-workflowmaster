@@ -1,6 +1,6 @@
 # Offene Fragen zur Suite-Spezifikation
 
-Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.5. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
+Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
 **Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18a, F-19 (ohne Form), F-20, F-21, F-22 und W-1 bis W-9, W-11 (Teil Form), W-13.
 
@@ -59,6 +59,8 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Empfehlung:** Zwei Erweiterungen in `captain-pro`: (1) `requires()` bekommt einen Eintrag für weitere Kerne mit Versions- und Vertragskonstante; (2) eine gemeinsame, nur lesende Auskunft des Kernels, ob ein anderes Add-on auf dieser Website eine gültige Lizenz hat, ohne dass ein Add-on den Lizenzstatus eines anderen verändern oder dessen Schlüssel lesen kann. Beides vor dem ersten Adapter bauen.
 
 ### F-07 · Multisite
+
+**Entschieden am 16.11.2026:** Netzwerkweite Abläufe werden jetzt gebaut (Abschnitt 17 der Spezifikation, Pro, Recht `workflow.multisite_network`).
 
 - **Frage:** Wie verhalten sich Ereignisse in einem WordPress-Netzwerk?
 - **Stand:** Entschieden ist nur, dass jede Unterseite einen Platz der Lizenz belegt (B2). `konzept.md` plant netzwerkweite Abläufe von Website A nach Website B.
@@ -153,6 +155,8 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 
 ### F-20 · Format für Ereignisse aus WordPress und WooCommerce an externe Ziele
 
+**Entschieden am 16.11.2026:** wie empfohlen, im kostenlosen Kern (Abschnitt 4.7 der Spezifikation).
+
 - **Frage:** In welchem Format sendet Workflow Captain Ereignisse aus WordPress und WooCommerce (zum Beispiel „Bestellung bezahlt“) an n8n und andere Webhook-Ziele?
 - **Stand:** Der Umschlag dieser Spezifikation gilt nur für Ereignisse der Captain-Produkte; das Schema erlaubt in `type` nur deren Präfixe. `konzept.md` 17.12 nennt „WooCommerce-Bestellung bezahlt → n8n“ als Szenario der Version 1.
 - **Empfehlung:** Denselben Umschlag verwenden und im Schema die Präfixe `wordpress` und `woocommerce` zulassen (`source.product` = `wordpress` bzw. `woocommerce`, `contract_version` = Version von WordPress bzw. WooCommerce). Die erlaubten Felder je Typ legt dann eine MINOR-Version dieser Spezifikation fest; die Regeln für verbotene Werte gelten unverändert. So brauchen Empfänger nur ein Format.
@@ -165,6 +169,8 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Empfehlung:** So bestätigen. Öffentlich ist ein Code erst, wenn er freigegeben ist.
 
 ### F-22 · Ereignisse eigener Connectoren im Umschlag
+
+**Entschieden am 16.11.2026:** wie empfohlen (Abschnitt 4.8 der Spezifikation).
 
 - **Frage:** Wie heißen Ereignisse eines eigenen Connectors (zum Beispiel der Projektprodukte für BoatingSchool und LearnBoating), wenn das Schema in `type` und `source.product` nur die Captain-Produkte zulässt?
 - **Stand:** Adapter- und Aktions-Schnittstelle des Kerns (Plugin 0.2.0) passen auch für Connectoren; nur das Schema schließt sie aus. `TODO.md` WF-CONNECTOR-01 verlangt einen öffentlichen, versionierten Connector-Vertrag.

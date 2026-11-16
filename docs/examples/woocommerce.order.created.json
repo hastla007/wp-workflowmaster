@@ -1,0 +1,32 @@
+{
+  "id": "c35aac42-f445-4f40-aae4-a6defbcee350",
+  "type": "woocommerce.order.created",
+  "spec_version": "1.0",
+  "source": {
+    "product": "woocommerce",
+    "core_version": "8.9.3",
+    "contract_version": "8.9.3"
+  },
+  "occurred_at": "2026-11-16T18:02:11Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "5123",
+    "id_kind": "record"
+  },
+  "actor_user_id": 17,
+  "data": {
+    "status": "pending",
+    "currency": "EUR",
+    "total_minor": 4990,
+    "item_count": 2,
+    "created_via": "checkout",
+    "customer_user_id": 17
+  },
+  "idempotency_key": "2982c057d061da07dcdb5f18aef2c0366451bd65cdd62f7b34732b2047c2d36e",
+  "correlation_id": "c35aac42-f445-4f40-aae4-a6defbcee350",
+  "causation_id": null,
+  "chain_depth": 0
+}

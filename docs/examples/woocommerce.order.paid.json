@@ -1,0 +1,30 @@
+{
+  "id": "877b4ef7-bd2c-4a25-a2b5-0d678618a577",
+  "type": "woocommerce.order.paid",
+  "spec_version": "1.0",
+  "source": {
+    "product": "woocommerce",
+    "core_version": "8.9.3",
+    "contract_version": "8.9.3"
+  },
+  "occurred_at": "2026-11-16T18:02:11Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "5123",
+    "id_kind": "record"
+  },
+  "data": {
+    "currency": "EUR",
+    "total_minor": 4990,
+    "item_count": 2,
+    "payment_method": "stripe",
+    "customer_user_id": 17
+  },
+  "idempotency_key": "e98d135b4194e8e4976954b31c2fdec923a3349b96835a64b52a27034778ac1b",
+  "correlation_id": "877b4ef7-bd2c-4a25-a2b5-0d678618a577",
+  "causation_id": null,
+  "chain_depth": 0
+}

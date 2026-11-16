@@ -1,6 +1,6 @@
 # Workflow Captain – Entwickler-SDK
 
-Stand: Plugin 0.2.0, Spezifikation [`SPEC-suite-events.md`](SPEC-suite-events.md) 1.0.0-draft.5. Die Schnittstellen sind vor Version 1.0.0 der Spezifikation **nicht stabil** (R-13.2); ihre Version steht in `WORKFLOW_CAPTAIN_CONTRACT_VERSION`.
+Stand: Plugin 0.2.0, Spezifikation [`SPEC-suite-events.md`](SPEC-suite-events.md) 1.0.0-draft.6. Die Schnittstellen sind vor Version 1.0.0 der Spezifikation **nicht stabil** (R-13.2); ihre Version steht in `WORKFLOW_CAPTAIN_CONTRACT_VERSION`.
 
 ## 1. Bausteine
 

@@ -334,5 +334,46 @@
   "order_id": "integer",
   "change_source": "string",
   "void_reason": "string"
+ },
+ "woocommerce.order.cancelled": {
+  "from_status": "string",
+  "currency": "currency",
+  "total_minor": "integer"
+ },
+ "woocommerce.order.created": {
+  "status": "string",
+  "currency": "currency",
+  "total_minor": "integer",
+  "item_count": "integer",
+  "created_via": "string",
+  "customer_user_id": "integer"
+ },
+ "woocommerce.order.paid": {
+  "currency": "currency",
+  "total_minor": "integer",
+  "item_count": "integer",
+  "payment_method": "string",
+  "customer_user_id": "integer"
+ },
+ "woocommerce.order.refunded": {
+  "refund_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency",
+  "refunded_total_minor": "integer",
+  "full_refund": "boolean"
+ },
+ "woocommerce.order.status_changed": {
+  "from_status": "string",
+  "to_status": "string",
+  "currency": "currency",
+  "total_minor": "integer"
+ },
+ "wordpress.post.published": {
+  "post_type": "string",
+  "author_user_id": "integer",
+  "previous_status": "string"
+ },
+ "wordpress.user.registered": {
+  "role": "string"
  }
 }

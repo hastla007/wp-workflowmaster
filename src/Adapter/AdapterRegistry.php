@@ -28,6 +28,7 @@ final class AdapterRegistry {
 
 	public function add( Adapter $adapter ): bool {
 		$product = $adapter->product();
+		// Own connectors register through ConnectorRegistry with a manifest (F-22, WF-CONNECTOR-03), never here.
 		if ( ! in_array( $product, Validator::PRODUCTS, true ) || 'workflow-captain' === $product ) {
 			$this->refused[ $product ] = 'unknown_product';
 			return false;
