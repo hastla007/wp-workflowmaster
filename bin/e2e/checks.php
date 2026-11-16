@@ -531,7 +531,8 @@ switch ( $e2e_section ) {
 
 	case 'ms_uninstalled':
 		global $wpdb;
-		$left = (array) $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', '%' . $wpdb->esc_like( 'workflow_captain_' ) . '%' ) );
+		// Tables of Workflow Captain Pro (workflow_captain_pro_*) belong to the add-on, which is only deactivated here.
+		$left = array_values( array_filter( (array) $wpdb->get_col( $wpdb->prepare( 'SHOW TABLES LIKE %s', '%' . $wpdb->esc_like( 'workflow_captain_' ) . '%' ) ), static fn( $t ) => ! str_contains( $t, 'workflow_captain_pro_' ) ) );
 		e2e_check( 'k5', 'network uninstall removes the tables of every site', array() === $left, $left );
 		break;
 

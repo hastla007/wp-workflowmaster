@@ -68,6 +68,11 @@ async function select( page, id ) {
 	await page.click( `.wfc-canvas .wfc-node[data-id="${ id }"]` );
 }
 async function setInput( locator, value ) {
+	// Since the third run the rule field is a list of the catalog fields (select); other inputs are typed.
+	if ( 'SELECT' === await locator.evaluate( ( e ) => e.tagName ) ) {
+		await locator.selectOption( String( value ) );
+		return;
+	}
 	await locator.fill( String( value ) );
 	await locator.dispatchEvent( 'change' );
 }
@@ -103,7 +108,8 @@ async function graph( page ) {
 	return JSON.parse( await page.locator( '#wfc-graph' ).inputValue() );
 }
 async function submit( page, value ) {
-	await Promise.all( [ page.waitForNavigation(), page.locator( `button[name="do"][value="${ value }"]` ).click() ] );
+	// Header and form both have publish and test run since the third run; the form button is the last one.
+	await Promise.all( [ page.waitForNavigation(), page.locator( `button[name="do"][value="${ value }"]` ).last().click() ] );
 	const id = ( page.url().match( /edit=(\d+)/ ) || [] )[ 1 ];
 	return id ? parseInt( id, 10 ) : 0;
 }
@@ -113,7 +119,11 @@ async function notice( page ) {
 async function runPage( page, runId ) {
 	await page.goto( BASE + A + 'workflow-captain-runs&run=' + runId );
 	const heading = await page.locator( '.wrap h2' ).first().innerText();
-	const rows = await page.$$eval( '.wrap table tbody tr', ( trs ) => trs.map( ( tr ) => Array.from( tr.cells ).map( ( c ) => c.innerText.trim() ) ) );
+	// Since the third run: a table of run facts first, then the timeline (step, state label, created, waits until,
+	// ended, attempts, result, error). Rows are mapped to the old shape [node, state, attempts, due, result, error].
+	const states = { Wartet: 'queued', 'Läuft': 'running', 'Wartet auf Wiederholung': 'retry_wait', Erledigt: 'succeeded', 'Aktion erforderlich': 'action_required', Pausiert: 'paused', Abgebrochen: 'cancelled' };
+	const raw = await page.$$eval( '.wrap table.widefat:not(.wfc-run-meta) tbody tr', ( trs ) => trs.map( ( tr ) => Array.from( tr.cells ).map( ( c ) => ( c.querySelector( 'code' ) && 'TH' === c.tagName ? c.querySelector( 'code' ).innerText : c.innerText ).trim() ) ) );
+	const rows = raw.map( ( r ) => [ r[ 0 ], states[ r[ 1 ] ] || r[ 1 ], r[ 5 ], r[ 3 ] || r[ 2 ], r[ 6 ], r[ 7 ], '' ] );
 	return { heading, rows };
 }
 
@@ -156,7 +166,7 @@ async function runPage( page, runId ) {
 	const wf1 = await submit( page, 'save' );
 	const draftOrder = order( 99 );
 	work();
-	check( 'b2', 'draft saved; an order paid now starts no run of the draft', wf1 > 0 && 0 === runs( wf1 ).length && ( await page.locator( '.wrap' ).innerText() ).includes( 'Zustand: Entwurf' ), { wf1, draftOrder } );
+	check( 'b2', 'draft saved; an order paid now starts no run of the draft', wf1 > 0 && 0 === runs( wf1 ).length && /Entwurf|noch nicht veröffentlicht/.test( await page.locator( '.wfc-editor-meta' ).innerText() ), { wf1, draftOrder } );
 
 	// Re-open: the saved graph comes back with the same nodes, edges and positions.
 	await page.goto( BASE + A + 'workflow-captain-workflows&edit=' + wf1 );
@@ -176,11 +186,11 @@ async function runPage( page, runId ) {
 	await page.locator( '#wfc-graph' ).fill( JSON.stringify( g ) );
 	await submit( page, 'save' );
 	await select( page, cond );
-	const rulesJson = page.locator( '.wfc-inspector textarea.code' );
-	check( 'b5', 'nested group within the limit: inspector shows the rules as JSON (no form for groups)', ( await rulesJson.count() ) === 1 && ( await rulesJson.inputValue() ).includes( '"or"' ) );
+	// Since the third run the form shows groups ("+ Gruppe"); before, a group fell back to JSON.
+	check( 'b5', 'nested group within the limit: inspector shows the group in the form (fieldset with its own AND/OR)', 1 === await page.locator( '.wfc-inspector .wfc-rule-group' ).count() && 'or' === await page.locator( '.wfc-inspector .wfc-group-op' ).inputValue() );
 	await submit( page, 'publish' );
 	const pubNotice = await notice( page );
-	check( 'b6', 'Prüfen und veröffentlichen: published (notice, state Aktiv)', pubNotice.includes( 'Veröffentlicht' ) && ( await page.locator( '.wrap' ).innerText() ).includes( 'Zustand: Aktiv' ), pubNotice );
+	check( 'b6', 'Prüfen und veröffentlichen: published (notice, state Aktiv)', pubNotice.includes( 'Veröffentlicht' ) && ( await page.locator( '.wfc-editor-meta' ).innerText() ).startsWith( 'Aktiv' ), pubNotice );
 	const big = order( 99, 'bacs' );
 	const bigCheque = order( 99, 'cheque' );
 	const small = order( 20, 'bacs' );

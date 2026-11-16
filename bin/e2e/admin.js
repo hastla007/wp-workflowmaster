@@ -155,7 +155,7 @@ async function open( page, id, name, url, shot ) {
 	const wfLink = ( await page.content() ).match( /page=workflow-captain-workflows&(?:amp;)?edit=(\d+)/ );
 	if ( wfLink ) {
 		await open( page, 'h13', 'Workflow editor (existing)', a + 'workflow-captain-workflows&edit=' + wfLink[ 1 ], 'builder-existing' );
-		const dry = page.locator( 'button[name="do"][value="dryrun"]' );
+		const dry = page.locator( 'button[name="do"][value="dryrun"]' ).first(); // Header and form both offer "Testlauf" since the third run.
 		if ( await dry.count() ) {
 			await page.evaluate( () => document.querySelectorAll( 'details' ).forEach( ( d ) => ( d.open = true ) ) );
 			await Promise.all( [ page.waitForNavigation(), dry.click() ] );

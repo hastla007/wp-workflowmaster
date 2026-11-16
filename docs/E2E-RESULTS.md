@@ -9,6 +9,11 @@ unten unter „Offene Befunde" erklärt (8 Barrierefreiheit, 2 Umgebung bzw. Pro
 Last mit 50 und 5000 Bestellungen, Builder-Pfade im Browser mit echten Läufen, Beitragsaktionen mit Yoast im Block- und
 Classic-Editor, lineare Ansicht und Fokus; 79 von 79 Prüfungen bestehen, zwei Fehler im Kern behoben.
 
+**Dritter Lauf** (gleicher Tag, Abschnitt „Dritter Lauf (neue Oberfläche)“ unten): Upgrade mit Upgrade-Sperre auf der
+bestehenden Seite, neue Listen, Filter, Laufansicht, Zeitpläne und Builder-Teile im echten Browser mit wp-admin-CSS;
+101 von 101 Prüfungen bestehen, acht Fehler im Kern behoben (fünf Commits); Wiederholung des ersten Laufs 197 von 199
+(zwei bekannte Punkte, Umgebung und Pro), des zweiten 79 von 79.
+
 ## Umgebung
 
 | Teil | Version / Herkunft |
@@ -324,6 +329,150 @@ Entscheidung des Inhabers nötig (Spezifikation, nicht Code). Möglichkeiten:
 
 Empfehlung: 1 jetzt (Text), 3 prüfen, wenn der WooCommerce-Hook-Zeitpunkt in der Spezifikation belegt ist; 2 nur mit
 einer belastbaren Quelle für den Statusverlauf.
+
+## Dritter Lauf (neue Oberfläche, 16.11.2026)
+
+Geprüft wurde alles, was seit dem zweiten Lauf im Kern neu gebaut und bis dahin nur mit nachgebauten
+WordPress-Funktionen und ohne die Styles von wp-admin getestet war: Upgrade mit `src/Migrator.php`, Spalten und Blättern
+der Listen, Filter, Laufansicht mit Export, Übersicht, Seite „Zeitpläne“, Status-Tab und die neuen Teile des Builders.
+Gleiche Testseite und Umgebung wie oben, Branch `wt/e2e` ab `68bf79d` mit den Commits dieses Laufs; Workflow Captain Pro
+war auf `www` nicht aktiv (Eingabefelder von Add-on-Aktionen deshalb mit einer Test-Aktion, siehe unten).
+
+    AXE=<pfad>/axe.min.js bin/e2e/run-third.sh [screenshot-ordner]
+
+Der Lauf beginnt auf `backups/baseline.sql` von `www`; danach bleiben die Daten dieses Laufs auf der Seite (für die
+Screenshots). **101 von 101 Prüfungen bestehen** – Tabelle am Ende der Datei. Die Läufe der ersten beiden Runden wurden
+danach erneut ausgeführt (Regression, Teil 6).
+
+### Gefundene und behobene Fehler (dritter Lauf)
+
+| Commit | Fehler | Folge | Regressionstest |
+| --- | --- | --- | --- |
+| `13d4219` | Jeder WP-CLI-Aufruf führt das Upgrade schon beim Laden des Plugins aus; `wp workflow-captain migrate` fand danach immer „aktuell“ und schrieb nur „Schema 4 in place“ | Ein wiederholtes (abgebrochenes) Upgrade und das Upgrade von einem älteren Schema liefen unbemerkt; die Ausgaben „earlier upgrade … repeated“ und „Data steps run“ kamen nie | `tests/run.php` (WF-CORE-07 migrate reports the upgrade that boot() ran …, eigener PHP-Prozess) |
+| `bdcabd4` | Audit-Eintrag `run_export` ohne Beschriftung | Status-Tab zeigte den Schlüssel „run_export“ | `tests/run.php` (WF-SET-13: jeder vom Kern geschriebene Audit-Eintrag hat eine Beschriftung) |
+| `bdcabd4` | Unter 782 px scrollen Tabellen im eigenen Kasten; Status- und Protokolltabelle hatten nichts Fokussierbares (axe `scrollable-region-focusable`, serious) | Mit der Tastatur nicht seitlich scrollbar (WCAG 2.1.1) | `tests/run.php` (alle `widefat`-Tabellen der Admin-Seiten mit `tabindex="0"`) |
+| `bdcabd4` | Seite „Zeitpläne“: Link „Läufe“ im Zellentext nur durch die Farbe erkennbar (axe `link-in-text-block`, 1,41:1) | WCAG 1.4.1 | `tests/admin-list-tests.php` (Link unterstrichen) |
+| `bdcabd4` | Builder: „×“ einer Regel 9 × 16 px (axe `target-size`) | WCAG 2.5.8 | `tests/run.php` (kleine Textknöpfe des Builders mindestens 24 × 24 px) |
+| `b19846e` | Namensfeld des Editors bei 390 px 1–2 px breiter als der Inhalt (Rand der Eingabefelder von wp-admin; schon im ersten Lauf `x-mobile-builder-overflow`) | Seitliches Scrollen im Inhaltsbereich | `tests/admin-list-tests.php` |
+| `b7192c2` | Texte auf den Knoten liefen mit den Schriften von wp-admin über den Rand („WORKFLOW CAPTAIN · AUSLÖSER“); die Kürzung nach Zeichenzahl reichte nicht | Text ragte aus dem Knoten | `tests/builder.test.js` (Texte höchstens 166 px, Kürzung mit „…“, voller Text im Tooltip) |
+| `0a570ff` | Providerstatus der Übersicht: „1 Ereignistypen“ | Grammatik | `tests/admin-list-tests.php` |
+
+Kernprüfungen nach dem letzten Commit grün: `php tests/run.php` (752), `php tests/license-guard.php` (91 Dateien),
+`php bin/make-pot.php --check` (462 Texte), `python3 bin/validate-spec-examples.py` (69 Beispiele, 22 Gegenbeispiele),
+`node tests/builder.test.js` (98), `node tests/settings.test.js` (7).
+
+### 1. Upgrade der bestehenden Seite (WF-CORE-07) – `bin/e2e/upgrade.sh`
+
+- **Alte Fassung:** Export von `ecd352e` (Stand des zweiten Laufs, ohne `Migrator`) per `git archive` nach
+  `/home/user/wp-e2e/old-plugin`, Symlink darauf; ein Workflow, drei bezahlte Bestellungen, drei erfolgreiche Läufe (u0).
+- **Update** (Symlink wieder auf den Checkout, wie das Ersetzen der Plugin-Dateien): erster `status` zeigt Schema 4/4
+  (u1); Zeilen, Tabellendefinitionen und Schema-Option unverändert, keine Sperre übrig (u2); der alte Workflow läuft
+  weiter (u3); `verify` sauber (u4); Diagnose `upgrade_lock` „free“ (u5); `migrate` auf aktuellem Schema ohne Datenschritt
+  und ohne Warnung (u6). Das Schema bleibt 4; `Install::migrations()` hat noch keinen Datenschritt.
+- **Abgebrochenes Upgrade** (Schema-Option 3, Index `state_updated` und Tabelle `notes` gelöscht): eine Anfrage im
+  Frontend migriert nicht, die nächste wp-admin-Anfrage schon (u7a); Index und Tabelle zurück, keine Zeile verloren,
+  Sperre frei (u7).
+- **Sperre einer laufenden Aktualisierung** (30 s alt): `migrate` lehnt ab („Another request is upgrading“, u9), Diagnose
+  „upgrade“/„held“, eine in der Zeit bezahlte Bestellung wird gespeichert, aber nicht verarbeitet (u8), `process` lehnt
+  ab (u10); Status-Tab im Browser: „Aktualisierung der Datenbank: läuft gerade“, Schema 3 / 4 (u8b).
+- **Verwaiste Sperre** (11 Minuten alt): `migrate` übernimmt sie und meldet jetzt „Upgraded from schema 3 to 4.“ und
+  „An earlier upgrade had stopped half-way; it was repeated.“ (u10b, erst nach `13d4219`); Tabellen vollständig (u10c);
+  Protokoll „Abgebrochene Datenbank-Aktualisierung wiederholt“ mit von/bis (u11); die wartende Bestellung läuft danach
+  (u12); `verify` sauber (u13).
+- **Multisite** (`ms`, netzwerkweit aktiv): Website „zwei“ mit Schema 3, fehlender Tabelle und verwaister Sperre wird von
+  `wpms --url=… workflow-captain migrate` aktualisiert, die Hauptseite bleibt unberührt (u14); Fehlerprotokoll sauber (u15).
+
+### 2. Daten – `bin/e2e/third.php`
+
+Auf der aktualisierten Seite (mit den Daten aus Teil 1) über die Workflows-API veröffentlicht: 13 Workflows, darunter
+Bedingung mit Gruppe (`total_minor ≥ 5000 UND (bacs ODER cod)`), drei Zeitpläne (wöchentlich Montag 07:30, täglich – Zeit
+gerade vorbei, monatlich am 1. – pausiert), ein Entwurf und eine Aktion eines Add-ons. 70 bezahlte Bestellungen
+(verschiedene Beträge und Zahlarten), Erstattungen, Stornos, Statuswechsel, neue Benutzer, Beiträge; Worker wie geplant.
+Ergebnis: 242 Läufe, 331 Ereignisse (woocommerce, wordpress, workflow-captain). Alle Zustände (d3-1):
+
+- `running` (Wartezeit 1 Tag), `succeeded`, `stopped` (Bedingung „fehlendes Feld beendet“), `action_required` aus drei
+  echten Engine-Pfaden: `condition_field_missing` (Modus „Fehler“), `overdue` (Zeitreise: Fälligkeit 3 Tage zurück),
+  `unclear_outcome` (Absturz nachgestellt: Wirkung „started“ gesetzt), `paused`/`action_unavailable` (Add-on entfernt,
+  während Erstattungen kommen), `cancelled` (`cancel_run`) (d3-2).
+- `failed` setzt die Engine des Kerns nie (der Zustand ist nur aufgeführt); zwei Läufe wurden für Filter, Zählung und die
+  Fehlerspalte direkt auf `failed` gesetzt (Testdaten, Befund unten).
+- Zeitraum: 30 Läufe per Zeitreise 35–64 Tage zurückdatiert. Korrelation: eine bezahlte Bestellung startet drei Läufe
+  (drei Workflows auf `order.paid`) mit derselben `correlation_id` (d3-4). Keine Personendaten der Bestellungen in den
+  Tabellen des Plugins (d3-6).
+- Add-on-Aktion: mu-plugin `bin/e2e/mu-plugins/e2e-addon-action.php` (Option `e2e_addon_action`) meldet
+  `woocommerce.e2e.mark` mit `builder_fields()` (Auswahl, Zahl, Textfeld).
+
+### 3. Neue Seiten im Browser – `bin/e2e/third.js`
+
+Chromium 153 (Playwright 1.63), `deviceScaleFactor` 1, echtes wp-admin-CSS, 1280 und 390 px, axe-core 4.10.3
+(WCAG 2.2 AA, nur Markup des Plugins), Tastatur, JavaScript-Fehler und fehlgeschlagene Anfragen des Plugins.
+
+| Bereich | Geprüft |
+| --- | --- |
+| Workflowliste | Spalten „Letzter Lauf“ (Zeit, Zustand, Link) und „Fehler (30 Tage)“ (Zahl wie in der Datenbank, Link auf die Läufe, Zustand in Warnfarbe), Entwurf ohne Läufe „–“; Blättern ab 50 (45 zusätzliche Entwürfe, danach gelöscht) (v1–v4) |
+| Läufe | 242 Läufe, 50 je Seite, „1 von 5“, nächste Seite mit Tab + Enter, letzte Seite; jeder Zustandsfilter zählt wie die Datenbank; Workflow-Filter mit Hinweis, auch zusammen mit Zustand, Blättern behält Filter; Korrelation (3 Läufe), ungültige Korrelation ignoriert; Zeitraum „letzte 30 Tage“ per Tastatur (212), eigene Daten vor Voreinstellung, vertauschte Daten getauscht (v5–v11) |
+| Laufansicht | Korrelation mit Links, Zeitleiste mit `time`-Elementen, redigierte Daten ohne Personendaten; „Lauf exportieren“: Datei mit Lauf, Zeitleiste und redigiertem Ereignis, keine Rechnungsdaten, keine Admin-Mail, kein Login; „Im Editor zeigen“ markiert und wählt den Knoten, Hinweis im Inspektor, Ansage; unklarer Ausgang mit „Erneut senden?“ (24 px) (v12–v15) |
+| Ereignisse | 331, Blättern; Filter Anbieter (Hinweis, Zählung der gefilterten Liste), Anbieter + Zustand (Blättern behält beide), Korrelation (v16–v19) |
+| Übersicht | Kachel „Läufe · 30 Tage“ = 212 mit Link auf die Laufliste für 30 Tage; Providerstatus WooCommerce, WordPress, Workflow Captain „angemeldet“ mit Zahlen (v20, v21) |
+| Zeitpläne | drei Zeilen nach Name, „wöchentlich, Montag, 07:30“, nächster Termin Montag 07:30 Ortszeit (UTC im `datetime`), täglicher mit „zuletzt ausgelöst“ und Link, monatlicher „keiner (pausiert)“ (v22, v23) |
+| Status | „Aktualisierung der Datenbank: keine offen“, Schema 4 / 4; Protokoll mit lesbaren Einträgen (wiederholtes Upgrade, Lauf exportiert – erst nach `bdcabd4`) (v24, v25) |
+| Builder | Kopfzeile (Name, „Aktiv · Version 1 veröffentlicht“, Auslöser mit Provider und Versionen, letzter Lauf, Testlauf/Veröffentlichen oben); Herkunft am Knoten und im Inspektor; gespeicherte Gruppe als Formular, Feldliste gruppiert; Beispielwerte aus dem Testereignis („Beispiel: 9900“, „bacs“); „+ Gruppe“ mit Enter, Fokus im neuen Feld, keine Gruppe in der Gruppe; Fokus bleibt nach Feldwechsel; Ziehen aus der Palette setzt den Knoten an die Ablegestelle; Warnzeichen am unverbundenen Knoten; Add-on-Aktion ohne Add-on „Aktion nicht verfügbar“, mit Add-on Felder „Farbe“ (Auswahl), „Priorität“ (Zahl), „Kommentar“ (Textfeld) mit Beschriftung und gespeicherten Werten, Änderung + Tab behält den Fokus; Terminvorschau: drei Montage 07:30 Ortszeit, „Zuletzt ausgelöst: noch nie.“ bzw. mit Zeit und Link (v26–v38) |
+| 390 px | alle sieben Seiten ohne seitliches Scrollen und ohne axe-Verstoß; Zeitraum und Blättern sichtbar; lineare Ansicht mit Dann/Sonst, Bedingung mit Gruppe im Inspektor, Fokus auf der Überschrift; „Im Editor zeigen“ öffnet die Liste mit markiertem Schritt (v39–v42) |
+| Allgemein | keine JavaScript-Fehler, keine fehlgeschlagene Anfrage des Plugins (v43); PHP-Fehlerprotokoll ohne Eintrag des Plugins (h3-20) |
+
+### 4. Frontend und SEO mit Yoast (Bereich i)
+
+Mit den Daten dieses Laufs: Startseite, Beitrag, Seite, Produkt, Shop, Feed, REST-Index und Sitemap mit Plugin aktiv und
+deaktiviert gleich (i3-1); mit Yoast SEO 28.7 aktiv zusätzlich Yoast-Sitemaps, REST für Beitrag/Seite/Produkt und
+`yoast/v1/get_head` gleich, keine Erwähnung von Workflow Captain (i3-2).
+
+Befund am Messverfahren (kein Fehler des Plugins): Action Scheduler löscht bei **jeder** Plugin-Deaktivierung seine
+Option `action_scheduler_migration_status` (Hook `deactivate_plugin`) und meldet ohne sie zwei Beitragsstatus
+(`in-progress`, `failed`), die im REST-Index erscheinen. Im ersten Durchgang unterschied sich deshalb `/wp-json/`; das
+Skript `frontend-diff.sh` löscht die Option jetzt vor beiden Abrufen.
+
+### 5. Screenshots für WordPress.org – `bin/e2e/screenshots.js`
+
+Neun Bilder in `.wordpress-org/` (1280 × 800, `deviceScaleFactor` 1) von der echten Seite mit den Daten dieses Laufs; nur
+im Browser die Entwicklerhinweise von WooCommerce ausgeblendet und der Seitenname in der Werkzeugleiste als
+„Beispielshop“ gezeigt, nichts gespeichert. Beschriftungen in `readme.txt` angepasst (neu: Workflowliste, Läufe,
+Laufansicht, Zeitpläne; entfallen: Provider, Vorlagen, Einstellungen „Ausführung“).
+
+### 6. Regression: erster und zweiter Lauf erneut
+
+- `bin/e2e/run-checks.sh`: **197 von 199**. Offen nur die zwei bekannten Punkte 5 und 6 oben (`p-network-plugins`:
+  Warnung aus `plugins_api()`, Umgebung; `p-network-license`: 403, Pro). Gegenüber dem ersten Lauf jetzt bestanden:
+  Zielgröße der Notfallpause, alle Tabellen bei 390 px, `x-mobile-builder-overflow` (nach `b19846e`). Anpassungen der
+  Prüfskripte an die neue Oberfläche: „Testlauf“ steht jetzt zweimal im Editor (`admin.js`); `k5` zählt die Tabellen von
+  Workflow Captain Pro (`workflow_captain_pro_*`, Add-on nur deaktiviert) nicht mehr zu denen des Kerns.
+- `bin/e2e/run-second.sh` mit 500 statt 5000 Bestellungen im großen Lastteil: **79 von 79** (l-large: 550 bezahlte
+  Bestellungen, 550 Läufe, keine doppelt; die Lastzahlen in Teil 2 oben stammen weiter aus dem Lauf mit 5000,
+  `logs/load.jsonl` enthält jetzt den kleinen Lauf). `builder-flows.js` an die neue Oberfläche angepasst (Feldliste statt
+  Textfeld, Gruppe als Formular statt JSON, Kopfzeile statt „Zustand: …“, Zeitleiste neben der Angabentabelle) und nach
+  der Anpassung einzeln erneut gelaufen (20 von 20).
+
+### Befunde (nicht geändert)
+
+- **`failed` kommt im Kern nicht vor:** Die Engine setzt Läufe nie auf `failed` (dauerhafte Fehler enden in
+  `action_required`); Filter „Fehlgeschlagen“ und der Anteil in „Fehler (30 Tage)“ bleiben ohne Add-on immer 0. Frage an
+  den Inhaber: Zustand so lassen (für Add-ons/Netzwerkläufe) oder in der Oberfläche ausblenden, solange er 0 ist.
+  Empfehlung: lassen, aber in der Hilfe sagen, dass der Kern dauerhafte Fehler als „Aktion erforderlich“ zeigt.
+- **Protokoll aus WP-CLI:** Einträge ohne angemeldeten Benutzer (Upgrade, `requeue` per WP-CLI) zeigen als Benutzer „#0“;
+  besser wäre „System/WP-CLI“ (kleine Textänderung, nicht gemacht).
+- **Vertrag von WooCommerce:** Kopfzeile und Herkunft zeigen „WooCommerce 9.9.5, Vertrag 9.9.5“; das ist so festgelegt
+  (F-20: `contract_version` = `WC_VERSION`), wirkt aber doppelt.
+- **Pro:** Eingabefelder echter Pro-Aktionen nicht im Browser geprüft (Pro auf `www` nicht aktiv, ohne Lizenz ohne
+  Aktionen); der gleiche Weg (`builder_fields()`) ist mit der Test-Aktion belegt.
+- **Echter Screenreader:** weiterhin nicht verfügbar.
+
+### Zustand der Seite nach dem dritten Lauf
+
+`www` hält die Daten dieses Laufs (Sicherung `backups/third-data.sql`, Zustand der IDs in `logs/third-state.json`,
+Korrelation in `logs/third-correlation.txt`), Yoast inaktiv, Option `e2e_addon_action` nicht gesetzt (das mu-plugin
+`e2e-addon-action.php` liegt in `www/wp-content/mu-plugins/` und tut ohne die Option nichts). `ms`: Workflow Captain
+netzwerkweit aktiv, Schema 4 auf allen Websites (Stand nach `run-checks.sh` und Teil 1). Ergebnisse
+`logs/results-3.jsonl`, Wiederholungen `logs/results.jsonl` und `logs/results-2.jsonl`; Screenshots des Laufs in
+`/home/user/wp-e2e/shots-3`. Die Seiten der anderen Agenten (8083, 8084, 8086) blieben unberührt.
 
 ## Ergebnisse Hauptlauf (`bin/e2e/run-checks.sh`)
 
@@ -645,3 +794,109 @@ einer belastbaren Quelle für den Statusverlauf.
 | l-small | load small: every paid order has exactly one run, one LOAD mail and one tag; no step or run twice; nothing left open | **PASS** | {"paid":50,"runs":{"succeeded":50},"tags":50,"dupkey":0,"dupev":0,"open":0,"mails":50,"mails_twice":0,"workflow":1} |
 | l-large | load large: every paid order has exactly one run, one LOAD mail and one tag; no step or run twice; nothing left open | **PASS** | {"paid":5050,"runs":{"succeeded":5050},"tags":5050,"dupkey":0,"dupev":0,"open":0,"mails":5050,"mails_twice":0,"workflow":1} |
 | l-verify | load: verify after both runs | **PASS** | Success: No inconsistencies found. |
+
+## Ergebnisse dritter Lauf (`bin/e2e/run-third.sh`)
+
+| ID | Prüfung | Ergebnis | Detail |
+| --- | --- | --- | --- |
+| u0 | old version (second run, 0.2.0, no Migrator class) stored workflows, events and runs | **PASS** | {"runs":["succeeded","succeeded","succeeded"],"events":13,"causes":0,"workflows":1,"versions":1,"steps":9,"tags":3,"notes":0} |
+| u1 | first WP-CLI call after the update: status shows schema 4 (expected 4) | **PASS** | Plugin 0.2.0, schema 4 (expected 4), adapter interface 0.1.0 Adapters: workflow-captain, wordpress, woocommerce Events: received=1 processing=0 done=12 retry... |
+| u2 | after the update: rows, table definitions and schema option unchanged, no upgrade lock left | **PASS** | {"events":13,"causes":0,"workflows":1,"versions":1,"runs":3,"steps":9,"tags":3,"notes":0} |
+| u3 | the workflow published with the old version keeps working after the update (new order -> run succeeded) | **PASS** | ["succeeded","succeeded","succeeded","succeeded"] |
+| u5 | diagnostics: schema 4/4 current, upgrade lock free | **PASS** | {"schema":"4","schema_expected":"4","schema_state":"current","upgrade_lock":"free"} |
+| u4 | verify after the update | **PASS** | Success: No inconsistencies found. |
+| u6 | migrate on the current schema: success, no data step, no warning | **PASS** | Success: Schema 4 in place. |
+| u7a | interrupted upgrade: a front-end request does not migrate, the next wp-admin request does | **PASS** | front end: 3, after wp-admin: 4 |
+| u7 | upgrade from schema 3 finished: index and table back, version 4, no row lost, lock released | **PASS** | {"index":2,"version":"4","lock":false,"events":17,"causes":0,"workflows":1,"versions":1,"runs":4,"steps":12,"tags":4} |
+| u9 | lock held: migrate refuses with "Another request is upgrading", nothing changed | **PASS** | Error: Another request is upgrading this site right now. Try again in a few minutes; an upgrade that stopped half-way is taken over after 600 seconds. |
+| u8 | lock held by another request: schema stays 3, diagnostics say "upgrade"/"held", an order paid meanwhile is stored but not processed | **PASS** | {"schema_state":"upgrade","lock":"held","event":"received"} |
+| u10 | lock held: process refuses (schema does not match), nothing processed | **PASS** | Error: The stored schema does not match this plugin version; run "wp workflow-captain migrate" (or install the newer version after a downgrade). Nothing was ... |
+| u8b | lock held: Settings > Status shows "Aktualisierung der Datenbank: läuft gerade" and schema 3 / 4 | **PASS** | Aktualisierung der Datenbank	läuft gerade |
+| u10b | stale lock: migrate takes it over, warns that an earlier upgrade was repeated, success | **PASS** | Upgraded from schema 3 to 4. Warning: An earlier upgrade had stopped half-way; it was repeated. Success: Schema 4 in place.  |
+| u10c | upgrade from schema 3 finished: index and table back, version 4, no row lost, lock released | **PASS** | {"index":2,"version":"4","lock":false,"events":21,"causes":0,"workflows":1,"versions":1,"runs":4,"steps":12,"tags":4} |
+| u11 | audit log has the entry "upgrade_resumed" with from/to | **PASS** | {"at":"2026-11-16T19:15:28Z","user":0,"what":"upgrade_resumed","detail":{"from":"3","to":"4"}} |
+| u12 | after the upgrade the order paid during the lock is processed | **PASS** | done |
+| u13 | verify after the resumed upgrade | **PASS** | Success: No inconsistencies found. |
+| u14 | multisite: site "zwei" with schema 3 and a stale lock is upgraded by migrate --url (table back, version 4), main site untouched | **PASS** | Upgraded from schema 3 to 4. Warning: An earlier upgrade had stopped half-way; it was repeated. Success: Schema 4 in place.  version=4 notes=1 main=4 |
+| u15 | multisite PHP error log has no entry from Workflow Captain | **PASS** | clean |
+| d3-1 | more than 120 runs, every run state present | **PASS** | {"action_required":3,"cancelled":2,"failed":2,"paused":2,"running":2,"stopped":3,"succeeded":228} |
+| d3-2 | open states come from the engine: overdue, unclear_outcome, condition_field_missing (action_required), action_unavailable (paused), condition_field_missing (stopped) | **PASS** | ["action_required:condition_field_missing","action_required:overdue","action_required:unclear_outcome","paused:action_unavailable","stopped:condition_field_m... |
+| d3-3 | events of WooCommerce, WordPress and the schedule adapter, more than 100 (paging) | **PASS** | {"woocommerce":241,"wordpress":89,"workflow-captain":1} |
+| d3-4 | one order.paid event started one run per active order.paid workflow (three), all sharing its correlation ID | **PASS** | cdd9ed8f-95f2-4e39-b5e1-dbef04d2a6bb -> 3 |
+| d3-5 | the daily schedule fired once (last fired stored), weekly one has not yet | **PASS** | [9] |
+| d3-6 | no personal data of the orders in any workflow_captain_* table | **PASS** | 550263 bytes scanned |
+| v1 | workflow list: columns "Letzter Lauf" and "Fehler (30 Tage)"; last run with time, state and link | **PASS** | {"heads":["Name","Zustand","Auslöser","Version","Letzter Lauf (UTC)","Fehler (30 Tage)"],"paidRow":"Bestellung bezahlt: Betreiber informieren Exportieren\tAk... |
+| v2 | workflow list: the workflow with action_required runs shows its error count (linked to its runs) and its last state in the warning style | **PASS** | ["Statuswechsel: Feld fehlt (Fehler) Exportieren","Aktiv","woocommerce.order.status_changed","1","2026-11-16 19:16:00 Aktion erforderlich","1"] |
+| v3 | workflow list: a draft without runs shows "–" (with screen reader text) and 0 errors | **PASS** | ["Entwurf: Bewertung anfragen Exportieren","Entwurf","woocommerce.order.status_changed","–","–\nkeine Angabe","0"] |
+| x3-workflows-1280 | axe (WCAG 2.2 AA) workflow list at 1280 px: no violation in Workflow Captain markup | **PASS** | none |
+| v4 | workflow list pages after 50 entries (WP_List_Table markup, "2 von 2") | **PASS** | {"wfTotal":58,"p1":50,"p2":8} |
+| v5 | runs: all 242 runs counted, 50 per page, "1 von 5" | **PASS** | {"allLink":"Alle (242)","pages":"1 von 5"} |
+| x3-runs-1280 | axe (WCAG 2.2 AA) runs list at 1280 px: no violation in Workflow Captain markup | **PASS** | none |
+| v6 | runs: next page with the keyboard; page 2 continues below page 1 (newest first, no overlap) | **PASS** | {"first":"193","second":"192"} |
+| v6b | runs: last page holds the rest | **PASS** | 42 |
+| v7 | runs: every state filter shows only runs of that state, as many as stored (current link marked aria-current) | **PASS** | {"running":[2,"Läuft",2],"action_required":[3,"Aktion erforderlich",3],"paused":[2,"Pausiert",2],"failed":[2,"Fehlgeschlagen",2],"succeeded":[50,"Erfolgreich... |
+| v8 | runs: workflow filter (notice, only that workflow, paging keeps the filter) | **PASS** | {"wfNotice":"Nur Läufe mit: Workflow „Bestellung bezahlt: Betreiber informieren“. Filter entfernen","wfNames":["Bestellung bezahlt: Betreiber informieren"],"... |
+| v8b | runs: workflow and state filter together | **PASS** | ["Fehlgeschlagen","Fehlgeschlagen"] |
+| v9 | runs: correlation filter shows the three runs of one order.paid event (three workflows) | **PASS** | ["Große Bestellung (Bedingung mit Gruppe)","Bestellung bezahlt: Betreiber informieren","Alt: Bestellung bezahlt"] |
+| v9b | runs: a correlation that is no UUID is ignored (all runs, no notice) | **PASS** | "" |
+| v10 | runs: "letzte 30 Tage" chosen and sent with the keyboard (Tab to "Filtern", Enter) counts 212 of 242 runs | **PASS** | {"url":"http://127.0.0.1:8080/wp-admin/admin.php?page=workflow-captain-runs&period=30&from&to","shown":212} |
+| v11 | runs: own dates win over the preset, reversed dates are swapped, the state filter stays | **PASS** | {"swapped":10,"inRange":10,"oldest":"2026-09-13","oldEnd":"2026-09-22"} |
+| v12 | run view: correlation with links to runs and events, timeline with every step and time elements, redacted data (catalog fields, no personal data) | **PASS** | {"meta":"Angaben zum Lauf\nWorkflow\tGroße Bestellung (Bedingung mit Gruppe) (alle Läufe dieses Workflows)\nVersion\t1\nEreignis\twoocommerce.order.paid\nObj... |
+| x3-run-1280 | axe (WCAG 2.2 AA) run view at 1280 px: no violation in Workflow Captain markup | **PASS** | none |
+| v13 | run export: JSON file with run, timeline and redacted event, no personal data (billing data, admin mail), no user login | **PASS** | {"file":"workflow-captain-run-216.json","keys":["format","format_version","exported_at","plugin","times","run","event","hidden_data_fields","steps"],"bytes":... |
+| v14 | "Im Editor zeigen": the editor opens with the step's node marked and selected, the note in the inspector and an announcement | **PASS** | {"jumpNode":"small","focusNode":"small","live":["Knoten aus dem Lauf markiert: Markierung setzen","",""]} |
+| v15 | run view: unclear outcome shows the confirmation box "Erneut senden?" (label 24 px high) and "Fortsetzen" | **PASS** | "" |
+| v16 | events: 331 events, 50 per page with page navigation | **PASS** | 1 von 7 |
+| x3-events-1280 | axe (WCAG 2.2 AA) events list at 1280 px: no violation in Workflow Captain markup | **PASS** | none |
+| v16b | events: page 2 | **PASS** | "" |
+| v17 | events: provider filter (notice, only wordpress.* events, counts of the filtered list) | **PASS** | {"wpTypes":["wordpress"],"wpCount":89} |
+| v18 | events: state and provider filter together, paging keeps both | **PASS** | {"doneStates":["Erledigt"],"nextEv":"http://127.0.0.1:8080/wp-admin/admin.php?page=workflow-captain-events&state=done&product=woocommerce&paged=2"} |
+| v19 | events: correlation filter shows the order.paid event of the three runs, link back to its runs | **PASS** | ["woocommerce.order.paid"] |
+| v20 | overview: card "Läufe · 30 Tage" = 212, linked to the run list for 30 days | **PASS** | {"cardText":"Läufe · 30 Tage\n212","cardHref":"http://127.0.0.1:8080/wp-admin/admin.php?page=workflow-captain-runs&period=30"} |
+| v21 | overview: provider status lists WooCommerce, WordPress and the schedule adapter as "angemeldet" with counts | **PASS** | ["WooCommerce\tangemeldet\t5 Ereignistypen · 0 Aktionen","WordPress\tangemeldet\t2 Ereignistypen · 0 Aktionen","Workflow Captain\tangemeldet\t1 Ereignistyp ·... |
+| x3-overview-1280 | axe (WCAG 2.2 AA) overview at 1280 px: no violation in Workflow Captain markup | **PASS** | none |
+| v22 | schedules page: three schedule workflows by name; weekly rule, next due a Monday 07:30 site time (UTC in datetime) | **PASS** | {"weekly":"Wochenbericht montags\tAktiv · Version 1\twöchentlich, Montag, 07:30\tMon, 23.11.2026 07:30\t–\nkeine Angabe","nextDt":"2026-11-23T06:30:00Z","nex... |
+| v23 | schedules page: daily one with last fired time and link to its runs; paused monthly one says "keiner (pausiert)" | **PASS** | {"daily":"Täglicher Abgleich\tAktiv · Version 1\ttäglich, 20:14\tTue, 17.11.2026 20:14\tMon, 16.11.2026 20:14 (Läufe)","monthly":"Monatsabschluss\tPausiert ·... |
+| x3-schedules-1280 | axe (WCAG 2.2 AA) schedules at 1280 px: no violation in Workflow Captain markup | **PASS** | none |
+| v24 | status tab: "Aktualisierung der Datenbank: keine offen", schema 4 / 4 | **PASS** | Aktualisierung der Datenbank	keine offen |
+| v25 | status tab: audit entries with readable labels (resumed upgrade, run export) | **PASS** | ["Letzte sicherheitsrelevante Änderungen","Zeit (UTC)\tBenutzer\tÄnderung\tEinzelheiten","2026-11-16T19:16:18Z\tadmin\tLauf exportiert\trun: 216","2026-11-16... |
+| x3-status-1280 | axe (WCAG 2.2 AA) settings status at 1280 px: no violation in Workflow Captain markup | **PASS** | none |
+| v26 | editor header: name, "Aktiv · Version 1 veröffentlicht", trigger with provider and versions, last run linked, test run and publish at the top | **PASS** | Große Bestellung (Bedingung mit Gruppe)  Aktiv · Version 1 veröffentlicht Auslöser woocommerce.order.paid von WooCommerce 9.9.5, Vertrag 9.9.5 Letzter Lauf: ... |
+| v27 | origin on the node ("WOOCOMMERCE · AUSLÖSER") and in the inspector ("Herkunft: WooCommerce 9.9.5, Vertrag …") | **PASS** | {"kicker":"WOOCOMMERCE · AUSLÖSER","origin":"Herkunft: WooCommerce 9.9.5, Vertrag 9.9.5 · ID: start"} |
+| v28 | condition form: the stored group is shown as a group (fieldset with its own AND/OR), field list grouped (envelope / event data) | **PASS** | ["Ereignis:6","Daten des Ereignisses:5"] |
+| v29 | field list with example value from the sample event ("Beispiel: 9900", "Beispiel: bacs") | **PASS** | ["Beispiel: 9900","Beispiel: bacs","Beispiel: bacs"] |
+| v30 | "+ Gruppe" with Enter: a second group, the focus is on the field of its first rule; a group offers no further "+ Gruppe" | **PASS** | select.wfc-rule-field Feld |
+| v31 | focus kept after changing a field in the new group (no jump to the page start) | **PASS** | select.wfc-rule-field Feld |
+| x3-builder-group-1280 | axe (WCAG 2.2 AA) builder with a condition group at 1280 px: no violation in Workflow Captain markup | **PASS** | none |
+| v32 | drag from the palette onto the canvas adds the node where it was dropped | **PASS** | {"before":5,"after":6,"added":{"id":"delay1","type":"delay","unit":"hours","amount":1,"x":390,"y":30}} |
+| v33 | warning sign on the unconnected node (badge with "!", text in the accessible name) | **PASS** | Warten: 1 Std.. Warnung: Der Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen. Nicht mit dem Auslöser verbunden. |
+| v34 | action of an add-on that is gone: node marked unavailable with the warning "Aktion nicht verfügbar" | **PASS** | woocommerce.e2e.mark. Warnung: Aktion nicht verfügbar: Der Provider fehlt oder ist nicht aktiv. |
+| v35 | input fields of an add-on action (builder_fields): select "Farbe" with its options, number "Priorität", textarea "Kommentar", labelled and filled from the stored config | **PASS** | {"color":"red","prio":"2","comment":"Erstattung prüfen","options":["—","Rot","Grün"]} |
+| v36 | add-on field changed, Tab moves on (focus kept), the graph holds the new value | **PASS** | textarea.large-text Erstattung prüfen |
+| v37 | schedule preview: next three dues, each a Monday 07:30 in the site time zone, a week apart; "Zuletzt ausgelöst: noch nie." | **PASS** | ["Mo., 07:30","Mo., 07:30","Mo., 07:30"] |
+| v38 | schedule form of the daily workflow: "Zuletzt ausgelöst:" with time and link to its runs | **PASS** | Zuletzt ausgelöst: Mon, 11/16/2026, 08:14 PM (Läufe dieses Workflows) |
+| x3-builder-schedule-1280 | axe (WCAG 2.2 AA) builder with schedule preview at 1280 px: no violation in Workflow Captain markup | **PASS** | none |
+| x3-workflows-390 | axe (WCAG 2.2 AA) workflows at 390 px: no violation in Workflow Captain markup | **PASS** | none |
+| x3-workflows-390-overflow | workflows at 390 px: no horizontal page scroll | **PASS** | 0px |
+| x3-runs-390 | axe (WCAG 2.2 AA) runs at 390 px: no violation in Workflow Captain markup | **PASS** | none |
+| x3-runs-390-overflow | runs at 390 px: no horizontal page scroll | **PASS** | 0px |
+| x3-run-390 | axe (WCAG 2.2 AA) run at 390 px: no violation in Workflow Captain markup | **PASS** | none |
+| x3-run-390-overflow | run at 390 px: no horizontal page scroll | **PASS** | 0px |
+| x3-events-390 | axe (WCAG 2.2 AA) events at 390 px: no violation in Workflow Captain markup | **PASS** | none |
+| x3-events-390-overflow | events at 390 px: no horizontal page scroll | **PASS** | 0px |
+| x3-overview-390 | axe (WCAG 2.2 AA) overview at 390 px: no violation in Workflow Captain markup | **PASS** | none |
+| x3-overview-390-overflow | overview at 390 px: no horizontal page scroll | **PASS** | 0px |
+| x3-schedules-390 | axe (WCAG 2.2 AA) schedules at 390 px: no violation in Workflow Captain markup | **PASS** | none |
+| x3-schedules-390-overflow | schedules at 390 px: no horizontal page scroll | **PASS** | 0px |
+| x3-status-390 | axe (WCAG 2.2 AA) status at 390 px: no violation in Workflow Captain markup | **PASS** | none |
+| x3-status-390-overflow | status at 390 px: no horizontal page scroll | **PASS** | 0px |
+| v39 | 390 px: time range form and page navigation of the runs visible (not hidden like tablenav top) | **PASS** | "" |
+| v40 | 390 px: linear step view of the workflow with a group lists Dann/Sonst branches | **PASS** | ["Auslöser: woocommerce.order.paid","Wenn/Sonst","Dann: Nachricht an Betreiber","Ende","Sonst: Markierung setzen"] |
+| v41 | 390 px: choosing the condition in the list opens it in the inspector with the focus on its heading; the group form fits the screen | **PASS** | {"mFocus":"h3 Wenn/Sonst","overflow":0} |
+| x3-builder-linear-390 | axe (WCAG 2.2 AA) builder (linear view, condition group) at 390 px: no violation in Workflow Captain markup | **PASS** | none |
+| x3-builder-linear-390-overflow | builder (linear view, condition group) at 390 px: no horizontal page scroll | **PASS** | 0px |
+| v42 | 390 px: "Im Editor zeigen" opens the linear list with the step marked | **PASS** | ["Auslöser: woocommerce.order.paid","Wenn/Sonst","Dann: Nachricht an Betreiber","Ende","Sonst: Markierung setzen (aus dem Lauf)"] |
+| v43 | no JavaScript error and no failed request of Workflow Captain on any page of this run | **PASS** | [] |
+| i3-1 | front-end HTML identical active vs. deactivated (home, post, product, shop, feed, REST index, sitemap), with the data of this run | **PASS** | SAME / (86858 bytes) SAME /?p=198 (97320 bytes) SAME /?page_id=9 (75906 bytes) SAME /?post_type=product&p=191 (97466 bytes) SAME /?post_type=product (86622 b... |
+| i3-2 | with Yoast SEO active: front end, XML sitemaps, REST and get_head identical with Workflow Captain active vs. deactivated, no Workflow Captain data in public responses | **PASS** | SAME / (89810 bytes) SAME /?p=198 (101235 bytes) SAME /?page_id=9 (78962 bytes) SAME /?post_type=product&p=191 (100796 bytes) SAME /sitemap_index.xml (2441 b... |
+| h3-20 | PHP error log has no notice, warning or error from Workflow Captain during the whole run (WP_DEBUG) | **PASS** | 142 lines in debug.log, none from the plugin |
