@@ -216,6 +216,8 @@ $prov_src  = array(
 $status    = \WorkflowCaptain\Admin\OverviewPage::provider_status( $prov_rows, $prov_src );
 check( 'provider status: label, state text, tone and counts per product', array( 'Pass Captain', 'angemeldet', 'ok', 2, 0 ) === array( $status[0]['label'], $status[0]['state'], $status[0]['tone'], $status[0]['events'], $status[0]['actions'] ) && array( 'kein Adapter', 'warn', 2 ) === array( $status[1]['state'], $status[1]['tone'], $status[1]['actions'] ) && 'bad' === $status[2]['tone'] );
 $ptable = \WorkflowCaptain\Admin\OverviewPage::provider_table( $status );
+$ptable1 = \WorkflowCaptain\Admin\OverviewPage::provider_table( array( array( 'product' => 'workflow-captain', 'label' => 'Workflow Captain', 'state' => 'angemeldet', 'tone' => 'ok', 'events' => 1, 'actions' => 1 ) ) );
+check( 'provider status table: singular for one event type and one action (E2E third run showed "1 Ereignistypen")', str_contains( $ptable1, '1 Ereignistyp · 1 Aktion<' ) );
 check( 'provider status table: caption, row headers, state as text (colour only repeats it)', str_contains( $ptable, '<caption class="screen-reader-text">Providerstatus</caption>' ) && str_contains( $ptable, '<th scope="row">Pass Captain</th>' ) && str_contains( $ptable, '</span>abgelehnt</td>' ) && str_contains( $ptable, '2 Ereignistypen · 0 Aktionen' ) && str_contains( $ptable, 'aria-hidden="true"' ) );
 
 // ----- Overview of all schedules (docs/UI-ENTWUERFE.md, section 4) ---------------------------------------------

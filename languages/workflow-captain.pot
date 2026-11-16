@@ -13,11 +13,6 @@ msgstr ""
 msgid "%1$d Ereignisse wurden abgelehnt, weil sie das Schema verletzten. Zuletzt: %2$s"
 msgstr ""
 
-#. translators: 1: number of event types, 2: number of actions
-#: src/Admin/OverviewPage.php:92
-msgid "%1$d Ereignistypen · %2$d Aktionen"
-msgstr ""
-
 #. translators: 1: current page, 2: number of pages
 #: src/Admin/Pagination.php:58
 msgid "%1$s von %2$s"
@@ -27,6 +22,13 @@ msgstr ""
 #: src/Admin/Provenance.php:85
 msgid "%1$s, Vertrag %2$s"
 msgstr ""
+
+#. translators: %d: number of actions
+#: src/Admin/OverviewPage.php:95
+msgid "%d Aktion"
+msgid_plural "%d Aktionen"
+msgstr[0] ""
+msgstr[1] ""
 
 #. translators: %d: number of hidden data fields
 #: src/Admin/WorkflowsPage.php:731
@@ -39,6 +41,13 @@ msgstr[1] ""
 #: src/Admin/EventsPage.php:91
 msgid "%d Ereignisse wieder eingereiht."
 msgstr ""
+
+#. translators: %d: number of event types
+#: src/Admin/OverviewPage.php:93
+msgid "%d Ereignistyp"
+msgid_plural "%d Ereignistypen"
+msgstr[0] ""
+msgstr[1] ""
 
 #. translators: %d: number of runs
 #: src/Admin/WorkflowsPage.php:763
@@ -138,7 +147,7 @@ msgid "Aktiv"
 msgstr ""
 
 #. translators: %s: time in UTC
-#: src/Admin/OverviewPage.php:124
+#: src/Admin/OverviewPage.php:127
 msgid "Aktiv seit %s (UTC). Kein Schritt wird ausgeführt; Ereignisse werden weiter gespeichert."
 msgstr ""
 
@@ -166,7 +175,7 @@ msgstr ""
 msgid "Alle Anbieter"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:142
+#: src/Admin/OverviewPage.php:145
 msgid "Alle Angaben auf der Seite „Provider“"
 msgstr ""
 
@@ -317,7 +326,7 @@ msgstr ""
 msgid "Connector freigeben"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:230 src/Admin/WorkflowsPage.php:241 src/Admin/WorkflowsPage.php:254 src/Admin/WorkflowsPage.php:260 src/Admin/WorkflowsPage.php:271 src/Admin/WorkflowsPage.php:287 src/Admin/WorkflowsPage.php:305 src/Admin/WorkflowsPage.php:334 src/Admin/WorkflowsPage.php:348 src/Plugin.php:389 src/Plugin.php:404
+#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:230 src/Admin/WorkflowsPage.php:241 src/Admin/WorkflowsPage.php:254 src/Admin/WorkflowsPage.php:260 src/Admin/WorkflowsPage.php:271 src/Admin/WorkflowsPage.php:287 src/Admin/WorkflowsPage.php:305 src/Admin/WorkflowsPage.php:334 src/Admin/WorkflowsPage.php:348 src/Plugin.php:390 src/Plugin.php:405
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
@@ -817,7 +826,7 @@ msgid "Hilfe"
 msgstr ""
 
 #. translators: %d: number of running runs
-#: src/Admin/OverviewPage.php:128
+#: src/Admin/OverviewPage.php:131
 msgid "Hält sofort alle Schritte an. Betroffen: %d laufende Läufe. Überfällige Schritte brauchen danach eine Entscheidung."
 msgstr ""
 
@@ -870,7 +879,7 @@ msgstr ""
 msgid "In Arbeit"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:130
+#: src/Admin/OverviewPage.php:133
 msgid "Ja, alle Abläufe anhalten"
 msgstr ""
 
@@ -878,7 +887,7 @@ msgstr ""
 msgid "Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows."
 msgstr ""
 
-#: src/Plugin.php:425
+#: src/Plugin.php:426
 msgid "Jede Minute (Workflow Captain)"
 msgstr ""
 
@@ -946,7 +955,7 @@ msgid "Korrelation %s"
 msgstr ""
 
 #. translators: 1: run number, 2: reason code
-#: src/Admin/OverviewPage.php:147
+#: src/Admin/OverviewPage.php:150
 msgid "Lauf %1$d – %2$s"
 msgstr ""
 
@@ -1049,7 +1058,7 @@ msgstr ""
 msgid "Läufe · 30 Tage"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:145 src/Admin/SettingsPage.php:179
+#: src/Admin/OverviewPage.php:148 src/Admin/SettingsPage.php:179
 msgid "Läufe, die eine Entscheidung brauchen"
 msgstr ""
 
@@ -1133,7 +1142,7 @@ msgstr ""
 msgid "Noch kein Adapter angemeldet und keine Ereignisse gespeichert."
 msgstr ""
 
-#: src/Admin/OverviewPage.php:108
+#: src/Admin/OverviewPage.php:111
 msgid "Noch kein Adapter angemeldet. Workflows für die Captain-Produkte lassen sich veröffentlichen, sobald ein Pro-Add-on seinen Adapter anmeldet."
 msgstr ""
 
@@ -1141,7 +1150,7 @@ msgstr ""
 msgid "Noch kein Connector angemeldet."
 msgstr ""
 
-#: src/Admin/OverviewPage.php:138
+#: src/Admin/OverviewPage.php:141
 msgid "Noch kein Provider bekannt."
 msgstr ""
 
@@ -1157,11 +1166,11 @@ msgstr ""
 msgid "Noch keine Workflows."
 msgstr ""
 
-#: src/Admin/OverviewPage.php:120
+#: src/Admin/OverviewPage.php:123
 msgid "Notfallpause"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:131
+#: src/Admin/OverviewPage.php:134
 msgid "Notfallpause aktivieren"
 msgstr ""
 
@@ -1169,7 +1178,7 @@ msgstr ""
 msgid "Notfallpause aufgehoben"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:125
+#: src/Admin/OverviewPage.php:128
 msgid "Notfallpause aufheben"
 msgstr ""
 
@@ -1280,7 +1289,7 @@ msgstr ""
 msgid "Provider wurden abgelehnt (zum Beispiel unpassende Vertragsversion)"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:89 src/Admin/OverviewPage.php:136
+#: src/Admin/OverviewPage.php:89 src/Admin/OverviewPage.php:139
 msgid "Providerstatus"
 msgstr ""
 
@@ -1541,7 +1550,7 @@ msgstr ""
 msgid "Workflow %1$d: %2$s nach %3$d Schritten"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:106 src/Admin/SiteHealth.php:27 src/Admin/SiteHealth.php:77 src/Admin/SiteHealth.php:94
+#: src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:109 src/Admin/SiteHealth.php:27 src/Admin/SiteHealth.php:77 src/Admin/SiteHealth.php:94
 msgid "Workflow Captain"
 msgstr ""
 

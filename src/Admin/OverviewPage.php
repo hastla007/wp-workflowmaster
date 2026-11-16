@@ -88,8 +88,11 @@ final class OverviewPage {
 		$colors = array( 'ok' => '#00a32a', 'warn' => '#996800', 'bad' => '#b32d2e' );
 		$html   = '<table class="widefat striped" tabindex="0" style="max-width:720px"><caption class="screen-reader-text">' . esc_html__( 'Providerstatus', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Provider', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Adapter', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Auslöser und Aktionen', 'workflow-captain' ) . '</th></tr></thead><tbody>';
 		foreach ( $status as $p ) {
-			/* translators: 1: number of event types, 2: number of actions */
-			$counts = sprintf( __( '%1$d Ereignistypen · %2$d Aktionen', 'workflow-captain' ), $p['events'], $p['actions'] );
+			// Singular and plural per part ("1 Ereignistyp", E2E third run: "1 Ereignistypen").
+			/* translators: %d: number of event types */
+			$counts = sprintf( _n( '%d Ereignistyp', '%d Ereignistypen', $p['events'], 'workflow-captain' ), $p['events'] ) . ' · ';
+			/* translators: %d: number of actions */
+			$counts .= sprintf( _n( '%d Aktion', '%d Aktionen', $p['actions'], 'workflow-captain' ), $p['actions'] );
 			$html  .= '<tr><th scope="row">' . esc_html( $p['label'] ) . '</th><td><span aria-hidden="true" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:' . esc_attr( $colors[ $p['tone'] ] ?? '#996800' ) . '"></span>' . esc_html( $p['state'] ) . '</td><td>' . esc_html( $counts ) . '</td></tr>';
 		}
 		return $html . '</tbody></table>';
