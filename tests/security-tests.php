@@ -68,3 +68,27 @@ check( 'SEC-02 rotation: current values need no re-encryption', null === $rotate
 check( 'SEC-02 no key means not available', ! ( new Vault( '' ) )->available() );
 check( 'SEC-02 decrypted values are scrubbed from text', 'Fehler bei [redacted] beim Senden' === Redact::scrub( 'Fehler bei geheimes-token-123 beim Senden' ) );
 Redact::reset();
+
+// ----- Adapter kit self-test (WF-SPEC-13) ----------------------------------------------------------------------
+
+require __DIR__ . '/adapter-kit/AdapterConformance.php';
+use WorkflowCaptain\AdapterKit\AdapterConformance as Kit;
+
+$kit_adapter = new TestAdapter();
+$good        = array( 'type' => 'pass.ticket.checked_in', 'subject' => array( 'type' => 'ticket', 'id' => '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'id_kind' => 'public' ), 'data' => array( 'checkin_source' => 'scanner', 'device_id' => 4 ), 'actor_user_id' => 17, 'discriminator' => 'scan-1' );
+check( 'kit: a clean event passes', array() === Kit::check_event( $kit_adapter, $good ) );
+$leak = $good;
+$leak['data']['checkin_source'] = 'Grund: ' . Kit::MARKERS['freetext'];
+check( 'kit: A-3 finds a marker hidden in another string', array() !== Kit::check_event( $kit_adapter, $leak ) );
+$extra = $good;
+$extra['data']['seat'] = 'A12';
+check( 'kit: R-5.2 finds a field outside the allow-list', in_array( 'R-5.2: field not on the allow-list of pass.ticket.checked_in: seat', Kit::check_event( $kit_adapter, $extra ), true ) );
+$aff = array( 'type' => 'affiliate.commission.approved', 'subject' => array( 'type' => 'commission', 'id' => '1', 'id_kind' => 'record' ), 'data' => array(), 'actor_user_id' => 3, 'discriminator' => 'x' );
+check( 'kit: actor_user_id refused where the catalog says none', array() !== Kit::check_event( new TestAdapter( 'affiliate-captain', '1.4.0' ), $aff ) );
+check( 'kit: A-7 detects equal keys for two real events', array() !== Kit::check_idempotency( $good, $good, $good ) && array() === Kit::check_idempotency( $good, $good, array( 'discriminator' => 'scan-2' ) + $good ) );
+check( 'kit: A-5 detects an escaping exception', array() !== Kit::check_callback_isolated( function () { throw new RuntimeException( 'x' ); }, array() ) );
+check( 'kit: A-4 detects excluded and foreign hooks', 2 === count( Kit::check_hooks( 'wp-license', array( 'wplc/license_issued', 'wplc/license_owner_changed', 'wplc/license_status_changed' ), array( 'wplc/license_issued' ) ) ) );
+$gate = static fn( ?string $v ) => null !== $v && version_compare( $v, '1.1.0', '>=' ) && (int) $v < 2;
+check( 'kit: A-8 accepts a correct contract gate', array() === Kit::check_contract_gate( $gate, '1.1.0', 1 ) );
+check( 'kit: A-8 detects a gate that ignores the MAJOR', array() !== Kit::check_contract_gate( static fn( $v ) => null !== $v, '1.1.0', 1 ) );
+check( 'kit: A-9 detects forbidden commands', array( 'A-9: forbidden command offered: affiliate.payout.complete' ) === Kit::check_commands( array( 'notify.admin', 'voucher.void', 'affiliate.payout.complete' ) ) );
