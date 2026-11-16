@@ -161,6 +161,15 @@ function check( label, ok ) {
 	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.ticket.checked_in' );
 	await page.press( '.wfc-inspector input[list="wfc-events"]', 'Tab' );
 
+	// Serialisation (WF-CORE-05): no order hint without it, the hint names the key with it
+	await page.click( '.wfc-node[data-id="t"]' );
+	check( 'serialisation is off by default and shows no order hint', '' === await page.$eval( '.wfc-serialize', ( s ) => s.value ) && 0 === ( await page.$$( '.wfc-serialize-hint' ) ).length );
+	await page.selectOption( '.wfc-serialize', 'subject' );
+	check( 'serialisation by object is written to the trigger', 'subject' === ( await graphNow() ).nodes.find( ( n ) => 't' === n.id ).serialize );
+	check( 'serialisation hint says there is no order across objects', ( await page.$eval( '.wfc-serialize-hint', ( x ) => x.textContent ) ).includes( 'keine Reihenfolge' ) );
+	await page.selectOption( '.wfc-serialize', '' );
+	check( 'switching serialisation off removes the key', undefined === ( await graphNow() ).nodes.find( ( n ) => 't' === n.id ).serialize );
+
 	// Zoom
 	const width = async () => parseInt( await page.$eval( '.wfc-canvas', ( s ) => s.getAttribute( 'width' ) ), 10 );
 	const w1 = await width();

@@ -65,7 +65,10 @@ final class Install {
 	}
 
 	public static function activate_site(): void {
-		self::create_tables();
+		// Reactivation after an update runs the same versioned upgrade; on a current schema the tables are completed.
+		if ( Migrator::CURRENT === self::upgrade()['state'] ) {
+			self::ensure_tables();
+		}
 		self::grant_admin_caps();
 		Plugin::schedule_events();
 	}
@@ -90,15 +93,53 @@ final class Install {
 		return ( is_numeric( $stored ) && (int) $stored > (int) $expected ) ? self::SCHEMA_NEWER : self::SCHEMA_UPGRADE;
 	}
 
-	/** Creates or updates the tables when the stored schema is older or missing (also after an update). */
+	/**
+	 * Creates or updates the tables when the stored schema is older or missing (also after an update). While another
+	 * request holds the upgrade lock the state stays "upgrade" and the worker waits (Migrator).
+	 */
 	public static function maybe_upgrade(): string {
-		$state = self::schema_state( get_option( self::DB_OPTION ), WORKFLOW_CAPTAIN_DB_VERSION );
-		if ( self::SCHEMA_UPGRADE === $state ) {
-			self::create_tables();
-			$state = self::SCHEMA_CURRENT;
-		}
+		$result = self::upgrade();
 		self::grant_admin_caps();
-		return $state;
+		$map = array(
+			Migrator::DONE    => self::SCHEMA_CURRENT,
+			Migrator::CURRENT => self::SCHEMA_CURRENT,
+			Migrator::NEWER   => self::SCHEMA_NEWER,
+			Migrator::BUSY    => self::SCHEMA_UPGRADE,
+		);
+		return $map[ $result['state'] ] ?? self::SCHEMA_UPGRADE;
+	}
+
+	/**
+	 * Versioned, repeatable upgrade of this site (WF-CORE-07): tables first, then the data steps of migrations().
+	 *
+	 * @return array{state:string,resumed:bool,from:string,to:string,steps:array<int,int>}
+	 */
+	public static function upgrade(): array {
+		$result = ( new Migrator(
+			array(
+				'get'    => static fn( $name, $default = false ) => get_option( $name, $default ),
+				'add'    => static fn( $name, $value ) => add_option( $name, $value, '', false ),
+				'update' => static fn( $name, $value ) => update_option( $name, $value, false ),
+				'delete' => static fn( $name ) => delete_option( $name ),
+			),
+			array( self::class, 'ensure_tables' ),
+			self::migrations(),
+			time()
+		) )->run( WORKFLOW_CAPTAIN_DB_VERSION );
+		if ( $result['resumed'] && class_exists( Audit::class ) ) {
+			Audit::record( 'upgrade_resumed', array( 'from' => $result['from'], 'to' => $result['to'] ) );
+		}
+		return $result;
+	}
+
+	/**
+	 * Data steps by the schema version they lead to. Each must be idempotent and must not delete history. Versions 1 to
+	 * 4 changed only tables (dbDelta), so there is no data step yet; a later version adds e.g. 5 => [ self::class, 'to_5' ].
+	 *
+	 * @return array<int,callable>
+	 */
+	public static function migrations(): array {
+		return array();
 	}
 
 	/** Administrators get capabilities added by an update without reactivation (only missing ones are added). */
@@ -113,7 +154,14 @@ final class Install {
 		}
 	}
 
+	/** Creates the tables and records the current schema version. */
 	public static function create_tables(): void {
+		self::ensure_tables();
+		update_option( self::DB_OPTION, WORKFLOW_CAPTAIN_DB_VERSION, false );
+	}
+
+	/** Creates or completes the tables (dbDelta adds only what is missing, never drops a column or a row). */
+	public static function ensure_tables(): void {
 		global $wpdb;
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		$charset = $wpdb->get_charset_collate();
@@ -264,7 +312,6 @@ final class Install {
   KEY subject (product,subject_type,subject_id(64))
 ) {$charset};"
 		);
-		update_option( self::DB_OPTION, WORKFLOW_CAPTAIN_DB_VERSION, false );
 	}
 
 	/** Multisite: deleting a site drops its tables too (they can hold user IDs). */
@@ -286,7 +333,7 @@ final class Install {
 		foreach ( \WorkflowCaptain\Engine\WpdbEngineStore::TABLES as $name ) {
 			$wpdb->query( 'DROP TABLE IF EXISTS ' . \WorkflowCaptain\Engine\WpdbEngineStore::table( $wpdb, $name ) );
 		}
-		foreach ( array( self::DB_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at' ) as $option ) {
+		foreach ( array( self::DB_OPTION, Migrator::LOCK_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at' ) as $option ) {
 			delete_option( $option );
 		}
 		foreach ( wp_roles()->role_objects as $role ) {

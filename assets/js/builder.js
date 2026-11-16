@@ -526,6 +526,30 @@
 			return box;
 		}
 
+		/**
+		 * Optional serialisation of runs (WF-CORE-05, konzept 15.3): one run per object or user at a time. Without it the
+		 * editor says nothing that suggests an order; with it the hint names the only order there is.
+		 */
+		serializeForm( n ) {
+			const options = [ [ '', 'nein (Läufe können gleichzeitig laufen)' ], [ 'subject', 'je Objekt nacheinander (z. B. je Bestellung)' ], [ 'actor', 'je Benutzer nacheinander' ] ];
+			const select = el( 'select', {
+				class: 'wfc-serialize',
+				onchange: ( ev ) => {
+					if ( ev.target.value ) {
+						n.serialize = ev.target.value;
+					} else {
+						delete n.serialize;
+					}
+					this.commit();
+				},
+			}, options.map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: ( n.serialize || '' ) === v } ) ) );
+			const box = el( 'p', {}, [ el( 'label', { text: this.t( 'serialize', 'Läufe nacheinander' ) } ), el( 'br' ), select ] );
+			if ( n.serialize ) {
+				box.appendChild( el( 'span', { class: 'description wfc-serialize-hint', text: ' ' + this.t( 'serializeHint', 'Für denselben Schlüssel wartet ein neuer Lauf, bis der ältere fertig ist. Über verschiedene Objekte oder Benutzer hinweg gibt es keine Reihenfolge.' ) } ) );
+			}
+			return box;
+		}
+
 		/** Configuration of the selected node (WF-BUILDER-04). */
 		inspector() {
 			const box = el( 'div', { class: 'wfc-inspector' } );
@@ -546,6 +570,8 @@
 				box.appendChild( field( this.t( 'event', 'Ereignis' ), el( 'input', { type: 'text', class: 'regular-text', list: 'wfc-events', value: n.event || '', onchange: ( ev ) => set( 'event', ev.target.value.trim() ) } ) ) );
 				if ( 'workflow.schedule.due' === n.event ) {
 					box.appendChild( this.scheduleForm( n ) );
+				} else {
+					box.appendChild( this.serializeForm( n ) );
 				}
 			} else if ( 'action' === n.type ) {
 				const select = el( 'select', { onchange: ( ev ) => { n.action = ev.target.value; n.config = {}; this.commit(); } }, this.config.actions.map( ( a ) => el( 'option', { value: a.key, text: a.label, selected: a.key === n.action } ) ) );

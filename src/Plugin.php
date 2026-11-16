@@ -365,6 +365,7 @@ final class Plugin {
 				'schema'            => (string) get_option( Install::DB_OPTION ),
 				'schema_expected'   => WORKFLOW_CAPTAIN_DB_VERSION,
 				'schema_state'      => $this->schema,
+				'upgrade_lock'      => Migrator::lock_state( get_option( Migrator::LOCK_OPTION, false ), time() ),
 				'adapter_interface' => WORKFLOW_CAPTAIN_CONTRACT_VERSION,
 				'wordpress'         => (string) $wp_version,
 				'php'               => PHP_VERSION,

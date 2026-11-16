@@ -292,6 +292,7 @@ final class SettingsPage {
 		$rows = array(
 			__( 'Zeitzone der Website', 'workflow-captain' )          => wp_timezone_string(),
 			__( 'Datenbankschema', 'workflow-captain' )                => $env['schema'] . ' / ' . $env['schema_expected'],
+			__( 'Aktualisierung der Datenbank', 'workflow-captain' )    => array( 'held' => __( 'läuft gerade', 'workflow-captain' ), 'stale' => __( 'abgebrochen – wird beim nächsten Aufruf im Admin, per Cron oder WP-CLI wiederholt', 'workflow-captain' ) )[ $env['upgrade_lock'] ?? '' ] ?? __( 'keine offen', 'workflow-captain' ),
 			__( 'Nächster Worker-Lauf (UTC)', 'workflow-captain' )     => (string) ( $env['next_worker_run'] ?? __( 'nicht geplant', 'workflow-captain' ) ),
 			__( 'Planung des Workers', 'workflow-captain' ) => 'action_scheduler' === ( $env['scheduler'] ?? '' ) ? __( 'Action Scheduler (von WooCommerce)', 'workflow-captain' ) : __( 'WP-Cron', 'workflow-captain' ),
 			__( 'WP-Cron abgeschaltet', 'workflow-captain' )           => $env['wp_cron_disabled'] ? __( 'ja – System-Cron nötig: wp workflow-captain process', 'workflow-captain' ) : __( 'nein', 'workflow-captain' ),
@@ -316,6 +317,15 @@ final class SettingsPage {
 			'pause_on'  => __( 'Notfallpause eingeschaltet', 'workflow-captain' ),
 			'pause_off' => __( 'Notfallpause aufgehoben', 'workflow-captain' ),
 			'connector' => __( 'Freigabe eines eigenen Connectors geändert', 'workflow-captain' ),
+			'requeue'          => __( 'Ereignisse wieder eingereiht', 'workflow-captain' ),
+			'run_cancel'       => __( 'Lauf abgebrochen', 'workflow-captain' ),
+			'run_continue'     => __( 'Schritt fortgesetzt', 'workflow-captain' ),
+			'workflow_publish' => __( 'Workflow veröffentlicht', 'workflow-captain' ),
+			'workflow_archive' => __( 'Workflow archiviert', 'workflow-captain' ),
+			'workflow_restore' => __( 'Workflow wiederhergestellt', 'workflow-captain' ),
+			'workflow_pause'   => __( 'Workflow pausiert', 'workflow-captain' ),
+			'workflow_resume'  => __( 'Workflow fortgesetzt', 'workflow-captain' ),
+			'upgrade_resumed'  => __( 'Abgebrochene Datenbank-Aktualisierung wiederholt', 'workflow-captain' ),
 		);
 		/**
 		 * Labels of audit entries written by add-ons (key => label); core labels cannot be replaced.
