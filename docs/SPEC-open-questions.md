@@ -2,7 +2,7 @@
 
 Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.5. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
-**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18a, F-19 (ohne Form), F-20, F-21 und W-1 bis W-9, W-11 (Teil Form), W-13.
+**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18a, F-19 (ohne Form), F-20, F-21, F-22 und W-1 bis W-9, W-11 (Teil Form), W-13.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -163,6 +163,12 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Stand:** Ein beantragter Code ist noch nicht aktiv und wird vom Partner frei gewählt; das Beispiel im Kern ist „MARIA10“, er kann also einen Namen enthalten. Nach einer Ablehnung ist er wieder frei (geprüft am 16.11.2026, `AC:src/Codes/CodeRequests.php:270`, `:524`).
 - **Annahme der Spezifikation:** `partner_code` nur bei `affiliate.code_request.approved`; bei `created` und `rejected` nicht (4.4).
 - **Empfehlung:** So bestätigen. Öffentlich ist ein Code erst, wenn er freigegeben ist.
+
+### F-22 · Ereignisse eigener Connectoren im Umschlag
+
+- **Frage:** Wie heißen Ereignisse eines eigenen Connectors (zum Beispiel der Projektprodukte für BoatingSchool und LearnBoating), wenn das Schema in `type` und `source.product` nur die Captain-Produkte zulässt?
+- **Stand:** Adapter- und Aktions-Schnittstelle des Kerns (Plugin 0.2.0) passen auch für Connectoren; nur das Schema schließt sie aus. `TODO.md` WF-CONNECTOR-01 verlangt einen öffentlichen, versionierten Connector-Vertrag.
+- **Empfehlung:** Präfix `x<schlüssel>` für die Typen und der Connector-Schlüssel als `source.product`, als MINOR-Version der Spezifikation; alle übrigen Regeln unverändert. Entwurf: [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md).
 
 ## Teil 2: Widersprüche zwischen den Entscheidungen vom 16.11.2026
 
