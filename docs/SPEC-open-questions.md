@@ -2,7 +2,7 @@
 
 Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
-**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18a, F-19 (ohne Form), F-20, F-21, F-22 und W-1 bis W-9, W-11 (Teil Form), W-13.
+**Noch offen:** F-02 bis F-04, F-05a, F-06, F-08 bis F-10, F-13 bis F-16, F-19 (ohne Form), F-21 und W-1 bis W-9, W-13. **Am 16.11.2026 entschieden:** F-01, F-07, F-12 (Form und Review), F-18a, F-20, F-22, W-11; dazu: Lizenzserver liest über `LicenseReader` (Branch `claude/zen-babbage-7q4nac`), die eigene Lesefassade `ReadFacade` ist zurückgezogen; Pass Captain 1.6.0 und Voucher Captain 1.3.0 erhöhen ihre Plugin-Version für die neuen Lesefunktionen.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -10,7 +10,9 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 
 ## Teil 1: Fragen
 
-### F-01 · Drei Workflow-Rechte ohne Vormerkung
+### F-01 · Drei Workflow-Rechte ohne Vormerkung — **entschieden am 16.11.2026**
+
+**Entscheidung:** `workflow.custom_connectors` und `workflow.multisite_network` gehören zu Workflow Captain Pro (wie empfohlen); `workflow.delays` bleibt ohne Recht (Verzögerungen sind im kostenlosen Kern).
 
 **Stand 16.11.2026:** `workflow.custom_connectors` und `workflow.multisite_network` sind im Lizenzserver als geplant vorgemerkt (wp-license, Branch `claude/plugin-todo-liste-2a83v4`, `410ca78`), wie empfohlen; `workflow.delays` nicht. Die Bestätigung des Inhabers steht aus.
 
@@ -60,7 +62,9 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Stand:** Der Kernel kennt je Add-on einen Kern und einen Präfix (`CP:packages/addon-kernel/src/CoreRequirement.php:60-64`); `Feature::requires()` beschreibt nur Anforderungen an den eigenen Kern (`CP:packages/addon-kernel/src/Feature.php:41-52`). D6 vermerkt die Lücke selbst.
 - **Empfehlung:** Zwei Erweiterungen in `captain-pro`: (1) `requires()` bekommt einen Eintrag für weitere Kerne mit Versions- und Vertragskonstante; (2) eine gemeinsame, nur lesende Auskunft des Kernels, ob ein anderes Add-on auf dieser Website eine gültige Lizenz hat, ohne dass ein Add-on den Lizenzstatus eines anderen verändern oder dessen Schlüssel lesen kann. Beides vor dem ersten Adapter bauen.
 
-### F-07 · Multisite
+### F-07 · Multisite — **entschieden am 16.11.2026**
+
+**Entscheidung:** Netzwerkweite Abläufe werden jetzt gebaut (Spezifikation Abschnitt 17, Workflow Captain Pro).
 
 **Entschieden am 16.11.2026:** Netzwerkweite Abläufe werden jetzt gebaut (Abschnitt 17 der Spezifikation, Pro, Recht `workflow.multisite_network`).
 
@@ -96,7 +100,9 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **In der Spezifikation:** Abschnitt 4.4.1, R-4.4 bis R-4.6. `wpac_workflow_read()` ist keine anerkannte Lesefunktion mehr.
 - **Folgefrage, offen:** In welcher Form die Provider-Seiten zurückkehren. Empfehlung: nur als Lesefunktionen (für Gegenlesen und Empfängerauflösung, F-13), nicht als eigener Umschlag; dafür eine MINOR-Version dieser Spezifikation.
 
-### F-12 · Eigene Workflow-Verträge in Form Captain und Review Captain — **für Voucher entschieden am 16.11.2026 (D13); für Form und Review offen**
+### F-12 · Eigene Workflow-Verträge in Form Captain und Review Captain — **entschieden am 16.11.2026: für Voucher D13, für Form und Review wie D13**
+
+**Entscheidung für Form und Review:** wie D13. Form Captain nimmt die Übergabe von Mails an Workflow Captain heraus bzw. schaltet sie ab; der beschriebene Vertrag von Review Captain wird als nicht normativ gekennzeichnet. Normativ ist nur der Suite-Vertrag dieser Spezifikation.
 
 - **Frage:** Was geschieht mit den Verträgen, die Form Captain und Review Captain auf ihren Branches schon gebaut oder beschrieben haben?
 - **Stand:** Form Captain hat eine Übergabe von Mails an einen Workflow mit Rückfall abgehakt (`FC:TODO.md:235`), was D10 widerspricht. Review Captain beschreibt einen eigenen Descriptor, eigene Nutzdaten und eine Rechteprüfung je Auslöser (`RC:docs/contracts/workflow-provider-v1.md`).
@@ -141,7 +147,9 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Bestätigt am 16.11.2026 auf Rückfrage:** Es gilt die Fassung „eigene Projektprodukte mit eigener Lizenz“. Eine abweichende Fassung („in Workflow Captain Pro enthalten“, mit Antworten O1 bis O3) steht auf dem nicht gemergten Branch `claude/sleepy-ptolemy-n32guj` dieses Repositorys und in `captain-pro` auf `claude/youthful-bardeen-7ejd7a` (`dc70c7d`, `60be620`); sie gilt nicht und darf nicht gemergt werden, ohne sie vorher anzugleichen (W-14).
 - **Empfehlung:** Beide als Kundenprojekte außerhalb der ersten Version führen; die Spezifikation regelt sie nicht. Die Entscheidung folgt der Empfehlung. Die Aufgaben gehen an die Projekt-Repositories (`docs/UEBERGABE-E17-kundenconnectoren.md`).
 
-### F-18a · Setzt ein Kundenconnector Workflow Captain Pro voraus?
+### F-18a · Setzt ein Kundenconnector Workflow Captain Pro voraus? — **entschieden am 16.11.2026**
+
+**Entscheidung:** Ja. Kundenconnectoren brauchen Workflow Captain Pro mit dem Recht `workflow.custom_connectors` als Laufzeit. Der Kern bietet dafür den Filter `workflow_captain_connector_runtime_allowed_v1` (Ergebnis `runtime_not_allowed`); Pro hängt sich ein. Ihre eigene Lizenz prüft jeder Connector selbst (Entscheidung 17).
 
 - **Frage:** Ein Connector für BoatingSchool oder LearnBoating hat nach Entscheidung 17 seine eigene Lizenz. Braucht er auf der Website zusätzlich ein installiertes und lizenziertes Workflow Captain Pro, oder genügt der kostenlose Kern `workflow-captain`?
 - **Stand:** `konzept.md` 16.1 und WF-CONNECTOR-12 binden die Ausführung eigener Connectoren an das Recht `workflow.custom_connectors` von Workflow Captain Pro. Dieses Recht ist nicht reserviert (F-01). WF-CUST2-02 nennt eine „Lizenz-/Capability-Prüfung“ ohne zu sagen, welche Lizenz.
@@ -155,7 +163,9 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Offen:** die Preise aller anderen Produkte. `konzept.md` und `TODO.md` dieses Repositorys nennen für Workflow Captain Pro 129, 229 und 399 Euro als festgelegt; bestätigt sind die Beträge nicht. Entschieden am 16.11.2026: Alle Preise aller Pro-Add-ons und Tarife sind netto, zzgl. USt.
 - **Empfehlung:** Keine; Geschäftsentscheidung. Bis dahin gelten die Beträge für Workflow als Vorschlag.
 
-### F-20 · Format für Ereignisse aus WordPress und WooCommerce an externe Ziele
+### F-20 · Format für Ereignisse aus WordPress und WooCommerce an externe Ziele — **entschieden am 16.11.2026**
+
+**Entscheidung:** WordPress- und WooCommerce-Auslöser gehören in den kostenlosen Kern (Spezifikation 4.7).
 
 **Entschieden am 16.11.2026:** wie empfohlen, im kostenlosen Kern (Abschnitt 4.7 der Spezifikation).
 
@@ -170,7 +180,9 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Annahme der Spezifikation:** `partner_code` nur bei `affiliate.code_request.approved`; bei `created` und `rejected` nicht (4.4).
 - **Empfehlung:** So bestätigen. Öffentlich ist ein Code erst, wenn er freigegeben ist.
 
-### F-22 · Ereignisse eigener Connectoren im Umschlag
+### F-22 · Ereignisse eigener Connectoren im Umschlag — **entschieden am 16.11.2026**
+
+**Entscheidung:** Ereignistypen eigener Connectoren tragen das Präfix `x<key>` (Spezifikation 4.8).
 
 **Entschieden am 16.11.2026:** wie empfohlen (Abschnitt 4.8 der Spezifikation).
 
@@ -192,7 +204,7 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 | W-8 | D12 gegen E8 und G2 | Der Lizenzserver soll vor dem Verkaufsstart keine fest verdrahteten Captain-Schlüssel mehr enthalten (G2, E8). Die sechs vorgemerkten `workflow.*`-Rechte stehen genau dort. Sie wandern in die Katalogdatei des Add-ons, das nach D12 erst später entsteht | Abschnitt 10.2 nennt den heutigen Ort; nach dem Umbau liefert `workflow-captain-pro` die Schlüssel in seiner `wplc-catalog.json` |
 | W-9 | D4 gegen den Stand | „Vertragskonstante je Kern, wie Affiliate, Voucher und Pass sie haben“: Der Lizenzserver wird durch D2 Provider und hat keine. Pass Captain versioniert zusätzlich über `_v1` im Namen | R-3.1 gilt für jeden Provider (F-03); `_v1` im Namen bleibt daneben erlaubt |
 | W-10 **(entschieden am 16.11.2026, D13)** | D5 und D9 gegen C5 und den Stand in Affiliate | Entschieden war, dass die Workflow-Schnittstelle des Affiliate-Kerns auf die Workflow-Antworten wartet (C5). Sie wurde vorher nach `main` gemergt (`AC:TODO.md`, E9) und baut einen Umschlag im Kern | aufgelöst: Der Provider wird vor dem Release entfernt (F-11) |
-| W-11 **(für Voucher entschieden, D13; für Form offen)** | D10 gegen den Stand in Form Captain | Keine Übergabe von Mails. Form Captain hat sie auf seinem Branch gebaut | F-12 |
+| W-11 **(entschieden: Voucher D13, Form wie D13)** | D10 gegen den Stand in Form Captain | Keine Übergabe von Mails. Form Captain hat sie auf seinem Branch gebaut | F-12 |
 | W-12 **(entschieden am 16.11.2026: D11b und Antwort zu F-05)** | D11 und D11b in sich | D11b legt vier Befehle mit Grenzen fest, nennt aber weder Zahlen noch den Bezug von „je Tag“ (Website, Empfänger, Gutschein) und nicht, welche Gutscheine ein Workflow einlösen darf | aufgelöst: Zahlen und Bezug stehen in Abschnitt 8.3.1; offen bleibt nur die Währung (F-05a) |
 | W-13 | D9 gegen D7 | „Speichern und Wiederholen beim Abnehmer“ garantiert nichts vor dem Speichern. Die Review-Einladung hängt an genau diesen Ereignissen | Verlust wird hingenommen und benannt (R-7.2, F-14) |
 | W-14 | Entscheidung 17 in zwei Fassungen | `main` (Commit `4ebaf33`) führt die Kundenconnectoren als eigene Projektprodukte; die Branches `claude/sleepy-ptolemy-n32guj` (hier) und `claude/youthful-bardeen-7ejd7a` (`captain-pro`) führen sie als Teil von Workflow Captain Pro | Auf Rückfrage am 16.11.2026 bestätigt: eigene Projektprodukte (F-18). Die beiden Branches sind vor einem Merge anzugleichen. Dieselbe abweichende Fassung steht in `wp-formmaster` `docs/ENTSCHEIDUNGEN.md` Zeile 23 auf den Branches `claude/sleepy-ptolemy-n32guj` (`c5cbf68`) und `claude/youthful-bardeen-7ejd7a` (`3f808cb`); der in `TODO.md` zitierte Stand `0e6aea1` sagt „eigenes Projektprodukt“ |

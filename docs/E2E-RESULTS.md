@@ -51,19 +51,17 @@ Alle Kernprüfungen grün nach jedem Commit: `php tests/run.php` (619), `php tes
 ## Offene Befunde (nicht behoben)
 
 1. **Reflow bei 390 px (WCAG 1.4.10):** Die Tabellen von Läufe, Ereignisse, Provider, Vorlagen, Einstellungen → Rollen
-   und Status sind breiter als der Bildschirm (63–401 px); die Seite scrollt waagerecht. Datentabellen sind von 1.4.10
-   ausgenommen, besser wäre trotzdem ein scrollbarer Container je Tabelle (eine gemeinsame Admin-CSS gibt es noch nicht;
-   nicht hier gebaut, um nicht in parallele Arbeit an den Admin-Seiten einzugreifen). Builder: 2 px.
+   und Status waren breiter als der Bildschirm (63–401 px). **Behoben** auf `claude/plugin-todo-liste-2a83v4`: unter
+   782 px scrollen breite Tabellen der Workflow-Captain-Seiten in ihrem eigenen Kasten, die Seite nicht mehr.
 2. **Zielgröße (WCAG 2.5.8):** Das Bestätigungs-Kästchen der Notfallpause ist 16×16 px (WordPress-Standard). Es steckt in
    seinem `<label>`, die Beschriftung ist also klickbar; axe erkennt diese Ausnahme nicht. Bewusst gelassen.
 3. **Statuswechsel und Gegenlesen (R-7.4):** Wechselt eine Bestellung schneller den Status, als der Worker läuft
    (z. B. processing → completed in derselben Minute), wird das ältere `status_changed`-Ereignis beim Gegenlesen als
    `discarded`/`reread_mismatch` abgelegt (E2E d1b). Das entspricht der Spezifikation, kann aber Workflows auf
    „processing“ verpassen lassen; Entscheidung für die Spezifikation, kein Code-Fehler.
-4. **Tägliche Wartung ohne WP-Cron:** Die Doku nennt für `DISABLE_WP_CRON` nur `wp workflow-captain process` per
-   System-Cron. Die tägliche Wartung (Aufbewahrung, Datenschutz-Löschung, Tagesbericht) hängt weiter an WP-Cron und läuft
-   so nie. Empfehlung: in RUNBOOK/readme zusätzlich `wp cron event run --due-now` nennen oder `process` die überfällige
-   Wartung mit erledigen lassen.
+4. **Tägliche Wartung ohne WP-Cron:** Die tägliche Wartung (Aufbewahrung, Datenschutz-Löschung, Tagesbericht) hing nur an
+   WP-Cron und lief mit `DISABLE_WP_CRON` nie. **Behoben** auf `claude/plugin-todo-liste-2a83v4`: der Worker (auch
+   `wp workflow-captain process`) holt sie nach, wenn sie länger als 25 Stunden nicht lief; RUNBOOK ergänzt.
 5. **Pro im Netzwerk:** Netzwerkweit aktiviertes Workflow Captain Pro hat im Netzwerk-Admin keine Lizenzseite
    (`settings.php?page=workflow-captain-pro-license` → 403); die Lizenzseite und der Hinweis „license settings …
    incomplete“ erscheinen nur in den Admin-Bereichen der einzelnen Websites. Gehört nach captain-pro (Kernel
