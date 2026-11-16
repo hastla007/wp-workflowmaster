@@ -96,10 +96,11 @@ final class Plugin {
 			// Confirmation boxes: the label is 24 px high, WCAG 2.5.8 (E2E second run).
 			// Header rows (run page, editor) wrap instead of widening the page.
 			// Links inside running text of a table cell are underlined, not told apart by colour only (WCAG 1.4.1, E2E third run).
+			// Text fields (name of the workflow) stay inside the page at 390 px: 100% wide plus the 1 px margin of wp-admin inputs (E2E).
 			add_action(
 				'admin_head',
 				static function (): void {
-					echo '<style>@media (max-width:782px){body[class*="workflow-captain"] .wrap table.widefat,body[class*="workflow-captain"] .wrap table.form-table{display:block;max-width:100%;overflow-x:auto;position:relative}}body[class*="workflow-captain"] .wfc-editor-head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}body[class*="workflow-captain"] .wfc-run-state-bad{color:#b32d2e;font-weight:600}body[class*="workflow-captain"] .wrap label.wfc-confirm{display:inline-block;min-height:24px;line-height:24px}body[class*="workflow-captain"] .wrap a.wfc-text-link{text-decoration:underline}</style>';
+					echo '<style>@media (max-width:782px){body[class*="workflow-captain"] .wrap table.widefat,body[class*="workflow-captain"] .wrap table.form-table{display:block;max-width:100%;overflow-x:auto;position:relative}}body[class*="workflow-captain"] .wfc-editor-head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}body[class*="workflow-captain"] .wfc-run-state-bad{color:#b32d2e;font-weight:600}body[class*="workflow-captain"] .wrap label.wfc-confirm{display:inline-block;min-height:24px;line-height:24px}body[class*="workflow-captain"] .wrap a.wfc-text-link{text-decoration:underline}body[class*="workflow-captain"] .wrap input.regular-text{max-width:calc(100% - 2px)}</style>';
 				}
 			);
 			( new \WorkflowCaptain\Admin\HelpPage() )->register();
