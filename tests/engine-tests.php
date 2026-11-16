@@ -754,3 +754,25 @@ drain( $e );
 check( 'pause lifted: the run continues', EngineStore::RUN_SUCCEEDED === run_of( $e )['state'] && 1 === count( $e->dir->sent ) );
 $r = SiteHealth::evaluate( array( 'environment' => array( 'emergency_pause' => true, 'next_worker_run' => gmdate( 'Y-m-d\TH:i:s\Z', time() + 30 ), 'secret_key_own' => true ) ), time() );
 check( 'site health: active pause is critical', 'critical' === $r['pause']['status'] );
+
+// ----- WF-SET-12: export and import ----------------------------------------------------------------------------
+
+use WorkflowCaptain\Engine\Transfer;
+$e  = engine_site();
+$id = publish( $e, sample_graph(), 'Exportiert' );
+$x  = Transfer::export( $e->store->get_workflow( $id ), '0.2.0' );
+check( 'export: format, version, name and graph; no IDs of the site', Transfer::FORMAT === $x['format'] && 1 === $x['format_version'] && 'Exportiert' === $x['name'] && 6 === count( $x['graph']['nodes'] ) && ! isset( $x['id'] ) && ! isset( $x['published_version_id'] ) );
+$wf2 = new Workflows( $e->store, $e->actions, $e->dir, $e->clock, fn() => array() );
+$imp = Transfer::import( json_encode( $x ), $wf2 );
+$new = $e->store->get_workflow( $imp['id'] );
+check( 'import: becomes a draft, never published', $imp['ok'] && EngineStore::WF_DRAFT === $new['status'] && null === $new['published_version_id'] );
+check( 'import: missing provider is reported for publishing', in_array( 'node:t:provider_unavailable', $imp['violations'], true ) );
+check( 'import: foreign format refused', 'import:unknown_format' === Transfer::import( '{"format":"other"}', $wf2 )['violations'][0] );
+check( 'import: newer format version refused', 'import:unsupported_version' === Transfer::import( json_encode( array( 'format_version' => 2 ) + $x ), $wf2 )['violations'][0] );
+check( 'import: broken JSON refused', 'import:not_json' === Transfer::import( '{', $wf2 )['violations'][0] );
+check( 'import: too large refused', 'import:too_large' === Transfer::import( str_repeat( ' ', Transfer::MAX_BYTES + 1 ), $wf2 )['violations'][0] );
+foreach ( glob( WORKFLOW_CAPTAIN_PATH . 'docs/recipes/*.json' ) as $file ) {
+	$recipe = json_decode( file_get_contents( $file ), true );
+	$r      = Transfer::import( file_get_contents( $file ), $e->workflows );
+	check( 'import: recipe ' . basename( $file ) . ' imports without findings', $r['ok'] && array() === $r['violations'] );
+}

@@ -9,6 +9,7 @@
  *     wp workflow-captain diagnostics
  *     wp workflow-captain verify
  *     wp workflow-captain pause <on|off>
+ *     wp workflow-captain export <id> | import <file>
  *
  * Read-only except process, requeue and migrate; requeue is the same human decision as in the admin (7.4).
  *
@@ -95,6 +96,41 @@ final class Command {
 		if ( ! $found ) {
 			\WP_CLI::success( 'No inconsistencies found.' );
 		}
+	}
+
+	/**
+	 * Exports a workflow as JSON.
+	 *
+	 * <workflow-id>
+	 * : Workflow to export.
+	 */
+	public function export( array $args ): void {
+		$wf = Plugin::instance()->engine()->store()->get_workflow( (int) ( $args[0] ?? 0 ) );
+		if ( null === $wf ) {
+			\WP_CLI::error( 'Workflow not found.' );
+		}
+		\WP_CLI::line( (string) wp_json_encode( \WorkflowCaptain\Engine\Transfer::export( $wf, WORKFLOW_CAPTAIN_VERSION ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
+	}
+
+	/**
+	 * Imports a workflow file as a new draft (never published).
+	 *
+	 * <file>
+	 * : JSON file from export.
+	 */
+	public function import( array $args ): void {
+		$file = (string) ( $args[0] ?? '' );
+		if ( ! is_readable( $file ) ) {
+			\WP_CLI::error( 'File not readable.' );
+		}
+		$result = \WorkflowCaptain\Engine\Transfer::import( (string) file_get_contents( $file ), Plugin::instance()->workflows() );
+		if ( ! $result['ok'] ) {
+			\WP_CLI::error( implode( ', ', $result['violations'] ) );
+		}
+		foreach ( $result['violations'] as $v ) {
+			\WP_CLI::warning( 'Before publishing: ' . $v );
+		}
+		\WP_CLI::success( 'Imported as draft ' . $result['id'] . '.' );
 	}
 
 	/**

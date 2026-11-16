@@ -28,6 +28,8 @@ final class WorkflowsPage {
 		add_action( 'admin_post_workflow_captain_workflow', array( $this, 'handle_workflow' ) );
 		add_action( 'admin_post_workflow_captain_run', array( $this, 'handle_run' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+		add_action( 'admin_post_workflow_captain_export', array( $this, 'handle_export' ) );
+		add_action( 'admin_post_workflow_captain_import', array( $this, 'handle_import' ) );
 	}
 
 	public function menu(): void {
@@ -117,6 +119,38 @@ final class WorkflowsPage {
 		exit;
 	}
 
+	public function handle_export(): void {
+		$id = isset( $_GET['workflow'] ) ? absint( wp_unslash( $_GET['workflow'] ) ) : 0;
+		check_admin_referer( 'workflow_captain_export_' . $id );
+		if ( ! current_user_can( 'edit_workflows' ) ) {
+			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		$wf = $this->plugin->engine()->store()->get_workflow( $id );
+		if ( null === $wf ) {
+			wp_die( esc_html__( 'Workflow nicht gefunden.', 'workflow-captain' ), 404 );
+		}
+		nocache_headers();
+		header( 'Content-Type: application/json; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="workflow-' . $id . '.json"' );
+		echo wp_json_encode( \WorkflowCaptain\Engine\Transfer::export( $wf, WORKFLOW_CAPTAIN_VERSION ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download.
+		exit;
+	}
+
+	public function handle_import(): void {
+		check_admin_referer( 'workflow_captain_import' );
+		if ( ! current_user_can( 'edit_workflows' ) ) {
+			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		$json = '';
+		if ( ! empty( $_FILES['file']['tmp_name'] ) && is_uploaded_file( $_FILES['file']['tmp_name'] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- read only, size-limited, decoded and validated.
+			$json = (string) file_get_contents( $_FILES['file']['tmp_name'], false, null, 0, \WorkflowCaptain\Engine\Transfer::MAX_BYTES + 1 ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		}
+		$result = \WorkflowCaptain\Engine\Transfer::import( $json, $this->plugin->workflows() );
+		set_transient( 'workflow_captain_notice_' . get_current_user_id(), array( 'do' => 'import', 'errors' => array_slice( $result['violations'], 0, 30 ) ), 60 );
+		wp_safe_redirect( self::url( self::SLUG_WORKFLOWS, $result['ok'] ? array( 'edit' => $result['id'] ) : array() ) );
+		exit;
+	}
+
 	public function handle_run(): void {
 		if ( ! current_user_can( 'retry_workflow_runs' ) ) {
 			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
@@ -150,7 +184,11 @@ final class WorkflowsPage {
 		if ( is_array( $notice ) ) {
 			delete_transient( 'workflow_captain_notice_' . get_current_user_id() );
 			if ( array() === $notice['errors'] ) {
-				echo '<div class="notice notice-success"><p>' . esc_html( 'publish' === $notice['do'] ? __( 'Veröffentlicht. Neue Läufe nutzen diese Version; laufende behalten ihre.', 'workflow-captain' ) : __( 'Gespeichert.', 'workflow-captain' ) ) . '</p></div>';
+				$texts = array(
+					'publish' => __( 'Veröffentlicht. Neue Läufe nutzen diese Version; laufende behalten ihre.', 'workflow-captain' ),
+					'import'  => __( 'Als Entwurf importiert.', 'workflow-captain' ),
+				);
+				echo '<div class="notice notice-success"><p>' . esc_html( $texts[ $notice['do'] ] ?? __( 'Gespeichert.', 'workflow-captain' ) ) . '</p></div>';
 			} else {
 				echo '<div class="notice notice-warning"><p>' . esc_html__( 'Der Workflow kann so nicht veröffentlicht werden:', 'workflow-captain' ) . '</p><ul style="list-style:disc;margin-left:2em">';
 				foreach ( $notice['errors'] as $code ) {
@@ -175,9 +213,13 @@ final class WorkflowsPage {
 		foreach ( $rows as $wf ) {
 			$version = null === $wf['published_version_id'] ? null : $store->get_version( $wf['published_version_id'] );
 			$trigger = Graph::trigger( $wf['draft'] );
-			echo '<tr><td><a href="' . esc_url( self::url( self::SLUG_WORKFLOWS, array( 'edit' => $wf['id'] ) ) ) . '">' . esc_html( $wf['name'] ) . '</a></td><td>' . esc_html( self::status_label( $wf['status'] ) ) . '</td><td><code>' . esc_html( (string) ( $trigger['event'] ?? '–' ) ) . '</code></td><td>' . esc_html( null === $version ? '–' : (string) $version['version'] ) . '</td></tr>';
+			$export = wp_nonce_url( add_query_arg( array( 'action' => 'workflow_captain_export', 'workflow' => $wf['id'] ), admin_url( 'admin-post.php' ) ), 'workflow_captain_export_' . $wf['id'] );
+			echo '<tr><td><a href="' . esc_url( self::url( self::SLUG_WORKFLOWS, array( 'edit' => $wf['id'] ) ) ) . '">' . esc_html( $wf['name'] ) . '</a> <span class="row-actions"><a href="' . esc_url( $export ) . '">' . esc_html__( 'Exportieren', 'workflow-captain' ) . '</a></span></td><td>' . esc_html( self::status_label( $wf['status'] ) ) . '</td><td><code>' . esc_html( (string) ( $trigger['event'] ?? '–' ) ) . '</code></td><td>' . esc_html( null === $version ? '–' : (string) $version['version'] ) . '</td></tr>';
 		}
-		echo '</tbody></table></div>';
+		echo '</tbody></table>';
+		echo '<h2>' . esc_html__( 'Workflow importieren', 'workflow-captain' ) . '</h2><form method="post" enctype="multipart/form-data" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_import">';
+		wp_nonce_field( 'workflow_captain_import' );
+		echo '<p><input type="file" name="file" accept="application/json,.json"> <button class="button">' . esc_html__( 'Als Entwurf importieren', 'workflow-captain' ) . '</button></p><p class="description">' . esc_html__( 'Ein Import wird immer ein Entwurf. Veröffentlicht wird erst nach Prüfung und Testlauf.', 'workflow-captain' ) . '</p></form></div>';
 	}
 
 	private function render_editor( ?array $wf ): void {

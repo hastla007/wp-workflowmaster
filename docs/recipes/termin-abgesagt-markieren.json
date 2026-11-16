@@ -1,4 +1,6 @@
 {
+  "format": "workflow-captain/workflow",
+  "format_version": 1,
   "name": "Termin abgesagt: Termin markieren und Betreiber informieren",
   "graph": {
     "nodes": [
