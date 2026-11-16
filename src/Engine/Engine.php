@@ -39,6 +39,7 @@ final class Engine implements Dispatcher {
 		'site'     => 5,
 		'workflow' => 2,
 		'catch_up' => DAY_IN_SECONDS,
+		'seconds'  => 20,
 	);
 
 	public function __construct(
@@ -149,7 +150,12 @@ final class Engine implements Dispatcher {
 		$per_wf  = array();
 		$skip    = array();
 		$half    = max( 1, (int) ceil( $limit / 2 ) );
+		$started = microtime( true );
 		while ( $handled < $limit ) {
+			// Time budget per worker run (WF-SET-05): a step already started finishes; no new one after the budget.
+			if ( microtime( true ) - $started >= $this->limits['seconds'] ) {
+				break;
+			}
 			$now     = $this->clock->now();
 			$mysql   = $this->clock->mysql( $now );
 			$running = $this->store->running_counts( $mysql );

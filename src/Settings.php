@@ -20,6 +20,7 @@ final class Settings {
 		'catch_up_hours'     => array( 24, 1, 168 ),
 		'max_site'           => array( 5, 1, 20 ),
 		'max_workflow'       => array( 2, 1, 10 ),
+		'max_seconds'        => array( 20, 5, 120 ),
 		'retention_finished' => array( 30, 1, 30 ),
 		'retention_stuck'    => array( 90, 1, 90 ),
 		'retention_runs'     => array( 30, 1, 30 ),
@@ -89,6 +90,7 @@ final class Settings {
 			'site'     => $settings['max_site'],
 			'workflow' => $settings['max_workflow'],
 			'catch_up' => $settings['catch_up_hours'] * HOUR_IN_SECONDS,
+			'seconds'  => $settings['max_seconds'],
 		);
 	}
 

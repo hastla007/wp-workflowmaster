@@ -562,9 +562,9 @@ check( 'settings: defaults', 25 === Settings::defaults()['batch'] && 30 === Sett
 check( 'settings: values clamped to their range', 200 === Settings::sanitize( array( 'batch' => 9999 ) )['batch'] && 1 === Settings::sanitize( array( 'max_site' => -3 ) )['max_site'] );
 check( 'settings: retention cannot exceed the proposal', 90 === Settings::sanitize( array( 'retention_stuck' => 365 ) )['retention_stuck'] );
 check( 'settings: unknown keys dropped', ! isset( Settings::sanitize( array( 'evil' => 1 ) )['evil'] ) );
-check( 'settings: engine limits mapped', array( 'site' => 5, 'workflow' => 2, 'catch_up' => 86400 ) === Settings::engine_limits( Settings::defaults() ) );
+check( 'settings: engine limits mapped', array( 'site' => 5, 'workflow' => 2, 'catch_up' => 86400, 'seconds' => 20 ) === Settings::engine_limits( Settings::defaults() ) );
 $e = new Engine( new WpdbEngineStore( new FakeWpdb( FakeWpdb::memory() ) ), new ActionRegistry(), new FakeDirectory(), new FixedClock(), 'UTC', array( 'site' => 9, 'bogus' => 3, 'workflow' => 0 ) );
-check( 'engine: limits taken from settings, invalid ignored', array( 'site' => 9, 'workflow' => 2, 'catch_up' => 86400 ) === $e->limits() );
+check( 'engine: limits taken from settings, invalid ignored', array( 'site' => 9, 'workflow' => 2, 'catch_up' => 86400, 'seconds' => 20 ) === $e->limits() );
 
 // ----- Provider overview (WF-INT-14 part) ----------------------------------------------------------------------
 
@@ -859,3 +859,6 @@ check( 'WF-SET-06 notify: only chosen kinds, refused providers reported', null !
 check( 'WF-SET-06 notify: no kinds chosen, no mail', null === Notifications::digest( array( 'runs' => array( 'action_required' => 2 ) ), 'u', array() ) );
 check( 'WF-SET-06 notify: test mail carries no event data', ! str_contains( Notifications::test_mail( 'Shop' )['message'], '{{' ) );
 
+
+// ----- WF-SET-05: time budget per worker run
+check( 'WF-SET-05 settings: runtime per worker run 5 to 120 seconds, default 20', 20 === Settings::defaults()['max_seconds'] && 120 === Settings::sanitize( array( 'max_seconds' => 999 ) )['max_seconds'] && 5 === Settings::sanitize( array( 'max_seconds' => 1 ) )['max_seconds'] );
