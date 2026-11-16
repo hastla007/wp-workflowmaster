@@ -60,6 +60,28 @@ final class Engine implements Dispatcher {
 	/** @var callable():array<string,?string>|null */
 	private $contracts = null;
 
+	/**
+	 * Due schedule events of active workflows with a schedule trigger (WF-CORE-04). The last fired time per workflow
+	 * is kept by the caller; a missed time fires at most once and never when older than the catch-up limit.
+	 *
+	 * @param array<int,int> $last_fired workflow ID => UTC timestamp of the last fired time.
+	 * @return array<int,array{workflow_id:int,due:int,event:array}>
+	 */
+	public function due_schedules( array $last_fired ): array {
+		$now = $this->clock->now();
+		$out = array();
+		foreach ( $this->store->active_versions_for_trigger( Schedule::EVENT ) as $version ) {
+			$trigger = Graph::trigger( $version['graph'] );
+			$wid     = (int) $version['workflow_id'];
+			$after   = max( (int) strtotime( $version['created_at'] . ' UTC' ), (int) ( $last_fired[ $wid ] ?? 0 ), $now - $this->limits['catch_up'] );
+			$due     = null === $trigger ? null : Schedule::last_due( (array) ( $trigger['schedule'] ?? array() ), $now, $after, $this->timezone );
+			if ( null !== $due ) {
+				$out[] = array( 'workflow_id' => $wid, 'due' => $due, 'event' => Schedule::event( $wid, $due, $now ) );
+			}
+		}
+		return $out;
+	}
+
 	/** Current contract version per registered provider, for the run snapshot check (WF-CORE-02). */
 	public function set_provider_contracts( callable $contracts ): void {
 		$this->contracts = $contracts;
@@ -112,6 +134,9 @@ final class Engine implements Dispatcher {
 		foreach ( $this->store->active_versions_for_trigger( (string) $envelope['type'] ) as $version ) {
 			if ( $version['workflow_id'] === $exclude_workflow_id ) {
 				continue; // R-7.14: a workflow never starts from an event it caused.
+			}
+			if ( Schedule::EVENT === $envelope['type'] && (string) $version['workflow_id'] !== (string) ( $envelope['subject']['id'] ?? '' ) ) {
+				continue; // A schedule starts only the workflow it belongs to (WF-CORE-04).
 			}
 			$trigger = Graph::trigger( $version['graph'] );
 			$first   = null === $trigger ? null : Graph::next( $version['graph'], (string) $trigger['id'] );

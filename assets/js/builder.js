@@ -494,6 +494,38 @@
 			return box;
 		}
 
+		/** Recurring schedule of a trigger "workflow.schedule.due" (WF-CORE-04), in the time zone of the site. */
+		scheduleForm( n ) {
+			n.schedule = n.schedule || { frequency: 'daily', time: '08:00' };
+			const s = n.schedule;
+			const box = el( 'fieldset', { class: 'wfc-schedule' }, [ el( 'legend', { text: this.t( 'schedule', 'Zeitplan (Zeitzone der Website)' ) } ) ] );
+			const update = ( key, value ) => {
+				s[ key ] = value;
+				if ( 'weekly' !== s.frequency ) {
+					delete s.weekday;
+				} else if ( ! s.weekday ) {
+					s.weekday = 1;
+				}
+				if ( 'monthly' !== s.frequency ) {
+					delete s.day;
+				} else if ( ! s.day ) {
+					s.day = 1;
+				}
+				this.commit();
+			};
+			const label = ( text, input ) => el( 'p', {}, [ el( 'label', { text } ), el( 'br' ), input ] );
+			box.appendChild( label( this.t( 'frequency', 'Wiederholung' ), el( 'select', { class: 'wfc-schedule-frequency', onchange: ( ev ) => update( 'frequency', ev.target.value ) }, [ [ 'daily', 'täglich' ], [ 'weekly', 'wöchentlich' ], [ 'monthly', 'monatlich' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: s.frequency === v } ) ) ) ) );
+			box.appendChild( label( this.t( 'time', 'Uhrzeit' ), el( 'input', { type: 'time', class: 'wfc-schedule-time', value: s.time || '08:00', onchange: ( ev ) => update( 'time', ev.target.value ) } ) ) );
+			if ( 'weekly' === s.frequency ) {
+				box.appendChild( label( this.t( 'weekday', 'Wochentag' ), el( 'select', { class: 'wfc-schedule-weekday', onchange: ( ev ) => update( 'weekday', parseInt( ev.target.value, 10 ) ) }, [ 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag' ].map( ( d, i ) => el( 'option', { value: i + 1, text: d, selected: s.weekday === i + 1 } ) ) ) ) );
+			}
+			if ( 'monthly' === s.frequency ) {
+				box.appendChild( label( this.t( 'day', 'Tag im Monat (1 bis 28)' ), el( 'input', { type: 'number', min: 1, max: 28, class: 'wfc-schedule-day', value: s.day || 1, onchange: ( ev ) => update( 'day', Math.min( 28, Math.max( 1, parseInt( ev.target.value, 10 ) || 1 ) ) ) } ) ) );
+			}
+			box.appendChild( el( 'p', { class: 'description', text: this.t( 'scheduleHint', 'Ein verpasster Termin wird höchstens einmal nachgeholt. In der Sommerzeitlücke verschiebt sich die Uhrzeit nach hinten.' ) } ) );
+			return box;
+		}
+
 		/** Configuration of the selected node (WF-BUILDER-04). */
 		inspector() {
 			const box = el( 'div', { class: 'wfc-inspector' } );
@@ -512,6 +544,9 @@
 				const list = el( 'datalist', { id: 'wfc-events' }, this.config.events.map( ( e ) => el( 'option', { value: e } ) ) );
 				box.appendChild( list );
 				box.appendChild( field( this.t( 'event', 'Ereignis' ), el( 'input', { type: 'text', class: 'regular-text', list: 'wfc-events', value: n.event || '', onchange: ( ev ) => set( 'event', ev.target.value.trim() ) } ) ) );
+				if ( 'workflow.schedule.due' === n.event ) {
+					box.appendChild( this.scheduleForm( n ) );
+				}
 			} else if ( 'action' === n.type ) {
 				const select = el( 'select', { onchange: ( ev ) => { n.action = ev.target.value; n.config = {}; this.commit(); } }, this.config.actions.map( ( a ) => el( 'option', { value: a.key, text: a.label, selected: a.key === n.action } ) ) );
 				box.appendChild( field( this.t( 'action', 'Aktion' ), select ) );

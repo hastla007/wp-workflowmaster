@@ -146,6 +146,21 @@ function check( label, ok ) {
 	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.ticket.checked_in' );
 	await page.press( '.wfc-inspector input[list="wfc-events"]', 'Tab' );
 
+	// Schedule trigger (WF-CORE-04)
+	await page.click( '.wfc-node[data-id="t"]' );
+	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'workflow.schedule.due' );
+	await page.press( '.wfc-inspector input[list="wfc-events"]', 'Tab' );
+	await page.click( '.wfc-node[data-id="t"]' );
+	await page.selectOption( '.wfc-schedule-frequency', 'weekly' );
+	await page.selectOption( '.wfc-schedule-weekday', '3' );
+	let sched = ( await graphNow() ).nodes.find( ( n ) => 't' === n.id ).schedule;
+	check( 'schedule form writes frequency, time and weekday', 'weekly' === sched.frequency && '08:00' === sched.time && 3 === sched.weekday );
+	await page.selectOption( '.wfc-schedule-frequency', 'monthly' );
+	sched = ( await graphNow() ).nodes.find( ( n ) => 't' === n.id ).schedule;
+	check( 'schedule form: monthly drops the weekday and sets a day', 'monthly' === sched.frequency && undefined === sched.weekday && 1 === sched.day );
+	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.ticket.checked_in' );
+	await page.press( '.wfc-inspector input[list="wfc-events"]', 'Tab' );
+
 	// Zoom
 	const width = async () => parseInt( await page.$eval( '.wfc-canvas', ( s ) => s.getAttribute( 'width' ) ), 10 );
 	const w1 = await width();

@@ -401,6 +401,17 @@ Entschieden am 16.11.2026 (F-22).
 - R-4.12 Ein Connector meldet sich mit einem Manifest an (Schlüssel, Name, Version, eigene Vertragsversion, Mindestversion von Workflow Captain, je Ereignistyp die erlaubten Felder mit Datentyp und Datenklasse, je Befehl Berechtigung und Idempotenz). Felder der Datenklasse „personenbezogen“ sind ab Werk aus. Einzelheiten: [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md).
 - R-4.13 Ob Connector-Ereignisse Workflow Captain Pro voraussetzen, ist F-18a. Der Kern prüft keine Lizenz (R-2.4).
 
+### 4.9 Zeitpläne des Kerns (`source.product` = `workflow-captain`, WF-CORE-04)
+
+Ein Workflow kann statt auf ein Ereignis auf einen wiederkehrenden Zeitpunkt hören: täglich, wöchentlich (Wochentag 1 bis 7) oder monatlich (Tag 1 bis 28) zu einer lokalen Uhrzeit der Website. Der Worker des Kerns erzeugt dann das Ereignis `workflow.schedule.due`.
+
+| Ereignis | Gegenstand | Erlaubte Felder in `data` | `actor_user_id` |
+|---|---|---|---|
+| `workflow.schedule.due` | `workflow` (`record`, die ID des Workflows) | `scheduled_for` (fälliger Zeitpunkt in UTC), `delay_seconds` (Verspätung) | nicht gesetzt |
+
+- R-4.14 Das Ereignis startet nur den Workflow, dessen ID im Gegenstand steht. Diskriminator ist der fällige Zeitpunkt; ein doppelter Zeitgeber oder zwei Worker starten einen Lauf.
+- R-4.15 Es gelten die Regeln aus `konzept.md` 15.3 („Zeitplansemantik“): Sommerzeitlücke verschiebt nach hinten, doppelte Stunde gilt beim ersten Vorkommen. Ein verpasster Zeitpunkt wird höchstens einmal nachgeholt (nur der letzte) und nie, wenn er älter als die Nachholgrenze ist.
+
 ## 5. Regeln für verbotene Werte (D8)
 
 - R-5.1 Ein Suite-Ereignis enthält öffentliche Kennungen und, wo vorhanden, eine Benutzer-ID. Es enthält **nie** einen geheimen Code (Gutscheincode, Ticketcode, Token, Download-Link, Lizenzschlüssel, Passwort) und nie: E-Mail-Adresse, Name, Anschrift, Telefonnummer, Bankdaten, Freitext (Grund, Notiz, Nachricht), Dateipfad, IP-Adresse.
@@ -938,7 +949,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 
 | Version | Datum | Änderung |
 |---|---|---|
-| 1.0.0-draft.6 | 16.11.2026 | Entscheidungen F-07, F-20 und F-22 eingearbeitet: neue Abschnitte 4.7 (WordPress und WooCommerce, Adapter im freien Kern), 4.8 (eigene Connectoren mit Präfix `x<schlüssel>`, R-4.10 bis R-4.13) und 17 (netzwerkweite Abläufe). R-4.1, R-12.6 und die Nichtziele angepasst. Schema: `type` und `source.product` erweitert. Katalog um sieben Ereignisse und Beispiele ergänzt. |
+| 1.0.0-draft.6 | 16.11.2026 | Entscheidungen F-07, F-20 und F-22 eingearbeitet: neue Abschnitte 4.7 (WordPress und WooCommerce, Adapter im freien Kern), 4.8 (eigene Connectoren mit Präfix `x<schlüssel>`, R-4.10 bis R-4.13) und 17 (netzwerkweite Abläufe). R-4.1, R-12.6 und die Nichtziele angepasst. Abschnitt 4.9 (Zeitpläne des Kerns, `workflow.schedule.due`). Schema: `type` und `source.product` erweitert. Katalog um sieben Ereignisse und Beispiele ergänzt. |
 | 1.0.0-draft.5 | 16.11.2026 | Alle übrigen Stellen „zu prüfen“ geklärt: Affiliate Captain (Z-07, Z-08, Z-09, Z-13), Lizenzserver (Z-10, Z-14), Form Captain (Z-11), Review Captain (Z-12). Erlaubte Felder für die 21 Ereignistypen von Affiliate Captain (4.4) und Beispiele; neue Frage F-21 (beantragter Partnercode). Lesefunktionen von Affiliate Captain in 8.1; Lesen von Lizenzen ohne Fassade in 11. Berichtigt: Hook-Zahlen des Lizenzservers (3.2), acht statt sechs Actions in Form Captain (4.6), Course Captain im Katalog auf `a113568`. Erster Code des Consumers (Plugin 0.1.0) setzt diese Fassung um. |
 | 1.0.0-draft.4 | 16.11.2026 | Stellen „zu prüfen“ für Pass Captain (Z-01 bis Z-04), Voucher Captain (Z-05, Z-06, Z-15, Z-16), Lesefunktionen (Z-07 für beide) und `captain-pro` (Z-13) am Code geklärt und Tabellen 3.2, 4.2, 4.3, 7.2, 8.3.3, 8.3.4 und R-8.6 berichtigt. Erlaubte Felder und `actor_user_id` für alle 29 Ereignistypen von Pass und Voucher Captain (4.2, 4.3), je ein Beispiel, maschinenlesbarer Katalog `catalog/suite-events-v1.json`. Neue Regel R-4.7 (`reference`, `redemption_key` nicht weiterreichen); Beispiele `voucher.voucher.issued_standalone` und `voucher.voucher.redeemed` entsprechend ohne diese Felder; `public_id` im Beispiel im Format des Kerns. Tabelle der Lesefunktionen in 8.1 (WF-SPEC-15). Neuer Abschnitt 8.5 mit den Eigenschaften je Befehl und R-8.11 bis R-8.13. Offen bleiben die Stellen für Affiliate, Lizenzserver, Form und Review. Nachträge am selben Tag: Beispiele `license.license.issued` und `license.license.plan_changed`; Hinweis auf `Reconciliation::orders()` (Pass Captain, nicht gemergt) in 8.1. |
 | 1.0.0-draft.3 | 16.11.2026 | F-05 entschieden: feste Grenzen der vier Gutschein-Befehle als Tabelle in 8.3.1 (100 EUR und 50 je Tag; Einlösen jedes Gutscheins); neue Teilfrage F-05a für Shops ohne Euro. D13 im Affiliate-Kern umgesetzt: 4.4.1, R-4.4 bis R-4.6, 7.2 und R-13.6 nennen die Entfernung als Stand; neue Stelle Z-16 für den Voucher-Kern. |

@@ -375,5 +375,9 @@
  },
  "wordpress.user.registered": {
   "role": "string"
+ },
+ "workflow.schedule.due": {
+  "scheduled_for": "datetime",
+  "delay_seconds": "integer"
  }
 }

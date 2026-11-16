@@ -72,6 +72,19 @@ final class AdapterRegistry {
 		return true;
 	}
 
+	/**
+	 * Internal path for the core's own schedule adapter (product "workflow-captain", WF-CORE-04).
+	 *
+	 * @internal
+	 */
+	public function add_core( \WorkflowCaptain\Providers\ScheduleAdapter $adapter ): bool {
+		if ( isset( $this->adapters[ $adapter->product() ] ) ) {
+			return false;
+		}
+		$this->adapters[ $adapter->product() ] = $adapter;
+		return true;
+	}
+
 	public function remove( string $product ): void {
 		unset( $this->adapters[ $product ] );
 	}

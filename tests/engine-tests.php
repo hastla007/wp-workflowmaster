@@ -919,3 +919,45 @@ $paused = $e->store->find_runs( array( 'state' => \WorkflowCaptain\Engine\Engine
 check( 'WF-CORE-02 a MAJOR change pauses the run before the provider action, with a reason', 1 === $pass_action->runs && 1 === count( $paused ) && 'provider_contract_changed' === $paused[0]['last_error'] );
 unset( $contracts_now['pass-captain'] );
 check( 'WF-CORE-02 helper: product of a prefix, connectors included', 'woocommerce' === \WorkflowCaptain\Envelope\Validator::product_for_prefix( 'woocommerce' ) && 'starter-connector' === \WorkflowCaptain\Envelope\Validator::product_for_prefix( 'xstarterconnector', array( 'starter-connector' ) ) && null === \WorkflowCaptain\Envelope\Validator::product_for_prefix( 'workflow' ) );
+
+// ----- WF-CORE-04: recurring schedule triggers
+use WorkflowCaptain\Engine\Schedule;
+$ts = static fn( string $local, string $tz = 'Europe/Berlin' ) => ( new DateTimeImmutable( $local, new DateTimeZone( $tz ) ) )->getTimestamp();
+$daily  = array( 'frequency' => 'daily', 'time' => '08:00' );
+check( 'WF-CORE-04 schedule: config checked', array() === Schedule::violations( $daily ) && in_array( 'schedule:invalid_time', Schedule::violations( array( 'frequency' => 'daily', 'time' => '25:00' ) ), true ) && in_array( 'schedule:invalid_day', Schedule::violations( array( 'frequency' => 'monthly', 'time' => '08:00', 'day' => 31 ) ), true ) && in_array( 'schedule:invalid_weekday', Schedule::violations( array( 'frequency' => 'weekly', 'time' => '08:00' ) ), true ) );
+check( 'WF-CORE-04 schedule: daily, latest due time in local time', $ts( '2026-11-16 08:00' ) === Schedule::last_due( $daily, $ts( '2026-11-16 09:30' ), $ts( '2026-11-15 12:00' ), 'Europe/Berlin' ) );
+check( 'WF-CORE-04 schedule: nothing due before the time', null === Schedule::last_due( $daily, $ts( '2026-11-16 07:59' ), $ts( '2026-11-15 08:30' ), 'Europe/Berlin' ) );
+check( 'WF-CORE-04 schedule: missed times fire at most once (only the latest)', $ts( '2026-11-16 08:00' ) === Schedule::last_due( $daily, $ts( '2026-11-16 09:00' ), $ts( '2026-11-10 00:00' ), 'Europe/Berlin' ) );
+check( 'WF-CORE-04 schedule: 08:00 local stays 08:00 across the DST change', $ts( '2026-10-26 08:00' ) - $ts( '2026-10-24 08:00' ) === 2 * 86400 + 3600 && $ts( '2026-10-26 08:00' ) === Schedule::last_due( $daily, $ts( '2026-10-26 08:01' ), $ts( '2026-10-25 09:00' ), 'Europe/Berlin' ) );
+$gap = Schedule::last_due( array( 'frequency' => 'daily', 'time' => '02:30' ), $ts( '2026-03-29 12:00' ), $ts( '2026-03-28 12:00' ), 'Europe/Berlin' );
+check( 'WF-CORE-04 schedule: a time in the spring gap moves forward (02:30 → 03:30)', '03:30' === ( new DateTimeImmutable( '@' . $gap ) )->setTimezone( new DateTimeZone( 'Europe/Berlin' ) )->format( 'H:i' ) );
+check( 'WF-CORE-04 schedule: weekly on Monday', $ts( '2026-11-16 08:00' ) === Schedule::last_due( array( 'frequency' => 'weekly', 'time' => '08:00', 'weekday' => 1 ), $ts( '2026-11-18 10:00' ), $ts( '2026-11-10 00:00' ), 'Europe/Berlin' ) );
+check( 'WF-CORE-04 schedule: monthly on the 1st', $ts( '2026-11-01 08:00' ) === Schedule::last_due( array( 'frequency' => 'monthly', 'time' => '08:00', 'day' => 1 ), $ts( '2026-11-18 10:00' ), $ts( '2026-10-15 00:00' ), 'Europe/Berlin' ) );
+
+$e  = engine_site();
+$e->registry->add_core( new \WorkflowCaptain\Providers\ScheduleAdapter() );
+$sg = array(
+	'nodes' => array(
+		array( 'id' => 't', 'type' => 'trigger', 'event' => 'workflow.schedule.due', 'schedule' => array( 'frequency' => 'daily', 'time' => '08:00' ) ),
+		array( 'id' => 'mail', 'type' => 'action', 'action' => 'notify.admin', 'config' => array( 'subject' => 'Täglich', 'message' => 'fällig {{data.scheduled_for}}' ) ),
+		array( 'id' => 'e', 'type' => 'end' ),
+	),
+	'edges' => array( array( 'from' => 't', 'to' => 'mail' ), array( 'from' => 'mail', 'to' => 'e' ) ),
+);
+$bad_sg = $sg;
+unset( $bad_sg['nodes'][0]['schedule'] );
+check( 'WF-CORE-04 schedule: graph needs a valid schedule', in_array( 'node:t:schedule:missing', Graph::violations( $bad_sg, $e->actions ), true ) && array() === Graph::violations( $sg, $e->actions ) );
+$w1 = publish( $e, $sg, 'Täglich A' );
+$w2 = publish( $e, $sg, 'Täglich B' );
+$e->clock->time = strtotime( '2025-11-17 09:00:00 UTC' );
+$due = $e->engine->due_schedules( array() );
+check( 'WF-CORE-04 schedule: one due event per scheduled workflow', 2 === count( $due ) );
+foreach ( $due as $d ) {
+	$e->consumer->capture( $e->registry->get( 'workflow-captain' ), $d['event'] );
+	$e->consumer->capture( $e->registry->get( 'workflow-captain' ), $d['event'] ); // doubled timer
+}
+drain( $e );
+$runs = $e->store->find_runs( array(), 10, 0 );
+check( 'WF-CORE-04 schedule: each event starts only its own workflow, doubled timer starts one run', 2 === count( $runs ) && array( $w1, $w2 ) === array_values( array_unique( array_map( 'intval', array_column( array_reverse( $runs ), 'workflow_id' ) ) ) ) );
+$fired = array( $w1 => $due[0]['due'], $w2 => $due[1]['due'] );
+check( 'WF-CORE-04 schedule: not due again until the next time', array() === $e->engine->due_schedules( $fired ) );

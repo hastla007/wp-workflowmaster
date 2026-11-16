@@ -1344,6 +1344,31 @@
           }
         }
       ]
+    },
+    "workflow-captain": {
+      "contract_constant": "WORKFLOW_CAPTAIN_CONTRACT_VERSION",
+      "min_contract": null,
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "workflow.schedule.due",
+          "hook": "(intern: Worker von Workflow Captain)",
+          "since": "0.2.0",
+          "subject_type": "workflow",
+          "id_kind": "record",
+          "data_fields": [
+            "scheduled_for",
+            "delay_seconds"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "scheduled_for": "datetime",
+            "delay_seconds": "integer"
+          }
+        }
+      ]
     }
   }
 }

@@ -66,6 +66,11 @@ final class Graph {
 			if ( 'trigger' === $type && ( ! is_string( $node['event'] ?? null ) || ! preg_match( Validator::TYPE, $node['event'] ) ) ) {
 				$v[] = 'node:' . $id . ':invalid_event';
 			}
+			if ( 'trigger' === $type && Schedule::EVENT === ( $node['event'] ?? null ) ) {
+				foreach ( Schedule::violations( $node['schedule'] ?? null ) as $code ) {
+					$v[] = 'node:' . $id . ':' . $code;
+				}
+			}
 			if ( 'trigger' === $type && isset( $node['serialize'] ) && ! in_array( $node['serialize'], array( 'subject', 'actor' ), true ) ) {
 				$v[] = 'node:' . $id . ':invalid_serialize';
 			}

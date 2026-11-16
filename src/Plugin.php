@@ -238,6 +238,7 @@ final class Plugin {
 		$sink = function ( \WorkflowCaptain\Adapter\Adapter $adapter, array $event ): void {
 			$this->consumer()->capture( $adapter, $event );
 		};
+		$this->adapters->add_core( new \WorkflowCaptain\Providers\ScheduleAdapter() );
 		\WorkflowCaptain\Providers\CoreAdapter::register(
 			$this->adapters,
 			array(
@@ -264,6 +265,23 @@ final class Plugin {
 		}
 	}
 
+	/** Turns due schedule triggers into events (WF-CORE-04); the last fired time per workflow is kept in an option. */
+	public function tick_schedules(): void {
+		$adapter = $this->adapters->get( 'workflow-captain' );
+		if ( null === $adapter ) {
+			return;
+		}
+		$last = (array) get_option( 'workflow_captain_schedule_fired', array() );
+		$due  = $this->engine()->due_schedules( $last );
+		foreach ( $due as $item ) {
+			$this->consumer()->capture( $adapter, $item['event'] );
+			$last[ $item['workflow_id'] ] = $item['due'];
+		}
+		if ( array() !== $due ) {
+			update_option( 'workflow_captain_schedule_fired', $last, false );
+		}
+	}
+
 	public function run_worker(): void {
 		if ( Install::SCHEMA_CURRENT !== $this->schema ) {
 			return; // Downgrade (newer schema) or upgrade not yet run: the worker waits (WF-CORE-07).
@@ -275,6 +293,7 @@ final class Plugin {
 		 * @param int $limit
 		 */
 		$limit = max( 1, min( 200, (int) apply_filters( 'workflow_captain_worker_batch', Settings::get()['batch'] ) ) );
+		$this->tick_schedules();
 		$this->consumer()->process( $limit );
 		$this->consumer(); // Makes sure the engine knows the consumer before steps run (C-9).
 		$this->engine()->process( $limit );
