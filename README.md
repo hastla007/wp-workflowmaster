@@ -22,6 +22,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`docs/recipes/`](docs/recipes/) | Importierbare Beispiel-Workflows, im Test gegen Graph-Validierung und Katalog geprüft. |
 | [`docs/n8n/`](docs/n8n/) | Entwürfe von n8n-Vorlagen ohne Zugangsdaten (WF-N8N-10). |
 | [`docs/TESTMATRIX.md`](docs/TESTMATRIX.md) | Was automatisch getestet ist und was echtes WordPress, WooCommerce oder Adapter braucht. |
+| [`docs/PROVIDERS.md`](docs/PROVIDERS.md) | Anbieterübersicht: wer welche Auslöser und Befehle liefert. |
 | [`docs/OPTIONS.md`](docs/OPTIONS.md) | Optionen, Tabellen, Datenflächen und Änderungssemantik. |
 | [`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) | Release-Gate des kostenlosen Kerns. |
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Betrieb und Wiederherstellung: typische Lagen, Backup, Grenzen. |
