@@ -42,6 +42,8 @@ spl_autoload_register(
 register_activation_hook( __FILE__, array( '\WorkflowCaptain\Install', 'activate' ) );
 register_deactivation_hook( __FILE__, array( '\WorkflowCaptain\Install', 'deactivate' ) );
 add_filter( 'wpmu_drop_tables', array( '\WorkflowCaptain\Install', 'drop_site_tables' ), 10, 1 );
+// After WordPress has created the new site's own tables (priority 10) and its roles.
+add_action( 'wp_initialize_site', array( '\WorkflowCaptain\Install', 'initialize_site' ), 200, 1 );
 
 add_action(
 	'plugins_loaded',
