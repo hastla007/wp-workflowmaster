@@ -1150,3 +1150,18 @@ $sent_before          = count( $dst->dir->sent );
 check( 'foreign run: resume also requeues a step that needs a decision', 1 === ForeignRuns::resume( $dst->store, $k5, $dst->clock->mysql() ) );
 drain( $dst );
 check( 'foreign run: the resumed step runs once', EngineStore::RUN_SUCCEEDED === $dst->store->get_run( $q6['run_id'] )['state'] && $sent_before + 1 === count( $dst->dir->sent ) );
+
+// ----- WF-CORE-10: reconciliation with the providers (read only, optional requeue)
+$e = engine_site();
+$e->adapter->reread = array( 'pass.ticket.checked_in' );
+$keep = $e->events->insert( array_merge( checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'r1' ), array( 'id' => \WorkflowCaptain\Envelope\Uuid::v4(), 'idempotency_key' => str_repeat( 'a', 64 ), 'site' => array( 'blog_id' => 1 ), 'source' => array( 'product' => 'pass-captain', 'core_version' => '1.5.0', 'contract_version' => '1.1.0' ) ) ), \WorkflowCaptain\Store\EventStore::DEAD_LETTER, $e->clock->mysql() );
+$rows = $e->events->find( array( 'state' => 'dead_letter' ), 10, 0 );
+$rec  = new \WorkflowCaptain\Consumer\Reconcile( $e->events, $e->registry, $e->consumer );
+$res  = $rec->run();
+check( 'WF-CORE-10 reconcile: read only by default, counts holding events', 1 === $res['checked'] && 1 === $res['holds'] && 0 === $res['requeued'] && 1 === count( $e->events->find( array( 'state' => 'dead_letter' ), 10, 0 ) ) );
+$e->adapter->reread_result = false;
+$res = $rec->run( true );
+check( 'WF-CORE-10 reconcile: changed at the provider is reported, never requeued', 1 === $res['changed'] && 0 === $res['requeued'] && array( (int) $rows[0]['id'] ) === $res['changed_ids'] );
+$e->adapter->reread_result = true;
+$res = $rec->run( true );
+check( 'WF-CORE-10 reconcile: with --requeue a holding dead_letter event goes back into the queue', 1 === $res['requeued'] && 0 === count( $e->events->find( array( 'state' => 'dead_letter' ), 10, 0 ) ) );

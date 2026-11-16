@@ -20,6 +20,7 @@ Stand: Plugin 0.2.x. Aufgabe WF-CORE-10. Für Betreiber und Support.
 | Lauf pausiert – `not_authorized` | **Läufe**, Grund `not_authorized` | Der veröffentlichende Benutzer hat eine Berechtigung verloren oder existiert nicht mehr. Recht wiederherstellen und fortsetzen, oder den Workflow mit einem berechtigten Benutzer neu veröffentlichen (neue Läufe). |
 | Lauf pausiert – `action_unavailable` | **Läufe** | Die Aktion (Provider) fehlt. Add-on wieder aktivieren und fortsetzen; nie auf eine andere Aktion umbauen (WF-CORE-02). |
 | Lauf pausiert – `provider_contract_changed` | **Läufe** | Der Provider einer Aktion hat seit dem Veröffentlichen eine neue MAJOR-Version seines Vertrags (oder fehlt). Workflow prüfen, neu veröffentlichen (neue Läufe nutzen den neuen Vertrag), alte Läufe abbrechen oder nach Rückkehr zur alten Version fortsetzen. |
+| Viele Ereignisse fehlgeschlagen oder pausiert nach einer Störung | **Ereignisse** | `wp workflow-captain reconcile` zeigt, welche beim Provider noch stimmen und welche sich geändert haben; `--requeue` reiht nur die stimmigen wieder ein. Geänderte von Hand prüfen. |
 | Hängende Schritte | Website-Zustand / Einstellungen → Status | Ein Worker starb und kein anderer lief seitdem. Sobald der Cron läuft, übernimmt der nächste Worker. Ist eine Nachricht betroffen, entscheidet ein Mensch (siehe `unclear_outcome`). |
 | Nach einem Downgrade | Hinweis „Datenbank stammt von einer neueren Version“ | Neuere Version wieder installieren. Das ältere Plugin ändert nichts am Schema und verarbeitet nichts. |
 

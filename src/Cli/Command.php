@@ -71,6 +71,24 @@ final class Command {
 	}
 
 	/**
+	 * Checks events that are not done against their provider (WF-CORE-10). Read only unless --requeue is given.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--requeue]
+	 * : Put failed or paused events that still hold back into the queue.
+	 */
+	public function reconcile( array $args, array $assoc ): void {
+		$p = Plugin::instance();
+		$r = ( new \WorkflowCaptain\Consumer\Reconcile( $p->store(), $p->adapters(), $p->consumer() ) )->run( isset( $assoc['requeue'] ) );
+		\WP_CLI::line( sprintf( 'checked %d: %d still hold, %d changed at the provider, %d without adapter, %d errors, %d requeued', $r['checked'], $r['holds'], $r['changed'], $r['no_adapter'], $r['error'], $r['requeued'] ) );
+		if ( array() !== $r['changed_ids'] ) {
+			\WP_CLI::line( 'Changed at the provider (decide by hand): ' . implode( ', ', array_slice( $r['changed_ids'], 0, 50 ) ) );
+		}
+		\WP_CLI::success( 'Done.' );
+	}
+
+	/**
 	 * Creates or updates the tables of this site.
 	 */
 	public function migrate(): void {
