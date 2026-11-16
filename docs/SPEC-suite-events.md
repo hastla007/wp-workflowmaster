@@ -27,7 +27,7 @@ Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D1
 | PC | `wp-passmaster` (Pass Captain) | `claude/sharp-mendel-xiiwf3` | `bca8d85a` | 1.5.0 (`pass-captain.php:6`) |
 | AC | `wpaffiliatemaster` (Affiliate Captain) | `claude/sharp-mendel-xiiwf3` | `23f06be` (Katalog gelesen zwischen `70c23b7` und `dbb319d`; Entfernung des Workflow-Providers geprüft an `23f06be`) | 0.15.0 (`affiliate-captain.php:6`) |
 | LIC | `wp-license` (Lizenzserver) | `claude/sharp-mendel-xiiwf3` | `241ae7a` (committeter Stand) | 0.2.0 (`wp-license.php:23`) |
-| CP | `captain-pro` (Add-ons, Kernel) | `claude/sharp-mendel-xiiwf3` | `5e333f7` (Arbeitsverzeichnis mit uncommitteten Änderungen) | – |
+| CP | `captain-pro` (Add-ons, Kernel) | `claude/sharp-mendel-xiiwf3` | `5e333f7` (Arbeitsverzeichnis mit uncommitteten Änderungen); am 16.11.2026 gegengeprüft an `07b5365` und `main` `2f23da7`: alle Fundstellen in `packages/addon-kernel` unverändert | – |
 | FC | `wp-formmaster` (Form Captain) | `claude/youthful-babbage-wkrqyv` | `0017025` | 1.0.0-dev |
 | RC | `wp-reviewmaster` (Review Captain) | `claude/sleepy-gates-6mm217` | `faa5f89` | 0.1.0-dev |
 | CC | `wp-coursemaster` (Course Captain) | `claude/blissful-curie-tuuf7q` | `ae1bce9` | kein Code |
@@ -779,7 +779,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 | Z-10 | „Seit“ und „nach Commit“ für die drei Lizenz-Actions des Katalogs | Lizenzserver: `src/License/LicenseLifecycle.php`, `LicenseIssuer.php`, `PlanChange.php` |
 | Z-11 | Ob der Code von Form Captain die sechs dokumentierten Actions auslöst | Form Captain: `src/` |
 | Z-12 | Ob der Code von Review Captain die Actions für Anfragen auslöst, die sein Workflow-Vertrag nennt | Review Captain: `src/`, `docs/hooks.md` |
-| Z-13 | Der Stand von `captain-pro` wurde im Arbeitsverzeichnis gelesen, das uncommittete Änderungen enthielt; in Affiliate Captain war während des Lesens zeitweise eine Datei uncommittet | nach dem nächsten Commit dort gegenprüfen |
+| Z-13 | Der Stand von `captain-pro` wurde im Arbeitsverzeichnis gelesen, das uncommittete Änderungen enthielt; in Affiliate Captain war während des Lesens zeitweise eine Datei uncommittet | **Für `captain-pro` geklärt am 16.11.2026:** Die Fundstellen `CoreRequirement.php:60-64`, `Feature.php:41-52`, `CoreCapabilities.php:35-36` und `:92` stimmen im committeten Stand `07b5365` und auf `main` (`2f23da7`); der Kernel kennt weiterhin keine Prüfung der Lizenz eines anderen Add-ons (F-06 bleibt offen). Für Affiliate Captain offen (kein Zugriff aus dieser Sitzung). |
 | Z-15 | Für Sperren, Reaktivieren und Einlösen im Voucher-Kern: Berechtigungsprüfung, Idempotenz, Wirkung von `$refund`/`$after_refund`; ob der Branch von Pull Request 16 dafür eigene Dienste enthält | Voucher Captain: `src/Issuer.php:2012-2110`, `src/API/V1/RedemptionService.php`, Branch `hvollo-refactors` |
 | Z-16 | Ob der vorläufige Workflow-Provider aus Pull Request 16 im Voucher-Kern schon entfernt ist (D13) | Voucher Captain: Branches `hvollo-refactors` und `main` |
 | Z-14 | Die Aufgabenstellung nennt 129 Hooks im Lizenzserver; gezählt wurden 36 Actions und 94 Filter, zusammen 130 | Lizenzserver: `docs/EXTENSION-POINTS.md` |
