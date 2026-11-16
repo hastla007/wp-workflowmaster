@@ -1165,3 +1165,12 @@ check( 'WF-CORE-10 reconcile: changed at the provider is reported, never requeue
 $e->adapter->reread_result = true;
 $res = $rec->run( true );
 check( 'WF-CORE-10 reconcile: with --requeue a holding dead_letter event goes back into the queue', 1 === $res['requeued'] && 0 === count( $e->events->find( array( 'state' => 'dead_letter' ), 10, 0 ) ) );
+
+// ----- Suite admins: status of Workflow Captain for one product (counts and links only)
+$e = engine_site();
+publish( $e, sample_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+$st = \WorkflowCaptain\SuiteStatus::for_product( 'pass-captain', $e->registry, $e->events, $e->store, fn( $page, $args = array() ) => $page . '?' . http_build_query( $args ) );
+check( 'suite status: adapter, contract, active workflows, events and last correlation id for the product', 'registered' === $st['adapter'] && '1.1.0' === $st['contract_version'] && 1 === $st['active_workflows'] && 1 === array_sum( $st['events'] ) && is_string( $st['last_correlation_id'] ) );
+check( 'suite status: unknown product is missing with zero counts, links present', 'missing' === \WorkflowCaptain\SuiteStatus::for_product( 'voucher-captain', $e->registry, $e->events, $e->store, fn( $p, $a = array() ) => $p )['adapter'] && isset( $st['links']['runs'] ) );
+check( 'suite status: no event data or personal data in the result', ! str_contains( json_encode( $st ), 'checkin_source' ) && ! str_contains( json_encode( $st ), '@' ) );

@@ -125,6 +125,10 @@ add_action( 'workflow_captain_foreign_runs_v1', function ( \WorkflowCaptain\Engi
 } );
 ```
 
+## 5c. Status für die Admin-Seiten der Kerne
+
+`workflow_captain_status_for( 'pass-captain' )` liefert einem Kern-Plugin für seine eigene Admin-Seite: Adapter angemeldet/abgelehnt/fehlt mit Grund, Vertragsversion, Zahl aktiver Workflows für seine Ereignisse, Ereignisse je Zustand, die letzte Korrelations-ID und Links zu Workflows, Läufen, Ereignissen und Providern. Nur Zahlen und Links, keine Ereignisdaten. Vor dem Start von Workflow Captain gibt die Funktion `null` zurück.
+
 ## 6. Datenfluss und Datenschutz
 
 | Ort | Was liegt dort | Personenbezug | Frist |

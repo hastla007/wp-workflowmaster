@@ -39,6 +39,20 @@ spl_autoload_register(
 	}
 );
 
+/**
+ * Status of Workflow Captain for one product, for the admin of a core plugin (counts and links only).
+ *
+ * @since 0.2.0
+ * @return array<string,mixed>|null Null before Workflow Captain has booted.
+ */
+function workflow_captain_status_for( string $product ): ?array {
+	if ( ! did_action( 'workflow_captain_loaded' ) ) {
+		return null;
+	}
+	$plugin = \WorkflowCaptain\Plugin::instance();
+	return \WorkflowCaptain\SuiteStatus::for_product( $product, $plugin->adapters(), $plugin->store(), $plugin->engine()->store() );
+}
+
 register_activation_hook( __FILE__, array( '\WorkflowCaptain\Install', 'activate' ) );
 register_deactivation_hook( __FILE__, array( '\WorkflowCaptain\Install', 'deactivate' ) );
 add_filter( 'wpmu_drop_tables', array( '\WorkflowCaptain\Install', 'drop_site_tables' ), 10, 1 );
