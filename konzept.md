@@ -664,7 +664,7 @@ Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punk
 
 ### 15.10 Festgelegte Produktentscheidungen
 
-> **Hinweis:** Die Preise in dieser Tabelle (129/229/399 €) sind **nicht bestätigt** (offene Entscheidung E9), auch nicht netto oder brutto.
+> **Hinweis:** Die Preise in dieser Tabelle (129/229/399 €) sind **nicht bestätigt** (offene Entscheidung E9). Entschieden ist seit dem 16.11.2026 nur: Alle Preise sind netto, zzgl. USt.
 
 | Thema | Festlegung für Version 1 |
 |---|---|
