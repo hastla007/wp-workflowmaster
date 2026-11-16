@@ -1,0 +1,48 @@
+{
+  "name": "Termin abgesagt: Termin markieren und Betreiber informieren",
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "trigger",
+        "event": "pass.occurrence.cancelled"
+      },
+      {
+        "id": "tag",
+        "type": "action",
+        "action": "workflow.tag.set",
+        "config": {
+          "tag": "abgesagt"
+        }
+      },
+      {
+        "id": "mail",
+        "type": "action",
+        "action": "notify.admin",
+        "config": {
+          "subject": "Termin {{subject.id}} abgesagt",
+          "message": "{{data.issued_tickets}} ausgegebene Tickets sind betroffen. Pass Captain informiert die Gäste selbst; dieser Hinweis ist zusätzlich.",
+          "to": "site_admin"
+        }
+      },
+      {
+        "id": "ende",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "from": "start",
+        "to": "tag"
+      },
+      {
+        "from": "tag",
+        "to": "mail"
+      },
+      {
+        "from": "mail",
+        "to": "ende"
+      }
+    ]
+  }
+}

@@ -673,3 +673,22 @@ check( 'site health: decisions waiting and no own key are recommended', 'recomme
 $off = $good;
 $off['environment']['wp_cron_disabled'] = true;
 check( 'site health: disabled WP-Cron asks for a system cron', 'system_cron_needed' === SiteHealth::evaluate( $off, $now )['cron']['code'] );
+
+// ----- Example workflows (docs/recipes) ------------------------------------------------------------------------
+
+$e       = engine_site();
+$catalog = json_decode( file_get_contents( WORKFLOW_CAPTAIN_PATH . 'docs/catalog/suite-events-v1.json' ), true );
+$fields  = array();
+foreach ( $catalog['products'] as $product ) {
+	foreach ( $product['events'] as $event ) {
+		$fields[ $event['type'] ] = $event['data_fields'];
+	}
+}
+foreach ( glob( WORKFLOW_CAPTAIN_PATH . 'docs/recipes/*.json' ) as $file ) {
+	$recipe = json_decode( file_get_contents( $file ), true );
+	$graph  = $recipe['graph'];
+	check( 'recipe ' . basename( $file ) . ' is valid', array() === Graph::violations( $graph, $e->actions ) );
+	$type = Graph::trigger( $graph )['event'];
+	preg_match_all( '/data\.([a-z0-9_]+)/', json_encode( $graph ), $m );
+	check( 'recipe ' . basename( $file ) . ' uses only catalog fields of ' . $type, isset( $fields[ $type ] ) && array() === array_diff( array_unique( $m[1] ), $fields[ $type ] ) );
+}

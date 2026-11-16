@@ -19,6 +19,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`workflow-captain.php`](workflow-captain.php), [`src/`](src/) | Plugin `workflow-captain` 0.2.0: Consumer (`src/Consumer`, `src/Store`, `src/Envelope`), Workflow-Engine (`src/Engine`), Adapter-Schnittstelle (`src/Adapter`), Datenschutz, Admin-Seiten „Ereignisse“, „Workflows“, „Läufe“. |
 | [`tests/`](tests/) | `php tests/run.php` (Tests ohne WordPress, SQLite) und `php tests/license-guard.php` (Wächtertest „kein Lizenzcode im Kern“). |
 | [`TODO.md`](TODO.md) | Umsetzungsliste. |
+| [`docs/recipes/`](docs/recipes/) | Importierbare Beispiel-Workflows, im Test gegen Graph-Validierung und Katalog geprüft. |
 | [`docs/n8n/`](docs/n8n/) | Entwürfe von n8n-Vorlagen ohne Zugangsdaten (WF-N8N-10). |
 | [`docs/SDK.md`](docs/SDK.md) | Entwickler-SDK: Adapter, Aktionen, Workflow-Format, Hooks, Datenfluss, Betrieb. |
 | [`docs/CONNECTOR-CONTRACT.md`](docs/CONNECTOR-CONTRACT.md) | Entwurf des öffentlichen Connector-Vertrags für eigene Projekte (wartet auf F-22). |
