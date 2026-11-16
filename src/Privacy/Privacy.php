@@ -146,10 +146,12 @@ final class Privacy {
 				? array( EventStore::DONE, EventStore::DISCARDED, EventStore::LOOP_BLOCKED )
 				: array( EventStore::DEAD_LETTER, EventStore::PAUSED );
 			$this->store()->delete_older( $states, $clock->mysql( $clock->now() - $days * DAY_IN_SECONDS ) );
-			if ( 'finished' === $group && null !== $this->engine_provider ) {
-				// Finished runs follow the same period; open runs (running, action required, paused) stay.
-				$this->engine()->delete_runs_older( array( EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_FAILED, EngineStore::RUN_CANCELLED ), $clock->mysql( $clock->now() - $days * DAY_IN_SECONDS ) );
-			}
+		}
+		if ( null !== $this->engine_provider ) {
+			// Finished runs and their step logs have their own period (WF-SET-07); open runs (running, action
+			// required, paused) are never deleted here.
+			$days = max( 1, min( 30, (int) apply_filters( 'workflow_captain_retention_days', 30, 'runs' ) ) );
+			$this->engine()->delete_runs_older( array( EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_FAILED, EngineStore::RUN_CANCELLED ), $clock->mysql( $clock->now() - $days * DAY_IN_SECONDS ) );
 		}
 	}
 

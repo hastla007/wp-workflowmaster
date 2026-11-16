@@ -22,6 +22,7 @@ final class Settings {
 		'max_workflow'       => array( 2, 1, 10 ),
 		'retention_finished' => array( 30, 1, 30 ),
 		'retention_stuck'    => array( 90, 1, 90 ),
+		'retention_runs'     => array( 30, 1, 30 ),
 		'notify_daily'       => array( 1, 0, 1 ),
 	);
 
@@ -58,7 +59,7 @@ final class Settings {
 	/** Filter callback for workflow_captain_retention_days: the setting can only shorten the period. */
 	public static function retention( $days, $group ): int {
 		$settings = self::get();
-		$own      = 'finished' === $group ? $settings['retention_finished'] : $settings['retention_stuck'];
+		$own      = array( 'finished' => $settings['retention_finished'], 'stuck' => $settings['retention_stuck'], 'runs' => $settings['retention_runs'] )[ $group ] ?? (int) $days;
 		return min( (int) $days, $own );
 	}
 }

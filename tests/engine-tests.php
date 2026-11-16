@@ -824,3 +824,16 @@ list( $api, $log ) = fake_scheduler_api( true, false, true );
 check( 'scheduler: already planned in AS, nothing happens', Scheduler::ACTION_SCHEDULER === Scheduler::ensure( $api ) && array() === $log->getArrayCopy() );
 list( $api, $log ) = fake_scheduler_api( false, false, false );
 check( 'scheduler: without Action Scheduler WP-Cron is planned', Scheduler::WP_CRON === Scheduler::ensure( $api ) && array( 'wp_schedule' ) === $log->getArrayCopy() );
+
+// ----- WF-SET-07: separate retention for runs -----------------------------------------------------------------
+
+check( 'settings: separate run retention, at most 30', 30 === Settings::defaults()['retention_runs'] && 30 === Settings::sanitize( array( 'retention_runs' => 99 ) )['retention_runs'] );
+$GLOBALS['wfc_test_filters']['workflow_captain_retention_days'] = array( fn( $days, $group ) => 'runs' === $group ? 5 : $days );
+$e = engine_site();
+publish( $e, sample_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+$e->clock->advance( 6 * DAY_IN_SECONDS );
+( new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, fn() => $e->store ) )->apply_retention();
+check( 'retention: runs after 5 days gone, the event (30 days) stays', array() === $e->store->find_runs( array(), 10, 0 ) && 1 === count( $e->events->find( array(), 10, 0 ) ) );
+$GLOBALS['wfc_test_filters']['workflow_captain_retention_days'] = array();

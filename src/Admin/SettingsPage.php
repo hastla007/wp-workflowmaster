@@ -81,7 +81,8 @@ final class SettingsPage {
 				'catch_up_hours' => array( __( 'Nachholgrenze in Stunden', 'workflow-captain' ), __( 'Ein Schritt, der länger überfällig ist (zum Beispiel weil WP-Cron nicht lief), wird nicht von selbst ausgeführt, sondern zur Entscheidung angezeigt.', 'workflow-captain' ) ),
 			)
 			: array(
-				'retention_finished' => array( __( 'Erledigte Ereignisse und Läufe löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 30 Tage; nur kürzer möglich.', 'workflow-captain' ) ),
+				'retention_finished' => array( __( 'Erledigte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 30 Tage; nur kürzer möglich.', 'workflow-captain' ) ),
+				'retention_runs'     => array( __( 'Erledigte Läufe mit Schrittprotokoll löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 30 Tage; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf.', 'workflow-captain' ) ),
 				'retention_stuck'    => array( __( 'Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 90 Tage; nur kürzer möglich. Die Fristen sind ein Vorschlag bis zur Rechtsprüfung.', 'workflow-captain' ) ),
 			) );
 		echo '<form method="post" action="options.php">';
