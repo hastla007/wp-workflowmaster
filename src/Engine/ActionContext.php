@@ -23,8 +23,17 @@ final class ActionContext {
 		public readonly int $workflow_id,
 		public readonly int $run_id,
 		public readonly int $step_id,
-		public readonly int $authorized_by_user_id
+		public readonly int $authorized_by_user_id,
+		private readonly ?\Closure $heartbeat = null
 	) {}
+
+	/**
+	 * Extends the worker's lease on this step (WF-CORE-06). An action that may take longer than a few minutes calls it
+	 * regularly, so no second worker takes the step over. Returns false if the lease is lost: stop and throw.
+	 */
+	public function heartbeat(): bool {
+		return null === $this->heartbeat ? true : (bool) ( $this->heartbeat )();
+	}
 
 	/** Subject of the event as product, type and ID. */
 	public function subject(): array {

@@ -288,7 +288,9 @@ final class Engine implements Dispatcher {
 			if ( ! $action->idempotent() ) {
 				$this->store->set_effect( (int) $step['id'], $owner, EngineStore::EFFECT_STARTED, $this->clock->mysql() );
 			}
-			$context = new ActionContext( $envelope, (array) ( $node['config'] ?? array() ), (string) $step['step_key'], (int) $run['workflow_id'], (int) $run['id'], (int) $step['id'], $authorized_by );
+			$step_id   = (int) $step['id'];
+			$heartbeat = fn(): bool => $this->store->extend_lease( $step_id, $owner, $this->clock->mysql( $this->clock->now() + self::LEASE_SECONDS ), $this->clock->mysql() );
+			$context   = new ActionContext( $envelope, (array) ( $node['config'] ?? array() ), (string) $step['step_key'], (int) $run['workflow_id'], (int) $run['id'], $step_id, $authorized_by, $heartbeat );
 			$execute = static fn() => $action->execute( $context );
 			$result  = null === $this->consumer ? $execute() : $this->consumer->run_command( Consumer::cause_for( $envelope, (int) $run['workflow_id'] ), $execute );
 			$this->store->set_effect( (int) $step['id'], $owner, EngineStore::EFFECT_DONE, $this->clock->mysql() );

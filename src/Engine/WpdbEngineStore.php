@@ -209,6 +209,18 @@ final class WpdbEngineStore implements EngineStore {
 		return 1 === (int) $hit ? $this->get_step( $id ) : null;
 	}
 
+	public function stuck( string $before ): array {
+		$expired = (int) $this->db->get_var( $this->db->prepare( "SELECT COUNT(*) FROM {$this->t( 'steps' )} WHERE state = 'running' AND lease_until < %s", $before ) );
+		$runs    = (array) $this->db->get_col(
+			$this->db->prepare(
+				"SELECT r.id FROM {$this->t( 'runs' )} r WHERE r.state = 'running' AND r.updated_at < %s
+				AND NOT EXISTS ( SELECT 1 FROM {$this->t( 'steps' )} s WHERE s.run_id = r.id AND s.state IN ('queued','retry_wait','running') ) LIMIT 100",
+				$before
+			)
+		);
+		return array( 'expired_leases' => $expired, 'runs_without_steps' => array_map( 'intval', $runs ) );
+	}
+
 	public function extend_lease( int $id, string $owner, string $lease_until, string $now ): bool {
 		return 1 === (int) $this->db->update( $this->t( 'steps' ), array( 'lease_until' => $lease_until, 'updated_at' => $now ), array( 'id' => $id, 'lease_owner' => $owner, 'state' => self::STEP_RUNNING ) );
 	}

@@ -516,3 +516,40 @@ $e->clock->advance( 3600 );
 drain( $e );
 check( 'WF-CORE-05 serialisation: after the first run the second follows', 3 === count( array_filter( $e->store->find_runs( array(), 10, 0 ), fn( $r ) => EngineStore::RUN_SUCCEEDED === $r['state'] ) ) );
 check( 'graph: invalid serialize mode refused', in_array( 'node:t:invalid_serialize', Graph::violations( array( 'nodes' => array( array( 'id' => 't', 'type' => 'trigger', 'event' => 'pass.order.paid', 'serialize' => 'order' ), array( 'id' => 'e', 'type' => 'end' ) ), 'edges' => array( array( 'from' => 't', 'to' => 'e' ) ) ), $e->actions ), true ) );
+
+// ----- WF-CORE-06: heartbeat and hanging work -------------------------------------------------------------------
+
+$e    = engine_site();
+$slow = new class( $e ) implements \WorkflowCaptain\Engine\Action {
+	public bool $beat = false;
+	public function __construct( private object $e ) {}
+	public function key(): string { return 'test.slow'; }
+	public function label(): string { return 'slow'; }
+	public function capability(): ?string { return null; }
+	public function idempotent(): bool { return true; }
+	public function validate_config( array $config ): array { return array(); }
+	public function execute( \WorkflowCaptain\Engine\ActionContext $c ): array {
+		$this->e->clock->advance( 280 );           // almost the whole lease
+		$this->beat = $c->heartbeat();
+		$this->e->clock->advance( 100 );           // past the original lease
+		$this->e->other = $this->e->store->claim_steps( 10, $this->e->clock->mysql(), 'intruder', $this->e->clock->mysql( $this->e->clock->now() + 300 ) );
+		return array();
+	}
+};
+$e->actions->add( $slow );
+$g = tag_graph();
+$g['nodes'][1] = array( 'id' => 'tag', 'type' => 'action', 'action' => 'test.slow', 'config' => array() );
+publish( $e, $g );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+check( 'WF-CORE-06 heartbeat extends the lease; no second worker takes the step', $slow->beat && array() === $e->other && EngineStore::RUN_SUCCEEDED === run_of( $e )['state'] );
+
+$e = engine_site();
+publish( $e, tag_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+$e->consumer->process();
+$e->store->claim_steps( 10, $e->clock->mysql(), 'dead', $e->clock->mysql( $e->clock->now() + 300 ) );
+$e->clock->advance( 2 * DAY_IN_SECONDS );
+$stuck = \WorkflowCaptain\Admin\Diagnostics::stuck( $e->store, $e->clock->now() );
+check( 'WF-CORE-06 a lease expired for over a day is reported', 1 === $stuck['expired_leases'] );
+check( 'WF-CORE-06 reporting changes nothing', EngineStore::STEP_RUNNING === steps_of( $e )[0]['state'] );

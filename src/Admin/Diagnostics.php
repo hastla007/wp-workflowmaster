@@ -16,6 +16,12 @@ defined( 'ABSPATH' ) || exit;
 
 final class Diagnostics {
 
+	/** Hanging work older than a day (WF-CORE-06); counts only. */
+	public static function stuck( EngineStore $engine, ?int $now = null ): array {
+		$stuck = $engine->stuck( gmdate( 'Y-m-d H:i:s', ( $now ?? time() ) - DAY_IN_SECONDS ) );
+		return array( 'expired_leases' => $stuck['expired_leases'], 'runs_without_steps' => count( $stuck['runs_without_steps'] ) );
+	}
+
 	/**
 	 * @param array<string,mixed> $environment Versions and cron state from WordPress (see Plugin::diagnostics()).
 	 */
@@ -40,6 +46,7 @@ final class Diagnostics {
 			'events'       => $events->count_by_state(),
 			'runs'         => $runs,
 			'action_required_reasons' => $reasons,
+			'stuck'        => self::stuck( $engine ),
 			'workflows'    => array(
 				'total'  => count( $workflows ),
 				'active' => count( array_filter( $workflows, static fn( $w ) => EngineStore::WF_ACTIVE === $w['status'] ) ),

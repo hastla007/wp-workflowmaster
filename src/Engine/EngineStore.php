@@ -90,6 +90,14 @@ interface EngineStore {
 	/** Claims one step if it is still due; returns it or null (WF-CORE-06). */
 	public function claim_step( int $id, string $now, string $owner, string $lease_until ): ?array;
 
+	/**
+	 * Work that hangs (konzept 15.3, WF-CORE-06): steps whose lease expired before $before (no worker took them over,
+	 * for example because cron does not run) and running runs without any open step. Nothing is reset here.
+	 *
+	 * @return array{expired_leases:int,runs_without_steps:int[]}
+	 */
+	public function stuck( string $before ): array;
+
 	/** Extends the lease of a step the worker holds (heartbeat, WF-CORE-06). */
 	public function extend_lease( int $id, string $owner, string $lease_until, string $now ): bool;
 
