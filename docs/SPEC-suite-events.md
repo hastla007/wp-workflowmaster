@@ -585,6 +585,28 @@ Ein Workflow läuft meist ohne angemeldeten Benutzer (Cron, Action Scheduler).
 - R-8.9 Lesende Abfragen und Befehle, die nur im Consumer schreiben, brauchen die Berechtigungen des Consumers beim Veröffentlichen, aber keine Prüfung bei jeder Ausführung.
 - R-8.10 Jeder ausgeführte Befehl wird im Laufprotokoll mit `authorized_by_user_id`, Workflow, Lauf, Schritt, Idempotenzschlüssel und Ergebnis festgehalten.
 
+### 8.5 Eigenschaften je Befehl
+
+Diese Tabelle fasst für jeden Befehl der Version 1 zusammen, was 8.1 bis 8.4, 7.4 und 10.1 verlangen. Sie fügt keine neue Pflicht hinzu, außer R-8.11 bis R-8.13.
+
+| Befehl | Idempotenzschlüssel | Seiteneffekt | Wiederholung | Berechtigung beim Veröffentlichen (R-8.7) | Lizenz (Abschnitt 10) | Protokoll |
+|---|---|---|---|---|---|---|
+| `<produkt>.<objekt>.read` | nach R-8.4; ohne Wirkung, dient nur der Zuordnung im Laufprotokoll | keiner | ja, bei vorübergehenden Fehlern | `activate_workflows` (Consumer) | Workflow Captain Pro und Pro-Lizenz des Produkts | Laufprotokoll nach R-8.10, ohne gelesene Werte |
+| `notify.admin` | nach R-8.4; der Consumer bucht ihn vor dem Versand (R-8.12) | eine zusätzliche Mail; nicht rückholbar | nur wenn sicher feststeht, dass nicht versendet wurde (R-8.12) | `activate_workflows` (Consumer) | wie das auslösende Ereignis | Laufprotokoll nach R-8.10 mit Vorlagenschlüssel und Empfänger als Berechtigung oder Rolle, nie als Adresse |
+| `notify.user` | wie `notify.admin` | eine zusätzliche Mail an einen Benutzer (R-5.6, Abschnitt 9); nicht rückholbar | wie `notify.admin` | `activate_workflows` (Consumer) | wie das auslösende Ereignis | Laufprotokoll nach R-8.10 mit Vorlagenschlüssel und Benutzer-ID, nie mit Adresse |
+| `workflow.tag.set`, `workflow.tag.remove` | nach R-8.4 | Markierung im Speicher des Consumers; von Natur aus idempotent | ja | `activate_workflows` (Consumer) | wie das auslösende Ereignis | Laufprotokoll nach R-8.10 mit Markierung und `subject` |
+| `workflow.note.add` | nach R-8.4; eindeutig im Speicher des Consumers | Notiz im Speicher des Consumers; ein zweiter Aufruf legt keine zweite Notiz an | ja | `activate_workflows` (Consumer) | wie das auslösende Ereignis | Laufprotokoll nach R-8.10; die Notiz enthält keine verbotenen Werte (Abschnitt 5) |
+| `voucher.issue` | nach R-8.4, an den Kern als `idempotency_key` (R-8.3, R-8.3a) | stellt einen Gutschein aus; der Kern versendet seine Mail (R-8.3e) | ja, mit demselben Schlüssel; Ablehnungen wegen Grenze, Schalter oder Berechtigung sind endgültig (R-8.13) | `vcap_manage_vouchers` (R-8.6) | Workflow Captain Pro und Voucher Captain Pro; im Kern eingeschaltet (R-8.3d) | Laufprotokoll nach R-8.10 und Protokoll des Kerns (R-8.3c) |
+| `voucher.void` | wie `voucher.issue` | sperrt einen Gutschein, ohne Erstattung | wie `voucher.issue` | Berechtigung des Kerns, zu prüfen (Z-15) | wie `voucher.issue` | wie `voucher.issue` |
+| `voucher.reactivate` | wie `voucher.issue` | reaktiviert einen gesperrten Gutschein | wie `voucher.issue` | Berechtigung des Kerns, zu prüfen (Z-15) | wie `voucher.issue` | wie `voucher.issue` |
+| `voucher.redeem` | wie `voucher.issue` | löst einen Gutschein ganz oder teilweise ein | wie `voucher.issue` | Berechtigung des Kerns, zu prüfen (Z-15) | wie `voucher.issue` | wie `voucher.issue` |
+
+„Wie das auslösende Ereignis“ heißt: Kommt das Ereignis aus einem Captain-Produkt, gilt R-10.1; kommt es aus WordPress oder WooCommerce, ist die Lizenz offen (D3, F-10).
+
+- R-8.11 Ein Schritt wird höchstens so oft wiederholt wie ein Ereignis (8 Versuche, Abstände aus 7.4) und nur bei vorübergehenden Fehlern. Danach bleibt der Lauf mit Grund stehen; ein Mensch kann den Schritt erneut einreihen, mit demselben Idempotenzschlüssel.
+- R-8.12 Für `notify.admin` und `notify.user` bucht der Consumer den Idempotenzschlüssel als „wird gesendet“, bevor er die Mail übergibt, und danach als „gesendet“ oder „fehlgeschlagen“. Findet er einen Schlüssel im Zustand „wird gesendet“ (Abbruch während des Versands), sendet er nicht von selbst erneut, sondern zeigt den Schritt zur Entscheidung durch einen Menschen. Eine Mail lieber nicht als doppelt.
+- R-8.13 Lehnt der Voucher-Kern einen Befehl ab, weil eine Grenze erreicht, der Befehl abgeschaltet, die Währung nicht zugelassen oder die Berechtigung entzogen ist, wiederholt der Consumer nicht. Die Ablehnung steht im Laufprotokoll und im Protokoll des Kerns.
+
 ## 9. Mails und Erinnerungen (D10)
 
 - R-9.1 Jeder Kern behält seine Mails und Erinnerungen und versendet sie unverändert, ob ein Workflow existiert oder nicht.
