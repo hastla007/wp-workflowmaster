@@ -14,6 +14,7 @@
 
 namespace WorkflowCaptain\Adapter;
 
+use WorkflowCaptain\Connector\ConnectorAdapter;
 use WorkflowCaptain\Envelope\Validator;
 
 defined( 'ABSPATH' ) || exit;
@@ -44,6 +45,26 @@ final class AdapterRegistry {
 		$contract = $adapter->contract_version();
 		if ( null !== $contract && ! preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+$/', $contract ) ) {
 			$this->refused[ $product ] = 'invalid_contract_version';
+			return false;
+		}
+		$this->adapters[ $product ] = $adapter;
+		unset( $this->refused[ $product ] );
+		return true;
+	}
+
+	/**
+	 * Internal path for own connectors: only ConnectorRegistry::add() calls this, after it checked the manifest
+	 * (F-22, WF-CONNECTOR-03). It takes only the core's wrapper, so the consumer always filters a connector's events
+	 * through it (ConnectorAdapter::filter()). add() keeps refusing connector keys.
+	 *
+	 * @internal
+	 */
+	public function add_connector( ConnectorAdapter $adapter ): bool {
+		$product = $adapter->product();
+		if ( ! Validator::is_connector( $product ) || isset( $this->adapters[ $product ] ) ) {
+			return false;
+		}
+		if ( ! preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$/', $adapter->core_version() ) ) {
 			return false;
 		}
 		$this->adapters[ $product ] = $adapter;

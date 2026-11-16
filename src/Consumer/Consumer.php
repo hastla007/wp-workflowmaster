@@ -14,6 +14,7 @@ namespace WorkflowCaptain\Consumer;
 use WorkflowCaptain\Adapter\Adapter;
 use WorkflowCaptain\Adapter\AdapterRegistry;
 use WorkflowCaptain\Clock;
+use WorkflowCaptain\Connector\ConnectorAdapter;
 use WorkflowCaptain\Envelope\Builder;
 use WorkflowCaptain\Envelope\Uuid;
 use WorkflowCaptain\Envelope\Validator;
@@ -62,6 +63,22 @@ final class Consumer {
 	 */
 	public function capture( Adapter $adapter, array $event ): string {
 		try {
+			if ( Validator::is_connector( $adapter->product() ) ) {
+				// Own connectors (F-22): always through the wrapper the ConnectorRegistry registered, whichever adapter
+				// object the connector passed. It refuses a connector that is not enabled and rebuilds data from the
+				// manifest (R-5.2, WF-CONNECTOR-04, -11). Nothing is stored on refusal.
+				$registered = $this->adapters->get( $adapter->product() );
+				if ( ! $registered instanceof ConnectorAdapter ) {
+					( $this->on_reject )( array( 'connector:not_registered' ) );
+					return self::REJECTED;
+				}
+				$event = $registered->filter( $event );
+				if ( is_string( $event ) ) {
+					( $this->on_reject )( array( $event ) );
+					return self::REJECTED;
+				}
+				$adapter = $registered;
+			}
 			$subject = (array) ( $event['subject'] ?? array() );
 			$cause   = $this->current_cause();
 			if ( null === $cause && isset( $subject['type'], $subject['id'] ) ) {
@@ -178,6 +195,11 @@ final class Consumer {
 			$adapter = $this->adapters->get( (string) $envelope['source']['product'] );
 			if ( null === $adapter ) {
 				$finish( EventStore::PAUSED, array( 'last_error' => 'adapter_unregistered' ) );
+				return;
+			}
+			if ( $adapter instanceof ConnectorAdapter && ! $adapter->enabled() ) {
+				// The operator switched the connector off after the event was stored: wait, nothing is lost.
+				$finish( EventStore::PAUSED, array( 'last_error' => 'connector_not_enabled' ) );
 				return;
 			}
 			if ( ! in_array( $envelope['type'], $adapter->types(), true ) ) {
