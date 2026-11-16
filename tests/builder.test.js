@@ -367,6 +367,20 @@ function check( label, ok ) {
 	check( 'linear view lists the steps in order', items.length > 0 && items[ 0 ].startsWith( 'Auslöser' ) );
 	check( 'nodes are focusable with a label, origin and the run mark (the subject edited in the focus test may be part of it)', /^Nachricht an Betreiber(, X)? \(Workflow Captain\), aus dem Lauf$/.test( await page.$eval( '.wfc-node[data-id="mail"]', ( n ) => n.getAttribute( 'aria-label' ) ) ) );
 
+	// Texts on the nodes stay inside the node with the real fonts (E2E third run: "WORKFLOW CAPTAIN · AUSLÖSER" ran over
+	// the edge in wp-admin): a long event name is shortened with "…", the full name stays in the tooltip.
+	await page.click( '.wfc-node[data-id="t"]' );
+	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.mmmmmmmmmmmmmmmmmmmmmmmmmm.wwwwwwwwww' );
+	await page.$eval( '.wfc-inspector input[list="wfc-events"]', ( i ) => i.dispatchEvent( new Event( 'change', { bubbles: true } ) ) );
+	const fit = await page.evaluate( () => ( {
+		widest: Math.max( ...Array.from( document.querySelectorAll( '.wfc-node-kicker, .wfc-node-title, .wfc-node-sub' ) ).map( ( t ) => t.getComputedTextLength() ) ),
+		title: document.querySelector( '.wfc-node[data-id="t"] .wfc-node-title' ).textContent,
+		tip: document.querySelector( '.wfc-node[data-id="t"] title' ).textContent,
+	} ) );
+	check( 'node texts fit inside the node (at most 166 px), long ones end with "…", the tooltip keeps the full text', fit.widest <= 166 && fit.title.endsWith( '…' ) && fit.tip.includes( 'pass.mmmmmmmmmmmmmmmmmmmmmmmmmm.wwwwwwwwww' ) );
+	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.ticket.checked_in' );
+	await page.$eval( '.wfc-inspector input[list="wfc-events"]', ( i ) => i.dispatchEvent( new Event( 'change', { bubbles: true } ) ) );
+
 	// Narrow screen: no horizontal page scroll
 	await page.setViewportSize( { width: 360, height: 800 } );
 	await page.click( '.wfc-linear-wrap summary' );
