@@ -961,6 +961,11 @@ $runs = $e->store->find_runs( array(), 10, 0 );
 check( 'WF-CORE-04 schedule: each event starts only its own workflow, doubled timer starts one run', 2 === count( $runs ) && array( $w1, $w2 ) === array_values( array_unique( array_map( 'intval', array_column( array_reverse( $runs ), 'workflow_id' ) ) ) ) );
 $fired = array( $w1 => $due[0]['due'], $w2 => $due[1]['due'] );
 check( 'WF-CORE-04 schedule: not due again until the next time', array() === $e->engine->due_schedules( $fired ) );
+// Found in the E2E run (docs/E2E-RESULTS.md): "wp workflow-captain process", the documented system-cron replacement for
+// WP-Cron, skipped the schedule tick, so schedule triggers never fired on sites with DISABLE_WP_CRON.
+$wfc_cli    = (string) file_get_contents( __DIR__ . '/../src/Cli/Command.php' );
+$wfc_plugin = (string) file_get_contents( __DIR__ . '/../src/Plugin.php' );
+check( 'WF-CORE-04 schedule: "wp workflow-captain process" runs the shared worker pass that ticks schedules', str_contains( $wfc_cli, 'Plugin::instance()->work(' ) && ! str_contains( $wfc_cli, '->consumer()->process(' ) && 1 === preg_match( '/function work\(.*?\$this->tick_schedules\(\);.*?->consumer\(\)->process\(/s', $wfc_plugin ) && 1 === preg_match( '/function run_worker\(.*?\$this->work\(/s', $wfc_plugin ) );
 
 // ----- WF-INT-01: action catalog matches the action classes of the core
 $acat = json_decode( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'docs/catalog/actions-v1.json' ), true );
