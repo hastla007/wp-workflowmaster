@@ -7,6 +7,12 @@
 add_filter(
 	'pre_wp_mail',
 	static function ( $short, $atts ) {
+		// E2E only: option "e2e_mail_fail" = [subject part, count] lets the next <count> matching mails fail (retry).
+		$fail = get_option( 'e2e_mail_fail' );
+		if ( is_array( $fail ) && (int) $fail[1] > 0 && str_contains( (string) $atts['subject'], (string) $fail[0] ) ) {
+			update_option( 'e2e_mail_fail', array( $fail[0], (int) $fail[1] - 1 ), false );
+			return false;
+		}
 		$file = getenv( 'E2E_MAIL_FILE' ) ?: '/home/user/wp-e2e/logs/mail.jsonl';
 		$row  = array(
 			'time'    => gmdate( 'c' ),
@@ -50,3 +56,6 @@ add_action(
 		remove_action( 'wp_version_check', 'wp_version_check' );
 	}
 );
+
+// Yoast SEO builds its indexables only on production sites; the test site is "local". WF-SEO-08 compares them.
+add_filter( 'Yoast\\WP\\SEO\\should_index_indexables', '__return_true' );

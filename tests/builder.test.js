@@ -178,6 +178,40 @@ function check( label, ok ) {
 	await page.click( '.wfc-zoom-reset' );
 	check( 'zoom reset returns to 100 %', w1 === await width() );
 
+	// Focus management (WF-BUILDER-09, E2E second run): a rebuild never drops the focus to the page start.
+	const focused = () => page.evaluate( () => {
+		const a = document.activeElement;
+		return ( a.getAttribute( 'data-id' ) ? a.tagName.toLowerCase() + '#' + a.getAttribute( 'data-id' ) : a.tagName.toLowerCase() + '.' + ( a.getAttribute( 'class' ) || '' ) );
+	} );
+	const live = await page.$( '[aria-live]' );
+	await page.focus( 'button[data-type="delay"]' );
+	await page.keyboard.press( 'Enter' );
+	check( 'focus: after adding from the palette the new node has the focus', 'g#delay1' === await focused() );
+	check( 'live region survives the rebuild and announces the new node', await live.evaluate( ( n ) => n.isConnected && n.textContent.includes( 'Warten' ) ) );
+	await page.focus( '.wfc-node[data-id="mail"]' );
+	await page.keyboard.press( 'Enter' );
+	await page.focus( '.wfc-inspector input[type="text"]' );
+	await page.keyboard.type( ' X' );
+	await page.keyboard.press( 'Tab' );
+	await page.waitForTimeout( 20 );
+	check( 'focus: Tab after editing an inspector field reaches the next control, not the page start', 'body.' !== ( await focused() ).slice( 0, 5 ) && ( await graphNow() ).nodes.find( ( n ) => 'mail' === n.id ).config.subject.endsWith( ' X' ) );
+	await page.focus( '.wfc-node[data-id="delay1"]' );
+	await page.keyboard.press( 'Delete' );
+	check( 'focus: after Delete the focus is on a remaining node', ( await focused() ).startsWith( 'g#' ) );
+
+	// Small screen: the canvas is hidden, the linear view is the way to edit (WF-BUILDER-09).
+	const small = await browser.newPage( { viewport: { width: 390, height: 800 } } );
+	await small.goto( 'file://' + file );
+	check( 'small screen: canvas hidden, linear view shown', ! ( await small.isVisible( '.wfc-canvas' ) ) && await small.isVisible( '.wfc-linear-wrap summary' ) );
+	await small.focus( '.wfc-linear-wrap summary' );
+	await small.keyboard.press( 'Enter' );
+	await small.keyboard.press( 'Tab' );
+	await small.keyboard.press( 'Tab' );
+	await small.keyboard.press( 'Enter' );
+	const smallState = await small.evaluate( () => ( { open: document.querySelector( '.wfc-linear-wrap' ).open, focus: document.activeElement.tagName + ':' + document.activeElement.textContent, inspector: document.querySelector( '.wfc-inspector h3' ).textContent } ) );
+	check( 'small screen: choosing a step keeps the list open and moves the focus to the inspector heading', smallState.open && 'H3:Nachricht an Betreiber' === smallState.focus && 'Nachricht an Betreiber' === smallState.inspector );
+	await small.close();
+
 	check( 'linear view lists the steps in order', items.length > 0 && items[ 0 ].startsWith( 'Auslöser' ) );
 	check( 'nodes are focusable with a label', 'Nachricht an Betreiber' === await page.$eval( '.wfc-node[data-id="mail"]', ( n ) => n.getAttribute( 'aria-label' ) ) );
 	check( 'no JavaScript errors', 0 === errors.length );

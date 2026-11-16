@@ -265,6 +265,18 @@ foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
 }
 check( 'WF-BUILDER-09 admin form controls have a label (wrapped, for=id or aria-label)' . ( $wfc_unlabelled ? ': ' . implode( '; ', $wfc_unlabelled ) : '' ), array() === $wfc_unlabelled );
 
+// WF-BUILDER-09 / WCAG 2.5.8: a confirmation checkbox (16 px) sits in a label of class wfc-confirm, which the admin style
+// makes 24 px high; the E2E second run measured the pause box 10 px from the next button (docs/E2E-RESULTS.md).
+$wfc_small = array();
+foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
+	foreach ( explode( "\n", (string) file_get_contents( $wfc_file ) ) as $wfc_line ) {
+		if ( preg_match( '/<input type="checkbox" name="confirm"/', $wfc_line ) && ! str_contains( $wfc_line, '<label class="wfc-confirm">' ) ) {
+			$wfc_small[] = basename( $wfc_file );
+		}
+	}
+}
+check( 'WF-BUILDER-09 confirmation boxes have a 24 px label target' . ( $wfc_small ? ': ' . implode( ', ', $wfc_small ) : '' ), array() === $wfc_small && str_contains( (string) file_get_contents( __DIR__ . '/../src/Plugin.php' ), 'label.wfc-confirm{display:inline-block;min-height:24px' ) );
+
 // ---------------------------------------------------------------------------------------------------------------
 // Capture
 
