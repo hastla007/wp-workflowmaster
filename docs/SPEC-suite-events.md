@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | **1.0.0-draft** |
+| Version | **1.0.0-draft.2** |
 | Stand | 16.11.2026 |
 | Status | Entwurf zur Abnahme durch den Inhaber. Gebaut ist davon nichts. |
 | Ort | `hastla007/wp-workflowmaster`, `docs/SPEC-suite-events.md` (Entscheidung D1) |
@@ -11,7 +11,7 @@
 
 Dieses Dokument ist die eine gemeinsame Spezifikation dafür, wie die Plugins der Captain Suite zusammenarbeiten. Wo `konzept.md`, `TODO.md` oder ein Dokument eines anderen Repositorys etwas anderes sagt, gilt dieses Dokument.
 
-Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D12). Jede Regel nennt die Entscheidung, aus der sie folgt. Regeln ohne Entscheidung sind Vorschläge dieser Spezifikation und in [`SPEC-open-questions.md`](SPEC-open-questions.md) aufgeführt.
+Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D12) und die Folgeentscheidungen vom Abend desselben Tages (D8b, D11b, D13). Jede Regel nennt die Entscheidung, aus der sie folgt. Regeln ohne Entscheidung sind Vorschläge dieser Spezifikation und in [`SPEC-open-questions.md`](SPEC-open-questions.md) aufgeführt.
 
 ## 0. Sprache und Begriffe
 
@@ -57,7 +57,7 @@ Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D1
 - Die Kerne bekommen keinen neuen Transport: keine Ausgangstabelle (Outbox), keine Warteschlange, keinen eigenen Umschlag, keine HTTP-Zustellung für Suite-Ereignisse (D5, D9). Die ausgehenden Webhooks und Connector-Ereignisse von Pass Captain (`PC:docs/SUITE-EVENTS.md:15-16`) bleiben, sind aber nicht der Weg der Suite.
 - Lizenzereignisse werden nicht an Websites von Kunden zugestellt (D2).
 - Keine Übergabe von Mails oder Erinnerungen eines Kerns an einen Workflow (D10).
-- Keine geldwirksamen Befehle außer dem Ausstellen eines Gutscheins in festen Grenzen (D11).
+- Keine geldwirksamen Befehle außer den vier Gutschein-Befehlen Ausstellen, Sperren, Reaktivieren und Einlösen in festen Grenzen (D11, D11b).
 - WordPress- und WooCommerce-Ereignisse, eigene Connectoren von Kunden, Webhooks nach außen, n8n und netzwerkweite Abläufe in Multisite sind nicht Teil dieser Fassung. Sie brauchen eigene Abschnitte in einer späteren Minor-Version.
 - Der Aufbau des Workflow-Editors, der Tabellen und der Oberfläche steht in `konzept.md`.
 - Preise. Die in `konzept.md` genannten Beträge sind nicht bestätigt.
@@ -245,35 +245,32 @@ Vertrag 1.4.0. Alle Actions dieser Tabelle feuern erst nach dem Commit, seit Plu
 | `affiliate.correction.generated` | `wpac_correction_generated` | zu prüfen | `int $correction_id, string $path` | **`$path` (Dateipfad)** |
 | `affiliate.creative.created` | `wpac_creative_created` | 1.4.0, Plugin 0.15.0 | `int $creative_id, array $info` | `title` |
 | `affiliate.creative.updated` | `wpac_creative_updated` | 1.4.0, Plugin 0.15.0 | `int $creative_id, array $info` | `title` |
-| `affiliate.code_request.created` | `wpac_code_requested` | 1.4.0, Plugin 0.15.0 | `int $affiliate_id, string $code, int $row_id` | **`$code`** (F-17) |
-| `affiliate.code_request.approved` | `wpac_code_request_approved` | 1.4.0, Plugin 0.15.0 | `int $affiliate_id, string $code, int $row_id, bool $make_main` | **`$code`** |
-| `affiliate.code_request.rejected` | `wpac_code_request_rejected` | 1.4.0, Plugin 0.15.0 | `int $affiliate_id, string $code, string $reason, int $row_id` | **`$code`, `$reason`** |
+| `affiliate.code_request.created` | `wpac_code_requested` | 1.4.0, Plugin 0.15.0 | `int $affiliate_id, string $code, int $row_id` | – (`$code` ist der öffentliche Partnercode und erlaubt, D8b; Feld `partner_code`) |
+| `affiliate.code_request.approved` | `wpac_code_request_approved` | 1.4.0, Plugin 0.15.0 | `int $affiliate_id, string $code, int $row_id, bool $make_main` | – (Partnercode erlaubt, D8b) |
+| `affiliate.code_request.rejected` | `wpac_code_request_rejected` | 1.4.0, Plugin 0.15.0 | `int $affiliate_id, string $code, string $reason, int $row_id` | **`$reason`** (Partnercode erlaubt, D8b) |
+
+Geldbeträge sind erlaubt (D8b): Der Adapter KANN bei `affiliate.sale.attributed`, `affiliate.commission.*`, `affiliate.payout.*` und `affiliate.correction.generated` den Betrag als `amount_minor` (Integer, kleinste Einheit) mit `currency` (ISO 4217) mitgeben. Die Actions übergeben nur IDs; den Betrag liest der Adapter über `wpac_get_commission()` beziehungsweise `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`).
 
 Nicht im Katalog: `wpac_mail_sent`, `wpac_mail_failed` und `wpac_contract_not_queued` (enthalten Kundendaten, `AC:docs/CONTRACT.md:210`), `wpac_referral_captured`, `wpac_refund_after_correction`, `wpac_statement_generated`, `wpac_storno_generated`.
 
-#### 4.4.1 Der vorhandene Workflow-Provider im Affiliate-Kern
+#### 4.4.1 Der vorläufige Workflow-Provider im Affiliate-Kern: wird vor dem Release 0.15.0 entfernt (D13)
 
-Affiliate Captain 0.15.0 (Vertrag 1.4.0) enthält bereits eine eigene Provider-Seite für Workflow Captain. Sie entstand vor den Entscheidungen vom 16.11.2026, ist in `main` und im Arbeitsbranch enthalten und nennt sich selbst vorläufig (`AC:docs/WORKFLOW-PROVIDER.md:5`; `AC:TODO.md`, E9 und AFF-WF-07):
+Der Stand von Affiliate Captain, der für diese Spezifikation gelesen wurde, enthält eine eigene Provider-Seite für Workflow Captain: `wpac_workflow_event( array $envelope )` (`AC:src/Core/WorkflowEvents.php:179`), `wpac_workflow_read()` und `wpac_workflow_event_types()` (`AC:src/functions.php:384`, `:396`) sowie `AC:docs/WORKFLOW-PROVIDER.md`. Sie entstand vor den Entscheidungen des Inhabers.
 
-- `wpac_workflow_event( array $envelope )`: zu jeder Action der Tabelle oben eine zusätzliche Action mit einem Umschlag des Kerns (`AC:src/Core/WorkflowEvents.php:37-57`, `:179`). Ohne Listener baut der Kern nichts (`:125`); der Filter `wpac_workflow_events_enabled` schaltet sie ab (`AC:docs/WORKFLOW-PROVIDER.md:112-115`).
-- `wpac_workflow_read( $action, $args )` und `wpac_workflow_event_types()` (`AC:src/functions.php:384`, `:396`): vier lesende Abfragen (`partner.status`, `campaign.status`, `metrics.summary`, `metrics.monthly`), ohne Namen und E-Mail-Adressen (`AC:docs/WORKFLOW-PROVIDER.md:117-136`).
+**Entschieden (D13, 16.11.2026):** Die vorläufigen Workflow-Provider werden vor dem Release aus den kostenlosen Kernen genommen und auf einem geparkten Branch aufbewahrt: im Affiliate-Kern die drei genannten Funktionen und das Dokument, im Voucher-Kern der Provider aus Pull Request 16 (Umschlag `vcap_workflow_event`, Lizenzwissen `edition`/`entitlement`, Mail-Übergabe). Sie kommen frühestens zurück, wenn diese Spezifikation abgenommen ist, und dann nur in einer Form, die ihr entspricht.
 
-**Einordnung.** Nach D5 ist der Transport die vorhandene fachliche PHP-Action eines Kerns, und nach D9 und R-6.1 baut den Umschlag der Consumer. Ein Umschlag, den ein Kern selbst baut, gehört nicht zu diesem Modell. Deshalb gilt:
+- R-4.4 `wpac_workflow_event`, `wpac_workflow_read()`, `wpac_workflow_event_types()` und `vcap_workflow_event` sind **nicht normativ**. Kein Adapter, kein Consumer und kein Dokument DARF sich auf sie verlassen. Quelle der Affiliate-Ereignisse sind allein die 21 Actions der Tabelle oben.
+- R-4.5 Kein Kern baut einen eigenen Umschlag für die Suite (D5, D9, R-6.1). Ein Kern, der später wieder eine Provider-Seite bekommt, braucht dafür eine MINOR-Version dieser Spezifikation, die sie beschreibt.
+- R-4.6 `wpac_workflow_read()` ist **keine** anerkannte Lesefunktion. Welche Lesefunktionen ein Adapter für Affiliate Captain nutzt, ist eine offene Aufgabe (Abschnitt 8.1, Z-07).
 
-- R-4.4 `wpac_workflow_event` ist **nicht normativ** für die Suite. Normative Quelle der Affiliate-Ereignisse sind die 21 einzelnen Actions der Tabelle oben. Kein anderer Kern baut einen eigenen Umschlag nach diesem Vorbild.
-- R-4.5 Ein Adapter KANN `wpac_workflow_event` trotzdem als Quelle verwenden, solange es die Action gibt, weil sie bereits nach dem Commit feuert und ihre Daten auf eine Positivliste beschränkt. Er MUSS daraus den Umschlag aus Abschnitt 6 bauen und die Regeln dieser Spezifikation einhalten; der Umschlag des Kerns wird nie unverändert gespeichert oder weitergegeben. Die stabile `id` des Kerns (UUID Version 5) eignet sich als Diskriminator für R-7.9.
-- R-4.6 `wpac_workflow_read()` ist eine zulässige Lesefunktion im Sinn von 8.1.
+Zur Einordnung der vier im Affiliate-Repository geführten Abweichungen (dort AFF-WF-07), falls die Provider-Seite später zurückkehrt:
 
-Abweichungen der vorhandenen Provider-Seite von dieser Spezifikation (dort als AFF-WF-07 geführt und im Code nachgeprüft):
-
-| Nr. | Abweichung | Was diese Spezifikation dazu sagt | Folge für Affiliate Captain |
-|---|---|---|---|
-| a | Der Umschlag des Kerns enthält keine Benutzer-ID | `actor_user_id` ist optional (Abschnitt 6) und für Affiliate-Ereignisse in Version 1 nicht gesetzt. Wer das Benutzerkonto eines Partners braucht, liest es über die Lesefunktion | keine Änderung nötig |
-| b | `code_request.*` enthält den Partnercode | Der Partnercode ist öffentlich und kein Geheimnis, lässt aber auf eine Person schließen. In Version 1 wird er nicht weitergereicht (Tabelle oben); ob er als „Code“ im Sinn von D8 gilt, entscheidet der Inhaber (F-17) | der Adapter lässt `code` weg; im Kern ist nichts zu ändern, solange R-4.4 gilt |
-| c | `AC:docs/WORKFLOW-PROVIDER.md:155` erlaubt einem Workflow `wpac_create_adjustment()` nach einer ausdrücklichen menschlichen Aktion | **Verboten** in Version 1 (D11, Abschnitt 8.2), auch nach einer menschlichen Aktion | Satz im Dokument des Kerns streichen oder auf „in Version 1 nicht“ ändern |
-| d | Namen, Umschlag und Fehlercodes sind nur im Affiliate-Kern festgelegt: `version` statt `spec_version`, `object` statt `subject`, `site_id` statt `site.blog_id`, UUID Version 5 statt 4, `occurred_at` ohne `T` und `Z`, fünf Statuswechsel als ein Typ `commission.status_changed`, Namen ohne Produktpräfix | Es gelten die Namen aus 4.4 und der Umschlag aus Abschnitt 6 | wird `wpac_workflow_event` behalten, im Dokument des Kerns als „Umschlag des Kerns, nicht der Suite“ kennzeichnen und auf diese Spezifikation verweisen |
-
-Ob `wpac_workflow_event` bleibt, zur Quelle der Suite erklärt oder vor dem Release 0.15.0 abgeschaltet wird, entscheiden die Entscheidungen vom 16.11.2026 nicht. Die Wahl und die Empfehlung stehen in F-11.
+| Nr. | Abweichung | Regel dieser Spezifikation |
+|---|---|---|
+| a | Umschlag des Kerns ohne Benutzer-ID | unerheblich: `actor_user_id` ist optional und für Affiliate-Ereignisse in Version 1 nicht gesetzt |
+| b | `code_request.*` enthält den Partnercode | **erlaubt** (D8b): Der öffentliche Partnercode ist kein geheimer Code |
+| c | `AC:docs/WORKFLOW-PROVIDER.md:155` erlaubt `wpac_create_adjustment()` nach einer menschlichen Aktion | **bleibt verboten** in Version 1 (D11, D11b, Abschnitt 8.2) |
+| d | eigene Namen und eigener Umschlag (`version`, `object`, `site_id`, UUID Version 5, Zeit ohne `T` und `Z`, fünf Statuswechsel als `commission.status_changed`, kein Produktpräfix) | es gelten die Namen aus 4.4 und der Umschlag aus Abschnitt 6 |
 
 `subject`: Affiliate Captain nutzt Datensatznummern (`affiliate_id`, `commission_id`, `payout_id`); `id_kind` = `record` (F-02).
 
@@ -306,12 +303,15 @@ Die Präfixe `form.`, `review.` und `course.` sind reserviert. Ihre Kataloge kom
 
 ## 5. Regeln für verbotene Werte (D8)
 
-- R-5.1 Ein Suite-Ereignis enthält öffentliche Kennungen und, wo vorhanden, eine Benutzer-ID. Es enthält **nie**: Gutscheincode, Ticketcode, Token, Download-Link, Lizenzschlüssel, Passwort, E-Mail-Adresse, Name, Anschrift, Telefonnummer, Bankdaten, Freitext (Grund, Notiz, Nachricht), Dateipfad, IP-Adresse.
+- R-5.1 Ein Suite-Ereignis enthält öffentliche Kennungen und, wo vorhanden, eine Benutzer-ID. Es enthält **nie** einen geheimen Code (Gutscheincode, Ticketcode, Token, Download-Link, Lizenzschlüssel, Passwort) und nie: E-Mail-Adresse, Name, Anschrift, Telefonnummer, Bankdaten, Freitext (Grund, Notiz, Nachricht), Dateipfad, IP-Adresse.
+- R-5.1a „Keine Codes“ meint geheime Codes, also alles, womit sich eine Leistung einlösen oder ein Zugang erlangen lässt (D8b). **Erlaubt** sind der öffentliche Partnercode eines Affiliates (Feld `partner_code`) und Geldbeträge in der kleinsten Einheit mit Währung (`*_minor`, `currency`). Jedes andere Feld, dessen Name auf `code` endet, lehnt das Schema ab.
 - R-5.2 Der Adapter MUSS die Nutzdaten aus einer festen Liste erlaubter Felder je Ereignistyp aufbauen (Positivliste). Er DARF NICHT die Argumente der Action kopieren und Verbotenes herausstreichen.
 - R-5.3 Übergibt eine Action ein Objekt oder ein Array mit verbotenen Werten (in den Tabellen fett), liest der Adapter daraus nur die erlaubten Felder und verwirft den Rest noch im selben Funktionsaufruf. Verbotene Werte DÜRFEN NICHT in eine Variable außerhalb dieses Aufrufs, in ein Log, in eine Fehlermeldung oder in den Speicher des Consumers gelangen.
 - R-5.4 Ist ein Code die einzige Kennung, die eine Action übergibt, ersetzt der Adapter ihn durch die Kennung des Datensatzes, die er über die öffentliche Lesefunktion des Providers ermittelt. Geht das nicht, entfällt das Ereignis.
 - R-5.5 Der Consumer MUSS jeden Umschlag vor dem Speichern gegen das Schema prüfen und bei einem Verstoß verwerfen und den Verstoß ohne die Werte protokollieren. Das Schema lehnt verbotene Feldnamen und verschachtelte Werte ab.
 - R-5.6 Braucht ein Schritt eines Workflows eine E-Mail-Adresse oder einen Namen (zum Beispiel für eine Nachricht), löst er sie zum Zeitpunkt der Ausführung über die Benutzer-ID oder über die Lesefunktion des Providers auf. Das Ergebnis wird nicht gespeichert.
+
+Geldbeträge stehen immer als Integer in der kleinsten Einheit der Währung mit einem Feld `currency`.
 
 Der zweite Halbsatz von D8 („Datenschutzbewertung → Rechtsprüfung“) gilt für diesen Abschnitt und für Abschnitt 12.
 
@@ -356,18 +356,20 @@ Weitere Felder auf der obersten Ebene sind nicht erlaubt.
 
 Der Gast eines Tickets und der Empfänger eines Gutscheins haben oft kein WordPress-Konto. Für sie gibt es dann keine Benutzer-ID; der Adapter erreicht sie nur über die Lesefunktionen des Providers (R-5.6, F-13).
 
-**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für die vier Beispiele dieser Fassung gilt:
+**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für die sechs Beispiele dieser Fassung gilt:
 
 | Ereignistyp | Felder |
 |---|---|
 | `pass.ticket.checked_in` | `checkin_source` (String), `device_id` (Integer), `area_id` (Integer) |
 | `voucher.voucher.redeemed` | `amount_minor` (Integer), `currency` (ISO 4217), `order_id` (Integer), `channel` (`shop`, `counter`, `external`), `redemption_source` (String), `committed_at` (UTC), `redemption_key` (String) |
 | `voucher.voucher.issued_standalone` | `amount_minor`, `currency`, `issue_source` (String), `reference` (String, der Idempotenzschlüssel des Aufrufs) |
+| `affiliate.code_request.approved` | `affiliate_id` (Integer), `partner_code` (String, öffentlich), `main` (Wahrheitswert) |
+| `affiliate.commission.approved` | `affiliate_id`, `amount_minor`, `currency`, `kind` |
 | `license.license.status_changed` | `product` (Produktschlüssel), `plan` (`single`, `business`, `agency`), `status`, `previous_status`, `lifecycle_action` |
 
 Die Listen aller übrigen Ereignistypen sind eine Aufgabe dieses Repositorys vor Version 1.0.0 (siehe `TODO.md`, WF-SPEC-03).
 
-Beispiele: [`pass.ticket.checked_in.json`](examples/pass.ticket.checked_in.json), [`voucher.voucher.redeemed.json`](examples/voucher.voucher.redeemed.json), [`voucher.voucher.issued_standalone.json`](examples/voucher.voucher.issued_standalone.json) (durch einen Workflow ausgelöst), [`license.license.status_changed.json`](examples/license.license.status_changed.json). Die Werte sind erfunden; das Format der `public_id` eines Tickets ist zu prüfen. `python3 bin/validate-spec-examples.py` prüft Schema und Beispiele gegeneinander.
+Beispiele: [`pass.ticket.checked_in.json`](examples/pass.ticket.checked_in.json), [`voucher.voucher.redeemed.json`](examples/voucher.voucher.redeemed.json), [`voucher.voucher.issued_standalone.json`](examples/voucher.voucher.issued_standalone.json) (durch einen Workflow ausgelöst), [`license.license.status_changed.json`](examples/license.license.status_changed.json). Die Werte sind erfunden; das Format der `public_id` eines Tickets ist zu prüfen. [`affiliate.code_request.approved.json`](examples/affiliate.code_request.approved.json) zeigt den erlaubten Partnercode, [`affiliate.commission.approved.json`](examples/affiliate.commission.approved.json) einen Geldbetrag (D8b). `python3 bin/validate-spec-examples.py` prüft Schema und Beispiele gegeneinander.
 
 ## 7. Zustellung
 
@@ -390,7 +392,7 @@ Stand je Provider:
 
 | Provider | Actions feuern nach dem Commit | Beleg |
 |---|---|---|
-| Voucher Captain | ja für alle Actions mit Vermerk „after COMMIT“ (10 der 15 Actions in 4.3); für die fünf ohne Vermerk zu prüfen | `VC:docs/HOOKS.md:5-6`, `VC:CONNECTORS.md:39` |
+| Voucher Captain | ja für alle Actions mit Vermerk „after COMMIT“ (9 der 15 Actions in 4.3); für die sechs ohne Vermerk zu prüfen (Z-05) | `VC:docs/HOOKS.md:5-6`, `VC:CONNECTORS.md:39` |
 | Pass Captain | ja für 9 der 13 Actions in 4.2 (zum Teil nur für einen von mehreren Auslöseorten); 4 zu prüfen | Fundstellen in 4.2 |
 | Affiliate Captain | ja für alle 21 | `AC:docs/CONTRACT.md:210` |
 | Lizenzserver | zu prüfen für alle 3; der Lizenzserver sagt selbst „keine Garantie nach dem Commit“ | `LIC:docs/TODO.md`, Abschnitt 12 |
@@ -449,30 +451,41 @@ Stand je Provider:
 
 Ein Befehl ist die einzige Art, auf die ein Workflow etwas in einem Provider bewirkt. Befehle führt der Adapter aus; er ruft dafür eine öffentliche Funktion des Providers auf.
 
-### 8.1 Erlaubte Befehle in Version 1 (D11)
+### 8.1 Erlaubte Befehle in Version 1 (D11, D11b)
 
-| Befehl | Wirkung | Führt aus | Schreibt im Provider |
-|---|---|---|---|
-| Lesende Abfrage (`<produkt>.<objekt>.read`) | Zustand eines Objekts lesen, zum Gegenlesen (R-7.4) und für Bedingungen | Adapter über die öffentlichen Lesefunktionen des Providers | nein |
-| `notify.admin` | Nachricht an die Betreiber-Adresse oder an Benutzer mit einer festen Berechtigung | Consumer | nein |
-| `notify.user` | zusätzliche Nachricht an einen Benutzer, adressiert über die Benutzer-ID (R-5.6, Abschnitt 9) | Consumer | nein |
-| `workflow.tag.set`, `workflow.tag.remove` | Markierung an einem Objekt, gespeichert im Consumer | Consumer | nein |
-| `workflow.note.add` | Notiz an einem Objekt, gespeichert im Consumer | Consumer | nein |
-| `voucher.issue` | einen Gutschein in festen Grenzen ausstellen (8.3) | Adapter für Voucher Captain | ja |
+Ohne Wirkung im Provider:
 
-Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()`, `wpac_get_payout()` und `wpac_workflow_read()` (`AC:docs/CONTRACT.md:7`, R-4.6). `wpac_workflow_read()` verlangt mit angemeldetem Benutzer `wpac_manage_affiliates` und läuft ohne Benutzer nur in WP-Cron und WP-CLI (`AC:docs/WORKFLOW-PROVIDER.md:133-136`). Für Voucher Captain (`VC:API.md`) und Pass Captain (Klassen des Kerns, `PC:docs/SUITE-EVENTS.md:24-25`) sind die genauen Funktionen zu prüfen. Im Lizenzserver fehlt eine Lesefassade (`LIC:docs/TODO.md`, WFC-LIC-05).
+| Befehl | Wirkung | Führt aus |
+|---|---|---|
+| Lesende Abfrage (`<produkt>.<objekt>.read`) | Zustand eines Objekts lesen, zum Gegenlesen (R-7.4) und für Bedingungen | Adapter über die öffentlichen Lesefunktionen des Providers |
+| `notify.admin` | Nachricht an die Betreiber-Adresse oder an Benutzer mit einer festen Berechtigung | Consumer |
+| `notify.user` | zusätzliche Nachricht an einen Benutzer, adressiert über die Benutzer-ID (R-5.6, Abschnitt 9) | Consumer |
+| `workflow.tag.set`, `workflow.tag.remove` | Markierung an einem Objekt, gespeichert im Consumer | Consumer |
+| `workflow.note.add` | Notiz an einem Objekt, gespeichert im Consumer | Consumer |
 
-Markierungen und Notizen liegen in Version 1 nur im Consumer. Eine Notiz im Provider (zum Beispiel im Verlauf eines Gutscheins) ist kein Befehl der Version 1.
+Mit Wirkung im Provider, genau vier, alle im Voucher-Kern (D11b):
 
-### 8.2 Ausdrücklich verboten in Version 1 (D11)
+| Befehl | Wirkung |
+|---|---|
+| `voucher.issue` | einen Gutschein ausstellen |
+| `voucher.void` | einen Gutschein sperren |
+| `voucher.reactivate` | einen gesperrten Gutschein reaktivieren |
+| `voucher.redeem` | einen Gutschein ganz oder teilweise einlösen |
+
+Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`); `wpac_workflow_read()` zählt nicht dazu (R-4.6). Für Voucher Captain (`VC:API.md`) und Pass Captain (Klassen des Kerns, `PC:docs/SUITE-EVENTS.md:24-25`) sind die genauen Funktionen zu prüfen (Z-07). Im Lizenzserver fehlt eine Lesefassade (`LIC:docs/TODO.md`, WFC-LIC-05). Die Liste der anerkannten Lesefunktionen je Provider ist eine offene Aufgabe dieses Repositorys (`TODO.md`, WF-SPEC-15).
+
+Markierungen und Notizen liegen in Version 1 nur im Consumer. Eine Notiz im Provider ist kein Befehl der Version 1.
+
+### 8.2 Ausdrücklich verboten in Version 1 (D11, D11b)
 
 Ein Workflow DARF NICHT, weder über einen Befehl noch auf einem anderen Weg:
 
-- eine Erstattung auslösen, freigeben oder ablehnen,
-- eine Bestellung, ein Ticket, einen Gutschein, einen Termin oder ein Event stornieren, widerrufen, sperren oder reaktivieren,
+- eine Erstattung auslösen, freigeben oder ablehnen, auch nicht die Erstattung einer Einlösung,
+- eine Bestellung, ein Ticket, einen Termin oder ein Event stornieren, widerrufen, sperren oder reaktivieren,
 - einen Gutschein in Tickets umtauschen oder ein Ticket ausstellen, übertragen, einchecken oder auschecken,
-- ein Guthaben oder den Wert eines Gutscheins ändern, außer durch `voucher.issue`,
-- eine Provision buchen, korrigieren, freigeben oder ablehnen (kein Aufruf von `wpac_create_adjustment()` oder `wpac_set_commission_status()`),
+- den Wert eines Gutscheins oder ein Kundenguthaben (Store Credit) ändern, außer als Folge eines der vier Gutschein-Befehle,
+- einen Gutschein neu ausstellen (neuer Code), aufladen oder in Guthaben umwandeln,
+- eine Provision buchen, korrigieren, freigeben oder ablehnen (kein Aufruf von `wpac_create_adjustment()` oder `wpac_set_commission_status()`, auch nicht nach einer menschlichen Aktion),
 - eine Auszahlung anlegen, beanspruchen, abschließen oder stornieren,
 - den Status eines Partners ändern,
 - eine Lizenz, eine Aktivierung, ein Site-Limit, einen Tarif oder einen Lizenzschlüssel ändern oder ausgeben,
@@ -480,58 +493,74 @@ Ein Workflow DARF NICHT, weder über einen Befehl noch auf einem anderen Weg:
 
 Ein Adapter, der einen dieser Wege anbietet, erfüllt diese Spezifikation nicht.
 
-### 8.3 `voucher.issue`
+### 8.3 Die vier Gutschein-Befehle
 
-**Regel (D11).** Ein Workflow darf einen Gutschein ausstellen. Die Grenzen sind fest und werden **im Voucher-Kern** durchgesetzt, nicht im Workflow und nicht im Adapter. Der Kern prüft dabei keine Lizenz; die Grenzen sind Missbrauchsschutz und gelten für jeden Aufrufer dieses Weges.
+**Regel (D11, D11b).** Ein Workflow darf Gutscheine ausstellen, sperren, reaktivieren und einlösen. Für jeden der vier Befehle gelten Grenzen, Protokoll, Idempotenz, Berechtigung und Missbrauchsschutz, und alle fünf werden **im Voucher-Kern** durchgesetzt, nicht im Workflow und nicht im Adapter. Der Kern prüft dabei keine Lizenz; die Grenzen gelten für jeden Aufrufer dieser Wege.
 
-Eingabe des Befehls:
+#### 8.3.1 Gemeinsame Regeln
+
+- R-8.1 Jeder der vier Befehle hat im Voucher-Kern einen eigenen öffentlichen Einstiegspunkt für automatische Aufrufe. Die Einstiegspunkte kommen als additive Änderung mit einer neuen MINOR-Version von `VCAP_CONTRACT_VERSION`.
+- R-8.2 Jeder Aufruf nennt den Gutschein über seine `voucher_id`, **nie** über den Code. Ein Workflow kennt keinen Code (R-5.1).
+- R-8.3 Pflichtfelder jedes Aufrufs: `idempotency_key` (nach R-8.4, höchstens 100 Zeichen), `reason` (fester Schlüssel aus einer Liste des Adapters, kein Freitext), `workflow_id`, `run_id`, `step_id`, `authorized_by_user_id` (8.4).
+- R-8.3a Ein zweiter Aufruf mit demselben `idempotency_key` bewirkt nichts und liefert das Ergebnis des ersten.
+- R-8.3b Zählen und Ausführen sind im Kern atomar: Zwei gleichzeitige Aufrufe dürfen keine Grenze gemeinsam überschreiten.
+- R-8.3c Jeder Aufruf, auch ein abgelehnter, steht im Protokoll des Kerns mit Befehl, Workflow, Lauf, Schritt, Gutschein-ID, Betrag, Ergebnis und Zeitpunkt; ohne Code.
+- R-8.3d Der Betreiber KANN jede Grenze senken und jeden der vier Befehle einzeln abschalten. Er KANN keine Grenze über den festen Höchstwert des Kerns anheben. Ab Werk sind alle vier ausgeschaltet (Empfehlung, F-05).
+- R-8.3e Das Ergebnis enthält `voucher_id` und Zustand, nie den Code. Mails zu Ausstellung, Sperre und Einlösung versendet der Kern nach seinen eigenen Regeln (D10).
+- R-8.3f Die Einstiegspunkte kommen ohne jede Lizenz- oder Rechteprüfung aus (R-2.4).
+
+Die Zahlen der Grenzen hat der Inhaber nicht festgelegt. Die Spalte „Grenze“ unten nennt, was begrenzt wird; die Zahlen sind Empfehlungen in F-05.
+
+#### 8.3.2 `voucher.issue`
 
 | Feld | Pflicht | Regel |
 |---|---|---|
 | `recipient_user_id` | ja | WordPress-Benutzer, der den Gutschein bekommt. Eine E-Mail-Adresse wird nicht übergeben; der Kern löst sie aus dem Benutzerkonto auf |
 | `amount_minor`, `currency` | ja | fester Betrag in der Währung des Shops; keine Prozent-Gutscheine |
 | `product_id` | nein | Gutscheinprodukt, dessen Einstellungen gelten |
-| `reason` | ja | fester Schlüssel aus einer Liste des Adapters (zum Beispiel `goodwill`), kein Freitext |
-| `idempotency_key` | ja | nach R-8.4, höchstens 100 Zeichen |
-| `workflow_id`, `run_id`, `step_id` | ja | für das Protokoll |
-| `authorized_by_user_id` | ja | nach 8.4 |
 
-Feste Grenzen:
+Grenzen: Höchstwert je Gutschein (darüber wird abgelehnt, nicht gekürzt); Anzahl je Kalendertag und Website; Anzahl je Kalendertag und Empfänger.
 
-| Grenze | Regel | Zahl |
-|---|---|---|
-| Höchstwert je Gutschein | ein Aufruf über dem Höchstwert wird abgelehnt, nicht gekürzt | offen (F-05) |
-| Anzahl je Tag und Website | gezählt je Kalendertag in der Zeitzone der Website, über alle Workflows | offen (F-05) |
-| Anzahl je Tag und Empfänger | gezählt je `recipient_user_id` | offen (F-05) |
-| Protokoll | jeder Aufruf, auch ein abgelehnter, wird mit Workflow, Lauf, Schritt, Empfänger-ID, Betrag, Ergebnis und Zeitpunkt festgehalten; ohne Code | Pflicht |
-
-- R-8.1 Der Betreiber KANN die Grenzen senken oder das Ausstellen durch Workflows ganz abschalten. Er KANN sie nicht über die festen Höchstwerte des Kerns anheben.
-- R-8.2 Zählen und Ausstellen MÜSSEN im Kern atomar sein: Zwei gleichzeitige Aufrufe dürfen die Grenze nicht gemeinsam überschreiten.
-- R-8.3 Das Ergebnis des Befehls enthält die `voucher_id` und den Zustand, nie den Code. Die Zustellung an den Empfänger übernimmt der Kern mit seiner eigenen Mail (D10).
-
-**Anforderung an den Einstiegspunkt im Voucher-Kern.** Heute gibt es `Issuer::issue_standalone( array $args )` (`VC:src/Issuer.php:987`):
+Stand im Kern heute, `Issuer::issue_standalone( array $args )` (`VC:src/Issuer.php:987`):
 
 | Eigenschaft | Stand heute | Fundstelle |
 |---|---|---|
 | Idempotenz | vorhanden: `reference` (bis 100 Zeichen); ein zweiter Aufruf stellt nichts aus und liefert `vcap_reference_used` mit der Gutschein-ID | `VC:src/Issuer.php:975-977`, `:1052-1058` |
 | Protokoll | Journaleintrag `issued` mit `source`, `reference` und `reason` | `VC:src/Issuer.php:1069` |
 | Berechtigung | **keine Prüfung**; der Aufrufer ist verantwortlich. Genannt wird `vcap_manage_vouchers` | `VC:src/Issuer.php:940-942` |
-| Höchstwert | fehlt | – |
-| Anzahl je Tag je Website und je Empfänger | fehlt | – |
+| Höchstwert, Tageszähler | fehlen | – |
 | Empfänger über Benutzer-ID | fehlt; erwartet `recipient_email` | `VC:src/Issuer.php:956-957` |
 | eigener Code des Aufrufers | möglich (`code`, `allow_weak`) | `VC:src/Issuer.php:966-969` |
 
-Daraus folgt als Aufgabe des Voucher-Repositorys (nicht dieses Repositorys): ein eigener öffentlicher Einstiegspunkt für automatisches Ausstellen, als additive Änderung mit einer neuen MINOR-Version von `VCAP_CONTRACT_VERSION`. Er MUSS
+Der neue Einstiegspunkt MUSS zusätzlich einen eigenen Code des Aufrufers, `allow_weak`, Prozent-Gutscheine und `paid = true` ablehnen.
 
-1. Höchstwert und beide Tageszähler atomar prüfen und ablehnen, was darüber liegt,
-2. den Empfänger als Benutzer-ID annehmen,
-3. einen eigenen Code des Aufrufers, `allow_weak`, Prozent-Gutscheine und `paid = true` ablehnen,
-4. `reference` als Pflicht verlangen,
-5. jeden Aufruf protokollieren, auch den abgelehnten,
-6. über eine Einstellung des Kerns abschaltbar sein,
-7. ohne jede Lizenz- oder Rechteprüfung auskommen.
+#### 8.3.3 `voucher.void` und `voucher.reactivate`
 
-`VC:README.md:96` sagt heute: „Kein Formular und kein Workflow stellt selbstständig Gutscheine aus.“ Dieser Satz ist durch D11 überholt und im Voucher-Repository zu ändern.
+| Feld | Pflicht | Regel |
+|---|---|---|
+| `voucher_id` | ja | der Gutschein |
+
+Grenzen: Anzahl je Kalendertag und Website, getrennt für Sperren und Reaktivieren; höchstens ein Wechsel je Gutschein und Tag (verhindert Pendeln). `voucher.void` löst **keine** Erstattung aus und bucht nichts zurück (8.2); `voucher.reactivate` gilt nur für Gutscheine, die nicht wegen einer Erstattung gesperrt wurden.
+
+Stand im Kern heute: `Issuer::void( Voucher $voucher, string $note = '', bool $refund = false ): bool` (`VC:src/Issuer.php:2012`) und `Issuer::reactivate( Voucher $voucher, bool $after_refund = false ): bool` (`VC:src/Issuer.php:2072`). Beide nehmen ein `Voucher`-Objekt, eine freie Notiz und einen Schalter für den Erstattungsfall. Ob sie eine Berechtigung prüfen, einen Idempotenzschlüssel kennen und was `$refund = true` bucht, ist zu prüfen (Z-15). Tageszähler fehlen. Der Branch von Pull Request 16 soll eigene Dienste für Sperren und Reaktivieren enthalten; das war im gelesenen Stand nicht prüfbar (Z-15).
+
+Der neue Einstiegspunkt MUSS `$refund` beziehungsweise `$after_refund` fest auf `false` setzen und statt der freien Notiz nur `reason` als festen Schlüssel annehmen.
+
+#### 8.3.4 `voucher.redeem`
+
+| Feld | Pflicht | Regel |
+|---|---|---|
+| `voucher_id` | ja | der Gutschein |
+| `amount_minor`, `currency` | ja | einzulösender Betrag; nie mehr als der Restwert |
+| `target` | ja | fester Schlüssel des Adapters dafür, wofür eingelöst wird |
+
+Grenzen: Höchstbetrag je Einlösung; Anzahl je Kalendertag und Website; Anzahl je Kalendertag und Gutschein. Dazu die Einschränkung, welche Gutscheine ein Workflow überhaupt einlösen darf (Empfehlung in F-05: nur Gutscheine, die derselbe Workflow-Lauf ausgestellt hat, oder bis zum Höchstwert aus `voucher.issue`).
+
+Stand im Kern heute: Die Einlöse-API `API\V1\RedemptionService` arbeitet in zwei Schritten und **über den Code**: `reserve( string $code, array $args )` (`VC:src/API/V1/RedemptionService.php:150`), danach `commit( string $key, array $args )` (`:378`); dazu `release()` (`:389`) und `refund()` (`:408`). Sie hat einen Idempotenzschlüssel (`redemption_key`) und feuert `vcap_voucher_redeemed` genau einmal nach dem Commit (`VC:docs/HOOKS.md:53`). Einen Weg über die `voucher_id`, Tageszähler und einen Höchstbetrag gibt es nicht; ob die API eine Berechtigung prüft, ist zu prüfen (Z-15).
+
+Der neue Einstiegspunkt MUSS den Gutschein über die `voucher_id` annehmen, Reservieren und Bestätigen in einem Aufruf erledigen und DARF `refund()` nicht erreichbar machen.
+
+`VC:README.md:96` sagt heute: „Kein Formular und kein Workflow stellt selbstständig Gutscheine aus.“ Dieser Satz ist durch D11 und D11b überholt und im Voucher-Repository zu ändern.
 
 ### 8.4 Berechtigung bei Hintergrundläufen
 
@@ -539,7 +568,7 @@ Ein Workflow läuft meist ohne angemeldeten Benutzer (Cron, Action Scheduler).
 
 - R-8.4 Jeder Befehl trägt einen Idempotenzschlüssel aus Workflow, Version des Workflows, `id` des auslösenden Ereignisses und Schritt. Eine Wiederholung desselben Schritts nutzt denselben Schlüssel.
 - R-8.5 Der Consumer DARF NICHT `wp_set_current_user()` aufrufen, um einem Lauf die Rechte eines Administrators zu geben.
-- R-8.6 Jeder schreibende Befehl nennt die Berechtigung, die ein Mensch für dieselbe Handlung bräuchte. Für `voucher.issue` ist das `vcap_manage_vouchers`.
+- R-8.6 Jeder schreibende Befehl nennt die Berechtigung, die ein Mensch für dieselbe Handlung bräuchte. Für `voucher.issue` ist das `vcap_manage_vouchers` (`VC:src/Issuer.php:940-942`); für Sperren, Reaktivieren und Einlösen ist die Berechtigung des Kerns zu prüfen (Z-15).
 - R-8.7 Beim Veröffentlichen eines Workflows MUSS der veröffentlichende Benutzer jede dieser Berechtigungen haben. Seine Benutzer-ID wird als `authorized_by_user_id` am Workflow gespeichert.
 - R-8.8 Bei jeder Ausführung prüft der Adapter mit `user_can( $authorized_by_user_id, … )`, ob dieser Benutzer noch existiert und die Berechtigung noch hat. Wenn nicht, wird der Schritt nicht ausgeführt und der Workflow pausiert mit Grund.
 - R-8.9 Lesende Abfragen und Befehle, die nur im Consumer schreiben, brauchen die Berechtigungen des Consumers beim Veröffentlichen, aber keine Prüfung bei jeder Ausführung.
@@ -563,7 +592,7 @@ Ein Workflow läuft meist ohne angemeldeten Benutzer (Cron, Action Scheduler).
 | Workflow aus Ereignissen von WordPress oder WooCommerce | nötig | offen (D3, F-10) | – |
 | Automation, die ein Ereignis **eines** Captain-Produkts nutzt (zum Beispiel Pass → Nachricht) | nötig | **nötig** | **nötig** (hier Pass Captain Pro) |
 | Automation über **zwei** Captain-Produkte (zum Beispiel Voucher → Affiliate) | nötig | **nötig** | **nötig für jedes beteiligte Produkt** |
-| Befehl `voucher.issue` | nötig | **nötig** | **nötig** (Voucher Captain Pro) |
+| Befehle `voucher.issue`, `voucher.void`, `voucher.reactivate`, `voucher.redeem` | nötig | **nötig** | **nötig** (Voucher Captain Pro) |
 | Lizenzereignisse im Shop des Herstellers | nötig | **nötig** | – (der Lizenzserver hat kein Add-on) |
 
 - R-10.1 Eine Automation, die ein Ereignis oder einen Befehl eines Captain-Produkts nutzt, braucht Workflow Captain Pro **und** die Pro-Lizenz des Add-ons dieses Produkts (D6). Welches Recht des Produkts dafür steht, ist offen (F-09).
@@ -665,7 +694,7 @@ Drei Versionen sind voneinander unabhängig:
 - R-13.3 Der Consumer MUSS unbekannte Felder in `data` hinnehmen und unbekannte Ereignistypen speichern, ohne einen Workflow zu starten.
 - R-13.4 Ein Adapter nennt je Provider die niedrigste Vertragsversion, die er braucht, und die MAJOR-Version, die er kennt. Ist der Vertrag des Providers älter oder hat er eine höhere MAJOR-Version, meldet sich der Adapter nicht an und zeigt den Grund. In `captain-pro` geschieht das über `Feature::requires()` mit dem Eintrag `constants` (`CP:packages/addon-kernel/src/CoreCapabilities.php:35-36`, `:92`).
 - R-13.5 Ändert ein Provider eine Action des Katalogs additiv (neues Argument am Ende, neues Feld im Array), bleibt der Katalog gültig. Der Adapter gibt neue Werte erst weiter, wenn eine MINOR-Version dieser Spezifikation sie erlaubt (R-5.2).
-- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0. Für `voucher.issue` zusätzlich die Vertragsversion von Voucher Captain, die den Einstiegspunkt aus 8.3 bringt.
+- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0. Für die vier Gutschein-Befehle zusätzlich die Vertragsversion von Voucher Captain, die die Einstiegspunkte aus 8.3 bringt. Die Mindestversion von Affiliate Captain ist das erste Release ohne den vorläufigen Workflow-Provider (D13); ob es die Nummer 0.15.0 trägt, entscheidet jenes Repository.
 - R-13.7 Der Consumer führt selbst eine Vertragskonstante für die Schnittstelle, an der sich Adapter anmelden. Ihr Name ist offen (F-03).
 - R-13.8 Ein Dokument eines anderen Repositorys, das Ereignisse dieses Katalogs beschreibt, verweist auf diese Spezifikation und legt keine eigenen Namen, Umschläge oder Garantien für die Suite fest.
 
@@ -684,7 +713,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 | P-5 | Jede als „nach Commit“ dokumentierte Action feuert nicht, wenn die Transaktion zurückgerollt wird |
 | P-6 | Wirft ein Callback eine Ausnahme, bleibt die Buchung des Kerns bestehen (Zustand nach dem Fehler geprüft) |
 | P-7 | Der Kern verhält sich ohne Callback genauso wie mit; er fragt nie ab, ob ein Abnehmer oder ein Add-on vorhanden ist |
-| P-8 | nur Voucher Captain: Der Einstiegspunkt aus 8.3 lehnt ab bei Überschreiten des Höchstwerts, beider Tageszähler, bei eigenem Code und bei fehlender `reference`; zwei gleichzeitige Aufrufe überschreiten keine Grenze; jeder Aufruf steht im Protokoll |
+| P-8 | nur Voucher Captain: Jeder der vier Einstiegspunkte aus 8.3 lehnt ab bei Überschreiten seiner Grenzen und bei fehlendem `idempotency_key`; ein zweiter Aufruf mit demselben Schlüssel bewirkt nichts; zwei gleichzeitige Aufrufe überschreiten keine Grenze; jeder Aufruf steht im Protokoll; keiner löst eine Erstattung aus; `voucher.issue` lehnt einen eigenen Code ab |
 
 ### 14.2 Ein Adapter
 
@@ -698,7 +727,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 | A-6 | Jedes erzeugte Ereignis besteht die Prüfung gegen das Schema |
 | A-7 | Zweimal dieselbe Action ergibt denselben Idempotenzschlüssel; zwei echte Ereignisse ergeben verschiedene (R-7.9) |
 | A-8 | Bei älterem Vertrag oder höherer MAJOR-Version des Providers meldet er sich nicht an (R-13.4) |
-| A-9 | Er bietet keinen Befehl aus 8.2 an; `voucher.issue` ruft nur den Einstiegspunkt aus 8.3 auf |
+| A-9 | Er bietet keinen Befehl aus 8.2 an; die vier Gutschein-Befehle rufen nur die Einstiegspunkte aus 8.3 auf, nie über einen Code, nie mit Erstattung |
 | A-10 | Ein schreibender Befehl wird nicht ausgeführt, wenn `authorized_by_user_id` die Berechtigung nicht mehr hat (R-8.8) |
 | A-11 | Endet eine der beiden Lizenzen, werden die Callbacks entfernt; im Kern ändert sich nichts (R-10.5) |
 
@@ -733,17 +762,19 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 | Z-04 | Öffentliche Kennungen für Erstattung, Termin, Event und Beleg in Pass Captain; Format der `public_id` | Pass Captain: Tabellen und Klassen des Kerns |
 | Z-05 | „Nach Commit“ für `vcap_vouchers_issued`, `vcap_voucher_issued_standalone`, `vcap_voucher_delivered`, `vcap_voucher_delivery_given_up`, `vcap_voucher_bounced`, `vcap_voucher_reissued` (ohne Vermerk in der Hook-Tabelle) | Voucher Captain: `src/Issuer.php`, `src/Delivery.php`, `src/Reissue.php` |
 | Z-06 | Was `vcap_ticket_checked_in` meldet | Voucher Captain: `src/Tickets.php` |
-| Z-07 | Genaue Lesefunktionen für Voucher Captain und Pass Captain (für Gegenlesen und Empfängerauflösung) | `VC:API.md`, `PC:docs/EXTENSIONS.md` |
+| Z-07 | Genaue Lesefunktionen für Voucher Captain, Pass Captain und Affiliate Captain (für Gegenlesen und Empfängerauflösung); `wpac_workflow_read()` entfällt (D13) | `VC:API.md`, `PC:docs/EXTENSIONS.md` |
 | Z-08 | „Seit“ (Vertragsversion) der Affiliate-Actions ohne Angabe in 4.4 (13 Actions) | Affiliate Captain: Git-Verlauf; danach als Tabelle in `docs/CONTRACT.md` |
 | Z-09 | Ob Affiliate Captain einen Test hat, der die dokumentierten Actions gegen den Code prüft | Affiliate Captain: `tests/` |
 | Z-10 | „Seit“ und „nach Commit“ für die drei Lizenz-Actions des Katalogs | Lizenzserver: `src/License/LicenseLifecycle.php`, `LicenseIssuer.php`, `PlanChange.php` |
 | Z-11 | Ob der Code von Form Captain die sechs dokumentierten Actions auslöst | Form Captain: `src/` |
 | Z-12 | Ob der Code von Review Captain die Actions für Anfragen auslöst, die sein Workflow-Vertrag nennt | Review Captain: `src/`, `docs/hooks.md` |
 | Z-13 | Der Stand von `captain-pro` wurde im Arbeitsverzeichnis gelesen, das uncommittete Änderungen enthielt; in Affiliate Captain war während des Lesens zeitweise eine Datei uncommittet | nach dem nächsten Commit dort gegenprüfen |
+| Z-15 | Für Sperren, Reaktivieren und Einlösen im Voucher-Kern: Berechtigungsprüfung, Idempotenz, Wirkung von `$refund`/`$after_refund`; ob der Branch von Pull Request 16 dafür eigene Dienste enthält | Voucher Captain: `src/Issuer.php:2012-2110`, `src/API/V1/RedemptionService.php`, Branch `hvollo-refactors` |
 | Z-14 | Die Aufgabenstellung nennt 129 Hooks im Lizenzserver; gezählt wurden 36 Actions und 94 Filter, zusammen 130 | Lizenzserver: `docs/EXTENSION-POINTS.md` |
 
 ## 16. Änderungsverlauf
 
 | Version | Datum | Änderung |
 |---|---|---|
+| 1.0.0-draft.2 | 16.11.2026 | Folgeentscheidungen eingearbeitet. D13: Abschnitt 4.4.1 neu, die vorläufigen Workflow-Provider werden vor dem Release aus den Kernen entfernt, `wpac_workflow_read()` ist keine anerkannte Lesefunktion. D8b: öffentlicher Partnercode und Geldbeträge erlaubt (R-5.1a, Katalog 4.4, Schema, zwei neue Beispiele). D11b: vier Gutschein-Befehle statt einem (Abschnitt 8 neu, Verbotsliste, Lizenzmatrix, R-13.6, P-8, A-9, neue Stelle Z-15). **Berichtigung:** Abschnitt 7.2 nannte für Voucher Captain „10 der 15“ Actions nach Commit und „fünf“ ohne Vermerk; richtig sind 9 und sechs. |
 | 1.0.0-draft | 16.11.2026 | Erste Fassung nach den Entscheidungen D1, D2 und D4 bis D12 vom 16.11.2026. Katalog: Pass Captain 13, Voucher Captain 16, Affiliate Captain 21, Lizenzserver 3 Ereignisse. Schema und vier Beispiele. |

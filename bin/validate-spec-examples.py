@@ -55,7 +55,7 @@ def main():
         if not errors:
             print("ok  ", name)
 
-    base = docs[os.path.basename(EXAMPLES[0])]
+    base = docs["pass.ticket.checked_in.json"]
     caused = next(d for d in docs.values() if d["causation_id"])
     counter = {
         "missing id": mutate(base, ["id"]),
@@ -65,6 +65,8 @@ def main():
         "local time instead of UTC": mutate(base, ["occurred_at"], "2026-11-16 18:02:11"),
         "e-mail address as subject": mutate(base, ["subject", "id"], "kunde@example.com"),
         "data carries a code": mutate(base, ["data", "code"], "ABCD-1234"),
+        "data carries a voucher code": mutate(base, ["data", "voucher_code"], "ABCD-1234"),
+        "partner code under another name": mutate(base, ["data", "partner_code_secret"], "x"),
         "data carries a ticket code": mutate(base, ["data", "ticket_code"], "ABCD-1234"),
         "data carries an e-mail": mutate(base, ["data", "customer_email"], "kunde@example.com"),
         "data carries a license key": mutate(base, ["data", "license_key"], "WPLC-XXXX"),

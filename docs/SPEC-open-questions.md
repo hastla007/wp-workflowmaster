@@ -1,6 +1,8 @@
 # Offene Fragen zur Suite-Spezifikation
 
-Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.
+Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.2. Die Folgeentscheidungen D8b, D11b und D13 und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
+
+**Noch offen:** F-01 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18, F-19 (ohne Form) und W-1 bis W-9, W-11 (Teil Form), W-12 (nur die Zahlen), W-13.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -35,11 +37,15 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Annahme der Spezifikation:** erledigte Ereignisse 30 Tage, `dead_letter` und `paused` 90 Tage; Benutzer-ID und Nutzdaten werden geleert, sobald kein Lauf mehr darauf wartet (R-12.4).
 - **Empfehlung:** Diese Zahlen als Voreinstellung, vom Betreiber nur nach unten änderbar. Die Frist gehört in die Rechtsprüfung (A6).
 
-### F-05 · Zahlen der Grenzen für `voucher.issue`
+### F-05 · Zahlen der Grenzen für die vier Gutschein-Befehle
 
-- **Frage:** Wie hoch sind Höchstwert, Anzahl je Tag und Website und Anzahl je Tag und Empfänger? D11 nennt die Grenzen, aber keine Zahlen, und sagt nicht, ob „je Tag“ je Website oder je Empfänger gilt.
-- **Annahme der Spezifikation:** beide Zähler, Zahlen offen (Abschnitt 8.3).
-- **Empfehlung:** Höchstwert 50 Einheiten der Shopwährung je Gutschein; 20 Gutscheine je Tag und Website; 1 Gutschein je Tag und Empfänger. Ab Werk ist das Ausstellen durch Workflows ausgeschaltet, und der Betreiber schaltet es im Voucher-Kern ein. Die Zahlen sind feste Obergrenzen des Kerns; der Betreiber kann sie nur senken.
+- **Frage:** Wie hoch sind die Grenzen für `voucher.issue`, `voucher.void`, `voucher.reactivate` und `voucher.redeem`? D11 und D11b verlangen Grenzen, Protokoll und Missbrauchsschutz für alle vier, nennen aber keine Zahlen.
+- **Annahme der Spezifikation:** Was begrenzt wird, steht in Abschnitt 8.3; die Zahlen sind offen.
+- **Empfehlung (ausdrücklich nur ein Vorschlag, keine Entscheidung):**
+  - `voucher.issue`: Höchstwert 50 Einheiten der Shopwährung je Gutschein; 20 je Tag und Website; 1 je Tag und Empfänger.
+  - `voucher.void` und `voucher.reactivate`: je 20 je Tag und Website; höchstens ein Wechsel je Gutschein und Tag; nie mit Erstattung.
+  - `voucher.redeem`: vorsichtig beginnen. Ein Workflow löst nur Gutscheine ein, die **derselbe Workflow-Lauf ausgestellt hat**; falls der Inhaber mehr will, höchstens bis zum Höchstwert von `voucher.issue` (50) je Einlösung, 20 je Tag und Website und 1 je Tag und Gutschein. Begründung: Eine Einlösung verbraucht Geldwert, den ein Kunde bezahlt haben kann; ein falsch gebauter Workflow würde sonst fremde Gutscheine entwerten.
+  - Alle vier Befehle sind ab Werk ausgeschaltet; der Betreiber schaltet sie im Voucher-Kern einzeln ein. Die Zahlen sind feste Obergrenzen des Kerns; der Betreiber kann sie nur senken.
 
 ### F-06 · Eine Funktion braucht das Recht eines anderen Add-ons
 
@@ -73,21 +79,19 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Annahme der Spezifikation:** Der kostenlose Kern enthält den Consumer (Speicher, Wiederholung, Umschlag), aber keinen Adapter. Ohne Workflow Pro kommt kein Suite-Ereignis an.
 - **Empfehlung:** Genau so bestätigen. Offen bleibt dann nur, was der kostenlose Kern für WordPress und WooCommerce kann.
 
-### F-11 · Der vorhandene Workflow-Provider im Affiliate-Kern
+### F-11 · Der vorläufige Workflow-Provider im Affiliate-Kern — **Entschieden am 16.11.2026 (D13)**
 
-- **Frage:** Was geschieht mit `wpac_workflow_event`, das der Affiliate-Kern 0.15.0 bereits enthält (Abschnitt 4.4.1 der Spezifikation)?
-- **Möglichkeiten:**
-  - a) **Nicht normativ, bleibt als vorläufige Zugabe des Kerns.** Quelle der Suite sind die 21 einzelnen Actions; ein Adapter darf `wpac_workflow_event` als Abkürzung nutzen. Im Kern ist nur der Satz zu `wpac_create_adjustment()` zu ändern und das Dokument als „nicht der Umschlag der Suite“ zu kennzeichnen.
-  - b) **Als Quelle der Suite übernehmen.** Dann müsste der Kern sich ändern: Namen mit Produktpräfix und einzelne Statuswechsel, Felder `subject` und `site.blog_id`, `occurred_at` in RFC 3339, `code` aus `code_request.*` entfernen, den Satz zu `wpac_create_adjustment()` streichen. Voucher Captain und Pass Captain bräuchten für ein einheitliches Bild dieselbe Schicht, was D5 und D9 widerspricht.
-  - c) **Vor dem Release 0.15.0 abschalten** (Filter `wpac_workflow_events_enabled` ab Werk aus, nicht im Vertrag erwähnen) und später entfernen.
-- **Annahme der Spezifikation:** a (R-4.4 bis R-4.6).
-- **Empfehlung:** a für die Ereignisse. Der Aufwand im Kern ist am kleinsten, kein veröffentlichter Vertrag muss zurückgenommen werden, und die Regel „ein Umschlag, gebaut vom Abnehmer“ bleibt für alle Kerne gleich. Zusätzlich im Vertrag des Kerns festhalten, dass `wpac_workflow_event` keine Zusage der Suite ist und in einer späteren MAJOR-Version entfallen kann. `wpac_workflow_read()` behalten; es ist genau die Lesefunktion, die Abschnitt 8.1 braucht. Die Frage E9 im Affiliate-Repository (0.15.0 mit oder ohne Provider-Seite) wird damit zu „mit, als vorläufig gekennzeichnet“.
+- **Frage war:** Was geschieht mit `wpac_workflow_event` und `wpac_workflow_read()`, die der Affiliate-Kern bereits enthält? Zur Wahl standen: nicht normativ behalten (a), als Quelle der Suite übernehmen (b), vor dem Release abschalten (c).
+- **Entscheidung:** Die vorläufigen Workflow-Provider werden vor dem Release aus den kostenlosen Kernen genommen und auf einem geparkten Branch aufbewahrt: im Affiliate-Kern `wpac_workflow_event`, `wpac_workflow_read()` und `docs/WORKFLOW-PROVIDER.md`; im Voucher-Kern der Provider aus Pull Request 16. Sie kommen zurück, wenn diese Spezifikation abgenommen ist.
+- **In der Spezifikation:** Abschnitt 4.4.1, R-4.4 bis R-4.6. `wpac_workflow_read()` ist keine anerkannte Lesefunktion mehr.
+- **Folgefrage, offen:** In welcher Form die Provider-Seiten zurückkehren. Empfehlung: nur als Lesefunktionen (für Gegenlesen und Empfängerauflösung, F-13), nicht als eigener Umschlag; dafür eine MINOR-Version dieser Spezifikation.
 
-### F-12 · Eigene Workflow-Verträge in Form Captain und Review Captain
+### F-12 · Eigene Workflow-Verträge in Form Captain und Review Captain — **für Voucher entschieden am 16.11.2026 (D13); für Form und Review offen**
 
 - **Frage:** Was geschieht mit den Verträgen, die Form Captain und Review Captain auf ihren Branches schon gebaut oder beschrieben haben?
 - **Stand:** Form Captain hat eine Übergabe von Mails an einen Workflow mit Rückfall abgehakt (`FC:TODO.md:235`), was D10 widerspricht. Review Captain beschreibt einen eigenen Descriptor, eigene Nutzdaten und eine Rechteprüfung je Auslöser (`RC:docs/contracts/workflow-provider-v1.md`).
-- **Empfehlung:** Beide als nicht normativ behandeln wie in F-11. In Form Captain die Übergabe der Mails entfernen oder abschalten. Die Kataloge für `form.*` und `review.*` kommen in einer MINOR-Version dieser Spezifikation, bevor einer der beiden Kerne veröffentlicht wird.
+- **Entschieden (D13) für den Voucher-Kern:** Der Provider aus Pull Request 16 mit Lizenzwissen und Mail-Übergabe wird vor dem Release entfernt.
+- **Empfehlung für Form und Review:** Genauso verfahren wie D13 für Affiliate und Voucher: nicht normativ, vor dem ersten Release herausnehmen. In Form Captain die Übergabe der Mails entfernen oder abschalten. Die Kataloge für `form.*` und `review.*` kommen in einer MINOR-Version dieser Spezifikation, bevor einer der beiden Kerne veröffentlicht wird.
 
 ### F-13 · Empfänger ohne Benutzerkonto
 
@@ -114,12 +118,11 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Annahme der Spezifikation:** Der Präfix `course.` ist reserviert, mehr nicht (Abschnitt 4.6).
 - **Empfehlung:** Erst entscheiden, dann im Lizenzserver vormerken.
 
-### F-17 · Zählt ein öffentlicher Partnercode als „Code“
+### F-17 · Zählt ein öffentlicher Partnercode als „Code“ — **Entschieden am 16.11.2026 (D8b)**
 
-- **Frage:** D8 sagt „keine Codes“. Gilt das auch für den Partner- oder Empfehlungscode von Affiliate Captain, der öffentlich in Links steht?
-- **Stand:** Der Affiliate-Kern gibt ihn in `code_request.*` weiter (`AC:docs/WORKFLOW-PROVIDER.md:82-84`, `:108`).
-- **Annahme der Spezifikation:** Er wird in Version 1 nicht weitergereicht (Abschnitt 4.4).
-- **Empfehlung:** Festhalten, dass D8 mit „Code“ jedes Geheimnis meint, mit dem sich eine Leistung einlösen oder ein Zugang erlangen lässt (Gutscheincode, Ticketcode, Token, Lizenzschlüssel). Der Partnercode ist kein solches Geheimnis. Er bleibt in Version 1 trotzdem draußen: Er lässt auf eine Person schließen, und kein Ablauf der ersten Version braucht ihn, weil `affiliate_id` und die Nummer des Antrags genügen. Wird er später gebraucht, kommt er als erlaubtes Feld in einer MINOR-Version dazu.
+- **Frage war:** D8 sagt „keine Codes“. Gilt das auch für den öffentlichen Partnercode von Affiliate Captain?
+- **Entscheidung:** „Keine Codes“ meint nur geheime Codes (Gutscheincode, Ticketcode, Lizenzschlüssel, Token). Der öffentliche Partnercode und Geldbeträge mit Währung sind in den Nutzdaten erlaubt.
+- **In der Spezifikation:** R-5.1a, Katalog 4.4 (`affiliate.code_request.*` mit `partner_code`; Beträge als `amount_minor` mit `currency`), Schema und zwei Beispiele.
 
 ### F-18 · Kundenconnectoren im Umfang der ersten Version
 
@@ -127,11 +130,11 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Stand:** `TODO.md` führt 19 Aufgaben dafür. Nach E6 ist der Learnboating-Connector ein eigenes Kundenprojekt und kein Teil von Voucher Pro.
 - **Empfehlung:** Beide als Kundenprojekte außerhalb der ersten Version führen; die Spezifikation regelt sie nicht.
 
-### F-19 · Preise
+### F-19 · Preise — **für Form Captain Pro entschieden am 16.11.2026; sonst offen**
 
-- **Frage:** `konzept.md` und `TODO.md` nennen 129, 229 und 399 Euro als festgelegt.
-- **Stand:** Die Preise sind nicht bestätigt, auch nicht netto oder brutto (E9).
-- **Empfehlung:** Keine; Geschäftsentscheidung. Bis dahin gelten die Beträge als Vorschlag.
+- **Entschieden:** Form Captain Pro kostet 59, 129 und 249 Euro pro Jahr brutto für 1, 5 und 25 Websites (`single`, `business`, `agency`).
+- **Offen:** die Preise aller anderen Produkte. `konzept.md` und `TODO.md` dieses Repositorys nennen für Workflow Captain Pro 129, 229 und 399 Euro als festgelegt; bestätigt ist das nicht, auch nicht netto oder brutto.
+- **Empfehlung:** Keine; Geschäftsentscheidung. Bis dahin gelten die Beträge für Workflow als Vorschlag.
 
 ## Teil 2: Widersprüche zwischen den Entscheidungen vom 16.11.2026
 
@@ -139,14 +142,14 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 |---|---|---|---|
 | W-1 | D8 gegen D5 und D9 | D8 verlangt öffentliche Kennungen. Voucher Captain, Affiliate Captain und der Lizenzserver haben keine. D5 und D9 lassen die Kerne unverändert | Datensatznummer mit `id_kind` = `record` (F-02) |
 | W-2 | D7 und D8 gegen D9 | Die Review-Einladung soll aus Einlass und Einlösung entstehen. Die Nutzdaten dürfen keine E-Mail-Adresse tragen, und der Gast hat oft kein Benutzerkonto. Der Empfänger ist nur über eine Lesefunktion des Kerns erreichbar, die es als Vertrag nicht gibt | Auflösung zur Laufzeit (R-5.6); Lesefunktion als additive Änderung empfohlen (F-13) |
-| W-3 | D11 gegen D5 und D9 | D11 verlangt Grenzen und Missbrauchsschutz **im Voucher-Kern**. D5 und D9 sagen, nur der Abnehmer werde neu gebaut und die Kerne blieben unverändert | Der Voucher-Kern bekommt einen neuen Einstiegspunkt (Abschnitt 8.3). „Unverändert“ gilt für den Transport der Ereignisse |
+| W-3 | D11 und D11b gegen D5 und D9 | D11 verlangt Grenzen und Missbrauchsschutz **im Voucher-Kern**. D5 und D9 sagen, nur der Abnehmer werde neu gebaut und die Kerne blieben unverändert | Der Voucher-Kern bekommt vier neue Einstiegspunkte (Abschnitt 8.3). „Unverändert“ gilt für den Transport der Ereignisse |
 | W-4 | D2 gegen D5 und D9 | D2 verlangt vom Lizenzserver versionierte Ereignisse mit Ereigniskennung. D5 und D9 sagen, der Transport seien die vorhandenen Hooks und Kennung und Umschlag setze der Abnehmer | Der Lizenzserver braucht Vertragskonstante, „nach Commit“, Actions ohne Schlüssel und vier neue Actions, aber keinen Umschlag und keine Kennung (Abschnitt 11) |
 | W-5 | D2 und D7 gegen die Regel „Kern ohne Lizenzwissen“ | Im Shop verarbeitet Workflow Captain Lizenzereignisse. Der kostenlose Kern darf nichts über Lizenzen wissen, und der Lizenzserver hat kein Add-on, in dem ein Adapter liegen könnte | Der Adapter liegt in Workflow Captain Pro; der Consumer behandelt `license.*` wie jeden anderen Typ (R-11.2) |
 | W-6 | D6 gegen den Stand des Kernels | Zwei Lizenzen je Automation, geprüft nur in Add-ons. Der Kernel kann das nicht (D6 vermerkt es selbst). Für Lizenzereignisse gibt es kein zweites Add-on | Aufgabe für `captain-pro` (F-06); für Lizenzereignisse genügt Workflow Pro (Abschnitt 10.1) |
 | W-7 | D6 und D7 ohne D3 | D6 und D7 nehmen die Antwort auf D3 teilweise vorweg: Jede Automation mit einem Captain-Produkt braucht Workflow Pro. D3 gilt aber als offen | F-10 |
 | W-8 | D12 gegen E8 und G2 | Der Lizenzserver soll vor dem Verkaufsstart keine fest verdrahteten Captain-Schlüssel mehr enthalten (G2, E8). Die sechs vorgemerkten `workflow.*`-Rechte stehen genau dort. Sie wandern in die Katalogdatei des Add-ons, das nach D12 erst später entsteht | Abschnitt 10.2 nennt den heutigen Ort; nach dem Umbau liefert `workflow-captain-pro` die Schlüssel in seiner `wplc-catalog.json` |
 | W-9 | D4 gegen den Stand | „Vertragskonstante je Kern, wie Affiliate, Voucher und Pass sie haben“: Der Lizenzserver wird durch D2 Provider und hat keine. Pass Captain versioniert zusätzlich über `_v1` im Namen | R-3.1 gilt für jeden Provider (F-03); `_v1` im Namen bleibt daneben erlaubt |
-| W-10 | D5 und D9 gegen C5 und den Stand in Affiliate | Entschieden war, dass die Workflow-Schnittstelle des Affiliate-Kerns auf die Workflow-Antworten wartet (C5). Sie wurde vorher nach `main` gemergt (`AC:TODO.md`, E9) und baut einen Umschlag im Kern | F-11 |
-| W-11 | D10 gegen den Stand in Form Captain | Keine Übergabe von Mails. Form Captain hat sie auf seinem Branch gebaut | F-12 |
-| W-12 | D11 in sich | „Anzahl je Tag“ ohne Bezug (Website oder Empfänger) und ohne Zahlen | beide Zähler, Zahlen offen (F-05) |
+| W-10 **(entschieden am 16.11.2026, D13)** | D5 und D9 gegen C5 und den Stand in Affiliate | Entschieden war, dass die Workflow-Schnittstelle des Affiliate-Kerns auf die Workflow-Antworten wartet (C5). Sie wurde vorher nach `main` gemergt (`AC:TODO.md`, E9) und baut einen Umschlag im Kern | aufgelöst: Der Provider wird vor dem Release entfernt (F-11) |
+| W-11 **(für Voucher entschieden, D13; für Form offen)** | D10 gegen den Stand in Form Captain | Keine Übergabe von Mails. Form Captain hat sie auf seinem Branch gebaut | F-12 |
+| W-12 **(Umfang entschieden am 16.11.2026, D11b; Zahlen offen)** | D11 und D11b in sich | D11b legt vier Befehle mit Grenzen fest, nennt aber weder Zahlen noch den Bezug von „je Tag“ (Website, Empfänger, Gutschein) und nicht, welche Gutscheine ein Workflow einlösen darf | Abschnitt 8.3 nennt, was begrenzt wird; Zahlen als Empfehlung in F-05 |
 | W-13 | D9 gegen D7 | „Speichern und Wiederholen beim Abnehmer“ garantiert nichts vor dem Speichern. Die Review-Einladung hängt an genau diesen Ereignissen | Verlust wird hingenommen und benannt (R-7.2, F-14) |

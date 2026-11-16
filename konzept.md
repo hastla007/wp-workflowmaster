@@ -566,7 +566,7 @@ Die folgende Liste ist verbindlicher Zielumfang. Die PHP-Eventnamen sind nicht a
 #### Voucher Captain
 
 **Trigger:** Gutschein ausgestellt; E-Mail zugestellt/fehlgeschlagen; Gutschein eingelöst; Guthaben geändert; Gutschein abgelaufen/gesperrt; Rückerstattung/Storno.  
-**Aktionen:** Gutschein kontrolliert über Voucher-Service ausstellen, erneute Zustellung, Gutscheinstatus abfragen, zulässige Sperrung/Rückgabe. Wertänderung und manuelle Guthabenkorrektur bleiben dem Voucher-Admin vorbehalten. *[Überholt durch D11: Erlaubt ist nur das Ausstellen in festen Grenzen; Sperrung und Rückgabe sind in Version 1 verboten; siehe `docs/SPEC-suite-events.md`, Abschnitt 8.]*
+**Aktionen:** Gutschein kontrolliert über Voucher-Service ausstellen, erneute Zustellung, Gutscheinstatus abfragen, zulässige Sperrung/Rückgabe. Wertänderung und manuelle Guthabenkorrektur bleiben dem Voucher-Admin vorbehalten. *[Überholt durch D11: Erlaubt sind nur Ausstellen, Sperren, Reaktivieren und Einlösen in festen Grenzen (D11b); Rückgabe und Erstattung sind in Version 1 verboten; siehe `docs/SPEC-suite-events.md`, Abschnitt 8.]*
 **Schutz:** Gutscheincode ist Geheimnis, standardmäßig kein Token und niemals im Run-Log. Downloadlinks nur als kurzlebige, gezielte Zustellaktion. Das Gutschein-/Guthaben-Ledger bleibt im Voucher-Plugin.
 
 #### Pass Captain
@@ -751,7 +751,7 @@ Workflow-Aktionen laufen als typisierte Commands im Plugin, das die Daten besitz
 - Erfolg wird erst verbucht, wenn die Ziel-API die Command-ID angenommen und ein Ergebnis geliefert hat.
 - Retryfähige Fehler laufen mit Backoff; Rechte-, Schema-, Objekt- und Vertragsfehler werden nicht erneut versucht.
 - Jede Aktion kennzeichnet Seiteneffektklasse, Idempotenz, Retryverhalten, erforderliche Capability und erforderliches Lizenz-Entitlement.
-- Finanzielle und irreversible Aktionen verlangen Extra-Capability und in v1 eine explizite Freigabestufe. *[Überholt durch D11: Außer dem Ausstellen von Gutscheinen in festen Grenzen gibt es in Version 1 keine geldwirksamen Aktionen, auch nicht mit Freigabe.]*
+- Finanzielle und irreversible Aktionen verlangen Extra-Capability und in v1 eine explizite Freigabestufe. *[Überholt durch D11: Außer den vier Gutschein-Befehlen in festen Grenzen (D11b) gibt es in Version 1 keine geldwirksamen Aktionen, auch nicht mit Freigabe.]*
 - Lokale Suite-Events werden über PHP-Provider verarbeitet. Signierte Webhooks dienen externen Websites/Systemen; der interne Adapter baut keinen unnötigen HTTP-Loopback.
 
 ### 16.4 Laufzeit und Lizenzverhalten
@@ -845,7 +845,7 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 
 **Auslöser:** Gutschein ausgestellt, zugestellt/fehlgeschlagen, eingelöst, abgelaufen, gesperrt/storniert oder refundiert; Guthaben reserviert, bestätigt, freigegeben, zurückgebucht oder Schwellenwert erreicht.
 
-**Aktionen:** Voucher nach konkreter Order-Position/Produktkonfiguration ausstellen; erneut zustellen; Status/Saldo abfragen; sperren/stornieren nur mit Berechtigung; Ticketumtausch über die bestehende Voucher-to-Pass-Bridge. Keine direkte Saldoänderung; Ledgerbefehle nur mit Grund, Referenz und Idempotenz über die Voucher-API. *[Überholt durch D11: Sperren, Stornieren, Ticketumtausch und Ledgerbefehle sind in Version 1 verboten; erlaubt ist nur `voucher.issue` in festen Grenzen.]*
+**Aktionen:** Voucher nach konkreter Order-Position/Produktkonfiguration ausstellen; erneut zustellen; Status/Saldo abfragen; sperren/stornieren nur mit Berechtigung; Ticketumtausch über die bestehende Voucher-to-Pass-Bridge. Keine direkte Saldoänderung; Ledgerbefehle nur mit Grund, Referenz und Idempotenz über die Voucher-API. *[Überholt durch D11: Erlaubt sind nur `voucher.issue`, `voucher.void`, `voucher.reactivate` und `voucher.redeem` in festen Grenzen (D11b); Ticketumtausch, Erstattung und weitere Ledgerbefehle sind in Version 1 verboten.]*
 
 **Szenarien:** bestätigte Serviceeinlösung → Review Captain kann eine Anfrage planen; Geschenk-/Rabattcodeverkauf allein ist keine Erfahrung. Refund → Voucher verwaltet Status und Ledger, Workflow koordiniert nur Folgekommunikation.
 
@@ -1066,7 +1066,7 @@ Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native
 
 ### 18.6 Tatsächliche Vertragslage aus der Repository-Prüfung
 
-> **Überholt (D5, D9, D11):** Die Spalte „Noch nötige Arbeit für Workflow“ verlangt neue Providerverträge, Outbox und Befehle in den Kernen; das entfällt bis auf den Einstiegspunkt für `voucher.issue` im Voucher-Kern und die fehlenden Actions des Lizenzservers. Der tatsächliche Stand der Hooks steht in `docs/SPEC-suite-events.md`, Abschnitt 4. Die Provisionskorrektur („adjustment“) als Aktion ist ausgeschlossen.
+> **Überholt (D5, D9, D11):** Die Spalte „Noch nötige Arbeit für Workflow“ verlangt neue Providerverträge, Outbox und Befehle in den Kernen; das entfällt bis auf die Einstiegspunkte der vier Gutschein-Befehle im Voucher-Kern (D11b) und die fehlenden Actions des Lizenzservers. Der tatsächliche Stand der Hooks steht in `docs/SPEC-suite-events.md`, Abschnitt 4. Die Provisionskorrektur („adjustment“) als Aktion ist ausgeschlossen.
 
 | Plugin | Vorhandene Grundlage | Noch nötige Arbeit für Workflow |
 |---|---|---|

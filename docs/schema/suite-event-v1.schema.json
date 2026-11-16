@@ -114,15 +114,20 @@
       "minimum": 1
     },
     "data": {
-      "description": "Allow-listed scalar fields of the event type. Nested values are not allowed.",
+      "description": "Allow-listed scalar fields of the event type. Nested values are not allowed. Secret codes are forbidden; the public affiliate partner code (partner_code) and money amounts (*_minor with currency) are allowed (decision D8b).",
       "type": "object",
       "maxProperties": 24,
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9_]*$",
         "maxLength": 48,
-        "not": {
-          "pattern": "(^|_)(code|codes|token|tokens|secret|password|license_key|api_key|email|e_mail|mail|name|first_name|last_name|address|phone|iban|bic|message|note|path|url|ip)$"
-        }
+        "anyOf": [
+          { "const": "partner_code" },
+          {
+            "not": {
+              "pattern": "(^|_)(code|codes|token|tokens|secret|password|license_key|api_key|email|e_mail|mail|name|first_name|last_name|address|phone|iban|bic|message|note|path|url|ip)$"
+            }
+          }
+        ]
       },
       "additionalProperties": {
         "type": ["string", "integer", "number", "boolean", "null"],

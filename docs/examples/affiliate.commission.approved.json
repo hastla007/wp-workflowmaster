@@ -1,0 +1,29 @@
+{
+  "id": "7e3c5a91-2d4f-4b6c-8e0a-3f5b7d9c1e2a",
+  "type": "affiliate.commission.approved",
+  "spec_version": "1.0",
+  "source": {
+    "product": "affiliate-captain",
+    "core_version": "0.15.0",
+    "contract_version": "1.4.0"
+  },
+  "occurred_at": "2026-11-16T12:30:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "commission",
+    "id": "433",
+    "id_kind": "record"
+  },
+  "data": {
+    "affiliate_id": 310,
+    "amount_minor": 5000,
+    "currency": "EUR",
+    "kind": "sale"
+  },
+  "idempotency_key": "d1e2f300112233445566778899aabbccddeeff00112233445566778899aabbdd",
+  "correlation_id": "7e3c5a91-2d4f-4b6c-8e0a-3f5b7d9c1e2a",
+  "causation_id": null,
+  "chain_depth": 0
+}
