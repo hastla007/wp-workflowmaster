@@ -49,6 +49,10 @@ final class Plugin {
 		add_action( Install::CRON_PROCESS, array( $this, 'run_worker' ) );
 		add_action( Install::CRON_DAILY, array( $this, 'run_maintenance' ) );
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->register();
+		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( '\WP_CLI' ) ) {
+			\WP_CLI::add_command( 'workflow-captain', \WorkflowCaptain\Cli\Command::class );
+		}
+		add_action( 'admin_post_workflow_captain_diagnostics', array( $this, 'download_diagnostics' ) );
 		if ( is_admin() ) {
 			( new EventsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\WorkflowsPage( $this ) )->register();
@@ -174,6 +178,41 @@ final class Plugin {
 	}
 
 	/** Stores how many envelopes were rejected and the last violation codes; never a value (R-5.5). */
+	/** Support diagnostics (Admin\Diagnostics) with versions and cron state of this site. */
+	public function diagnostics(): array {
+		global $wp_version;
+		return \WorkflowCaptain\Admin\Diagnostics::report(
+			$this->store(),
+			$this->engine()->store(),
+			$this->adapters,
+			array(
+				'plugin'            => WORKFLOW_CAPTAIN_VERSION,
+				'schema'            => (string) get_option( Install::DB_OPTION ),
+				'schema_expected'   => WORKFLOW_CAPTAIN_DB_VERSION,
+				'adapter_interface' => WORKFLOW_CAPTAIN_CONTRACT_VERSION,
+				'wordpress'         => (string) $wp_version,
+				'php'               => PHP_VERSION,
+				'multisite'         => is_multisite(),
+				'wp_cron_disabled'  => defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON,
+				'next_worker_run'   => wp_next_scheduled( Install::CRON_PROCESS ) ? gmdate( 'Y-m-d\TH:i:s\Z', (int) wp_next_scheduled( Install::CRON_PROCESS ) ) : null,
+				'secret_key_own'    => \WorkflowCaptain\Security\Vault::own_key_configured(),
+				'rejected_envelopes' => (array) get_option( self::REJECTED_OPTION, array() ),
+			)
+		);
+	}
+
+	public function download_diagnostics(): void {
+		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
+			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		check_admin_referer( 'workflow_captain_diagnostics' );
+		nocache_headers();
+		header( 'Content-Type: application/json; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="workflow-captain-diagnose.json"' );
+		echo wp_json_encode( $this->diagnostics(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download.
+		exit;
+	}
+
 	public static function record_rejection( array $codes ): void {
 		$state          = (array) get_option( self::REJECTED_OPTION, array() );
 		$state['count'] = (int) ( $state['count'] ?? 0 ) + 1;

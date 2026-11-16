@@ -80,6 +80,9 @@ final class EventsPage {
 			echo '<div class="notice notice-warning inline"><p>' . esc_html( sprintf( __( '%1$d Ereignisse wurden abgelehnt, weil sie das Schema verletzten. Zuletzt: %2$s', 'workflow-captain' ), (int) $rejected['count'], implode( ', ', (array) ( $rejected['last'] ?? array() ) ) ) ) . '</p></div>';
 		}
 
+		if ( current_user_can( 'manage_workflow_captain' ) ) {
+			echo '<p><a class="button" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=workflow_captain_diagnostics' ), 'workflow_captain_diagnostics' ) ) . '">' . esc_html__( 'Diagnose herunterladen (ohne persönliche Daten)', 'workflow-captain' ) . '</a></p>';
+		}
 		echo '<ul class="subsubsub">';
 		$links = array( '<a href="' . esc_url( add_query_arg( array( 'page' => self::SLUG ), admin_url( 'admin.php' ) ) ) . '"' . ( '' === $state ? ' class="current"' : '' ) . '>' . esc_html__( 'Alle', 'workflow-captain' ) . ' (' . (int) array_sum( $counts ) . ')</a>' );
 		foreach ( $counts as $key => $count ) {

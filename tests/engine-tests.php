@@ -420,3 +420,15 @@ drain( $e );
 $e->clock->advance( 40 * DAY_IN_SECONDS );
 ( new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, fn() => $e->store ) )->apply_retention();
 check( 'C-14 an open run is kept', 1 === count( $e->store->find_runs( array(), 10, 0 ) ) );
+
+// ----- Diagnostics without personal data (P2) ------------------------------------------------------------------
+
+$e = engine_site();
+publish( $e, sample_graph() );
+$e->dir->crash_after_send = true;
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+$report = \WorkflowCaptain\Admin\Diagnostics::report( $e->events, $e->store, $e->registry, array( 'plugin' => '0.2.0' ) );
+$json   = json_encode( $report );
+check( 'diagnostics: counts and reasons present', 1 === $report['runs']['action_required'] && 1 === $report['action_required_reasons']['unclear_outcome'] && array( 'pass-captain' ) === $report['adapters']['registered'] );
+check( 'diagnostics: no address, no subject ID, no user ID', ! str_contains( $json, '@' ) && ! str_contains( $json, '8f3a1c0d9e7b' ) && ! str_contains( $json, '"actor_user_id"' ) );
