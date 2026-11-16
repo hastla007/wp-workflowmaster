@@ -1,6 +1,6 @@
 # Testkit für Adapter (A-1 bis A-11)
 
-Adapter für Workflow Captain liegen in Add-ons (`captain-pro`), nie im kostenlosen Kern. Die Spezifikation verlangt für jeden Adapter die Nachweise A-1 bis A-11 (`docs/SPEC-suite-events.md`, Abschnitt 14.2). Dieses Kit liefert die Prüfungen, die ohne das Add-on gehen, und beschreibt die übrigen.
+Adapter für die Captain-Produkte liegen in Add-ons (`captain-pro`), nie im kostenlosen Kern; einzige Ausnahme sind die Adapter für WordPress und WooCommerce (Spezifikation 4.7, `src/Providers/`). Die Spezifikation verlangt für jeden Adapter die Nachweise A-1 bis A-11 (`docs/SPEC-suite-events.md`, Abschnitt 14.2). Dieses Kit liefert die Prüfungen, die ohne das Add-on gehen, und beschreibt die übrigen.
 
 ## Einbinden
 

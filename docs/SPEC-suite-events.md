@@ -880,7 +880,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 
 | Nr. | Nachweis |
 |---|---|
-| A-1 | Er liegt in einem Add-on; im Kern gibt es keine Zeile von ihm |
+| A-1 | Er liegt in einem Add-on; im Kern gibt es keine Zeile von ihm. Ausnahme: die Adapter für WordPress und WooCommerce (4.7) liegen im Kern und brauchen keine Lizenz |
 | A-2 | Ohne Workflow Captain Pro oder ohne die Pro-Lizenz des Produkts ist kein Callback an einer Action des Providers registriert (R-10.2) |
 | A-3 | Für jede Action des Katalogs: Aus Argumenten mit Code, Token, E-Mail-Adresse, Name und Freitext entsteht ein Ereignis, das keinen dieser Werte enthält, auch nicht als Teil einer anderen Zeichenkette (Test mit Markerwerten) |
 | A-4 | Actions außerhalb des Katalogs und die ausdrücklich ausgeschlossenen Actions werden nicht angehängt |
