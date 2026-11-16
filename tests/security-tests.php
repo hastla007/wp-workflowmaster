@@ -163,3 +163,23 @@ foreach ( array_merge( iterator_to_array( $it ), array( new SplFileInfo( WORKFLO
 	}
 }
 check( 'SEO-03 no front-end hooks, REST routes, shortcodes, rewrites, post types or sitemaps' . ( $hits ? ' (' . implode( '; ', $hits ) . ')' : '' ), array() === $hits );
+
+// ----- WF-SEO-04 / WF-SEO-05: no direct post writes, no coupling to Yoast internals ------------------------------
+
+$seo_hits = array();
+$it       = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( WORKFLOW_CAPTAIN_PATH . 'src', FilesystemIterator::SKIP_DOTS ) );
+foreach ( $it as $file ) {
+	$code = file_get_contents( $file->getPathname() );
+	// Yoast internals: indexables, internal classes and undocumented meta keys (WF-SEO-05).
+	if ( preg_match( '/_yoast_wpseo_|Yoast\\\\WP\\\\SEO|WPSEO_|wpseo_|yoast_indexable/i', $code ) ) {
+		$seo_hits[] = basename( $file ) . ': Yoast internals';
+	}
+	// Posts are written only through the WordPress API, never with SQL on the posts tables (WF-SEO-04).
+	if ( preg_match( '/\$wpdb->(posts|postmeta|term_relationships)\b/', $code ) && preg_match( '/\b(INSERT|UPDATE|DELETE)\b/', $code ) ) {
+		$seo_hits[] = basename( $file ) . ': SQL on posts';
+	}
+	if ( preg_match( '/\b(wp_insert_post|wp_update_post|update_post_meta|wp_set_object_terms)\s*\(/', $code ) ) {
+		$seo_hits[] = basename( $file ) . ': post write (needs a reviewed post action, WF-SEO-04)';
+	}
+}
+check( 'SEO-04/05 no Yoast internals, no SQL on posts, no post writes without a reviewed action' . ( $seo_hits ? ' (' . implode( '; ', $seo_hits ) . ')' : '' ), array() === $seo_hits );
