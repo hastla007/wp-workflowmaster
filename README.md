@@ -21,6 +21,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`TODO.md`](TODO.md) | Umsetzungsliste. |
 | [`docs/recipes/`](docs/recipes/) | Importierbare Beispiel-Workflows, im Test gegen Graph-Validierung und Katalog geprüft. |
 | [`docs/n8n/`](docs/n8n/) | Entwürfe von n8n-Vorlagen ohne Zugangsdaten (WF-N8N-10). |
+| [`docs/TESTMATRIX.md`](docs/TESTMATRIX.md) | Was automatisch getestet ist und was echtes WordPress, WooCommerce oder Adapter braucht. |
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Betrieb und Wiederherstellung: typische Lagen, Backup, Grenzen. |
 | [`docs/SDK.md`](docs/SDK.md) | Entwickler-SDK: Adapter, Aktionen, Workflow-Format, Hooks, Datenfluss, Betrieb. |
 | [`docs/CONNECTOR-CONTRACT.md`](docs/CONNECTOR-CONTRACT.md) | Entwurf des öffentlichen Connector-Vertrags für eigene Projekte (wartet auf F-22). |
