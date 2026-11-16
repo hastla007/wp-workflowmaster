@@ -71,6 +71,7 @@ final class Plugin {
 			( new \WorkflowCaptain\Admin\WorkflowsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\SettingsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\ProvidersPage( $this ) )->register();
+			( new \WorkflowCaptain\Admin\SiteHealth( $this ) )->register();
 		}
 		/**
 		 * Workflow Captain has booted. Adapters register on "workflow_captain_register_adapters_v1" (init, priority 20).

@@ -655,3 +655,21 @@ use WorkflowCaptain\Install;
 check( 'schema: same version is current', Install::SCHEMA_CURRENT === Install::schema_state( '3', '3' ) );
 check( 'schema: missing or older version needs an upgrade', Install::SCHEMA_UPGRADE === Install::schema_state( false, '3' ) && Install::SCHEMA_UPGRADE === Install::schema_state( '2', '3' ) );
 check( 'schema: newer stored version is a downgrade', Install::SCHEMA_NEWER === Install::schema_state( '4', '3' ) );
+
+// ----- Site Health ---------------------------------------------------------------------------------------------
+
+use WorkflowCaptain\Admin\SiteHealth;
+$now  = 1763287200;
+$good = array( 'environment' => array( 'next_worker_run' => gmdate( 'Y-m-d\TH:i:s\Z', $now + 30 ), 'schema_state' => 'current', 'secret_key_own' => true, 'wp_cron_disabled' => false ), 'events' => array(), 'runs' => array(), 'stuck' => array( 'expired_leases' => 0, 'runs_without_steps' => 0 ) );
+check( 'site health: all good', array( 'good' ) === array_values( array_unique( array_column( SiteHealth::evaluate( $good, $now ), 'status' ) ) ) );
+$bad = $good;
+$bad['environment']['next_worker_run'] = gmdate( 'Y-m-d\TH:i:s\Z', $now - 3600 );
+$bad['environment']['schema_state']    = 'newer';
+$bad['environment']['secret_key_own']  = false;
+$bad['runs']['action_required']        = 2;
+$r = SiteHealth::evaluate( $bad, $now );
+check( 'site health: overdue cron and newer schema are critical', 'critical' === $r['cron']['status'] && 'overdue' === $r['cron']['code'] && 'critical' === $r['schema']['status'] );
+check( 'site health: decisions waiting and no own key are recommended', 'recommended' === $r['attention']['status'] && 'recommended' === $r['secret_key']['status'] );
+$off = $good;
+$off['environment']['wp_cron_disabled'] = true;
+check( 'site health: disabled WP-Cron asks for a system cron', 'system_cron_needed' === SiteHealth::evaluate( $off, $now )['cron']['code'] );
