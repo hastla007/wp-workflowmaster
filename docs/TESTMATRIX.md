@@ -22,7 +22,7 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 | C-13 Export und Löschung | automatisch (Callbacks) / offen (WordPress-Werkzeuge) | `tests/run.php`, `tests/engine-tests.php` |
 | C-14 Aufbewahrung | automatisch | beide Testdateien |
 | C-15 Adapter weg | automatisch | `tests/run.php` |
-| C-16 Multisite-Trennung | automatisch für den Ereignisspeicher; Engine siehe unten | `tests/run.php` |
+| C-16 Multisite-Trennung | automatisch für Ereignisspeicher und Engine | `tests/run.php`, `tests/engine-tests.php` |
 
 ## Engine und Builder
 
@@ -70,7 +70,7 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 | Fall | Stand |
 |---|---|
 | Ereignisse je Website getrennt (C-16) | automatisch |
-| Engine-Tabellen je Website getrennt | folgt (Aufgabe in dieser Sitzung) |
+| Engine-Tabellen je Website getrennt | automatisch (`tests/engine-tests.php`, WF-CORE-09) |
 | Netzwerkaktivierung, Löschen einer Website (`wpmu_drop_tables`) | offen |
 | Netzwerkweite Abläufe Site A → Site B (WF-MS-23) | nicht gebaut; offen bis F-07 |
 

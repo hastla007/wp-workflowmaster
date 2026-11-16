@@ -23,9 +23,9 @@ use WorkflowCaptain\Store\EventStore;
 use WorkflowCaptain\Store\WpdbEventStore;
 
 /** A site with consumer and engine wired like Plugin does. */
-function engine_site( string $tz = 'UTC' ): object {
-	$pdo = FakeWpdb::memory();
-	$db  = new FakeWpdb( $pdo );
+function engine_site( string $tz = 'UTC', ?PDO $pdo = null, string $prefix = 'wp_', int $blog_id = 1 ): object {
+	$pdo = $pdo ?? FakeWpdb::memory();
+	$db  = new FakeWpdb( $pdo, $prefix );
 	$db->create_tables();
 	$db->create_engine_tables();
 	$e            = new stdClass();
@@ -46,7 +46,7 @@ function engine_site( string $tz = 'UTC' ): object {
 	$e->adapter   = new TestAdapter();
 	$e->registry  = new AdapterRegistry();
 	$e->registry->add( $e->adapter );
-	$e->consumer  = new Consumer( $e->events, $e->registry, $e->engine, $e->clock, 1 );
+	$e->consumer  = new Consumer( $e->events, $e->registry, $e->engine, $e->clock, $blog_id );
 	$e->engine->set_consumer( $e->consumer );
 	$e->workflows = new Workflows( $e->store, $e->actions, $e->dir, $e->clock );
 	return $e;
@@ -704,3 +704,19 @@ $ids = array_map( fn( $r ) => $r['id'], $s->store->find( array(), 10, 0 ) );
 $s->consumer->requeue( $ids[2] );
 check( 'bulk requeue: only dead_letter/paused events count, duplicates once', 2 === $s->consumer->requeue_many( array( $ids[0], $ids[1], $ids[1], $ids[2], 999 ) ) );
 check( 'bulk requeue: all back in the queue', 3 === count( $s->store->find( array( 'state' => EventStore::RECEIVED ), 10, 0 ) ) );
+
+
+// ----- WF-CORE-09 / C-16: engine tables per site ---------------------------------------------------------------
+
+$shared = FakeWpdb::memory();
+$a      = engine_site( 'UTC', $shared, 'wp_', 1 );
+$b      = engine_site( 'UTC', $shared, 'wp_2_', 2 );
+publish( $a, sample_graph(), 'Nur Site 1' );
+$a->consumer->capture( $a->adapter, checkin() );
+$b->consumer->capture( $b->adapter, checkin() );
+drain( $a );
+drain( $b );
+check( 'WF-CORE-09 a workflow of site 1 does not exist on site 2', array() === $b->store->list_workflows( 10, 0 ) && 1 === count( $a->store->list_workflows( 10, 0 ) ) );
+check( 'WF-CORE-09 the event on site 2 starts no run of site 1', 1 === count( $a->store->find_runs( array(), 10, 0 ) ) && array() === $b->store->find_runs( array(), 10, 0 ) );
+check( 'WF-CORE-09 tags stay on their site', array( 'eingecheckt' ) === $a->store->tags_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' ) && array() === $b->store->tags_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' ) );
+check( 'WF-CORE-09 envelopes carry their own blog ID', 2 === $b->events->find( array(), 1, 0 )[0]['envelope']['site']['blog_id'] );
