@@ -20,6 +20,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`tests/`](tests/) | `php tests/run.php` (Tests ohne WordPress, SQLite) und `php tests/license-guard.php` (Wächtertest „kein Lizenzcode im Kern“). |
 | [`TODO.md`](TODO.md) | Umsetzungsliste. |
 | [`docs/n8n/`](docs/n8n/) | Entwürfe von n8n-Vorlagen ohne Zugangsdaten (WF-N8N-10). |
+| [`docs/SDK.md`](docs/SDK.md) | Entwickler-SDK: Adapter, Aktionen, Workflow-Format, Hooks, Datenfluss, Betrieb. |
 | [`docs/CONNECTOR-CONTRACT.md`](docs/CONNECTOR-CONTRACT.md) | Entwurf des öffentlichen Connector-Vertrags für eigene Projekte (wartet auf F-22). |
 | [`docs/KOMPATIBILITAET.md`](docs/KOMPATIBILITAET.md) | Entwurf der Kompatibilitätsmatrix: welche Stände der Kerne die Spezifikation voraussetzt. |
 | [`docs/ANFORDERUNGEN-andere-repos.md`](docs/ANFORDERUNGEN-andere-repos.md) | Anforderungen der Spezifikation an die anderen Repositories, fertig zum Anlegen dort (WF-SPEC-14). |

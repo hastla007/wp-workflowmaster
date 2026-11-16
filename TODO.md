@@ -45,7 +45,7 @@
 - [ ] WF-BUILDER-10 – Testlauf/Dry Run mit Beispieldaten im Canvas integrieren; ausgewählten Ablaufpfad hervorheben, Fehler am betroffenen Knoten zeigen und keine echten Seiteneffekte auslösen.
 - [ ] WF-BUILDER-11 – Provider-Verfügbarkeit im Canvas behandeln: fehlendes/deaktiviertes Plugin, fehlendes Fachplugin-Pro-Recht oder inkompatibler Major-Contract muss Knoten klar markieren und Veröffentlichung sicher blockieren.
 - [ ] WF-BUILDER-12 – Canvas-E2E-Abnahme für linearen Ablauf, Dann-/Sonst-Pfad, verschachtelte Bedingung im erlaubten Limit, Delay/Wait, Abbruch, Fehler/Retry, Draft/Publish und Wiederöffnung gespeicherter Workflows dokumentieren und ausführen.
-- [ ] Release-Readme, Entwickler-SDK, Anbieterübersicht, Datenschutz-Datenfluss und Support-Diagnose schreiben.
+- [ ] Release-Readme, Entwickler-SDK, Anbieterübersicht, Datenschutz-Datenfluss und Support-Diagnose schreiben. **Stand 16.11.2026: Entwickler-SDK und Datenschutz-Datenfluss in `docs/SDK.md`, Support-Diagnose gebaut, `readme.txt` auf 0.2.0. Offen: Anbieterübersicht und Release-Readme für WordPress.org (nach den Adaptern).**
 
 **Abnahme und Betrieb**
 - [ ] E2E-Matrix für HPOS, Classic/Blocks, Woo-Refunds, Suite-Event-Duplikate, Parallelität, Queue-Ausfall, Retry, Lizenzablauf, Backups, Plugin-Deaktivierung und lokale sowie netzwerkweite Multisite-Ausführung erstellen.
