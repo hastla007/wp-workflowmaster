@@ -70,6 +70,14 @@ interface EngineStore {
 	public function active_versions_for_trigger( string $type ): array;
 
 	/**
+	 * Current published versions whose trigger is $type, of workflows that are not archived (active and paused), with
+	 * the workflow's name, status and draft (overview of all schedules, docs/UI-ENTWUERFE.md, section 4). By name.
+	 *
+	 * @return array<int,array{workflow:array<string,mixed>,version:array<string,mixed>}>
+	 */
+	public function published_for_trigger( string $type ): array;
+
+	/**
 	 * Creates a run unless one exists for this version and event (C-10).
 	 *
 	 * @param array{workflow_id:int,version_id:int,event_row_id:int,event_key:string,context:array,actor_user_id:?int,serial_key?:?string,network?:?array} $run
@@ -128,9 +136,10 @@ interface EngineStore {
 	public function set_run_state( int $id, string $state, ?string $last_error, string $now ): bool;
 
 	/**
-	 * Runs, newest first.
+	 * Runs, newest first. "since" and "until" bound the start time (created_at, UTC, "Y-m-d H:i:s", both inclusive);
+	 * a value in another format is ignored.
 	 *
-	 * @param array{workflow_id?:int,state?:string,correlation_id?:string} $filter
+	 * @param array{workflow_id?:int,state?:string,correlation_id?:string,since?:string,until?:string} $filter
 	 * @return array<int,array<string,mixed>>
 	 */
 	public function find_runs( array $filter, int $limit, int $offset ): array;
@@ -138,7 +147,7 @@ interface EngineStore {
 	/**
 	 * Number of runs find_runs() would return without limit (pagination, konzept 10).
 	 *
-	 * @param array{workflow_id?:int,state?:string,correlation_id?:string} $filter
+	 * @param array{workflow_id?:int,state?:string,correlation_id?:string,since?:string,until?:string} $filter
 	 */
 	public function count_runs( array $filter ): int;
 

@@ -7,7 +7,8 @@
  *
  * No build step, no dependencies. Data from PHP: window.workflowCaptainBuilder = { actions: [{key,label,fields}], events: [], i18n: {} }
  * and optionally sources (origin of events and actions), timezone and locale (schedule preview), focusNode (jump from
- * a run step to its node).
+ * a run step to its node), conditions ({maxDepth, maxRules} of Engine\Conditions) and violations (node ID => codes the
+ * server reported at the last check).
  */
 ( function () {
 	'use strict';
@@ -16,6 +17,11 @@
 	const W = 180;
 	const H = 64;
 	const WEEKDAYS = [ 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag' ];
+	const ENVELOPE_FIELDS = [ 'type', 'subject.type', 'subject.id', 'subject.id_kind', 'source.product', 'actor_user_id' ];
+	const OPERATORS = [ 'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'in', 'not_in', 'contains', 'exists', 'not_exists' ];
+	const DRAG_TYPE = 'application/x-wfc-node';
+	// Server codes the builder checks itself (problems()); shown from the last check only when not covered here.
+	const COVERED = /^(needs_exactly_one_outgoing_edge|needs_one_then_and_one_else|unreachable|unknown_action|end_has_outgoing_edge|invalid_delay|condition:.*|schedule:.*)$/;
 
 	function el( tag, attrs, children ) {
 		const node = document.createElement( tag );
@@ -106,6 +112,59 @@
 		return out;
 	}
 
+	/**
+	 * Violation codes of a condition, the same rules as Conditions::validate() in PHP: groups need "and"/"or" and at
+	 * least one item, at most maxDepth levels (the condition itself is level 1) and maxRules rules.
+	 */
+	function conditionViolations( rules, maxDepth, maxRules ) {
+		const v = [];
+		let count = 0;
+		const isObject = ( x ) => x && 'object' === typeof x && ! Array.isArray( x );
+		const group = ( g, depth ) => {
+			if ( ! isObject( g ) || ! [ 'and', 'or' ].includes( g.op ) || ! Array.isArray( g.items ) || ! g.items.length ) {
+				v.push( 'condition:invalid_group' );
+				return;
+			}
+			if ( depth > maxDepth ) {
+				v.push( 'condition:too_deep' );
+				return;
+			}
+			g.items.forEach( ( item ) => {
+				if ( isObject( item ) && null !== item.op && undefined !== item.op ) {
+					group( item, depth + 1 );
+					return;
+				}
+				count++;
+				if ( ! isObject( item ) || 'string' !== typeof item.field || ! ( ENVELOPE_FIELDS.includes( item.field ) || /^data\.[a-z][a-z0-9_]*$/.test( item.field ) ) ) {
+					v.push( 'condition:invalid_field' );
+				}
+				const op = isObject( item ) ? item.operator : undefined;
+				if ( ! OPERATORS.includes( op ) ) {
+					v.push( 'condition:invalid_operator' );
+					return;
+				}
+				const value = undefined === item.value ? null : item.value;
+				if ( [ 'in', 'not_in' ].includes( op ) && ( ! Array.isArray( value ) || value.length > 50 ) ) {
+					v.push( 'condition:list_expected' );
+				} else if ( [ 'gt', 'gte', 'lt', 'lte' ].includes( op ) && ! ( 'number' === typeof value && isFinite( value ) ) ) {
+					v.push( 'condition:number_expected' );
+				} else if ( [ 'eq', 'neq', 'contains' ].includes( op ) && null !== value && 'object' === typeof value ) {
+					v.push( 'condition:scalar_expected' );
+				}
+			} );
+		};
+		group( rules, 1 );
+		if ( count > maxRules ) {
+			v.push( 'condition:too_many_rules' );
+		}
+		return Array.from( new Set( v ) );
+	}
+
+	/** Number of rules in a condition, groups included. */
+	function countRules( g ) {
+		return ( g && Array.isArray( g.items ) ? g.items : [] ).reduce( ( sum, item ) => sum + ( item && null !== item.op && undefined !== item.op ? countRules( item ) : 1 ), 0 );
+	}
+
 	class Builder {
 		constructor( textarea, config ) {
 			this.textarea = textarea;
@@ -117,6 +176,8 @@
 			this.drag = null;
 			this.history = [];
 			this.future = [];
+			// Codes from the last server check, per node; dropped with the first change, since they may no longer hold.
+			this.serverViolations = this.config.violations || {};
 			this.read();
 			this.focusNode = this.config.focusNode || null;
 			if ( this.focusNode && this.node( this.focusNode ) ) {
@@ -243,6 +304,7 @@
 		}
 
 		commit() {
+			this.serverViolations = {};
 			this.history.push( this.textarea.value );
 			if ( this.history.length > 50 ) {
 				this.history.shift();
@@ -326,7 +388,8 @@
 			return type + i;
 		}
 
-		add( type ) {
+		/** Adds a node from the palette; at = [x, y] when it was dropped on the canvas, else below the selected node. */
+		add( type, at ) {
 			if ( 'trigger' === type && this.graph.nodes.some( ( n ) => 'trigger' === n.type ) ) {
 				this.announce( this.t( 'oneTrigger', 'Ein Workflow hat genau einen Auslöser.' ) );
 				return;
@@ -345,7 +408,7 @@
 				n.amount = 1;
 			}
 			const last = this.selected ? this.node( this.selected ) : null;
-			const spot = this.freeSpot( last ? last.x : 40, last ? last.y + H + 50 : 30 );
+			const spot = at ? this.freeSpot( at[ 0 ], at[ 1 ] ) : this.freeSpot( last ? last.x : 40, last ? last.y + H + 50 : 30 );
 			n.x = spot[ 0 ];
 			n.y = spot[ 1 ];
 			this.graph.nodes.push( n );
@@ -383,6 +446,85 @@
 			this.commit();
 		}
 
+		/** Limits of conditions from Engine\\Conditions (default: one level of groups, 20 rules). */
+		limits() {
+			const c = this.config.conditions || {};
+			return { depth: c.maxDepth || 2, rules: c.maxRules || 20 };
+		}
+
+		/** Nodes reachable from the trigger, for the "not connected" warning (Graph: unreachable). */
+		reachable() {
+			const seen = new Set();
+			const trigger = this.graph.nodes.find( ( n ) => 'trigger' === n.type );
+			const stack = trigger ? [ trigger.id ] : [];
+			while ( stack.length ) {
+				const id = stack.pop();
+				if ( ! seen.has( id ) ) {
+					seen.add( id );
+					this.graph.edges.filter( ( e ) => e.from === id ).forEach( ( e ) => stack.push( e.to ) );
+				}
+			}
+			return seen;
+		}
+
+		/**
+		 * What keeps a node from being published, as {code, text} (docs/UI-ENTWUERFE.md, section 3): missing provider,
+		 * open outputs, invalid rules or settings (the same rules as Graph and Conditions in PHP), and codes from the last
+		 * server check the builder does not test itself. The server decides; this only points to the node.
+		 */
+		problems( n, reach ) {
+			const out = [];
+			const add = ( code, text ) => out.push( { code, text } );
+			const outs = this.graph.edges.filter( ( e ) => e.from === n.id );
+			if ( 'trigger' === n.type ) {
+				if ( this.config.events.length && ! this.config.events.includes( n.event ) ) {
+					add( 'provider', this.t( 'problemProvider', 'Provider nicht verfügbar: kein angemeldeter Adapter liefert dieses Ereignis.' ) );
+				}
+				if ( 'workflow.schedule.due' === n.event && ! upcoming( n.schedule, Date.now(), this.config.timezone || 'UTC', 1 ).length ) {
+					add( 'schedule', this.t( 'nextNone', 'Keine Termine: Der Zeitplan ist unvollständig.' ) );
+				}
+			} else if ( 'action' === n.type && ! this.config.actions.some( ( x ) => x.key === n.action ) ) {
+				add( 'action', this.t( 'problemAction', 'Aktion nicht verfügbar: Der Provider fehlt oder ist nicht aktiv.' ) );
+			} else if ( 'condition' === n.type ) {
+				const texts = {
+					'condition:invalid_group': this.t( 'problemGroup', 'Eine Gruppe ist leer oder hat keine Verknüpfung.' ),
+					'condition:too_deep': this.t( 'problemDeep', 'Gruppen sind zu tief verschachtelt: Eine Gruppe darf keine weitere Gruppe enthalten.' ),
+					'condition:too_many_rules': this.t( 'problemRules', 'Zu viele Regeln (höchstens %d).' ).replace( '%d', this.limits().rules ),
+					'condition:invalid_field': this.t( 'problemField', 'Eine Regel hat kein gültiges Feld.' ),
+					'condition:invalid_operator': this.t( 'problemOperator', 'Eine Regel hat keinen gültigen Operator.' ),
+					'condition:list_expected': this.t( 'problemList', 'Für „in Liste“ Werte mit Komma getrennt angeben.' ),
+					'condition:number_expected': this.t( 'problemNumber', 'Für >, ≥, < und ≤ eine Zahl angeben.' ),
+					'condition:scalar_expected': this.t( 'problemScalar', 'Eine Regel braucht einen einzelnen Wert.' ),
+				};
+				const limits = this.limits();
+				conditionViolations( n.rules, limits.depth, limits.rules ).forEach( ( code ) => add( code, texts[ code ] || code ) );
+				if ( ! outs.some( ( e ) => 'then' === e.branch ) ) {
+					add( 'then', this.t( 'thenOpen', 'Der Dann-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) );
+				}
+				if ( ! outs.some( ( e ) => 'else' === e.branch ) ) {
+					add( 'else', this.t( 'elseOpen', 'Der Sonst-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) );
+				}
+			} else if ( 'delay' === n.type && ( ! [ 'minutes', 'hours', 'days', 'weeks' ].includes( n.unit ) || ! Number.isInteger( n.amount ) || n.amount < 1 || n.amount > 1000 ) ) {
+				add( 'delay', this.t( 'problemDelay', 'Dauer von 1 bis 1000 und eine Einheit angeben.' ) );
+			}
+			if ( [ 'trigger', 'action', 'delay' ].includes( n.type ) && 1 !== outs.length ) {
+				add( 'out', outs.length ? this.t( 'problemOutMany', 'Mehr als ein Ausgang.' ) : this.t( 'problemOut', 'Der Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) );
+			}
+			if ( 'end' === n.type && outs.length ) {
+				add( 'endOut', this.t( 'problemEnd', 'Ein Ende hat keinen Ausgang.' ) );
+			}
+			if ( 'trigger' !== n.type && reach && ! reach.has( n.id ) ) {
+				add( 'unreachable', this.t( 'problemUnreachable', 'Nicht mit dem Auslöser verbunden.' ) );
+			}
+			( this.serverViolations[ n.id ] || [] ).filter( ( code ) => ! COVERED.test( code ) ).forEach( ( code ) => add( 'server', this.t( 'problemServer', 'Beim letzten Prüfen gemeldet:' ) + ' ' + code ) );
+			return out;
+		}
+
+		/** Spoken and written form of a node's problems, e.g. "Warnung: Der Ausgang ist nicht verbunden." */
+		problemText( list ) {
+			return list.length ? this.t( 'warning', 'Warnung' ) + ': ' + list.map( ( p ) => p.text ).join( ' ' ) : '';
+		}
+
 		announce( text ) {
 			if ( this.live ) {
 				this.live.textContent = text;
@@ -404,6 +546,11 @@
 				this.root.parentNode.insertBefore( this.live, this.root );
 			}
 			this.root.innerHTML = '';
+			const reach = this.reachable();
+			this.issues = {};
+			this.graph.nodes.forEach( ( n ) => {
+				this.issues[ n.id ] = this.problems( n, reach );
+			} );
 			if ( this.error ) {
 				this.root.appendChild( el( 'div', { class: 'notice notice-error inline' }, [ el( 'p', { text: this.error } ) ] ) );
 			}
@@ -426,7 +573,14 @@
 		 */
 		restoreFocus( index ) {
 			const target = this.focusTarget;
+			const selector = this.focusSelector;
 			this.focusTarget = null;
+			this.focusSelector = null;
+			const chosen = selector ? this.root.querySelector( selector ) : null;
+			if ( chosen ) {
+				chosen.focus();
+				return;
+			}
 			if ( target ) {
 				const g = this.root.querySelector( `.wfc-node[data-id="${ target }"]` );
 				if ( g && g.getClientRects().length ) {
@@ -449,8 +603,22 @@
 
 		toolbar() {
 			const bar = el( 'div', { class: 'wfc-toolbar', role: 'toolbar', 'aria-label': this.t( 'palette', 'Bausteine' ) } );
+			// Click or Enter adds below the selected node; dragging onto the canvas places it there (workflow-builder.svg).
 			[ [ 'trigger', 'Auslöser' ], [ 'condition', 'Wenn/Sonst' ], [ 'action', 'Aktion' ], [ 'delay', 'Warten' ], [ 'end', 'Ende' ] ].forEach( ( [ type, label ] ) => {
-				bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-add', 'data-type': type, text: '+ ' + this.t( type, label ), onclick: () => this.add( type ) } ) );
+				bar.appendChild( el( 'button', {
+					type: 'button',
+					class: 'button wfc-add',
+					'data-type': type,
+					draggable: 'true',
+					'aria-describedby': 'wfc-palette-hint',
+					text: '+ ' + this.t( type, label ),
+					onclick: () => this.add( type ),
+					ondragstart: ( ev ) => {
+						ev.dataTransfer.setData( DRAG_TYPE, type );
+						ev.dataTransfer.setData( 'text/plain', type );
+						ev.dataTransfer.effectAllowed = 'copy';
+					},
+				} ) );
 			} );
 			bar.appendChild( el( 'span', { class: 'wfc-sep' } ) );
 			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'undo', 'Rückgängig' ), onclick: () => this.undo(), disabled: ! this.history.length } ) );
@@ -464,6 +632,7 @@
 			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-out', 'aria-label': this.t( 'zoomOut', 'Verkleinern' ), text: '−', onclick: () => zoomTo( this.zoom - 0.2 ) } ) );
 			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-reset', text: Math.round( this.zoom * 100 ) + ' %', onclick: () => zoomTo( 1 ) } ) );
 			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-in', 'aria-label': this.t( 'zoomIn', 'Vergrößern' ), text: '+', onclick: () => zoomTo( this.zoom + 0.2 ) } ) );
+			bar.appendChild( el( 'p', { id: 'wfc-palette-hint', class: 'description wfc-palette-hint', text: this.t( 'paletteHint', 'Bausteine anklicken oder auf den Ablauf ziehen. Tastatur: Enter fügt den Baustein unter dem gewählten Knoten ein, die Pfeiltasten verschieben ihn.' ) } ) );
 			return bar;
 		}
 
@@ -498,14 +667,20 @@
 			} );
 
 			this.graph.nodes.forEach( ( n ) => {
-				const unavailable = ( 'trigger' === n.type && this.config.events.length && ! this.config.events.includes( n.event ) ) || ( 'action' === n.type && ! this.config.actions.some( ( x ) => x.key === n.action ) );
-				const state = ( ( this.config.path || [] ).includes( n.id ) ? ' is-path' : '' ) + ( this.config.errorNode === n.id ? ' is-error' : '' ) + ( unavailable ? ' is-unavailable' : '' ) + ( this.focusNode === n.id ? ' is-focus' : '' );
-				const g = svg( 'g', { class: 'wfc-node wfc-node-' + n.type + state + ( this.selected === n.id ? ' is-selected' : '' ), transform: `translate(${ n.x },${ n.y })`, tabindex: '0', role: 'button', 'aria-label': this.ariaLabel( n ), 'data-id': n.id } );
+				const issues = this.issues[ n.id ] || [];
+				const unavailable = issues.some( ( p ) => 'provider' === p.code || 'action' === p.code );
+				const state = ( ( this.config.path || [] ).includes( n.id ) ? ' is-path' : '' ) + ( this.config.errorNode === n.id ? ' is-error' : '' ) + ( unavailable ? ' is-unavailable' : '' ) + ( issues.length ? ' has-problem' : '' ) + ( this.focusNode === n.id ? ' is-focus' : '' );
+				const g = svg( 'g', { class: 'wfc-node wfc-node-' + n.type + state + ( this.selected === n.id ? ' is-selected' : '' ), transform: `translate(${ n.x },${ n.y })`, tabindex: '0', role: 'button', 'aria-label': this.ariaLabel( n ) + ( issues.length ? '. ' + this.problemText( issues ) : '' ), 'data-id': n.id } );
 				g.appendChild( svg( 'rect', { width: W, height: H, rx: 'end' === n.type || 'trigger' === n.type ? 28 : 6 } ) );
-				if ( unavailable ) {
-					const warn = svg( 'text', { x: W - 22, y: 22, class: 'wfc-node-warn' } );
+				if ( issues.length ) {
+					// Warning sign as a badge on the top right corner, clear of the texts: a shape and "!" (not only a colour);
+					// the text is in the name and the tooltip.
+					const mark = svg( 'g', { class: 'wfc-node-warn-mark', transform: `translate(${ W - 14 },-9)`, 'aria-hidden': 'true' } );
+					mark.appendChild( svg( 'path', { d: 'M 11 1 L 21 19 L 1 19 Z', class: 'wfc-node-warn-sign' } ) );
+					const warn = svg( 'text', { x: 11, y: 17, class: 'wfc-node-warn', 'text-anchor': 'middle' } );
 					warn.textContent = '!';
-					g.appendChild( warn );
+					mark.appendChild( warn );
+					g.appendChild( mark );
 				}
 				const cut = ( text, max ) => ( text.length > max ? text.slice( 0, max - 1 ) + '…' : text );
 				const kicker = svg( 'text', { x: 12, y: 17, class: 'wfc-node-kicker' } );
@@ -518,7 +693,7 @@
 				const summary = this.summary( n );
 				const o = this.origin( n );
 				const tip = svg( 'title' );
-				tip.textContent = [ this.kicker( n ), this.label( n ), summary, o && o.contract ? this.t( 'contract', 'Vertrag' ) + ' ' + o.contract : '', 'ID: ' + n.id ].filter( ( x ) => x ).join( '\n' );
+				tip.textContent = [ this.kicker( n ), this.label( n ), summary, o && o.contract ? this.t( 'contract', 'Vertrag' ) + ' ' + o.contract : '', 'ID: ' + n.id ].concat( issues.map( ( p ) => '⚠ ' + p.text ) ).filter( ( x ) => x ).join( '\n' );
 				g.appendChild( tip );
 				if ( summary ) {
 					const sub = svg( 'text', { x: 12, y: 54, class: 'wfc-node-sub' } );
@@ -535,6 +710,27 @@
 			s.addEventListener( 'mouseleave', () => this.endDrag() );
 			const wrap = el( 'div', { class: 'wfc-canvas-wrap' } );
 			wrap.appendChild( s );
+			// Drop target for palette buttons; the point under the pointer becomes the centre of the new node.
+			const fromPalette = ( ev ) => ev.dataTransfer && Array.from( ev.dataTransfer.types || [] ).includes( DRAG_TYPE );
+			wrap.addEventListener( 'dragover', ( ev ) => {
+				if ( fromPalette( ev ) ) {
+					ev.preventDefault();
+					ev.dataTransfer.dropEffect = 'copy';
+					wrap.classList.add( 'is-drop-target' );
+				}
+			} );
+			wrap.addEventListener( 'dragleave', () => wrap.classList.remove( 'is-drop-target' ) );
+			wrap.addEventListener( 'drop', ( ev ) => {
+				wrap.classList.remove( 'is-drop-target' );
+				const type = fromPalette( ev ) ? ev.dataTransfer.getData( DRAG_TYPE ) : '';
+				if ( ! [ 'trigger', 'condition', 'action', 'delay', 'end' ].includes( type ) ) {
+					return;
+				}
+				ev.preventDefault();
+				const box = s.getBoundingClientRect();
+				const snap = ( v ) => Math.max( 0, Math.round( v / 10 ) * 10 );
+				this.add( type, [ snap( ( ev.clientX - box.left ) / this.zoom - W / 2 ), snap( ( ev.clientY - box.top ) / this.zoom - H / 2 ) ] );
+			} );
 			return wrap;
 		}
 
@@ -644,8 +840,7 @@
 		 * Field of a rule as a list (docs/UI-ENTWUERFE.md, section 3): envelope fields and the catalog fields of the
 		 * trigger event with their data type. "Anderes Feld …" switches to a text field for a path outside the catalog.
 		 */
-		fieldPicker( n, i, r, fields, envelopeFields, types, save ) {
-			const key = n.id + ':' + i;
+		fieldPicker( key, r, fields, envelopeFields, types, save ) {
 			const current = r.field || '';
 			if ( this.customFields[ key ] ) {
 				return el( 'input', { type: 'text', class: 'wfc-rule-field', value: current, 'aria-label': this.t( 'fieldCustom', 'Feld (eigener Pfad, z. B. data.feld)' ), onchange: ( ev ) => { r.field = ev.target.value.trim(); delete this.customFields[ key ]; save(); } } );
@@ -670,9 +865,9 @@
 					if ( '__custom' === ev.target.value ) {
 						this.customFields[ key ] = true;
 						this.render();
-						const row = this.root.querySelectorAll( '.wfc-rule' )[ i ];
-						if ( row && row.querySelector( '.wfc-rule-field' ) ) {
-							row.querySelector( '.wfc-rule-field' ).focus();
+						const input = this.root.querySelector( `.wfc-rule[data-key="${ key }"] .wfc-rule-field` );
+						if ( input ) {
+							input.focus();
 						}
 						return;
 					}
@@ -695,19 +890,33 @@
 			}
 		}
 
-		/** Condition as a form (one level of rules); groups fall back to JSON. */
+		/**
+		 * Condition as a form (WF-BUILDER-04): rules and, with "+ Gruppe", groups of rules with their own AND/OR
+		 * (docs/UI-ENTWUERFE.md, section 3). Groups go as deep as Engine\\Conditions allows (MAX_DEPTH 2: one level below
+		 * the condition, so "+ Gruppe" is offered at the top only); "+ Regel" stops at MAX_RULES. Anything deeper (from
+		 * the JSON field or an import) falls back to JSON, with the warning "condition:too_deep" on the node.
+		 */
 		conditionForm( n ) {
-			const box = el( 'div', { class: 'wfc-rules' } );
+			const limits = this.limits();
 			const rules = n.rules || { op: 'and', items: [] };
-			const simple = Array.isArray( rules.items ) && rules.items.every( ( r ) => ! r.op );
-			if ( ! simple ) {
+			const fits = ( g, depth ) => g && 'object' === typeof g && Array.isArray( g.items ) && g.items.every( ( it ) => ! ( it && null !== it.op && undefined !== it.op ) || ( depth < limits.depth && fits( it, depth + 1 ) ) );
+			if ( ! fits( rules, 1 ) ) {
 				return null;
 			}
-			const envelopeFields = [ 'type', 'subject.type', 'subject.id', 'subject.id_kind', 'source.product', 'actor_user_id' ];
+			const box = el( 'div', { class: 'wfc-rules' } );
+			const envelopeFields = ENVELOPE_FIELDS;
 			const fields = envelopeFields.concat( this.dataFields().map( ( f ) => 'data.' + f ) );
 			const types = this.dataTypes();
+			const save = () => {
+				n.rules = rules;
+				this.commit();
+			};
+			const full = countRules( rules ) >= limits.rules;
+			const newRule = () => ( { field: fields[ 0 ] || 'type', operator: 'eq', value: '' } );
+			const keyOf = ( path ) => n.id + ':' + path;
 			this.customFields = this.customFields || {};
-			box.appendChild( labelled( this.t( 'combine', 'Verknüpfung' ), el( 'select', { class: 'wfc-op', onchange: ( ev ) => { rules.op = ev.target.value; n.rules = rules; this.commit(); } }, [ [ 'and', 'alle Regeln (UND)' ], [ 'or', 'eine Regel (ODER)' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: rules.op === v } ) ) ) ) );
+			const combine = ( group, label, cls ) => labelled( label, el( 'select', { class: cls, onchange: ( ev ) => { group.op = ev.target.value; save(); } }, [ [ 'and', this.t( 'combineAnd', 'alle Regeln (UND)' ) ], [ 'or', this.t( 'combineOr', 'eine Regel (ODER)' ) ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: group.op === v } ) ) ) );
+			box.appendChild( combine( rules, this.t( 'combine', 'Verknüpfung' ), 'wfc-op' ) );
 			const ops = [ [ 'eq', '=' ], [ 'neq', '≠' ], [ 'gt', '>' ], [ 'gte', '≥' ], [ 'lt', '<' ], [ 'lte', '≤' ], [ 'in', 'in Liste' ], [ 'not_in', 'nicht in Liste' ], [ 'contains', 'enthält' ], [ 'exists', 'vorhanden' ], [ 'not_exists', 'fehlt' ] ];
 			const parse = ( op, raw ) => {
 				if ( [ 'in', 'not_in' ].includes( op ) ) {
@@ -722,9 +931,10 @@
 				return /^-?\d+(\.\d+)?$/.test( raw ) ? Number( raw ) : raw;
 			};
 			const show = ( v ) => ( Array.isArray( v ) ? v.join( ', ' ) : ( undefined === v || null === v ? '' : String( v ) ) );
-			rules.items.forEach( ( r, i ) => {
-				const row = el( 'div', { class: 'wfc-rule' } );
-				row.appendChild( this.fieldPicker( n, i, r, fields, envelopeFields, types, () => { n.rules = rules; this.commit(); } ) );
+			// One rule; removing the last rule of a group removes the group (an empty group is invalid).
+			const ruleRow = ( r, path, group, i, parent, gi ) => {
+				const row = el( 'div', { class: 'wfc-rule', 'data-key': keyOf( path ) } );
+				row.appendChild( this.fieldPicker( keyOf( path ), r, fields, envelopeFields, types, save ) );
 				const dtype = ( r.field || '' ).startsWith( 'data.' ) ? types[ r.field.slice( 5 ) ] : '';
 				if ( dtype ) {
 					row.appendChild( el( 'span', { class: 'wfc-rule-type', text: dtype } ) );
@@ -733,14 +943,51 @@
 				if ( undefined !== example ) {
 					row.appendChild( el( 'span', { class: 'wfc-rule-example description', text: this.t( 'example', 'Beispiel:' ) + ' ' + ( 'object' === typeof example ? JSON.stringify( example ) : String( example ) ) } ) );
 				}
-				row.appendChild( el( 'select', { class: 'wfc-rule-op', 'aria-label': this.t( 'operator', 'Operator' ), onchange: ( ev ) => { r.operator = ev.target.value; r.value = parse( r.operator, show( r.value ) ); n.rules = rules; this.commit(); } }, ops.map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: r.operator === v } ) ) ) );
+				row.appendChild( el( 'select', { class: 'wfc-rule-op', 'aria-label': this.t( 'operator', 'Operator' ), onchange: ( ev ) => { r.operator = ev.target.value; r.value = parse( r.operator, show( r.value ) ); save(); } }, ops.map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: r.operator === v } ) ) ) );
 				if ( ! [ 'exists', 'not_exists' ].includes( r.operator ) ) {
-					row.appendChild( el( 'input', { type: 'text', class: 'wfc-rule-value', value: show( r.value ), 'aria-label': this.t( 'value', 'Wert' ), onchange: ( ev ) => { r.value = parse( r.operator, ev.target.value ); n.rules = rules; this.commit(); } } ) );
+					row.appendChild( el( 'input', { type: 'text', class: 'wfc-rule-value', value: show( r.value ), 'aria-label': this.t( 'value', 'Wert' ), onchange: ( ev ) => { r.value = parse( r.operator, ev.target.value ); save(); } } ) );
 				}
-				row.appendChild( el( 'button', { type: 'button', class: 'button-link wfc-rule-remove', text: '×', 'aria-label': this.t( 'removeRule', 'Regel entfernen' ), onclick: () => { rules.items.splice( i, 1 ); n.rules = rules; this.commit(); } } ) );
-				box.appendChild( row );
+				row.appendChild( el( 'button', {
+					type: 'button',
+					class: 'button-link wfc-rule-remove',
+					text: '×',
+					'aria-label': this.t( 'removeRule', 'Regel entfernen' ),
+					onclick: () => {
+						group.items.splice( i, 1 );
+						if ( parent && ! group.items.length ) {
+							parent.items.splice( gi, 1 );
+							this.focusSelector = '.wfc-group-add';
+						}
+						save();
+					},
+				} ) );
+				return row;
+			};
+			let groupNo = 0;
+			rules.items.forEach( ( item, i ) => {
+				if ( ! ( item && null !== item.op && undefined !== item.op ) ) {
+					box.appendChild( ruleRow( item, String( i ), rules, i, null, null ) );
+					return;
+				}
+				groupNo++;
+				const set = el( 'fieldset', { class: 'wfc-rule-group', 'data-key': keyOf( String( i ) ) }, [ el( 'legend', { text: this.t( 'group', 'Gruppe' ) + ' ' + groupNo } ) ] );
+				set.appendChild( combine( item, this.t( 'combineGroup', 'Verknüpfung in der Gruppe' ), 'wfc-group-op' ) );
+				item.items.forEach( ( r, j ) => set.appendChild( ruleRow( r, i + '.' + j, item, j, rules, i ) ) );
+				set.appendChild( el( 'p', {}, [
+					el( 'button', { type: 'button', class: 'button wfc-group-rule-add', text: '+ ' + this.t( 'addRuleGroup', 'Regel in Gruppe' ) + ' ' + groupNo, disabled: full, onclick: () => { item.items.push( newRule() ); this.focusSelector = `.wfc-rule[data-key="${ keyOf( i + '.' + ( item.items.length - 1 ) ) }"] .wfc-rule-field`; save(); } } ),
+					el( 'button', { type: 'button', class: 'button-link wfc-group-remove', text: this.t( 'removeGroup', 'Gruppe entfernen' ) + ' ' + groupNo, onclick: () => { rules.items.splice( i, 1 ); this.focusSelector = '.wfc-group-add'; save(); } } ),
+				] ) );
+				box.appendChild( set );
 			} );
-			box.appendChild( el( 'button', { type: 'button', class: 'button wfc-rule-add', text: '+ ' + this.t( 'addRule', 'Regel' ), onclick: () => { rules.items.push( { field: fields[ 0 ] || 'type', operator: 'eq', value: '' } ); n.rules = rules; this.commit(); } } ) );
+			const buttons = el( 'p', { class: 'wfc-rule-buttons' } );
+			buttons.appendChild( el( 'button', { type: 'button', class: 'button wfc-rule-add', text: '+ ' + this.t( 'addRule', 'Regel' ), disabled: full, onclick: () => { rules.items.push( newRule() ); this.focusSelector = `.wfc-rule[data-key="${ keyOf( rules.items.length - 1 ) }"] .wfc-rule-field`; save(); } } ) );
+			if ( limits.depth > 1 ) {
+				buttons.appendChild( document.createTextNode( ' ' ) );
+				buttons.appendChild( el( 'button', { type: 'button', class: 'button wfc-group-add', text: '+ ' + this.t( 'addGroup', 'Gruppe' ), disabled: full, 'aria-describedby': 'wfc-group-hint', onclick: () => { rules.items.push( { op: 'or', items: [ newRule() ] } ); this.focusSelector = `.wfc-rule[data-key="${ keyOf( ( rules.items.length - 1 ) + '.0' ) }"] .wfc-rule-field`; save(); } } ) );
+			}
+			box.appendChild( buttons );
+			const hint = full ? this.t( 'rulesFull', 'Höchstens %d Regeln je Bedingung, Gruppen eingeschlossen.' ).replace( '%d', limits.rules ) : this.t( 'groupHint', 'Eine Gruppe fasst Regeln mit eigener Verknüpfung zusammen, z. B. „A und (B oder C)“. Eine Gruppe kann keine weitere Gruppe enthalten.' );
+			box.appendChild( el( 'p', { id: 'wfc-group-hint', class: 'description', text: hint } ) );
 			return box;
 		}
 
@@ -828,7 +1075,23 @@
 				return box;
 			}
 			box.appendChild( el( 'ul', { class: 'wfc-next', 'aria-labelledby': 'wfc-next-label' }, times.map( ( t ) => el( 'li', {}, [ el( 'time', { datetime: new Date( t ).toISOString().replace( '.000Z', 'Z' ), text: this.formatTime( t ) } ) ] ) ) ) );
+			box.appendChild( this.lastFired() );
 			return box;
+		}
+
+		/** "Zuletzt ausgelöst" of the published schedule (docs/UI-ENTWUERFE.md, section 4), from the worker's record. */
+		lastFired() {
+			const last = this.config.lastFired;
+			if ( ! last || ! last.at ) {
+				return el( 'p', { class: 'description wfc-last-fired', text: this.t( 'lastFiredNever', 'Zuletzt ausgelöst: noch nie.' ) } );
+			}
+			return el( 'p', { class: 'wfc-last-fired' }, [
+				document.createTextNode( this.t( 'lastFired', 'Zuletzt ausgelöst:' ) + ' ' ),
+				el( 'time', { datetime: new Date( last.at ).toISOString().replace( '.000Z', 'Z' ), text: this.formatTime( last.at ) } ),
+				document.createTextNode( ' (' ),
+				el( 'a', { href: last.runs, text: this.t( 'runsOfWorkflow', 'Läufe dieses Workflows' ) } ),
+				document.createTextNode( ')' ),
+			] );
 		}
 
 		/**
@@ -870,6 +1133,11 @@
 				facts.unshift( this.t( 'origin', 'Herkunft' ) + ': ' + o.label + ( o.version ? ' ' + o.version : '' ) + ( o.contract ? ', ' + this.t( 'contract', 'Vertrag' ) + ' ' + o.contract : '' ) );
 			}
 			box.appendChild( el( 'p', { class: 'description wfc-origin', text: facts.join( ' · ' ) } ) );
+			// Problems of the node; the open branches of a condition are shown at their buttons further down.
+			const issues = ( this.issues[ n.id ] || [] ).filter( ( p ) => ! [ 'then', 'else' ].includes( p.code ) );
+			if ( issues.length ) {
+				box.appendChild( el( 'div', { class: 'notice notice-warning inline wfc-problems' }, [ el( 'ul', {}, issues.map( ( p ) => el( 'li', { text: p.text } ) ) ) ] ) );
+			}
 			if ( this.focusNode === n.id ) {
 				box.appendChild( el( 'p', { class: 'notice notice-info inline wfc-focus-note', text: this.t( 'focusNote', 'Dieser Knoten ist der Schritt aus dem Lauf. Der Lauf nutzte die veröffentlichte Version; der Entwurf kann abweichen.' ) } ) );
 			}
@@ -940,10 +1208,8 @@
 					el( 'button', { type: 'button', class: 'button', text: this.t( 'connectThen', 'Dann verbinden …' ), onclick: () => { this.connectFrom = n.id; this.connectBranch = 'then'; this.announce( this.t( 'connectHint', 'Ziel wählen.' ) ); } } ),
 					el( 'button', { type: 'button', class: 'button', text: this.t( 'connectElse', 'Sonst verbinden …' ), onclick: () => { this.connectFrom = n.id; this.connectBranch = 'else'; this.announce( this.t( 'connectHint', 'Ziel wählen.' ) ); } } ),
 				] ) );
-				[ [ 'then', this.t( 'thenOpen', 'Der Dann-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) ], [ 'else', this.t( 'elseOpen', 'Der Sonst-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) ] ].forEach( ( [ branch, text ] ) => {
-					if ( ! this.graph.edges.some( ( e ) => e.from === n.id && branch === e.branch ) ) {
-						box.appendChild( el( 'p', { class: 'notice notice-warning inline wfc-branch-open', text } ) );
-					}
+				( this.issues[ n.id ] || [] ).filter( ( p ) => [ 'then', 'else' ].includes( p.code ) ).forEach( ( p ) => {
+					box.appendChild( el( 'p', { class: 'notice notice-warning inline wfc-branch-open', text: p.text } ) );
 				} );
 			} else if ( 'delay' === n.type ) {
 				box.appendChild( field( this.t( 'amount', 'Dauer' ), el( 'input', { type: 'number', min: 1, max: 1000, value: n.amount || 1, onchange: ( ev ) => set( 'amount', parseInt( ev.target.value, 10 ) || 1 ) } ) ) );
@@ -954,6 +1220,12 @@
 			}
 			box.appendChild( el( 'button', { type: 'button', class: 'button button-link-delete', text: this.t( 'delete', 'Löschen' ), onclick: () => this.remove( n.id ) } ) );
 			return box;
+		}
+
+		/** Warning after a step of the linear view (not focusable, so the list keeps its Tab order). */
+		warnSpan( n, skip ) {
+			const issues = ( this.issues[ n.id ] || [] ).filter( ( p ) => ! ( skip || [] ).includes( p.code ) );
+			return issues.length ? [ el( 'span', { class: 'wfc-linear-warn', text: ' ⚠ ' + this.problemText( issues ) } ) ] : [];
 		}
 
 		/** Linear step view for small screens and screen readers (WF-BUILDER-09). */
@@ -970,12 +1242,12 @@
 					return;
 				}
 				const focus = this.focusNode === id;
-				ol.appendChild( el( 'li', { class: focus ? 'is-focus' : null, 'aria-current': focus ? 'step' : null }, [ el( 'button', { type: 'button', class: 'button-link', 'data-id': id, text: prefix + this.label( n ) + ( focus ? ' (' + this.t( 'fromRun', 'aus dem Lauf' ) + ')' : '' ), onclick: () => this.clickNode( id ) } ) ] ) );
+				ol.appendChild( el( 'li', { class: focus ? 'is-focus' : null, 'aria-current': focus ? 'step' : null }, [ el( 'button', { type: 'button', class: 'button-link', 'data-id': id, text: prefix + this.label( n ) + ( focus ? ' (' + this.t( 'fromRun', 'aus dem Lauf' ) + ')' : '' ), onclick: () => this.clickNode( id ) } ) ].concat( this.warnSpan( n ) ) ) );
 				this.graph.edges.filter( ( e ) => e.from === id ).forEach( ( e ) => walk( e.to, e.branch ? ( 'then' === e.branch ? this.t( 'then', 'Dann' ) : this.t( 'else', 'Sonst' ) ) + ': ' : '' ) );
 			};
 			const trigger = this.graph.nodes.find( ( n ) => 'trigger' === n.type );
 			walk( trigger && trigger.id, '' );
-			this.graph.nodes.filter( ( n ) => ! seen.has( n.id ) ).forEach( ( n ) => ol.appendChild( el( 'li', { class: 'wfc-unconnected' }, [ el( 'button', { type: 'button', class: 'button-link', text: this.t( 'unconnected', 'Nicht verbunden' ) + ': ' + this.label( n ), onclick: () => this.clickNode( n.id ) } ) ] ) ) );
+			this.graph.nodes.filter( ( n ) => ! seen.has( n.id ) ).forEach( ( n ) => ol.appendChild( el( 'li', { class: 'wfc-unconnected' }, [ el( 'button', { type: 'button', class: 'button-link', text: this.t( 'unconnected', 'Nicht verbunden' ) + ': ' + this.label( n ), onclick: () => this.clickNode( n.id ) } ) ].concat( this.warnSpan( n, [ 'unreachable' ] ) ) ) ) );
 			// Stays open across rebuilds, so choosing a step on a small screen does not close the list.
 			const narrow = window.matchMedia && window.matchMedia( '(max-width: 782px)' ).matches;
 			return el( 'details', { class: 'wfc-linear-wrap', open: !! this.linearOpen || !! ( this.focusNode && this.node( this.focusNode ) && narrow ) }, [ el( 'summary', { text: this.t( 'linear', 'Schritte der Reihe nach' ) } ), ol ] );
@@ -983,6 +1255,7 @@
 	}
 
 	Builder.upcoming = upcoming;
+	Builder.conditionViolations = conditionViolations;
 	window.WorkflowCaptainBuilder = Builder;
 	document.addEventListener( 'DOMContentLoaded', () => {
 		const textarea = document.getElementById( 'wfc-graph' );

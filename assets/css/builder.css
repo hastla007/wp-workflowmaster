@@ -31,7 +31,7 @@
 }
 .wfc-node.is-path rect { stroke: #2271b1; stroke-width: 3; }
 .wfc-node.is-error rect, .wfc-node.is-unavailable rect { stroke: #b32d2e; stroke-width: 3; }
-.wfc-node-warn { font: 700 18px/1 sans-serif; fill: #b32d2e; }
+.wfc-node-warn { font: 700 14px/1 sans-serif; fill: #fff; }
 .wfc-rule { display: flex; gap: 4px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
 .wfc-rule-field { width: 11em; }
 .wfc-rule-value { width: 8em; }
@@ -63,3 +63,22 @@
 }
 /* WordPress draws "Löschen"/"Archivieren" in #d63638 on #f6f7f7 (4.4:1); the darker red reaches 4.5:1. */
 body[class*="workflow-captain"] .button.button-link-delete { color: #b32d2e; }
+
+/* Warning sign on a node (docs/UI-ENTWUERFE.md, section 3): triangle with "!", the text is in the name and tooltip. */
+.wfc-node-warn-sign { fill: #b32d2e; stroke: #fff; stroke-width: 1; }
+.wfc-problems ul { list-style: disc; margin: .5em 0 .5em 1.5em; }
+.wfc-linear-warn { color: #b32d2e; }
+/* Groups of rules ("+ Gruppe"). */
+.wfc-rule-group { border: 1px solid #c3c4c7; padding: 4px 8px 0; margin: 0 0 8px; min-width: 0; }
+.wfc-rule-group legend { font-weight: 600; padding: 0 4px; }
+.wfc-rule-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.wfc-rule-buttons .button[disabled], .wfc-rule-group .button[disabled] { cursor: not-allowed; }
+/* Dragging from the palette onto the canvas. */
+.wfc-add[draggable="true"] { cursor: grab; }
+.wfc-canvas-wrap.is-drop-target { outline: 2px dashed #2271b1; outline-offset: -2px; }
+.wfc-palette-hint { flex-basis: 100%; margin: 0; }
+@media (max-width: 782px) {
+	.wfc-palette-hint { display: none; }
+}
+/* Steps of the linear view are targets of at least 24 px (WCAG 2.5.8), also with a warning next to them. */
+.wfc-linear .button-link { min-height: 24px; }

@@ -88,6 +88,12 @@ final class WorkflowsPage {
 			'timezone'  => wp_timezone_string(),
 			'locale'    => str_replace( '_', '-', get_user_locale() ),
 			'focusNode' => 1 === preg_match( '/^[A-Za-z0-9_-]{1,64}$/', $node ) ? $node : null,
+			// Limits of conditions, so the form offers "+ Gruppe" only as deep as the engine allows (condition:too_deep).
+			'conditions' => array( 'maxDepth' => \WorkflowCaptain\Engine\Conditions::MAX_DEPTH, 'maxRules' => \WorkflowCaptain\Engine\Conditions::MAX_RULES ),
+			// Codes of the last check per node, for the warning sign on the node (shown until the first change).
+			'violations' => self::node_violations( get_transient( 'workflow_captain_notice_' . get_current_user_id() ) ),
+			// Last fired time of this workflow's schedule (option of the worker), for "Zuletzt ausgelöst" in the form.
+			'lastFired'  => self::last_fired( (array) get_option( 'workflow_captain_schedule_fired', array() ), absint( wp_unslash( $_GET['edit'] ) ) ), // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
 			'i18n'      => self::builder_i18n(),
 		);
 		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( $config ) . ';', 'before' );
@@ -142,7 +148,69 @@ final class WorkflowsPage {
 			'example'        => __( 'Beispiel:', 'workflow-captain' ),
 			'thenOpen'       => __( 'Der Dann-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.', 'workflow-captain' ),
 			'elseOpen'       => __( 'Der Sonst-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.', 'workflow-captain' ),
+			'paletteHint'    => __( 'Bausteine anklicken oder auf den Ablauf ziehen. Tastatur: Enter fügt den Baustein unter dem gewählten Knoten ein, die Pfeiltasten verschieben ihn.', 'workflow-captain' ),
+			'warning'        => __( 'Warnung', 'workflow-captain' ),
+			'problemProvider' => __( 'Provider nicht verfügbar: kein angemeldeter Adapter liefert dieses Ereignis.', 'workflow-captain' ),
+			'problemAction'  => __( 'Aktion nicht verfügbar: Der Provider fehlt oder ist nicht aktiv.', 'workflow-captain' ),
+			'problemGroup'   => __( 'Eine Gruppe ist leer oder hat keine Verknüpfung.', 'workflow-captain' ),
+			'problemDeep'    => __( 'Gruppen sind zu tief verschachtelt: Eine Gruppe darf keine weitere Gruppe enthalten.', 'workflow-captain' ),
+			/* translators: %d: maximum number of rules */
+			'problemRules'   => __( 'Zu viele Regeln (höchstens %d).', 'workflow-captain' ),
+			'problemField'   => __( 'Eine Regel hat kein gültiges Feld.', 'workflow-captain' ),
+			'problemOperator' => __( 'Eine Regel hat keinen gültigen Operator.', 'workflow-captain' ),
+			'problemList'    => __( 'Für „in Liste“ Werte mit Komma getrennt angeben.', 'workflow-captain' ),
+			'problemNumber'  => __( 'Für >, ≥, < und ≤ eine Zahl angeben.', 'workflow-captain' ),
+			'problemScalar'  => __( 'Eine Regel braucht einen einzelnen Wert.', 'workflow-captain' ),
+			'problemDelay'   => __( 'Dauer von 1 bis 1000 und eine Einheit angeben.', 'workflow-captain' ),
+			'problemOut'     => __( 'Der Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.', 'workflow-captain' ),
+			'problemOutMany' => __( 'Mehr als ein Ausgang.', 'workflow-captain' ),
+			'problemEnd'     => __( 'Ein Ende hat keinen Ausgang.', 'workflow-captain' ),
+			'problemUnreachable' => __( 'Nicht mit dem Auslöser verbunden.', 'workflow-captain' ),
+			'problemServer'  => __( 'Beim letzten Prüfen gemeldet:', 'workflow-captain' ),
+			'combineAnd'     => __( 'alle Regeln (UND)', 'workflow-captain' ),
+			'combineOr'      => __( 'eine Regel (ODER)', 'workflow-captain' ),
+			'combineGroup'   => __( 'Verknüpfung in der Gruppe', 'workflow-captain' ),
+			'group'          => __( 'Gruppe', 'workflow-captain' ),
+			'addGroup'       => __( 'Gruppe', 'workflow-captain' ),
+			'addRuleGroup'   => __( 'Regel in Gruppe', 'workflow-captain' ),
+			'removeGroup'    => __( 'Gruppe entfernen', 'workflow-captain' ),
+			'groupHint'      => __( 'Eine Gruppe fasst Regeln mit eigener Verknüpfung zusammen, z. B. „A und (B oder C)“. Eine Gruppe kann keine weitere Gruppe enthalten.', 'workflow-captain' ),
+			/* translators: %d: maximum number of rules */
+			'rulesFull'      => __( 'Höchstens %d Regeln je Bedingung, Gruppen eingeschlossen.', 'workflow-captain' ),
+			'lastFired'      => __( 'Zuletzt ausgelöst:', 'workflow-captain' ),
+			'lastFiredNever' => __( 'Zuletzt ausgelöst: noch nie.', 'workflow-captain' ),
+			'runsOfWorkflow' => __( 'Läufe dieses Workflows', 'workflow-captain' ),
 		);
+	}
+
+	/**
+	 * Node codes of the last save or publish check ("node:<id>:<code>"), grouped by node ID; an empty object when none.
+	 *
+	 * @param mixed $notice The notice transient (array with "errors") or false.
+	 * @return array<string,string[]>|\stdClass
+	 */
+	public static function node_violations( $notice ) {
+		$out = array();
+		foreach ( (array) ( is_array( $notice ) ? ( $notice['errors'] ?? array() ) : array() ) as $code ) {
+			if ( is_string( $code ) && 1 === preg_match( '/^node:([A-Za-z0-9_-]{1,64}):(.+)$/', $code, $m ) ) {
+				$out[ $m[1] ][] = $m[2];
+			}
+		}
+		return array() === $out ? new \stdClass() : $out;
+	}
+
+	/**
+	 * Last fired time of a workflow's schedule for the builder: milliseconds (JavaScript time) and the link to its runs,
+	 * or null when it never fired.
+	 *
+	 * @param array<int,int> $fired workflow ID => UTC timestamp.
+	 * @return array{at:int,runs:string}|null
+	 */
+	public static function last_fired( array $fired, int $workflow_id ): ?array {
+		if ( $workflow_id < 1 || empty( $fired[ $workflow_id ] ) ) {
+			return null;
+		}
+		return array( 'at' => (int) $fired[ $workflow_id ] * 1000, 'runs' => self::url( self::SLUG_RUNS, array( 'workflow' => $workflow_id ) ) );
 	}
 
 	public static function url( string $page, array $args = array() ): string {
@@ -470,10 +538,14 @@ final class WorkflowsPage {
 		$state    = in_array( $state, $states, true ) ? $state : '';
 		$corr     = EventsPage::correlation_param();
 		$workflow = isset( $_GET['workflow'] ) ? absint( wp_unslash( $_GET['workflow'] ) ) : 0;
-		$base     = array_filter( array( 'correlation_id' => $corr, 'workflow_id' => $workflow ) );
+		$period   = isset( $_GET['period'] ) ? sanitize_key( wp_unslash( $_GET['period'] ) ) : '';
+		$from     = isset( $_GET['from'] ) ? sanitize_text_field( wp_unslash( $_GET['from'] ) ) : '';
+		$to       = isset( $_GET['to'] ) ? sanitize_text_field( wp_unslash( $_GET['to'] ) ) : '';
+		$range    = self::period_filter( $period, $from, $to, time() );
+		$base     = array_filter( array( 'correlation_id' => $corr, 'workflow_id' => $workflow ) ) + $range['filter'];
 		$filter   = $base + array_filter( array( 'state' => $state ) );
 		$pages    = Pagination::state( $store->count_runs( $filter ), self::PER_PAGE, Pagination::requested() );
-		$args     = array( 'page' => self::SLUG_RUNS, 'correlation' => $corr, 'workflow' => $workflow );
+		$args     = array( 'page' => self::SLUG_RUNS, 'correlation' => $corr, 'workflow' => $workflow ) + $range['args'];
 
 		if ( '' !== $corr || $workflow > 0 ) {
 			$wf_row = $workflow > 0 ? $store->get_workflow( $workflow ) : null;
@@ -498,6 +570,7 @@ final class WorkflowsPage {
 			$links[] = '<a href="' . esc_url( add_query_arg( array_filter( $args + array( 'state' => $key ) ), admin_url( 'admin.php' ) ) ) . '"' . ( $state === $key ? ' class="current" aria-current="page"' : '' ) . '>' . esc_html( self::run_label( $key ) ) . ' (' . (int) $store->count_runs( $base + array( 'state' => $key ) ) . ')</a>';
 		}
 		echo '<ul class="subsubsub"><li>' . implode( ' | </li><li>', $links ) . '</li></ul>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts above.
+		$this->render_period_form( $state, $corr, $workflow, $range['args'] );
 
 		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Läufe, neueste zuerst', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Nr.', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Workflow', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Ereignis', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Zustand', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Grund', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Begonnen (UTC)', 'workflow-captain' ) . '</th></tr></thead><tbody>';
 		$runs = $store->find_runs( $filter, self::PER_PAGE, $pages['offset'] );
@@ -515,6 +588,66 @@ final class WorkflowsPage {
 		echo '</tbody></table>';
 		echo Pagination::render( $pages, $args + array( 'state' => $state ), __( 'Seiten der Laufliste', 'workflow-captain' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in Pagination::render().
 		echo '</div>';
+	}
+
+	/** Presets of the time range of the run list, in days (docs/UI-ENTWUERFE.md, section 1). */
+	const PERIODS = array( 1, 7, 30, 90 );
+
+	/**
+	 * Time range of the run list from the request. Own dates (UTC, "Y-m-d", from 00:00:00 to 23:59:59 inclusive) win over
+	 * a preset of days; reversed dates are swapped; anything else is ignored. "args" are the parameters to keep in links.
+	 *
+	 * @return array{filter:array{since?:string,until?:string},args:array<string,string>}
+	 */
+	public static function period_filter( string $period, string $from, string $to, int $now ): array {
+		$date = static function ( string $d ): ?string {
+			$dt = \DateTimeImmutable::createFromFormat( '!Y-m-d', $d, new \DateTimeZone( 'UTC' ) );
+			return false !== $dt && $dt->format( 'Y-m-d' ) === $d ? $d : null;
+		};
+		$from = $date( $from );
+		$to   = $date( $to );
+		if ( null !== $from && null !== $to && $from > $to ) {
+			list( $from, $to ) = array( $to, $from );
+		}
+		if ( null !== $from || null !== $to ) {
+			$filter = array();
+			$args   = array();
+			if ( null !== $from ) {
+				$filter['since'] = $from . ' 00:00:00';
+				$args['from']    = $from;
+			}
+			if ( null !== $to ) {
+				$filter['until'] = $to . ' 23:59:59';
+				$args['to']      = $to;
+			}
+			return array( 'filter' => $filter, 'args' => $args );
+		}
+		if ( in_array( (int) $period, self::PERIODS, true ) && (string) (int) $period === $period ) {
+			return array( 'filter' => array( 'since' => gmdate( 'Y-m-d H:i:s', $now - (int) $period * 86400 ) ), 'args' => array( 'period' => $period ) );
+		}
+		return array( 'filter' => array(), 'args' => array() );
+	}
+
+	/** Form for the time range of the run list; keeps the other filters. Not in "tablenav", which WordPress hides on phones. */
+	private function render_period_form( string $state, string $corr, int $workflow, array $current ): void {
+		echo '<form method="get" class="wfc-run-period" style="clear:both;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:flex-end;padding:8px 0">';
+		foreach ( array_filter( array( 'page' => self::SLUG_RUNS, 'state' => $state, 'correlation' => $corr, 'workflow' => $workflow ) ) as $key => $value ) {
+			echo '<input type="hidden" name="' . esc_attr( $key ) . '" value="' . esc_attr( (string) $value ) . '">';
+		}
+		echo '<span><label for="wfc-period">' . esc_html__( 'Zeitraum', 'workflow-captain' ) . '</label><br><select id="wfc-period" name="period"><option value="">' . esc_html__( 'gesamt', 'workflow-captain' ) . '</option>';
+		foreach ( self::PERIODS as $days ) {
+			/* translators: %d: number of days */
+			$text = 1 === $days ? __( 'letzte 24 Stunden', 'workflow-captain' ) : sprintf( __( 'letzte %d Tage', 'workflow-captain' ), $days );
+			echo '<option value="' . (int) $days . '"' . selected( (string) ( $current['period'] ?? '' ), (string) $days, false ) . '>' . esc_html( $text ) . '</option>';
+		}
+		echo '</select></span>';
+		echo '<span><label for="wfc-from">' . esc_html__( 'oder von (UTC)', 'workflow-captain' ) . '</label><br><input type="date" id="wfc-from" name="from" value="' . esc_attr( (string) ( $current['from'] ?? '' ) ) . '"></span>';
+		echo '<span><label for="wfc-to">' . esc_html__( 'bis (UTC)', 'workflow-captain' ) . '</label><br><input type="date" id="wfc-to" name="to" value="' . esc_attr( (string) ( $current['to'] ?? '' ) ) . '"></span>';
+		echo '<span><button class="button">' . esc_html__( 'Filtern', 'workflow-captain' ) . '</button>';
+		if ( array() !== $current ) {
+			echo ' <a href="' . esc_url( self::url( self::SLUG_RUNS, array_filter( array( 'state' => $state, 'correlation' => $corr, 'workflow' => $workflow ) ) ) ) . '">' . esc_html__( 'Zeitraum entfernen', 'workflow-captain' ) . '</a>';
+		}
+		echo '</span><span class="description" style="flex-basis:100%">' . esc_html__( 'Eigene Daten gehen vor; ein Tag zählt von 00:00 bis 23:59 UTC.', 'workflow-captain' ) . '</span></form>';
 	}
 
 	private function render_run( array $run ): void {
