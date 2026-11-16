@@ -31,6 +31,10 @@ msgstr ""
 msgid "Ablauf (JSON)"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:179
+msgid "Action Scheduler (von WooCommerce)"
+msgstr ""
+
 #: src/Admin/ProvidersPage.php:82
 msgid "Adapter"
 msgstr ""
@@ -137,7 +141,7 @@ msgstr ""
 msgid "Brauchen eine Entscheidung"
 msgstr ""
 
-#: src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/SettingsPage.php:155 src/Admin/WorkflowsPage.php:83 src/Admin/WorkflowsPage.php:94 src/Admin/WorkflowsPage.php:107 src/Admin/WorkflowsPage.php:113 src/Admin/WorkflowsPage.php:124 src/Admin/WorkflowsPage.php:137 src/Admin/WorkflowsPage.php:153 src/Admin/WorkflowsPage.php:167 src/Plugin.php:257 src/Plugin.php:272
+#: src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/SettingsPage.php:155 src/Admin/WorkflowsPage.php:83 src/Admin/WorkflowsPage.php:94 src/Admin/WorkflowsPage.php:107 src/Admin/WorkflowsPage.php:113 src/Admin/WorkflowsPage.php:124 src/Admin/WorkflowsPage.php:137 src/Admin/WorkflowsPage.php:153 src/Admin/WorkflowsPage.php:167 src/Plugin.php:258 src/Plugin.php:273
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
@@ -217,7 +221,7 @@ msgstr ""
 msgid "Duplizieren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:180
+#: src/Admin/SettingsPage.php:181
 msgid "Eigener Schlüssel für Geheimnisse"
 msgstr ""
 
@@ -344,7 +348,7 @@ msgid "Fällig (UTC)"
 msgstr ""
 
 #. translators: %s: option name
-#: src/Admin/SettingsPage.php:189
+#: src/Admin/SettingsPage.php:190
 msgid "Gespeichert in der Option %s."
 msgstr ""
 
@@ -365,7 +369,7 @@ msgstr ""
 msgid "Hält sofort alle Schritte an. Betroffen: %d laufende Läufe. Überfällige Schritte brauchen danach eine Entscheidung."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:181
+#: src/Admin/SettingsPage.php:182
 msgid "Hängende Schritte (Sperrfrist über einen Tag abgelaufen)"
 msgstr ""
 
@@ -397,7 +401,7 @@ msgstr ""
 msgid "Ja, alle Abläufe anhalten"
 msgstr ""
 
-#: src/Plugin.php:293
+#: src/Plugin.php:294
 msgid "Jede Minute (Workflow Captain)"
 msgstr ""
 
@@ -460,7 +464,7 @@ msgstr ""
 msgid "Läufe brauchen eine Entscheidung"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:182
+#: src/Admin/SettingsPage.php:183
 msgid "Läufe ohne offenen Schritt"
 msgstr ""
 
@@ -572,6 +576,10 @@ msgstr ""
 msgid "Pausiert"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:179
+msgid "Planung des Workers"
+msgstr ""
+
 #: src/Admin/ProvidersPage.php:82
 msgid "Plugin / Vertrag"
 msgstr ""
@@ -649,6 +657,10 @@ msgid "Vorher prüfen, ob die Ursache (Adapter, Lizenz, Provider) behoben ist."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:179
+msgid "WP-Cron"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:180
 msgid "WP-Cron abgeschaltet"
 msgstr ""
 
@@ -769,11 +781,11 @@ msgstr ""
 msgid "aus Einstellungen → Allgemein von WordPress"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:180
+#: src/Admin/SettingsPage.php:181
 msgid "gesetzt"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:179
+#: src/Admin/SettingsPage.php:180
 msgid "ja – System-Cron nötig: wp workflow-captain process"
 msgstr ""
 
@@ -785,7 +797,7 @@ msgstr ""
 msgid "läuft"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:179
+#: src/Admin/SettingsPage.php:180
 msgid "nein"
 msgstr ""
 
@@ -793,7 +805,7 @@ msgstr ""
 msgid "nicht geplant"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:180
+#: src/Admin/SettingsPage.php:181
 msgid "nicht gesetzt – empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php"
 msgstr ""
 

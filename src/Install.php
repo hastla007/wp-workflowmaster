@@ -48,7 +48,7 @@ final class Install {
 	}
 
 	public static function deactivate(): void {
-		wp_clear_scheduled_hook( self::CRON_PROCESS );
+		Scheduler::clear();
 		wp_clear_scheduled_hook( self::CRON_DAILY );
 	}
 

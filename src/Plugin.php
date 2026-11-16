@@ -244,7 +244,8 @@ final class Plugin {
 				'php'               => PHP_VERSION,
 				'multisite'         => is_multisite(),
 				'wp_cron_disabled'  => defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON,
-				'next_worker_run'   => wp_next_scheduled( Install::CRON_PROCESS ) ? gmdate( 'Y-m-d\TH:i:s\Z', (int) wp_next_scheduled( Install::CRON_PROCESS ) ) : null,
+				'next_worker_run'   => null !== Scheduler::next_run() ? gmdate( 'Y-m-d\TH:i:s\Z', (int) Scheduler::next_run() ) : null,
+				'scheduler'         => Scheduler::backend(),
 				'secret_key_own'    => \WorkflowCaptain\Security\Vault::own_key_configured(),
 				'emergency_pause'   => EmergencyPause::active(),
 				'rejected_envelopes' => (array) get_option( self::REJECTED_OPTION, array() ),
@@ -297,8 +298,8 @@ final class Plugin {
 
 	public static function schedule_events(): void {
 		add_filter( 'cron_schedules', array( self::class, 'cron_schedules' ) );
-		if ( ! wp_next_scheduled( Install::CRON_PROCESS ) ) {
-			wp_schedule_event( time() + MINUTE_IN_SECONDS, 'workflow_captain_minute', Install::CRON_PROCESS );
+		if ( did_action( 'init' ) || doing_action( 'init' ) || ! function_exists( 'as_schedule_recurring_action' ) ) {
+			Scheduler::ensure();
 		}
 		if ( ! wp_next_scheduled( Install::CRON_DAILY ) ) {
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', Install::CRON_DAILY );

@@ -171,7 +171,7 @@ V1 enthält damit ein SDK/Provider-Contract, Beispiel-Connector, lokale Projekta
 5. Jede Aktion schreibt Status und Ergebnis-Metadaten; sensible Antworten/Token werden redigiert.
 6. Fehlerklassen bestimmen Retry: vorübergehend mit Backoff; endgültig sofort als fehlgeschlagen. Keine Endlosschleifen; maximale Versuche konfigurierbar.
 7. Manuelles Replay erzeugt eine neue Run-Instanz, behält aber ursprüngliches Event und Idempotenzkontrolle. „Aktion erneut ausführen“ zeigt mögliche externe Seiteneffekte.
-8. Action Scheduler wird verwendet, wenn WooCommerce verfügbar ist; sonst eigener WP-Cron-/Queue-Fallback mit dokumentierter System-Cron-Empfehlung. *[Umsetzung 0.2: eigene Warteschlange in den Tabellen von Workflow Captain mit Minutentakt über WP-Cron und `wp workflow-captain process` für System-Cron; Action Scheduler ist noch nicht angebunden.]*
+8. Action Scheduler wird verwendet, wenn WooCommerce verfügbar ist; sonst eigener WP-Cron-/Queue-Fallback mit dokumentierter System-Cron-Empfehlung. *[Umsetzung 0.2: eigene Warteschlange in den Tabellen von Workflow Captain; der Worker läuft jede Minute über Action Scheduler, wenn vorhanden, sonst über WP-Cron; `wp workflow-captain process` für System-Cron.]*
 9. Rezeptänderungen betreffen neue Läufe. Ein bereits gestarteter Run nutzt einen unveränderlichen Rezept-Snapshot.
 10. Rekursive Triggerketten werden über Korrelations-ID, Run-Ursprung und Loop-Grenze erkannt.
 

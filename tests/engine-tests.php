@@ -800,3 +800,27 @@ check( 'notice: nothing open, no mail', null === Notifications::digest( array( '
 $mail = Notifications::digest( array( 'runs' => array( 'action_required' => 2 ), 'events' => array( 'dead_letter' => 1 ), 'stuck' => array(), 'environment' => array( 'emergency_pause' => true ) ), 'https://x/wp-admin/admin.php?page=workflow-captain' );
 check( 'notice: lists counts, pause and link, no event content', str_contains( $mail['message'], '- 2 Läufe brauchen eine Entscheidung' ) && str_contains( $mail['message'], '- 1 Ereignisse sind fehlgeschlagen' ) && str_contains( $mail['message'], 'Notfallpause' ) && str_contains( $mail['message'], 'page=workflow-captain' ) );
 check( 'settings: notify_daily is 0 or 1, default on', 1 === Settings::defaults()['notify_daily'] && 1 === Settings::sanitize( array( 'notify_daily' => 5 ) )['notify_daily'] && 0 === Settings::sanitize( array( 'notify_daily' => 0 ) )['notify_daily'] );
+
+// ----- WF-SET-05: Action Scheduler or WP-Cron, never both ------------------------------------------------------
+
+use WorkflowCaptain\Scheduler;
+function fake_scheduler_api( bool $as, bool $wp_planned, bool $as_planned ): array {
+	$log = new ArrayObject();
+	return array(
+		array(
+			'as_available' => fn() => $as,
+			'as_next'      => fn() => $as_planned,
+			'as_schedule'  => function () use ( $log ) { $log[] = 'as_schedule'; },
+			'wp_next'      => fn() => $wp_planned,
+			'wp_schedule'  => function () use ( $log ) { $log[] = 'wp_schedule'; },
+			'wp_clear'     => function () use ( $log ) { $log[] = 'wp_clear'; },
+		),
+		$log,
+	);
+}
+list( $api, $log ) = fake_scheduler_api( true, true, false );
+check( 'scheduler: with Action Scheduler the WP-Cron plan is cleared and AS planned', Scheduler::ACTION_SCHEDULER === Scheduler::ensure( $api ) && array( 'wp_clear', 'as_schedule' ) === $log->getArrayCopy() );
+list( $api, $log ) = fake_scheduler_api( true, false, true );
+check( 'scheduler: already planned in AS, nothing happens', Scheduler::ACTION_SCHEDULER === Scheduler::ensure( $api ) && array() === $log->getArrayCopy() );
+list( $api, $log ) = fake_scheduler_api( false, false, false );
+check( 'scheduler: without Action Scheduler WP-Cron is planned', Scheduler::WP_CRON === Scheduler::ensure( $api ) && array( 'wp_schedule' ) === $log->getArrayCopy() );
