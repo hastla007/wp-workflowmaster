@@ -104,6 +104,34 @@ final class Workflows {
 		return null !== $workflow && null !== $workflow['published_version_id'] && $this->store->set_workflow_status( $id, EngineStore::WF_ACTIVE, $this->clock->mysql() );
 	}
 
+	/** Copies the draft into a new draft workflow (konzept 8.2). Returns the new ID. */
+	public function duplicate( int $id ): int {
+		$wf = $this->store->get_workflow( $id );
+		if ( null === $wf ) {
+			return 0;
+		}
+		/* translators: %s: name of the original workflow */
+		list( $new ) = $this->save( null, sprintf( __( '%s (Kopie)', 'workflow-captain' ), $wf['name'] ), $wf['draft'] );
+		return $new;
+	}
+
+	/**
+	 * Deleting archives (konzept 15.3): the workflow starts nothing any more, versions, runs and logs stay. Runs already
+	 * open continue; a human cancels them if wanted.
+	 */
+	public function archive( int $id ): bool {
+		return null !== $this->store->get_workflow( $id ) && $this->store->set_workflow_status( $id, EngineStore::WF_ARCHIVED, $this->clock->mysql() );
+	}
+
+	/** Brings an archived workflow back as paused (if it was published) or as draft. */
+	public function restore( int $id ): bool {
+		$wf = $this->store->get_workflow( $id );
+		if ( null === $wf || EngineStore::WF_ARCHIVED !== $wf['status'] ) {
+			return false;
+		}
+		return $this->store->set_workflow_status( $id, null === $wf['published_version_id'] ? EngineStore::WF_DRAFT : EngineStore::WF_PAUSED, $this->clock->mysql() );
+	}
+
 	/** Cancels a run: waiting steps do not run; finished actions are not undone (konzept 15.3). */
 	public function cancel_run( int $run_id ): bool {
 		$this->store->cancel_steps( $run_id, $this->clock->mysql() );

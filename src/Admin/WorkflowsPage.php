@@ -108,6 +108,17 @@ final class WorkflowsPage {
 				}
 				$errors = $workflows->publish( $id, get_current_user_id() );
 			}
+		} elseif ( in_array( $do, array( 'duplicate', 'archive', 'restore' ), true ) ) {
+			if ( ! current_user_can( 'edit_workflows' ) ) {
+				wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+			}
+			if ( 'duplicate' === $do ) {
+				$id = $workflows->duplicate( $id );
+			} elseif ( 'archive' === $do ) {
+				$workflows->archive( $id );
+			} else {
+				$workflows->restore( $id );
+			}
 		} elseif ( in_array( $do, array( 'pause', 'resume' ), true ) ) {
 			if ( ! current_user_can( 'activate_workflows' ) ) {
 				wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
@@ -274,6 +285,14 @@ final class WorkflowsPage {
 				echo '<button class="button" name="do" value="resume">' . esc_html__( 'Fortsetzen', 'workflow-captain' ) . '</button>';
 			}
 		}
+		if ( null !== $wf ) {
+			echo ' <button class="button" name="do" value="duplicate">' . esc_html__( 'Duplizieren', 'workflow-captain' ) . '</button>';
+			if ( EngineStore::WF_ARCHIVED === $wf['status'] ) {
+				echo ' <button class="button" name="do" value="restore">' . esc_html__( 'Wiederherstellen', 'workflow-captain' ) . '</button>';
+			} else {
+				echo ' <button class="button button-link-delete" name="do" value="archive" onclick="return confirm(\'' . esc_js( __( 'Workflow archivieren? Er startet keine neuen Läufe mehr; Läufe und Protokolle bleiben erhalten.', 'workflow-captain' ) ) . '\')">' . esc_html__( 'Archivieren', 'workflow-captain' ) . '</button>';
+			}
+		}
 		echo '</p></form>';
 	}
 
@@ -341,6 +360,7 @@ final class WorkflowsPage {
 			EngineStore::WF_DRAFT  => __( 'Entwurf', 'workflow-captain' ),
 			EngineStore::WF_ACTIVE => __( 'Aktiv', 'workflow-captain' ),
 			EngineStore::WF_PAUSED => __( 'Pausiert', 'workflow-captain' ),
+			EngineStore::WF_ARCHIVED => __( 'Archiviert', 'workflow-captain' ),
 		);
 		return $labels[ $status ] ?? $status;
 	}

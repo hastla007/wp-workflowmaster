@@ -15,7 +15,8 @@ interface EngineStore {
 	// Workflow states.
 	const WF_DRAFT  = 'draft';
 	const WF_ACTIVE = 'active';
-	const WF_PAUSED = 'paused';
+	const WF_PAUSED   = 'paused';
+	const WF_ARCHIVED = 'archived';
 
 	// Run states.
 	const RUN_RUNNING         = 'running';

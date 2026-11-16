@@ -776,3 +776,19 @@ foreach ( glob( WORKFLOW_CAPTAIN_PATH . 'docs/recipes/*.json' ) as $file ) {
 	$r      = Transfer::import( file_get_contents( $file ), $e->workflows );
 	check( 'import: recipe ' . basename( $file ) . ' imports without findings', $r['ok'] && array() === $r['violations'] );
 }
+
+// ----- Archive and duplicate (konzept 8.2, 15.3) ---------------------------------------------------------------
+
+$e   = engine_site();
+$id  = publish( $e, sample_graph(), 'Original' );
+$dup = $e->workflows->duplicate( $id );
+check( 'duplicate: new draft with the same graph', 'Original (Kopie)' === $e->store->get_workflow( $dup )['name'] && EngineStore::WF_DRAFT === $e->store->get_workflow( $dup )['status'] && $e->store->get_workflow( $dup )['draft'] == $e->store->get_workflow( $id )['draft'] );
+$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'before' ) );
+$e->consumer->process();
+check( 'archive: archived workflow keeps its runs', $e->workflows->archive( $id ) && 1 === count( $e->store->find_runs( array( 'workflow_id' => $id ), 10, 0 ) ) );
+$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'after' ) );
+$e->consumer->process();
+check( 'archive: archived workflow starts no new run', 1 === count( $e->store->find_runs( array( 'workflow_id' => $id ), 10, 0 ) ) );
+drain( $e );
+check( 'archive: the open run still finishes', EngineStore::RUN_SUCCEEDED === $e->store->find_runs( array( 'workflow_id' => $id ), 10, 0 )[0]['state'] );
+check( 'restore: published workflow comes back paused', $e->workflows->restore( $id ) && EngineStore::WF_PAUSED === $e->store->get_workflow( $id )['status'] );
