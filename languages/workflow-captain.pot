@@ -292,7 +292,7 @@ msgstr ""
 msgid "Benachrichtigungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:348
+#: src/Admin/SettingsPage.php:349
 msgid "Benutzer"
 msgstr ""
 
@@ -317,7 +317,7 @@ msgstr ""
 msgid "Connector freigeben"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:230 src/Admin/WorkflowsPage.php:241 src/Admin/WorkflowsPage.php:254 src/Admin/WorkflowsPage.php:260 src/Admin/WorkflowsPage.php:271 src/Admin/WorkflowsPage.php:287 src/Admin/WorkflowsPage.php:305 src/Admin/WorkflowsPage.php:334 src/Admin/WorkflowsPage.php:348 src/Plugin.php:388 src/Plugin.php:403
+#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:230 src/Admin/WorkflowsPage.php:241 src/Admin/WorkflowsPage.php:254 src/Admin/WorkflowsPage.php:260 src/Admin/WorkflowsPage.php:271 src/Admin/WorkflowsPage.php:287 src/Admin/WorkflowsPage.php:305 src/Admin/WorkflowsPage.php:334 src/Admin/WorkflowsPage.php:348 src/Plugin.php:389 src/Plugin.php:404
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
@@ -550,7 +550,7 @@ msgstr ""
 msgid "Einstellungen, Notfallpause, Diagnose"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:348
+#: src/Admin/SettingsPage.php:349
 msgid "Einzelheiten"
 msgstr ""
 
@@ -678,7 +678,7 @@ msgid "Erste Seite"
 msgstr ""
 
 #. translators: 1: number, 2: option name
-#: src/Admin/SettingsPage.php:358
+#: src/Admin/SettingsPage.php:359
 msgid "Es bleiben die letzten %1$d Einträge in der Option %2$s."
 msgstr ""
 
@@ -878,7 +878,7 @@ msgstr ""
 msgid "Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows."
 msgstr ""
 
-#: src/Plugin.php:424
+#: src/Plugin.php:425
 msgid "Jede Minute (Workflow Captain)"
 msgstr ""
 
@@ -976,6 +976,10 @@ msgstr ""
 msgid "Lauf exportieren (JSON, redigiert)"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:329
+msgid "Lauf exportiert"
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:310
 msgid "Lauf nicht gefunden."
 msgstr ""
@@ -996,7 +1000,7 @@ msgstr ""
 msgid "Letzte Seite"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:342
+#: src/Admin/SettingsPage.php:343 src/Admin/SettingsPage.php:349
 msgid "Letzte sicherheitsrelevante Änderungen"
 msgstr ""
 
@@ -1141,7 +1145,7 @@ msgstr ""
 msgid "Noch kein Provider bekannt."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:345
+#: src/Admin/SettingsPage.php:346
 msgid "Noch keine Einträge."
 msgstr ""
 
@@ -1632,7 +1636,7 @@ msgstr ""
 msgid "Workflows, neueste zuerst"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:348
+#: src/Admin/SettingsPage.php:349
 msgid "Zeit (UTC)"
 msgstr ""
 
@@ -1703,6 +1707,10 @@ msgstr ""
 
 #: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:698 src/Privacy/Privacy.php:80 src/Privacy/Privacy.php:101
 msgid "Zustand"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:303
+msgid "Zustand der Installation"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:295
@@ -1880,7 +1888,7 @@ msgstr ""
 msgid "wöchentlich"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:348
+#: src/Admin/SettingsPage.php:349
 msgid "Änderung"
 msgstr ""
 

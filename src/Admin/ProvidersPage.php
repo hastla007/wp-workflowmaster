@@ -130,7 +130,7 @@ final class ProvidersPage {
 			echo '<p>' . esc_html__( 'Noch kein Adapter angemeldet und keine Ereignisse gespeichert.', 'workflow-captain' ) . '</p></div>';
 			return;
 		}
-		echo '<table class="widefat striped"><thead><tr><th>' . esc_html__( 'Produkt', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Adapter', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Plugin / Vertrag', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Ereignistypen', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Gespeicherte Ereignisse', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Aktive Workflows', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" tabindex="0"><thead><tr><th>' . esc_html__( 'Produkt', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Adapter', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Plugin / Vertrag', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Ereignistypen', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Gespeicherte Ereignisse', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Aktive Workflows', 'workflow-captain' ) . '</th></tr></thead><tbody>';
 		foreach ( $rows as $r ) {
 			$events = array();
 			foreach ( $r['events'] as $state => $n ) {

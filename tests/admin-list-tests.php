@@ -254,6 +254,7 @@ $fmt   = static fn( string $f, int $ts ): string => ( new DateTimeImmutable( '@'
 $lines = \WorkflowCaptain\Admin\SchedulesPage::table_rows( array_values( $sched ), $fmt, true );
 check( 'schedules table: row header links to the editor, times as time elements in the site time zone', 3 === count( $lines ) && str_contains( $lines[2], '<th scope="row"><a href="https://example.test/wp-admin/admin.php?page=workflow-captain-workflows&amp;edit=' . $w_week . '">Wochenbericht</a></th>' ) && str_contains( $lines[2], '<time datetime="2026-10-26T06:30:00Z">Mon, 26.10.2026 07:30</time>' ) && str_contains( $lines[2], 'workflow=' . $w_week . '">Läufe</a>' ) );
 check( 'schedules table: paused says so, never fired is a dash for screen readers, differing draft is noted', str_contains( $lines[1], 'keiner (pausiert)' ) && str_contains( $lines[0], 'keine Angabe' ) && str_contains( $lines[0], 'Der Entwurf weicht ab' ) );
+check( 'schedules table: the link to the runs inside the cell text is underlined (WCAG 1.4.1, axe link-in-text-block in the E2E third run)', str_contains( $lines[2], '(<a class="wfc-text-link" href=' ) && str_contains( (string) file_get_contents( __DIR__ . '/../src/Plugin.php' ), 'a.wfc-text-link{text-decoration:underline}' ) );
 check( 'schedules table: without editor right no link', ! str_contains( \WorkflowCaptain\Admin\SchedulesPage::table_rows( array_values( $sched ), $fmt, false )[2], 'edit=' ) );
 
 // ----- Builder: codes of the last check per node (docs/UI-ENTWUERFE.md, section 3) -----------------------------

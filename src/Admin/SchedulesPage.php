@@ -83,7 +83,7 @@ final class SchedulesPage {
 			$next = null === $r['next'] && EngineStore::WF_ACTIVE !== $r['status'] ? esc_html__( 'keiner (pausiert)', 'workflow-captain' ) : self::time_cell( $r['next'], $format );
 			$last = self::time_cell( $r['last_fired'], $format );
 			if ( null !== $r['last_fired'] ) {
-				$last .= ' (<a href="' . esc_url( WorkflowsPage::url( WorkflowsPage::SLUG_RUNS, array( 'workflow' => $r['workflow_id'] ) ) ) . '">' . esc_html__( 'Läufe', 'workflow-captain' ) . '</a>)';
+				$last .= ' (<a class="wfc-text-link" href="' . esc_url( WorkflowsPage::url( WorkflowsPage::SLUG_RUNS, array( 'workflow' => $r['workflow_id'] ) ) ) . '">' . esc_html__( 'Läufe', 'workflow-captain' ) . '</a>)';
 			}
 			$out[] = '<tr><th scope="row">' . $name . '</th><td>' . $state . '</td><td>' . esc_html( self::describe( $r['schedule'] ) ) . '</td><td>' . $next . '</td><td>' . $last . '</td></tr>';
 		}

@@ -304,6 +304,34 @@ foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
 }
 check( 'WF-BUILDER-09 admin form controls have a label (wrapped, for=id or aria-label)' . ( $wfc_unlabelled ? ': ' . implode( '; ', $wfc_unlabelled ) : '' ), array() === $wfc_unlabelled );
 
+// Found in the E2E third run with the wp-admin styles (docs/E2E-RESULTS.md, "Dritter Lauf"):
+// - WF-SET-13: every audit entry the core writes has a readable label on the status tab ("run_export" showed its key).
+$wfc_settings = (string) file_get_contents( __DIR__ . '/../src/Admin/SettingsPage.php' );
+$wfc_nolabel  = array();
+foreach ( glob( __DIR__ . '/../src/{,*/}*.php', GLOB_BRACE ) as $wfc_file ) {
+	preg_match_all( "/Audit::record\\(\\s*'([a-z_]+)'\\s*,/", (string) file_get_contents( $wfc_file ), $wfc_m );
+	foreach ( $wfc_m[1] as $wfc_key ) {
+		if ( ! preg_match( "/'" . $wfc_key . "'\\s*=>\\s*__\\(/", $wfc_settings ) ) {
+			$wfc_nolabel[] = $wfc_key;
+		}
+	}
+}
+check( 'WF-SET-13 every audit entry written by the core has a label on the status tab' . ( $wfc_nolabel ? ': ' . implode( ', ', array_unique( $wfc_nolabel ) ) : '' ), array() === $wfc_nolabel );
+// - WCAG 2.1.1: below 782 px every data table scrolls in its own box, so each one must be focusable (axe
+//   "scrollable-region-focusable" on the status tab: status and audit tables had no focusable content).
+$wfc_notab = array();
+foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
+	preg_match_all( '/<table class="widefat[^>]*>/', (string) file_get_contents( $wfc_file ), $wfc_m );
+	foreach ( $wfc_m[0] as $wfc_tag ) {
+		if ( ! str_contains( $wfc_tag, 'tabindex="0"' ) ) {
+			$wfc_notab[] = basename( $wfc_file );
+		}
+	}
+}
+check( 'WF-BUILDER-09 data tables of the admin pages are focusable scroll regions (tabindex="0")' . ( $wfc_notab ? ': ' . implode( ', ', $wfc_notab ) : '' ), array() === $wfc_notab );
+// - WCAG 2.5.8: the small text buttons of the builder (× of a rule) are targets of at least 24 x 24 px.
+check( 'WF-BUILDER-09 small text buttons of the builder are at least 24 x 24 px', 1 === preg_match( '/\.wfc-builder \.button-link \{[^}]*min-height: 24px;[^}]*min-width: 24px;/', (string) file_get_contents( __DIR__ . '/../assets/css/builder.css' ) ) );
+
 // WF-BUILDER-09 / WCAG 2.5.8: a confirmation checkbox (16 px) sits in a label of class wfc-confirm, which the admin style
 // makes 24 px high; the E2E second run measured the pause box 10 px from the next button (docs/E2E-RESULTS.md).
 $wfc_small = array();

@@ -241,7 +241,7 @@ final class SettingsPage {
 		);
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="wfc-settings-form"><input type="hidden" name="action" value="workflow_captain_roles">';
 		wp_nonce_field( 'workflow_captain_roles' );
-		echo '<table class="widefat striped" style="max-width:900px"><thead><tr><th scope="col">' . esc_html__( 'Rolle', 'workflow-captain' ) . '</th>';
+		echo '<table class="widefat striped" tabindex="0" style="max-width:900px"><thead><tr><th scope="col">' . esc_html__( 'Rolle', 'workflow-captain' ) . '</th>';
 		foreach ( $labels as $label ) {
 			echo '<th scope="col">' . esc_html( $label ) . '</th>';
 		}
@@ -300,7 +300,7 @@ final class SettingsPage {
 			__( 'Hängende Schritte (Sperrfrist über einen Tag abgelaufen)', 'workflow-captain' ) => (string) $d['stuck']['expired_leases'],
 			__( 'Läufe ohne offenen Schritt', 'workflow-captain' )     => (string) $d['stuck']['runs_without_steps'],
 		);
-		echo '<table class="widefat striped" style="max-width:900px"><tbody>';
+		echo '<table class="widefat striped" tabindex="0" style="max-width:900px"><caption class="screen-reader-text">' . esc_html__( 'Zustand der Installation', 'workflow-captain' ) . '</caption><tbody>';
 		foreach ( $rows as $label => $value ) {
 			echo '<tr><th scope="row">' . esc_html( $label ) . '</th><td>' . esc_html( $value ) . '</td></tr>';
 		}
@@ -326,6 +326,7 @@ final class SettingsPage {
 			'workflow_pause'   => __( 'Workflow pausiert', 'workflow-captain' ),
 			'workflow_resume'  => __( 'Workflow fortgesetzt', 'workflow-captain' ),
 			'upgrade_resumed'  => __( 'Abgebrochene Datenbank-Aktualisierung wiederholt', 'workflow-captain' ),
+			'run_export'       => __( 'Lauf exportiert', 'workflow-captain' ),
 		);
 		/**
 		 * Labels of audit entries written by add-ons (key => label); core labels cannot be replaced.
@@ -345,7 +346,7 @@ final class SettingsPage {
 			echo '<p>' . esc_html__( 'Noch keine Einträge.', 'workflow-captain' ) . '</p>';
 			return;
 		}
-		echo '<table class="widefat striped"><thead><tr><th scope="col">' . esc_html__( 'Zeit (UTC)', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Benutzer', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Änderung', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Einzelheiten', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Letzte sicherheitsrelevante Änderungen', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Zeit (UTC)', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Benutzer', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Änderung', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Einzelheiten', 'workflow-captain' ) . '</th></tr></thead><tbody>';
 		foreach ( $entries as $e ) {
 			$user   = get_userdata( (int) $e['user'] );
 			$detail = array();

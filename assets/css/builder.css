@@ -80,5 +80,7 @@ body[class*="workflow-captain"] .button.button-link-delete { color: #b32d2e; }
 @media (max-width: 782px) {
 	.wfc-palette-hint { display: none; }
 }
-/* Steps of the linear view are targets of at least 24 px (WCAG 2.5.8), also with a warning next to them. */
+/* Steps of the linear view and the small text buttons (× of a rule, "Gruppe entfernen") are targets of at least
+   24 px (WCAG 2.5.8), also with a warning next to them; the × measured 9 x 16 px in wp-admin (E2E third run). */
 .wfc-linear .button-link { min-height: 24px; }
+.wfc-builder .button-link { min-height: 24px; min-width: 24px; }
