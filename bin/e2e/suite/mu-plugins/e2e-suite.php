@@ -48,3 +48,70 @@ add_filter(
 	99
 );
 add_filter( 'wplc_update_package_hosts', static fn( $hosts ) => array_merge( (array) $hosts, array( 'shop.test' ) ) );
+
+// WF-MS-23 "plugin missing on site B": a network contract for voucher.issue (requires Voucher Captain, contract 1.x).
+// No product declares a network contract yet (WFC-PRO-17); the suite declares one while the network option is set.
+add_filter(
+	'workflow_captain_pro_network_action_contracts_v1',
+	static function ( $contracts ) {
+		if ( ! function_exists( 'get_site_option' ) || ! get_site_option( 'e2e_suite_net_contract' ) ) {
+			return $contracts;
+		}
+		$contracts['voucher.issue'] = array(
+			'network_safe' => true,
+			'contract'     => array( 'constant' => 'VCAP_CONTRACT_VERSION', 'min' => '1.3.0', 'major' => 1 ),
+			'requires'     => array( array( 'constant' => 'VCAP_VERSION', 'min' => '1.3.0' ) ),
+			'contexts'     => array( 'main_site', 'sub_site' ),
+			'side_effects' => array( 'voucher_issued' ),
+			'data_classes' => array( 'operational', 'reference' ),
+			'idempotent'   => true,
+			'retry'        => 'transient_only',
+			'replay'       => 'never_after_side_effect',
+			'identity'     => 'none',
+			'credential'   => '',
+			'handler'      => 'VoucherCaptain\\Issuer',
+		);
+		return $contracts;
+	}
+);
+
+// Timeout after the side effect: with the option e2e_suite_mail_timeout on a site, a mail is handed over (captured by
+// e2e-test-site.php at priority 10) and the call then fails like a timeout of the mail transport.
+add_filter(
+	'pre_wp_mail',
+	static function ( $return ) {
+		if ( true === $return && get_option( 'e2e_suite_mail_timeout' ) ) {
+			throw new \RuntimeException( 'e2e: mail transport timed out after the hand-over' );
+		}
+		return $return;
+	},
+	99
+);
+
+// Network workflows need an event type a provider declares network-publishable (WF-MS-05). Only the suite adapters of
+// Pro declare theirs; the events of the core (wordpress.*, woocommerce.*) are not declared. With the network option
+// e2e_suite_net_publish the suite declares wordpress.post.published with its field post_type (operational) through
+// the documented filter, so the multisite checks can start runs by publishing a post.
+add_filter(
+	'workflow_captain_pro_network_publishable_v1',
+	static function ( $declared ) {
+		if ( function_exists( 'get_site_option' ) && get_site_option( 'e2e_suite_net_publish' ) ) {
+			$declared['wordpress.post.published'] = array(
+				'provider' => 'wordpress',
+				'fields'   => array( 'post_type' => 'operational' ),
+			);
+		}
+		return $declared;
+	}
+);
+
+// Timeout after a successful call of an own connector (WF-CONNECTOR-13): with the option e2e_suite_note_timeout the
+// starter connector's note is stored, then the call fails once like a timeout.
+$e2e_suite_note_timeout = static function ( $option ) {
+	if ( 'wfc_starter_connector_notes' === $option && get_option( 'e2e_suite_note_timeout' ) ) {
+		delete_option( 'e2e_suite_note_timeout' );
+		throw new \RuntimeException( 'e2e: connector call timed out after the note was stored' );
+	}
+};
+add_action( 'added_option', $e2e_suite_note_timeout );
+add_action( 'updated_option', $e2e_suite_note_timeout );

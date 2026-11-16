@@ -194,23 +194,23 @@ switch ( $s_section ) {
 		s_check( 'y5', 'renewed: custom connector accepted again with its stored release', 'runtime_not_allowed' !== $c->reason( 'starter-connector' ), (string) $c->reason( 'starter-connector' ) );
 		break;
 
-	// Shop side of the multisite expiry (ms.sh): the agency license ends and is renewed again.
+	// Shop side of the multisite expiry (ms.sh): the network license of the four subsites ends and is renewed again.
 	case 'shop_expire_ms':
 		$ids = (array) s_state( 'license_ids' );
-		s_move_paid_until( (int) $ids['wcp_full'], 20 );
+		s_move_paid_until( (int) $ids['wcp_net'], 20 );
 		\WPLC\License\LicenseLifecycle::expire_due_licenses_now();
-		s_check( 'ms-shop1', 'shop: agency license expired for the multisite test [time simulated]', 'expired' === s_license_row( (int) $ids['wcp_full'] )['status'] );
+		s_check( 'ms-shop1', 'shop: the network license (four subsites) expired [time simulated]', 'expired' === s_license_row( (int) $ids['wcp_net'] )['status'] );
 		break;
 
 	case 'shop_renew_ms':
 		$ids   = (array) s_state( 'license_ids' );
-		$lic   = s_license_row( (int) $ids['wcp_full'] );
-		$order = \WPLC\Billing\ManualRenewal::start( (int) $ids['wcp_full'], (int) $lic['customer_id'] );
+		$lic   = s_license_row( (int) $ids['wcp_net'] );
+		$order = \WPLC\Billing\ManualRenewal::start( (int) $ids['wcp_net'], (int) $lic['customer_id'] );
 		if ( $order instanceof \WC_Order ) {
 			$order->payment_complete( 'suite-renewal-ms' );
 		}
 		s_run_as();
-		s_check( 'ms-shop2', 'shop: agency license renewed by the customer', 'active' === s_license_row( (int) $ids['wcp_full'] )['status'], is_wp_error( $order ) ? $order->get_error_code() : s_license_row( (int) $ids['wcp_full'] )['status'] );
+		s_check( 'ms-shop2', 'shop: the network license renewed by the customer', 'active' === s_license_row( (int) $ids['wcp_net'] )['status'], is_wp_error( $order ) ? $order->get_error_code() : s_license_row( (int) $ids['wcp_net'] )['status'] );
 		break;
 
 	// ---- Release gate (release.sh): shop side on the suite site, client side on the ZIP site --------------------------
@@ -294,5 +294,5 @@ switch ( $s_section ) {
 		break;
 
 	default:
-		s_check( '?', 'unknown section ' . $s_section, false );
+		require __DIR__ . '/sections-conn.php';
 }

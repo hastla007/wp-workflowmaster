@@ -28,6 +28,8 @@ switch ( $s_section ) {
 			'wcp_full'  => s_plan( 'Workflow Captain Pro Agentur', 'workflow-captain-pro', 'agency', S_WCP_ALL, 3 ),
 			'wcp_basic' => s_plan( 'Workflow Captain Pro Basis', 'workflow-captain-pro', 'basic', array( 'workflow.suite_integrations', 'workflow.webhooks' ), 3 ),
 			'wcp_one'   => s_plan( 'Workflow Captain Pro Einzelplatz', 'workflow-captain-pro', 'single', S_WCP_ALL, 1 ),
+			// Multisite: four subsites take part, each with its own activation (B2), so four live sites.
+			'wcp_net'   => s_plan( 'Workflow Captain Pro Netzwerk', 'workflow-captain-pro', 'network4', S_WCP_ALL, 4 ),
 			'pass'      => s_plan( 'Pass Captain Pro', 'pass-captain-pro', 'pro', array( 'pass.write_api' ), 3 ),
 			'voucher'   => s_plan( 'Voucher Captain Pro', 'voucher-captain-pro', 'pro', array( 'voucher.white_label' ), 3 ),
 			'affiliate' => s_plan( 'Affiliate Captain Pro', 'affiliate-captain-pro', 'pro', array( 'affiliate.extended_api' ), 3 ),

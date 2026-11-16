@@ -13,7 +13,9 @@ ROOT=${E2E_ROOT:-/home/user/wp-e2e}
 HERE=$(cd "$(dirname "$0")" && pwd)
 CHECKS="$HERE/checks.php"
 export E2E_RESULTS="$ROOT/logs/suite-results.jsonl"
-CORE=${E2E_CORE:-$( [ -d /home/user/wt-suite-fix ] && echo /home/user/wt-suite-fix || echo /home/user/wp-workflowmaster )}
+CORE=${E2E_CORE:-$(cd "$HERE/../../.." && pwd)}
+KEY_A=suite-e2e-master-key-A-0123456789abcdef0123456789abcdef
+KEY_B=suite-e2e-master-key-B-fedcba9876543210fedcba9876543210
 cd /
 
 rec() { # <id> <name> <ok:0|1> <detail>
@@ -38,7 +40,6 @@ phase_install() {
 	act woocommerce
 	wpsuite eval '$s = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer::class ); if ( ! $s->check_orders_table_exists() ) { $s->create_database_tables(); } update_option( "woocommerce_custom_orders_table_enabled", "yes" ); update_option( "woocommerce_feature_custom_order_tables_enabled", "yes" );' 2>&1 | q
 	# The starter connector of the core as an own plugin (custom connector runtime, WF-CONNECTOR-12/-13).
-	[ -e "$ROOT/suite/wp-content/plugins/starter-connector" ] || ln -s "$CORE/examples/starter-connector" "$ROOT/suite/wp-content/plugins/starter-connector"
 	act wp-license workflow-captain pass-captain voucher-captain affiliate-captain starter-connector
 	# Pin the response signing key of this shop for the four Pro add-ons (read by wp-config.php).
 	key=$(wpsuite wplc signing-key --field=public_key 2>/dev/null | tail -1)
@@ -49,6 +50,8 @@ phase_install() {
 		echo "define( 'WORKFLOW_CAPTAIN_PRO_HOOK_SUITE_N8N_HMAC', 'suite-e2e-hmac-secret-0123456789abcdef0123456789' );"
 		echo "define( 'WORKFLOW_CAPTAIN_PRO_HOOK_SUITE_STEP_HMAC', 'suite-e2e-hmac-secret-0123456789abcdef0123456789' );"
 		echo "define( 'WORKFLOW_CAPTAIN_PRO_HOOK_SUITE_N8N_INBOUND', 'suite-e2e-inbound-secret-0123456789abcdef01234567' );"
+		# Own master key of the vault of Workflow Captain (WF-SEC-02); phase "rotation" changes it.
+		echo "define( 'WORKFLOW_CAPTAIN_SECRET_KEY', '$KEY_A' );"
 	} > "$ROOT/logs/suite-keys.php"
 	rec i1 'shop signing key pinned for the Pro add-ons' $([ -n "$key" ] && echo 1 || echo 0) "$key"
 	ev shop
@@ -112,6 +115,52 @@ phase_expiry() {
 	ev renewed_check
 }
 
+phase_connectors() {
+	# WF-CONNECTOR-13: the starter connector of the core as an own connector, with the Pro license.
+	ev conn_setup
+	ev conn_run
+	ev conn_timeout
+	ev conn_rights
+	ev conn_app_prep
+	deact starter-connector
+	ev conn_app_off
+	act starter-connector
+	ev conn_app_on
+	# The connector is updated to a new MAJOR of its contract: a copy of the example with contract 2.0.0.
+	local v2="$ROOT/suite-src/starter-connector-v2" link="$ROOT/suite/wp-content/plugins/starter-connector"
+	rsync -a --delete "$CORE/examples/starter-connector/" "$v2/"
+	sed -i "s/'1\.0\.0'/'2.0.0'/g" "$v2/src/Manifest.php" "$v2/src/TicketAdapter.php"
+	rm -f "$link" && ln -s "$v2" "$link"
+	ev conn_major
+	rm -f "$link" && ln -s "$CORE/examples/starter-connector" "$link"
+	ev conn_major_back
+}
+
+phase_resilience() {
+	# T88, WF-INT-17, WF-CONNECTOR-13: timeout after the target accepted the call; restore from a backup.
+	ev slow_send
+	ev slow_retry
+	ev restore_prep
+	local dump="$ROOT/logs/suite-restore.sql"
+	mysqldump wp_e2e_suite $(mysql -N -e "SHOW TABLES FROM wp_e2e_suite LIKE 'wp\_workflow\_captain%'" | tr '\n' ' ') > "$dump"
+	ev restore_run 1
+	mysql wp_e2e_suite < "$dump"
+	ev restore_run 2
+}
+
+phase_rotation() {
+	# WF-CONNECTOR-13, WF-SEC-02: rotation of a connection secret and of the master key of the vault.
+	ev rotate_conn
+	sed -i "s/'WORKFLOW_CAPTAIN_SECRET_KEY', '$KEY_A'/'WORKFLOW_CAPTAIN_SECRET_KEY', '$KEY_B' ); define( 'WORKFLOW_CAPTAIN_SECRET_KEY_PREVIOUS', '$KEY_A'/" "$ROOT/logs/suite-keys.php"
+	ev rotate_key before
+	dry=$(wpsuite workflow-captain secrets --dry-run 2>&1 | q | grep 'suite-rot' | head -1)
+	rec sr3b 'dry run counts the connection secret as "to re-encrypt" (old key)' $(echo "$dry" | grep -q '1 to re-encrypt' && echo 1 || echo 0) "$dry"
+	out=$(wpsuite workflow-captain secrets 2>&1 | q | grep 'suite-rot' | head -1)
+	rec sr3c 'wp workflow-captain secrets re-encrypts it with the new key (counts only, no values)' $(echo "$out" | grep -q '1 re-encrypted' && echo 1 || echo 0) "$out"
+	sed -i "s/ define( 'WORKFLOW_CAPTAIN_SECRET_KEY_PREVIOUS', '$KEY_A' );//" "$ROOT/logs/suite-keys.php"
+	ev rotate_key rekeyed
+}
+
 phase_ms() {
 	bash "$HERE/ms.sh"
 }
@@ -125,7 +174,7 @@ phase_log() {
 	rec z1 'suite PHP error log has no fatal/warning/deprecation from the suite plugins' $([ -z "$hits" ] && echo 1 || echo 0) "${hits:-clean}"
 }
 
-phases=${*:-install matrix events refund providers webhooks expiry ms release log}
+phases=${*:-install matrix events refund providers webhooks expiry connectors resilience rotation ms release log}
 for p in $phases; do
 	echo "== phase $p"
 	"phase_$p"

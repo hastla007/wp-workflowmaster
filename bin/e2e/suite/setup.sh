@@ -17,7 +17,8 @@ set -euo pipefail
 
 ROOT=${E2E_ROOT:-/home/user/wp-e2e}
 HERE=$(cd "$(dirname "$0")" && pwd)
-CORE=${E2E_CORE:-$( [ -d /home/user/wt-suite-fix ] && echo /home/user/wt-suite-fix || echo /home/user/wp-workflowmaster )}
+# Core: the checkout this script belongs to (the branch under test).
+CORE=${E2E_CORE:-$(cd "$HERE/../../.." && pwd)}
 PRO_REPO=${E2E_PRO_REPO:-/home/user/captain-pro}
 PASS=${E2E_PASS:-/home/user/wp-passmaster}
 VOUCHER=${E2E_VOUCHER:-/home/user/wp-couponmaster}
@@ -48,8 +49,9 @@ done
 
 # 3. Workflow Captain Pro: a clone of captain-pro (branch above), libraries written in place by its own build.
 SRC="$ROOT/suite-src/captain-pro"
-# Fixes found by the suite are committed locally on wt/suite-fix of captain-pro; use that branch while it exists.
-PRO_BRANCH=${E2E_PRO_BRANCH:-$(git -C "$PRO_REPO" rev-parse -q --verify wt/suite-fix >/dev/null && echo wt/suite-fix || echo "$BRANCH")}
+# Fixes found by the suite are committed locally on wt/suite2 of captain-pro (worktree /home/user/cp-suite2); use that
+# branch while it exists. wt/suite-fix of the first run holds the network license that was not merged: never use it.
+PRO_BRANCH=${E2E_PRO_BRANCH:-$(git -C "$PRO_REPO" rev-parse -q --verify wt/suite2 >/dev/null && echo wt/suite2 || echo "$BRANCH")}
 if [ ! -d "$SRC/.git" ]; then
 	mkdir -p "$ROOT/suite-src" && git clone -q "$PRO_REPO" "$SRC"
 fi
@@ -87,6 +89,7 @@ for site in suite suite-ms; do
 	link "$site" affiliate-captain "$AFFILIATE"
 done
 link suite wp-license "$LICENSE"
+link suite starter-connector "$CORE/examples/starter-connector"
 
 # 5. wp-config.php. The license server is this shop; its Ed25519 public key is pinned after the first install
 #    (run-suite.sh writes suite-keys.php). WPLC_* secrets are test-only values.

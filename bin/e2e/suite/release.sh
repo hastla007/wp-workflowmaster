@@ -10,7 +10,7 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 CHECKS="$HERE/checks.php"
 export E2E_RESULTS=${E2E_RESULTS:-$ROOT/logs/suite-results.jsonl}
 export COMPOSER_ALLOW_SUPERUSER=1
-CORE=${E2E_CORE:-$( [ -d /home/user/wt-suite-fix ] && echo /home/user/wt-suite-fix || echo /home/user/wp-workflowmaster )}
+CORE=${E2E_CORE:-$(cd "$HERE/../../.." && pwd)}
 BRANCH=claude/plugin-todo-liste-2a83v4
 Z="$ROOT/suite-src/zip"
 OUT="$Z/out"
@@ -30,7 +30,7 @@ clone() { git clone -q --depth 1 -b "${3:-$BRANCH}" "file://$1" "$Z/$2"; }
 git -C "$CORE" archive --format=zip --prefix=workflow-captain/ -o "$OUT/workflow-captain.zip" HEAD
 rec g1 'Workflow Captain: release ZIP (git archive, export-ignore)' $([ -s "$OUT/workflow-captain.zip" ] && echo 1 || echo 0) "$(git -C "$CORE" log --oneline -1)"
 
-PRO_BRANCH=$(git -C /home/user/captain-pro rev-parse -q --verify wt/suite-fix >/dev/null && echo wt/suite-fix || echo "$BRANCH")
+PRO_BRANCH=$(git -C /home/user/captain-pro rev-parse -q --verify wt/suite2 >/dev/null && echo wt/suite2 || echo "$BRANCH")
 clone /home/user/captain-pro captain-pro "$PRO_BRANCH"
 for a in workflow-captain-pro pass-captain-pro voucher-captain-pro affiliate-captain-pro; do
 	(cd "$Z/captain-pro" && php build/build.php --addon=$a > "$Z/build-$a.log" 2>&1)
