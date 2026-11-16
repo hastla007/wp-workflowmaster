@@ -2,13 +2,14 @@
 
 Stand: 16.11.2026. Aufgabe WF-N8N-10 in [`../../TODO.md`](../../TODO.md). Vertrag: [`../../konzept.md`](../../konzept.md), Abschnitt 17.12, „Vertrag der Version 1“.
 
-**Entwurf.** Workflow Captain gibt es noch nicht als Code. Die Vorlagen zeigen, wie ein n8n-Workflow die Ereignisse empfängt, die Workflow Captain nach der Spezifikation sendet (Umschlag aus [`../SPEC-suite-events.md`](../SPEC-suite-events.md), Abschnitt 6). Sie sind gegen keine n8n-Instanz importiert worden. Vor der Freigabe in der unterstützten n8n-Version importieren und testen (WF-N8N-12).
+**Entwurf.** Der Versand an n8n kommt mit Workflow Captain Pro. Die Vorlagen zeigen, wie ein n8n-Workflow die Ereignisse empfängt, die Workflow Captain nach der Spezifikation sendet (Umschlag aus [`../SPEC-suite-events.md`](../SPEC-suite-events.md), Abschnitt 6). Sie sind gegen keine n8n-Instanz importiert worden. Vor der Freigabe in der unterstützten n8n-Version importieren und testen (WF-N8N-12).
 
 | Datei | Ereignis | Zweck |
 |---|---|---|
 | [`voucher-eingeloest.json`](voucher-eingeloest.json) | `voucher.voucher.redeemed` | Einlösung ins Reporting |
 | [`voucher-ausgestellt.json`](voucher-ausgestellt.json) | `voucher.voucher.issued_standalone` | Hinweis an den Kundenservice |
 | [`pass-eingecheckt.json`](pass-eingecheckt.json) | `pass.ticket.checked_in` | Teilnahme im CRM vermerken |
+| [`woocommerce-bezahlt.json`](woocommerce-bezahlt.json) | `woocommerce.order.paid` | Umsatz ins Reporting (kostenloser Kern liefert das Ereignis, Spezifikation 4.7) |
 
 ## Aufbau jeder Vorlage
 
@@ -30,3 +31,11 @@ Kein Gutschein-, Ticket- oder Lizenzcode, keine E-Mail-Adresse, kein Name, kein 
 
 - **WooCommerce und WordPress:** Die Spezifikation legt den Umschlag nur für Ereignisse der Captain-Produkte fest. Wie Workflow Captain Ereignisse aus WordPress und WooCommerce an n8n sendet, ist nicht festgelegt (offene Frage F-20 in [`../SPEC-open-questions.md`](../SPEC-open-questions.md)). Eine Vorlage folgt danach.
 - **Form Captain:** Der Katalog `form.*` kommt in einer späteren MINOR-Version der Spezifikation (4.6).
+
+## Freigabe, Rechte und Lizenz (WF-N8N-11)
+
+- n8n-Verbindungen sind eine Funktion von Workflow Captain Pro (Recht `workflow.webhooks`) und zählen wie jede externe Integration auf das Website-Limit der Lizenz.
+- Anlegen, Ändern und Widerrufen einer Verbindung braucht `manage_workflow_integrations`; jede Änderung steht im Audit (Einstellungen → Status).
+- Jede Verbindung ist ab Werk aus und sendet nur die ausgewählten Ereignistypen und Felder.
+- Läuft die Lizenz ab, sendet Workflow Captain nichts Neues mehr; offene Zustellungen pausieren und werden nicht verworfen. Eingehende Aufrufe von n8n werden mit einem festen Code abgelehnt. Nach der Verlängerung geht es mit derselben Ereignis-`id` weiter, n8n verwirft Doppelte.
+- Ereignisse aus WordPress und WooCommerce liefert der kostenlose Kern; den Versand an n8n übernimmt Pro.
