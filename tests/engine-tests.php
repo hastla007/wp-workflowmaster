@@ -720,3 +720,17 @@ check( 'WF-CORE-09 a workflow of site 1 does not exist on site 2', array() === $
 check( 'WF-CORE-09 the event on site 2 starts no run of site 1', 1 === count( $a->store->find_runs( array(), 10, 0 ) ) && array() === $b->store->find_runs( array(), 10, 0 ) );
 check( 'WF-CORE-09 tags stay on their site', array( 'eingecheckt' ) === $a->store->tags_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' ) && array() === $b->store->tags_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' ) );
 check( 'WF-CORE-09 envelopes carry their own blog ID', 2 === $b->events->find( array(), 1, 0 )[0]['envelope']['site']['blog_id'] );
+
+// ----- WF-CORE-07: consistency after a restore -----------------------------------------------------------------
+
+$e = engine_site();
+publish( $e, sample_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+check( 'consistency: a healthy site has no findings', array() === array_filter( $e->store->consistency() ) );
+// Simulate a partial restore: versions table older than runs, an orphan step, an active workflow without version.
+$e->pdo->exec( 'DELETE FROM wp_workflow_captain_versions' );
+$e->pdo->exec( "INSERT INTO wp_workflow_captain_steps (run_id,node_id,step_key,state,attempts,effect,due_at,created_at,updated_at) VALUES (999,'x','" . str_repeat( '0', 64 ) . "','queued',0,'none','2026-01-01 00:00:00','2026-01-01 00:00:00','2026-01-01 00:00:00')" );
+$c = $e->store->consistency();
+check( 'consistency: runs without version, orphan steps, active workflow without version found', 1 === count( $c['runs_without_version'] ) && 1 === count( $c['steps_without_run'] ) && 1 === count( $c['active_without_version'] ) );
+check( 'consistency: reporting changes nothing', 1 === count( $e->store->find_runs( array(), 10, 0 ) ) );

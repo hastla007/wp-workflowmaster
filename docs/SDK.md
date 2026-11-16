@@ -108,6 +108,6 @@ Export und Löschung persönlicher Daten über die Werkzeuge von WordPress erfas
 
 ## 7. Betrieb
 
-- `wp workflow-captain status|process|requeue|migrate|diagnostics`
+- `wp workflow-captain status|process|requeue|migrate|diagnostics|verify`
 - Auf schwach besuchten Websites einen System-Cron einrichten, der `wp workflow-captain process` jede Minute aufruft.
 - Der Diagnose-Export (Seite „Ereignisse“) enthält keine persönlichen Daten und keine Geheimnisse.

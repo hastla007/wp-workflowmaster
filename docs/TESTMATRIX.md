@@ -63,7 +63,7 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 | Plugin fehlt oder deaktiviert, Lizenz fehlt oder abgelaufen, Vertrags-MAJOR | Kern-Seite automatisch (C-15, Providerverfügbarkeit); Adapter-Seite offen |
 | Timeout nach erfolgreichem Zielaufruf, Replay, Doppelte | Kern-Seite automatisch (R-8.12, C-4, C-10); Gutschein-Befehle offen (VC-1) |
 | Refund, Woo HPOS/Classic, Checkout Blocks | offen (braucht WooCommerce und Adapter) |
-| Wiederherstellung aus Backup | Verfahren in `docs/RUNBOOK.md`; Konsistenzprüfung folgt; Durchlauf offen |
+| Wiederherstellung aus Backup | Verfahren in `docs/RUNBOOK.md`; Konsistenzprüfung automatisch getestet; Durchlauf mit echter Sicherung offen |
 
 ## Multisite
 

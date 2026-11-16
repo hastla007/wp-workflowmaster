@@ -7,6 +7,7 @@
  *     wp workflow-captain requeue <event-id>
  *     wp workflow-captain migrate
  *     wp workflow-captain diagnostics
+ *     wp workflow-captain verify
  *
  * Read-only except process, requeue and migrate; requeue is the same human decision as in the admin (7.4).
  *
@@ -76,6 +77,23 @@ final class Command {
 		}
 		Install::create_tables();
 		\WP_CLI::success( 'Schema ' . WORKFLOW_CAPTAIN_DB_VERSION . ' in place.' );
+	}
+
+	/**
+	 * Checks references after a backup restore (runs, steps, versions, workflows). Reports only, changes nothing.
+	 */
+	public function verify(): void {
+		$problems = Plugin::instance()->engine()->store()->consistency();
+		$found    = false;
+		foreach ( $problems as $kind => $ids ) {
+			if ( array() !== $ids ) {
+				$found = true;
+				\WP_CLI::warning( $kind . ': ' . implode( ', ', $ids ) );
+			}
+		}
+		if ( ! $found ) {
+			\WP_CLI::success( 'No inconsistencies found.' );
+		}
 	}
 
 	/**

@@ -47,6 +47,7 @@ final class Diagnostics {
 			'runs'         => $runs,
 			'action_required_reasons' => $reasons,
 			'stuck'        => self::stuck( $engine ),
+			'consistency'  => array_map( 'count', $engine->consistency() ),
 			'workflows'    => array(
 				'total'  => count( $workflows ),
 				'active' => count( array_filter( $workflows, static fn( $w ) => EngineStore::WF_ACTIVE === $w['status'] ) ),

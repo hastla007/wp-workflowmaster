@@ -209,6 +209,21 @@ final class WpdbEngineStore implements EngineStore {
 		return 1 === (int) $hit ? $this->get_step( $id ) : null;
 	}
 
+	public function consistency(): array {
+		$w   = $this->t( 'workflows' );
+		$v   = $this->t( 'versions' );
+		$r   = $this->t( 'runs' );
+		$st  = $this->t( 'steps' );
+		$ids = fn( string $sql ): array => array_map( 'intval', (array) $this->db->get_col( $sql . ' LIMIT 100' ) );
+		return array(
+			'runs_without_version'      => $ids( "SELECT r.id FROM {$r} r LEFT JOIN {$v} v ON v.id = r.version_id WHERE v.id IS NULL" ),
+			'steps_without_run'         => $ids( "SELECT s.id FROM {$st} s LEFT JOIN {$r} r ON r.id = s.run_id WHERE r.id IS NULL" ),
+			'versions_without_workflow' => $ids( "SELECT v.id FROM {$v} v LEFT JOIN {$w} w ON w.id = v.workflow_id WHERE w.id IS NULL" ),
+			'active_without_version'    => $ids( "SELECT w.id FROM {$w} w LEFT JOIN {$v} v ON v.id = w.published_version_id WHERE w.status = 'active' AND v.id IS NULL" ),
+			'running_without_open_step' => $ids( "SELECT r.id FROM {$r} r WHERE r.state = 'running' AND NOT EXISTS ( SELECT 1 FROM {$st} s WHERE s.run_id = r.id AND s.state IN ('queued','retry_wait','running') )" ),
+		);
+	}
+
 	public function stuck( string $before ): array {
 		$expired = (int) $this->db->get_var( $this->db->prepare( "SELECT COUNT(*) FROM {$this->t( 'steps' )} WHERE state = 'running' AND lease_until < %s", $before ) );
 		$runs    = (array) $this->db->get_col(

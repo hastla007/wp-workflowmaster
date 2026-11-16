@@ -98,6 +98,14 @@ interface EngineStore {
 	 */
 	public function stuck( string $before ): array;
 
+	/**
+	 * Consistency after a backup restore (WF-CORE-07): references that do not resolve. Report only.
+	 *
+	 * @return array<string,int[]> runs_without_version, steps_without_run, versions_without_workflow,
+	 *                             active_without_version, running_without_open_step
+	 */
+	public function consistency(): array;
+
 	/** Extends the lease of a step the worker holds (heartbeat, WF-CORE-06). */
 	public function extend_lease( int $id, string $owner, string $lease_until, string $now ): bool;
 
