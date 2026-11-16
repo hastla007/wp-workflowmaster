@@ -30,6 +30,7 @@ const config = {
 		{ key: 'workflow.tag.set', label: 'Markierung setzen', fields: [ { key: 'tag', label: 'Markierung' } ] },
 	],
 	events: [ 'pass.ticket.checked_in', 'pass.order.paid' ],
+	fields: { 'pass.ticket.checked_in': [ 'checkin_source', 'device_id', 'area_id' ] },
 	i18n: {},
 };
 const css = 'file://' + path.resolve( __dirname, '../assets/css/builder.css' );
@@ -106,6 +107,36 @@ function check( label, ok ) {
 	check( 'Delete removes node and its edges', ! g.nodes.some( ( n ) => 'end1' === n.id ) && ! g.edges.some( ( e ) => 'end1' === e.to ) );
 
 	const items = await page.$$eval( '.wfc-linear li', ( lis ) => lis.map( ( l ) => l.textContent ) );
+	// Condition form (WF-BUILDER-04)
+	await page.click( '.wfc-node[data-id="condition1"]' );
+	await page.fill( '.wfc-rule-field', 'data.device_id' );
+	await page.press( '.wfc-rule-field', 'Tab' );
+	await page.selectOption( '.wfc-rule-op', 'gte' );
+	await page.fill( '.wfc-rule-value', '4' );
+	await page.press( '.wfc-rule-value', 'Tab' );
+	let rule = ( await graphNow() ).nodes.find( ( n ) => 'condition1' === n.id ).rules.items[ 0 ];
+	check( 'condition form writes field, operator and a number value', 'data.device_id' === rule.field && 'gte' === rule.operator && 4 === rule.value );
+	await page.click( '.wfc-rule-add' );
+	await page.selectOption( '.wfc-rule:nth-of-type(2) .wfc-rule-op', 'in' );
+	await page.fill( '.wfc-rule:nth-of-type(2) .wfc-rule-value', 'scanner, web' );
+	await page.press( '.wfc-rule:nth-of-type(2) .wfc-rule-value', 'Tab' );
+	rule = ( await graphNow() ).nodes.find( ( n ) => 'condition1' === n.id ).rules.items[ 1 ];
+	check( 'condition form: list values for "in"', 'in' === rule.operator && 'scanner' === rule.value[ 0 ] && 'web' === rule.value[ 1 ] );
+	check( 'condition form offers the catalog fields', ( await page.$$eval( '#wfc-fields option', ( o ) => o.map( ( x ) => x.value ) ) ).includes( 'data.checkin_source' ) );
+
+	// Token picker
+	await page.click( '.wfc-node[data-id="mail"]' );
+	await page.selectOption( '.wfc-token', 'data.checkin_source' );
+	check( 'token picker inserts a placeholder', ( await graphNow() ).nodes.find( ( n ) => 'mail' === n.id ).config.subject.includes( '{{data.checkin_source}}' ) );
+
+	// Zoom
+	const width = async () => parseInt( await page.$eval( '.wfc-canvas', ( s ) => s.getAttribute( 'width' ) ), 10 );
+	const w1 = await width();
+	await page.click( '.wfc-zoom-in' );
+	check( 'zoom enlarges the canvas', ( await width() ) > w1 );
+	await page.click( '.wfc-zoom-reset' );
+	check( 'zoom reset returns to 100 %', w1 === await width() );
+
 	check( 'linear view lists the steps in order', items.length > 0 && items[ 0 ].startsWith( 'Auslöser' ) );
 	check( 'nodes are focusable with a label', 'Nachricht an Betreiber' === await page.$eval( '.wfc-node[data-id="mail"]', ( n ) => n.getAttribute( 'aria-label' ) ) );
 	check( 'no JavaScript errors', 0 === errors.length );

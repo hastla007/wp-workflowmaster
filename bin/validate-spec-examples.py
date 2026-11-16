@@ -71,6 +71,14 @@ def check_catalog(validator, docs):
         if extra:
             print("FAIL catalog:", name, "data fields not in the catalog:", ", ".join(extra))
             failed += 1
+    shipped = os.path.join(ROOT, "assets", "data", "catalog-fields.json")
+    if os.path.exists(shipped):
+        with open(shipped, encoding="utf-8") as handle:
+            shipped_fields = json.load(handle)
+        expected = {t: entry[2]["data_fields"] for t, entry in by_type.items()}
+        if shipped_fields != expected:
+            print("FAIL catalog: assets/data/catalog-fields.json differs from the catalog (regenerate it)")
+            failed += 1
     if not failed:
         print("ok   catalog: %d types, all examples match" % len(by_type))
     return failed

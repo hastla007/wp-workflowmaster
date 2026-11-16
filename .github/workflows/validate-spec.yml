@@ -8,6 +8,7 @@ on:
       - "docs/examples/**"
       - "docs/catalog/**"
       - "docs/n8n/**"
+      - "assets/data/**"
       - "bin/validate-spec-examples.py"
       - ".github/workflows/validate-spec.yml"
   pull_request:
@@ -16,6 +17,7 @@ on:
       - "docs/examples/**"
       - "docs/catalog/**"
       - "docs/n8n/**"
+      - "assets/data/**"
       - "bin/validate-spec-examples.py"
       - ".github/workflows/validate-spec.yml"
   workflow_dispatch:

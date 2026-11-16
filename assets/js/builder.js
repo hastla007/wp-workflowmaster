@@ -41,6 +41,7 @@
 			this.config = config || { actions: [], events: [], i18n: {} };
 			this.t = ( key, fallback ) => ( this.config.i18n && this.config.i18n[ key ] ) || fallback;
 			this.selected = null;
+			this.zoom = 1;
 			this.connectFrom = null;
 			this.drag = null;
 			this.history = [];
@@ -246,13 +247,21 @@
 			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'undo', 'Rückgängig' ), onclick: () => this.undo(), disabled: ! this.history.length } ) );
 			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'redo', 'Wiederholen' ), onclick: () => this.redo(), disabled: ! this.future.length } ) );
 			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'arrange', 'Anordnen' ), onclick: () => { this.layoutMissing( true ); this.commit(); } } ) );
+			bar.appendChild( el( 'span', { class: 'wfc-sep' } ) );
+			const zoomTo = ( z ) => {
+				this.zoom = Math.min( 2, Math.max( 0.4, Math.round( z * 10 ) / 10 ) );
+				this.render();
+			};
+			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-out', 'aria-label': this.t( 'zoomOut', 'Verkleinern' ), text: '−', onclick: () => zoomTo( this.zoom - 0.2 ) } ) );
+			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-reset', text: Math.round( this.zoom * 100 ) + ' %', onclick: () => zoomTo( 1 ) } ) );
+			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-in', 'aria-label': this.t( 'zoomIn', 'Vergrößern' ), text: '+', onclick: () => zoomTo( this.zoom + 0.2 ) } ) );
 			return bar;
 		}
 
 		canvas() {
 			const maxX = Math.max( 600, ...this.graph.nodes.map( ( n ) => n.x + W + 40 ) );
 			const maxY = Math.max( 300, ...this.graph.nodes.map( ( n ) => n.y + H + 40 ) );
-			const s = svg( 'svg', { class: 'wfc-canvas', width: maxX, height: maxY, role: 'group', 'aria-label': this.t( 'canvas', 'Ablauf' ) } );
+			const s = svg( 'svg', { class: 'wfc-canvas', width: Math.round( maxX * this.zoom ), height: Math.round( maxY * this.zoom ), viewBox: `0 0 ${ maxX } ${ maxY }`, role: 'group', 'aria-label': this.t( 'canvas', 'Ablauf' ) } );
 			const defs = svg( 'defs' );
 			const marker = svg( 'marker', { id: 'wfc-arrow', viewBox: '0 0 10 10', refX: '10', refY: '5', markerWidth: '8', markerHeight: '8', orient: 'auto-start-reverse' } );
 			marker.appendChild( svg( 'path', { d: 'M 0 0 L 10 5 L 0 10 z', class: 'wfc-arrowhead' } ) );
@@ -356,7 +365,7 @@
 		}
 
 		startDrag( ev, n ) {
-			this.drag = { id: n.id, dx: ev.clientX - n.x, dy: ev.clientY - n.y, moved: false };
+			this.drag = { id: n.id, dx: ev.clientX / this.zoom - n.x, dy: ev.clientY / this.zoom - n.y, moved: false };
 		}
 
 		moveDrag( ev ) {
@@ -364,8 +373,8 @@
 				return;
 			}
 			const n = this.node( this.drag.id );
-			n.x = Math.max( 0, Math.round( ( ev.clientX - this.drag.dx ) / 10 ) * 10 );
-			n.y = Math.max( 0, Math.round( ( ev.clientY - this.drag.dy ) / 10 ) * 10 );
+			n.x = Math.max( 0, Math.round( ( ev.clientX / this.zoom - this.drag.dx ) / 10 ) * 10 );
+			n.y = Math.max( 0, Math.round( ( ev.clientY / this.zoom - this.drag.dy ) / 10 ) * 10 );
 			this.drag.moved = true;
 			const g = this.root.querySelector( `.wfc-node[data-id="${ n.id }"]` );
 			if ( g ) {
@@ -380,6 +389,70 @@
 				return;
 			}
 			this.drag = null;
+		}
+
+		/** Data fields the trigger's event type allows (catalog), for conditions and placeholders. */
+		dataFields() {
+			const trigger = this.graph.nodes.find( ( n ) => 'trigger' === n.type );
+			return ( this.config.fields && trigger && this.config.fields[ trigger.event ] ) || [];
+		}
+
+		/** Placeholder picker next to a text field (WF-BUILDER-04): inserts {{…}} at the cursor. */
+		tokenPicker( input, onChange ) {
+			const tokens = [ 'type', 'occurred_at', 'subject.type', 'subject.id', 'source.product' ].concat( this.dataFields().map( ( f ) => 'data.' + f ) );
+			return el( 'select', {
+				class: 'wfc-token',
+				'aria-label': this.t( 'insertToken', 'Platzhalter einfügen' ),
+				onchange: ( ev ) => {
+					if ( ! ev.target.value ) {
+						return;
+					}
+					const token = '{{' + ev.target.value + '}}';
+					const at = 'number' === typeof input.selectionStart ? input.selectionStart : input.value.length;
+					input.value = input.value.slice( 0, at ) + token + input.value.slice( at );
+					ev.target.value = '';
+					onChange( input.value );
+				},
+			}, [ el( 'option', { value: '', text: this.t( 'insertToken', 'Platzhalter einfügen …' ) } ) ].concat( tokens.map( ( tk ) => el( 'option', { value: tk, text: '{{' + tk + '}}' } ) ) ) );
+		}
+
+		/** Condition as a form (one level of rules); groups fall back to JSON. */
+		conditionForm( n ) {
+			const box = el( 'div', { class: 'wfc-rules' } );
+			const rules = n.rules || { op: 'and', items: [] };
+			const simple = Array.isArray( rules.items ) && rules.items.every( ( r ) => ! r.op );
+			if ( ! simple ) {
+				return null;
+			}
+			const fields = [ 'type', 'subject.type', 'subject.id', 'subject.id_kind', 'source.product', 'actor_user_id' ].concat( this.dataFields().map( ( f ) => 'data.' + f ) );
+			box.appendChild( el( 'datalist', { id: 'wfc-fields' }, fields.map( ( f ) => el( 'option', { value: f } ) ) ) );
+			box.appendChild( el( 'p', {}, [ el( 'label', { text: this.t( 'combine', 'Verknüpfung' ) + ' ' } ), el( 'select', { class: 'wfc-op', onchange: ( ev ) => { rules.op = ev.target.value; n.rules = rules; this.commit(); } }, [ [ 'and', 'alle Regeln (UND)' ], [ 'or', 'eine Regel (ODER)' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: rules.op === v } ) ) ) ] ) );
+			const ops = [ [ 'eq', '=' ], [ 'neq', '≠' ], [ 'gt', '>' ], [ 'gte', '≥' ], [ 'lt', '<' ], [ 'lte', '≤' ], [ 'in', 'in Liste' ], [ 'not_in', 'nicht in Liste' ], [ 'contains', 'enthält' ], [ 'exists', 'vorhanden' ], [ 'not_exists', 'fehlt' ] ];
+			const parse = ( op, raw ) => {
+				if ( [ 'in', 'not_in' ].includes( op ) ) {
+					return raw.split( ',' ).map( ( x ) => x.trim() ).filter( ( x ) => x !== '' ).map( ( x ) => ( /^-?\d+(\.\d+)?$/.test( x ) ? Number( x ) : x ) );
+				}
+				if ( [ 'gt', 'gte', 'lt', 'lte' ].includes( op ) ) {
+					return Number( raw );
+				}
+				if ( 'true' === raw || 'false' === raw ) {
+					return 'true' === raw;
+				}
+				return /^-?\d+(\.\d+)?$/.test( raw ) ? Number( raw ) : raw;
+			};
+			const show = ( v ) => ( Array.isArray( v ) ? v.join( ', ' ) : ( undefined === v || null === v ? '' : String( v ) ) );
+			rules.items.forEach( ( r, i ) => {
+				const row = el( 'div', { class: 'wfc-rule' } );
+				row.appendChild( el( 'input', { type: 'text', class: 'wfc-rule-field', list: 'wfc-fields', value: r.field || '', 'aria-label': this.t( 'field', 'Feld' ), onchange: ( ev ) => { r.field = ev.target.value.trim(); n.rules = rules; this.commit(); } } ) );
+				row.appendChild( el( 'select', { class: 'wfc-rule-op', 'aria-label': this.t( 'operator', 'Operator' ), onchange: ( ev ) => { r.operator = ev.target.value; r.value = parse( r.operator, show( r.value ) ); n.rules = rules; this.commit(); } }, ops.map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: r.operator === v } ) ) ) );
+				if ( ! [ 'exists', 'not_exists' ].includes( r.operator ) ) {
+					row.appendChild( el( 'input', { type: 'text', class: 'wfc-rule-value', value: show( r.value ), 'aria-label': this.t( 'value', 'Wert' ), onchange: ( ev ) => { r.value = parse( r.operator, ev.target.value ); n.rules = rules; this.commit(); } } ) );
+				}
+				row.appendChild( el( 'button', { type: 'button', class: 'button-link wfc-rule-remove', text: '×', 'aria-label': this.t( 'removeRule', 'Regel entfernen' ), onclick: () => { rules.items.splice( i, 1 ); n.rules = rules; this.commit(); } } ) );
+				box.appendChild( row );
+			} );
+			box.appendChild( el( 'button', { type: 'button', class: 'button wfc-rule-add', text: '+ ' + this.t( 'addRule', 'Regel' ), onclick: () => { rules.items.push( { field: fields[ 0 ] || 'type', operator: 'eq', value: '' } ); n.rules = rules; this.commit(); } } ) );
+			return box;
 		}
 
 		/** Configuration of the selected node (WF-BUILDER-04). */
@@ -412,12 +485,22 @@
 					if ( 'textarea' === f.type ) {
 						input.value = n.config[ f.key ] || '';
 					}
-					box.appendChild( field( f.label, input ) );
+					const p = field( f.label, input );
+					if ( [ 'subject', 'message', 'text' ].includes( f.key ) ) {
+						p.appendChild( el( 'br' ) );
+						p.appendChild( this.tokenPicker( input, ( value ) => set( f.key, value, n.config ) ) );
+					}
+					box.appendChild( p );
 				} );
 			} else if ( 'condition' === n.type ) {
-				const rules = el( 'textarea', { rows: 8, class: 'large-text code', onchange: ( ev ) => { try { n.rules = JSON.parse( ev.target.value ); this.commit(); } catch ( e ) { this.announce( this.t( 'invalidJson', 'Ungültiges JSON.' ) ); } } } );
-				rules.value = JSON.stringify( n.rules || {}, null, 2 );
-				box.appendChild( field( this.t( 'rules', 'Regeln (JSON)' ), rules ) );
+				const form = this.conditionForm( n );
+				if ( form ) {
+					box.appendChild( form );
+				} else {
+					const rules = el( 'textarea', { rows: 8, class: 'large-text code', onchange: ( ev ) => { try { n.rules = JSON.parse( ev.target.value ); this.commit(); } catch ( e ) { this.announce( this.t( 'invalidJson', 'Ungültiges JSON.' ) ); } } } );
+					rules.value = JSON.stringify( n.rules || {}, null, 2 );
+					box.appendChild( field( this.t( 'rules', 'Regeln (JSON, mit Gruppen)' ), rules ) );
+				}
 				box.appendChild( field( this.t( 'missing', 'Wenn ein Feld fehlt' ), el( 'select', { onchange: ( ev ) => set( 'missing', ev.target.value ) }, [ [ 'false', 'gilt als nicht erfüllt' ], [ 'stop', 'Lauf beenden' ], [ 'error', 'Fehler' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: ( n.missing || 'false' ) === v } ) ) ) ) );
 				box.appendChild( el( 'p', {}, [
 					el( 'button', { type: 'button', class: 'button', text: this.t( 'connectThen', 'Dann verbinden …' ), onclick: () => { this.connectFrom = n.id; this.connectBranch = 'then'; this.announce( this.t( 'connectHint', 'Ziel wählen.' ) ); } } ),
