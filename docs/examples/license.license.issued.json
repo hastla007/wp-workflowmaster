@@ -1,0 +1,29 @@
+{
+  "id": "4b453ad4-8147-4ed3-ae85-60c425991cb1",
+  "type": "license.license.issued",
+  "spec_version": "1.0",
+  "source": {
+    "product": "wp-license",
+    "core_version": "0.2.0",
+    "contract_version": null
+  },
+  "occurred_at": "2026-11-16T12:05:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "license",
+    "id": "1611",
+    "id_kind": "record"
+  },
+  "actor_user_id": 412,
+  "data": {
+    "product": "voucher-captain-pro",
+    "plan": "single",
+    "status": "active"
+  },
+  "idempotency_key": "45d8efa604611e23db5d6828614f7fa5e965203817c8324b3d5908ae912e24c4",
+  "correlation_id": "4b453ad4-8147-4ed3-ae85-60c425991cb1",
+  "causation_id": null,
+  "chain_depth": 0
+}

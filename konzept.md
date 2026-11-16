@@ -333,6 +333,18 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 - Kein Versand auf Basis positiver Reviews; kein Umgehen von Gutschein-/Affiliate-/Review-Richtlinien.
 - Admin kann eine Aktivierung jederzeit pausieren; Provider-/Lizenzfehler dürfen keinen fatalen Frontend-Fehler verursachen.
 
+### 9.1 Geheimnisse und Schlüsselverwaltung (WF-SEC-02, festgelegt am 16.11.2026)
+
+Workflow Captain speichert Geheimnisse (Webhook-Secrets, Tokens eingehender Verbindungen, Zugangsdaten für n8n und eigene Connectoren) nach demselben Muster wie Pass Captain (`wp-passmaster` `src/Security/Vault.php`, Branch `claude/sharp-mendel-xiiwf3`), damit die Suite ein Verfahren hat:
+
+- **Verfahren:** libsodium `secretbox` (authentifizierte Verschlüsselung). Jeder Eintrag wird für einen eigenen Kontext verschlüsselt (`connection:{blog_id}:{connection_id}:{feld}`); ein in eine andere Verbindung oder Website kopierter Geheimtext lässt sich nicht entschlüsseln.
+- **Schlüsselquelle:** Konstante `WORKFLOW_CAPTAIN_SECRET_KEY` in `wp-config.php` (empfohlen und im Admin als Empfehlung angezeigt), sonst die gleichnamige Umgebungsvariable; fehlt beides, ein aus den WordPress-Salts `AUTH_KEY` und `SECURE_AUTH_KEY` abgeleiteter Schlüssel. Ist weder libsodium noch ein Schlüssel verfügbar, speichert Workflow Captain keine Geheimnisse; Verbindungen, die eines brauchen, lassen sich dann nicht aktivieren.
+- **Rotation:** Neuer Wert in `WORKFLOW_CAPTAIN_SECRET_KEY`, alter in `WORKFLOW_CAPTAIN_SECRET_KEY_PREVIOUS`. Einträge, die nur mit dem alten Schlüssel lesbar sind, werden beim Lesen und per WP-CLI-Befehl neu verschlüsselt; der Admin zeigt, wie viele noch offen sind. Danach kann die alte Konstante entfernt werden.
+- **Schlüssel verloren oder Salts gewechselt ohne eigene Konstante:** Betroffene Einträge sind nicht mehr lesbar. Die Verbindung pausiert mit „Gespeicherter Wert kann nicht entschlüsselt werden“, der Wert muss neu eingegeben oder rotiert werden. Nichts wird still gelöscht; ein Lauf, der das Geheimnis braucht, pausiert mit Grund.
+- **Multisite:** Ein Schlüssel für das Netzwerk (Konstante gilt für alle Websites); die Trennung leistet der Kontext mit `blog_id`. Netzwerkweite Verbindungen (falls sie kommen, WF-MS) verwenden den Kontext `network:{connection_id}:{feld}`.
+- **Backup und Wiederherstellung:** Der Geheimtext liegt in der Datenbank, der Schlüssel in `wp-config.php`. Eine Wiederherstellung auf einem anderen Server braucht dieselbe Konstante (oder dieselben Salts); sonst gilt der Fall „Schlüssel verloren“. Das steht in der Hilfe zur Wiederherstellung.
+- **Klartext:** nur im Speicher des laufenden Requests, beim Aufruf der Aktion. Werte werden für den Rest des Requests im Redaktionsfilter registriert und nie in Logs, Laufprotokollen, Exporten, Fehlermeldungen, Diagnose oder Workflow-Snapshots ausgegeben (Snapshots verweisen nur auf die Verbindung, 15.3). Im Admin werden sie nach dem Speichern maskiert; neu sehen lässt sich ein Wert nur bei der Erzeugung (WF-CONNECTOR-08).
+
 ## 10. Qualität, Leistung und Kompatibilität
 
 - Ausgangssprache Deutsch; Übersetzungsdateien, alle Adminstrings internationalisierbar. Deutsch (de_DE) zuerst, Englisch (en_US) für internationale Releases.
@@ -552,6 +564,24 @@ Ein Workflow besteht aus einem Einstieg (ein Event oder alternative Events), Bed
 - **Duplikate:** Feuert der Zeitgeber doppelt oder laufen zwei Worker, verhindert der Idempotenzschlüssel des Schritts zusammen mit der Sperre der Warteschlange eine doppelte Ausführung (WF-CORE-06).
 - **Terminänderung:** Eine Wartezeit, die sich auf ein Datum eines Objekts bezieht (zum Beispiel „1 Tag vor dem Termin“), wird beim Planen in eine feste Zielzeit umgerechnet und verschiebt sich nicht von selbst. Vor der Ausführung liest der Schritt das Objekt gegen (R-7.4); hat sich das Datum geändert oder ist der Termin abgesagt, wird der Schritt mit Grund übersprungen. Den neuen Zeitpunkt plant ein Workflow, der auf das Ereignis der Verschiebung reagiert (zum Beispiel `pass.occurrence.rescheduled`).
 - Ob Version 1 wiederkehrende Zeitplan-Auslöser (zum Beispiel „jeden Montag 8:00“) anbietet, ist nicht festgelegt; falls ja, gelten dieselben Regeln, und ein verpasster Termin wird höchstens einmal nachgeholt.
+
+**Laufzeit-Snapshot (WF-CORE-02, festgelegt am 16.11.2026)**
+- Jeder Lauf speichert beim Start die Kennung der veröffentlichten Workflow-Version (unveränderlicher Graph mit Konfiguration), je verwendetem Provider die Vertragsversion, die beim Veröffentlichen geprüft wurde, und `authorized_by_user_id` (Spezifikation R-8.7). Spätere Änderungen am Workflow gelten nur für neue Läufe.
+- Der Snapshot enthält Verweise auf Zugangsdaten (Kennung der Verbindung), nie deren Wert. Wird eine Verbindung rotiert, nutzt ein laufender Lauf ab dem nächsten Schritt den neuen Wert; wird sie widerrufen, pausiert der Schritt mit Grund.
+- Vor jedem Schritt prüft die Engine, ob Provider und Aktion noch angemeldet sind und die MAJOR-Version des Vertrags passt. Wenn nicht, pausiert der Lauf mit Zustand „Provider fehlt“ oder „Vertrag inkompatibel“; er wird weder still übersprungen noch auf eine andere Aktion umgebogen. Der Betreiber entscheidet nach einer Vorschau: fortsetzen (wenn der Provider zurück ist), abbrechen oder auf eine neue Version migrieren (neuer Lauf ab dem betroffenen Schritt, mit neuem Idempotenzschlüssel und eigener Bestätigung).
+
+**Parallelität und Reihenfolge (WF-CORE-05, festgelegt am 16.11.2026)**
+- Grenzen mit Voreinstellung, im Tab „Ausführung“ einstellbar: höchstens 5 gleichzeitig laufende Schritte je Website, höchstens 2 je Workflow, Batchgröße 25 Schritte je Worker-Durchlauf und ein Zeitbudget von 20 Sekunden je Durchlauf. Die Zahlen sind Startwerte und werden mit den Messungen der Batchlimits (Abnahme) angepasst.
+- Fairness: Der Worker nimmt fällige Schritte nach Zielzeit, aber höchstens die Hälfte eines Batchs aus demselben Workflow, solange andere Workflows wartende Schritte haben.
+- Reihenfolge: Es gibt keine Reihenfolgegarantie über Objekte hinweg (Spezifikation 7.5). Ein Workflow kann die Serialisierung nach einem Schlüssel einschalten (Objekt, Bestellung oder Benutzer aus dem auslösenden Ereignis): Dann läuft je Schlüssel höchstens ein Lauf dieses Workflows gleichzeitig, die übrigen warten in Startreihenfolge. Ohne diese Einstellung zeigt der Editor keinen Hinweis, der eine Reihenfolge nahelegt.
+- Konflikte: Zwei Läufe, die denselben Gutschein-Befehl auf dasselbe Objekt geben, schützt die Idempotenz und Atomarität des Voucher-Kerns (R-8.3a, R-8.3b). Für Markierungen gilt „letzter Schreiber gewinnt“; Notizen werden nur angehängt.
+
+**Warteschlange: Beanspruchen, Sperrfrist und Abbruch (WF-CORE-06, festgelegt am 16.11.2026)**
+- Ein Worker beansprucht einen Schritt atomar (ein `UPDATE … WHERE state = 'queued' AND lease_until < now`, dessen Trefferzahl entscheidet) und setzt eine Sperrfrist von 5 Minuten mit eigener Worker-Kennung. Nur der Inhaber der Sperre darf das Ergebnis buchen.
+- Dauert ein Schritt länger, verlängert der Worker die Sperrfrist vor ihrem Ablauf (Heartbeat). Eine Aktion hat ein Zeitlimit (Voreinstellung 30 Sekunden für HTTP, sonst das der Aktion); danach gilt der Ausgang als „unklar“ (Ausführungsgarantie oben).
+- Läuft eine Sperrfrist ab, ohne dass ein Ergebnis gebucht ist (Prozessabbruch, Deployment, Speicherende), nimmt der nächste Worker den Schritt wieder auf. Vorher prüft er die Ergebnisbuchung des Idempotenzschlüssels: gebucht → übernehmen; „wird ausgeführt“ bei einer nicht idempotenten Aktion → „Aktion erforderlich“; sonst erneut ausführen.
+- Abbruch vor dem Seiteneffekt ist harmlos (Wiederholung). Abbruch nach dem Seiteneffekt und vor der Buchung ist der unklare Fall; ihn fangen der Idempotenzschlüssel beim Provider (Gutschein-Befehle) oder die Buchung „wird gesendet“ (Nachrichten, R-8.12) ab.
+- Eine Wartung erkennt Läufe, deren Schritte seit mehr als 24 Stunden in einer abgelaufenen Sperrfrist hängen, und zeigt sie im Dashboard als „hängt“. Sie setzt nichts von selbst zurück, was einen nicht idempotenten Seiteneffekt wiederholen könnte.
 
 **Rezeptversionierung**
 - Aktivieren veröffentlicht eine unveränderliche Version. Bearbeiten erzeugt Entwurf; „Änderungen veröffentlichen“ ist eigener Schritt.

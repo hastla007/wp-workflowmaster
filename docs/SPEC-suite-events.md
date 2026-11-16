@@ -532,6 +532,8 @@ Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_co
 | Pass Captain | Erstattung | `PassCaptain\Refunds::get( $refund_id )` (`PC:src/Refunds.php:744`) | **nein** | enthält Freitext `reason` |
 | Pass Captain | Kontakt und Einwilligung zu einem Ticket | `PassCaptain\Sales\Consents::for_order()`, `missing_for_ticket()` (`PC:src/Sales/Consents.php:262`, `:140`); Spalte `attendee_email` | **nein** | eine Lesefunktion „Kontakt zu diesem Ticket“ gibt es nicht |
 
+Beobachtet am 16.11.2026, nicht im gelesenen Stand: Auf dem nicht gemergten Branch `claude/youthful-bardeen-7ejd7a` von Pass Captain gibt es `PassCaptain\Integrations\Vouchers\Reconciliation::orders()` mit Versionskonstante (`99cd25a`): Bestellungen, die mit Gutschein bezahlt wurden, mit `order_id`, `public_id`, Status und Zahlstatus. Sie ist für den Abgleich mit Voucher Captain gebaut, nicht als allgemeine Lesefassade; ob ihre Gutschein-Felder einen Code enthalten, ist nicht geprüft. Kandidat für PC-4, sobald sie gemergt ist.
+
 Folge: Für beide Kerne fehlt eine dokumentierte Lesefassade für Zustand, Kontakt und Einwilligung (F-13, W-2; Anforderungen VC-7 und PC-4 in [`ANFORDERUNGEN-andere-repos.md`](ANFORDERUNGEN-andere-repos.md)). Bis dahin gilt die Tabelle oben.
 
 Markierungen und Notizen liegen in Version 1 nur im Consumer. Eine Notiz im Provider ist kein Befehl der Version 1.

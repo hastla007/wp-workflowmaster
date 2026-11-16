@@ -33,7 +33,7 @@ Regeln, die für alle gelten:
 | PC-2 | „Nach Commit“ für die sechs Actions aus Z-02 in `docs/HOOKS.md` vermerken (geprüft: alle nach COMMIT oder im Autocommit) | R-3.9, Z-02 | Dokumentation, jederzeit | |
 | PC-6 | `wpcap_occurrence_rescheduled` und `wpcap_occurrence_cancelled` feuern im Admin auch, wenn das UPDATE fehlschlug (`src/Admin/EventsPage.php:207-218`, `:242-245`); Ergebnis prüfen | Z-02, 4.2 | jederzeit | |
 | PC-3 | Dokumentieren, dass `$reason` bei `wpcap_order_cancelled` und `wpcap_ticket_revoked` Freitext sein kann (Admin; bei `wpcap_order_cancelled` auch beliebiger Text über `wp_pass_captain_ticket_service_v1`), und die festen Präfixe auflisten | Abschnitt 5, Z-03 | Dokumentation | |
-| PC-4 | Lesefunktionen für Zustand von Bestellung und Ticket und für Kontakt und Einwilligung zu einem Ticket als dokumentierten Vertrag führen (additiv) | 8.1, F-13, Z-07 | nach der Antwort auf F-13 | |
+| PC-4 | Lesefunktionen für Zustand von Bestellung und Ticket und für Kontakt und Einwilligung zu einem Ticket als dokumentierten Vertrag führen (additiv). Geprüft: heute ist nur `wpcap_get_invoice()` Vertrag; auf dem Branch `claude/youthful-bardeen-7ejd7a` liegt mit `Reconciliation::orders()` ein versionierter Ansatz für Bestellungen (nicht gemergt) | 8.1, F-13, Z-07 | nach der Antwort auf F-13 | |
 | PC-5 | Wächtertest „kein Lizenzcode im Kern“ in der CI | R-3.11 | jederzeit | |
 
 ## Affiliate Captain (`wpaffiliatemaster`)
