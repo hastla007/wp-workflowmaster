@@ -138,7 +138,7 @@ Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebau
 - [ ] WF-CONNECTOR-11 – Freigabe- und Datenschutzmodell umsetzen: Betreiber aktiviert jeden Connector ausdrücklich; Payload-Allowlist, PII-Default-off, Capability-Prüfung, Aufbewahrung, Export/Löschung und Datenfluss-Diagnose pro Verbindung dokumentieren.
 - [ ] WF-CONNECTOR-12 – Connectoren mit Entitlement `workflow.custom_connectors` und externe Webhook-Verbindungen mit `workflow.webhooks` absichern; Lizenzablauf pausiert neue Pro-Runs, erhält Konfiguration/Logs lesbar und zeigt betroffene Workflows.
 - [ ] WF-CONNECTOR-13 – Vertrags-/E2E-Abnahme für App fehlt/deaktiviert, falscher Contract-Major, fehlende Rechte, ungültige Signatur, Replay, Duplikat, Timeout nach erfolgreichem Zielaufruf, Secret-Rotation, Retry, PII-Redaktion und Lizenzablauf ergänzen.
-- [ ] WF-CONNECTOR-14 – Praxisbeispiele und Dokumentation für Kundenportal/CRM, kundenspezifische Buchung, Membership-Zugang nach Gutschein-Einlösung und benutzerdefinierte Benachrichtigung veröffentlichen; klarmachen, dass der Connector die Fachlogik besitzt und Workflow Captain nur koordiniert.
+- [x] WF-CONNECTOR-14 – Praxisbeispiele und Dokumentation für Kundenportal/CRM, kundenspezifische Buchung, Membership-Zugang nach Gutschein-Einlösung und benutzerdefinierte Benachrichtigung veröffentlichen; klarmachen, dass der Connector die Fachlogik besitzt und Workflow Captain nur koordiniert. **Erledigt am 16.11.2026: `docs/CONNECTOR-BEISPIELE.md` mit vier Beispielen (Membership nach Gutschein-Einlösung mit Code, CRM, Liegeplatzbuchung, Team-Chat), Rollenteilung Connector ↔ Workflow Captain und Prüfliste. Eigene Ereignistypen sind als Vorschau markiert (F-22).**
 
 ### Kundenconnector 1 – BoatingSchool B2B / Laravel
 
