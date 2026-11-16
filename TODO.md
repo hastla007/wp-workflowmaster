@@ -99,7 +99,7 @@ Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebau
 
 - [x] Supportdiagnose-Export ohne PII/Secrets erstellen. **Erledigt am 16.11.2026: `src/Admin/Diagnostics.php`, Download auf der Seite „Ereignisse“ und `wp workflow-captain diagnostics`; getestet ohne Adressen, Objekt- und Benutzer-IDs.**
 - ~~Source-Outbox-Replay und Workflow-Queue-Retry unterscheiden und idempotent machen.~~ **Entfällt durch Entscheidung D9.** Es gibt keine Source-Outbox; übrig bleibt die Idempotenz der eigenen Warteschlange (WF-CORE-03).
-- [ ] Anonymisierung/Löschung über Source- und Workflow-Logs abstimmen, ohne Geschäftsledger zu löschen.
+- [x] Anonymisierung/Löschung über Source- und Workflow-Logs abstimmen, ohne Geschäftsledger zu löschen. **Erledigt am 16.11.2026: `docs/LOESCHUNG.md` (wer hält was, Abläufe, Geschäftsbücher bleiben im Kern); Rechtsprüfung der Fristen bleibt offen.**
 - [ ] Aktivierung/Deaktivierung, Backup/Restore, per-Site-Isolation und Site-A-zu-Site-B-Routing in Multisite pro Provider validieren.
 
 ### Suite-Provider: verbindliche Implementierungsaufgaben
