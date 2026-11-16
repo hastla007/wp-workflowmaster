@@ -1,35 +1,97 @@
-# Öffentlicher Connector-Vertrag v1 (Entwurf)
+# Öffentlicher Connector-Vertrag v1
 
-Stand: 16.11.2026. Aufgaben WF-CONNECTOR-01 bis -03 und -05 in [`../TODO.md`](../TODO.md). **Entwurf:** Er hängt an der offenen Frage F-22 in [`SPEC-open-questions.md`](SPEC-open-questions.md). Bis zur Antwort gibt es keinen Code dafür.
+Stand: 16.11.2026. Entschieden mit F-22 (Spezifikation [4.8](SPEC-suite-events.md), R-4.10 bis R-4.13), gebaut mit den Aufgaben WF-CONNECTOR-01 bis -05, -10 und -11 in [`../TODO.md`](../TODO.md). Code: `src/Connector/`, Admin-Seite `src/Admin/ConnectorsPage.php`, Beispiel [`../examples/starter-connector/`](../examples/starter-connector/), Tests `tests/connector-tests.php`.
 
 ## Wozu
 
-Ein Connector bindet ein Projekt an Workflow Captain an, das kein Captain-Produkt ist. Beispiele sind die eigenen Projektprodukte für BoatingSchool und LearnBoating (Entscheidung 17) oder das Kundenportal eines Betreibers. Ein Connector ist ein eigenes Plugin. Er adaptiert nur die öffentlichen Hooks und APIs seines Projekts und besitzt dessen Fachlogik. Workflow Captain koordiniert nur (WF-CONNECTOR-04, -14).
+Ein Connector bindet ein Projekt an Workflow Captain an, das kein Captain-Produkt ist. Beispiele sind die eigenen Projektprodukte für BoatingSchool und LearnBoating (Entscheidung 17) oder das Kundenportal eines Betreibers. Ein Connector ist ein eigenes Plugin. Er adaptiert nur die öffentlichen Hooks und APIs seines Projekts und besitzt dessen Fachlogik. Workflow Captain koordiniert nur (WF-CONNECTOR-04, -14, Beispiele in [`CONNECTOR-BEISPIELE.md`](CONNECTOR-BEISPIELE.md)).
 
-## Was es schon gibt (Plugin 0.2.0)
+## Kennung und Schema
 
-- **Ereignisse:** Die Adapter-Schnittstelle (`WorkflowCaptain\Adapter\Adapter`, Action `workflow_captain_register_adapters_v1`, Konstante `WORKFLOW_CAPTAIN_CONTRACT_VERSION`) ist dieselbe Mechanik, die ein Connector braucht: anmelden, Typen nennen, Ereignisse über `Consumer::capture()` abgeben, gegenlesen.
-- **Aktionen:** Die Aktions-Schnittstelle (`WorkflowCaptain\Engine\Action`, Action `workflow_captain_actions_v1`) nimmt Befehle eines Connectors auf, mit Berechtigung (R-8.6 bis R-8.8), Idempotenzschlüssel (R-8.4) und Buchung des Seiteneffekts (R-8.12).
+- **Schlüssel:** Kleinbuchstaben, Ziffern und Bindestrich, 2 bis 40 Zeichen, nicht mit Bindestrich beginnend, kein Schlüssel eines Captain-Produkts, nicht `wordpress` oder `woocommerce` (`Validator::is_connector()`). Der Schlüssel ist `source.product`.
+- **Präfix der Ereignistypen:** `x` und der Schlüssel ohne Bindestriche (`Validator::connector_prefix()`), zum Beispiel `learnboating-connector` → `xlearnboatingconnector.entitlement.changed`. Typ und Produkt müssen zusammenpassen, sonst lehnt der Consumer ab (`type:product_mismatch`).
+- **Aktionen** tragen denselben Präfix, zum Beispiel `xlearnboatingconnector.access.grant`.
+- Alle übrigen Regeln gelten unverändert: Umschlag (6), verbotene Werte (5), Idempotenz (7.3), Zustellung und Schleifenschutz (7.6).
 
-Es fehlt nur eines: Das Schema lässt in `type` und `source.product` bisher ausschließlich die Captain-Produkte zu.
+## Anmeldung
 
-## Vorschlag
+Ein Connector meldet sich an der Action `workflow_captain_register_connectors_v1` an. Sie feuert auf `init` mit Priorität 20, nach den Adaptern, und übergibt die `WorkflowCaptain\Connector\ConnectorRegistry`:
 
-1. **Kennung:** Jeder Connector hat einen festen Schlüssel aus Kleinbuchstaben, Ziffern und Bindestrich, zum Beispiel `learnboating-connector`. Der Schlüssel ist zugleich `source.product`. Der Präfix der Ereignistypen ist der Schlüssel ohne Bindestriche mit vorangestelltem `x`, zum Beispiel `xlearnboatingconnector.entitlement.changed`. Das `x` hält die Namen der Suite frei.
-2. **Schema:** `type` erlaubt zusätzlich `^x[a-z0-9]{2,39}\.[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$`. `source.product` erlaubt zusätzlich `^[a-z0-9][a-z0-9-]{1,39}$`. Alle übrigen Regeln gelten unverändert: Umschlag, verbotene Werte (Abschnitt 5), Idempotenz, Zustellung und Schleifenschutz. Das ist eine MINOR-Version der Spezifikation.
-3. **Manifest:** Ein Connector meldet beim Anmelden:
+```php
+add_action( 'workflow_captain_register_connectors_v1', function ( $registry ) {
+	$adapter = new My_Connector_Adapter(); // implementiert WorkflowCaptain\Adapter\Adapter
+	if ( $registry->add( My_Connector::manifest(), $adapter ) ) {
+		$adapter->listen(); // eigene Hooks erst nach erfolgreicher Anmeldung
+	}
+} );
+add_action( 'workflow_captain_actions_v1', fn( $registry ) => $registry->add( new My_Connector_Action() ) );
+```
 
-   | Feld | Inhalt |
-   |---|---|
-   | `key`, `name`, `version` | Schlüssel, Anzeigename, Plugin-Version |
-   | `contract_version` | Version seines eigenen Vertrags (SemVer, R-3.1 sinngemäß) |
-   | `requires` | Mindestversion von Workflow Captain (`WORKFLOW_CAPTAIN_CONTRACT_VERSION`) und des eigenen Projekts |
-   | `events` | je Typ: erlaubte Felder in `data` mit Datentyp und Datenklasse (normal oder personenbezogen), Bedeutung von `actor_user_id`, „nach Commit“ ja oder nein |
-   | `actions` | je Befehl: Schlüssel, Konfigurationsschema, Berechtigung (R-8.6), idempotent ja oder nein, Seiteneffekt, Wiederholungsklasse, Fehlercodes |
+- `ConnectorRegistry::add( array $manifest, Adapter $adapter ): bool` prüft das Manifest und die Versionen. `product()` des Adapters muss gleich `key` sein. `needs_reread()` und `reread()` kommen vom Adapter; ein Typ mit `after_commit: false` wird immer gegengelesen (R-7.4).
+- Bei Erfolg trägt die Registry eine Hülle (`ConnectorAdapter`) über den internen Weg `AdapterRegistry::add_connector()` beim Consumer ein. `AdapterRegistry::add()` lehnt Connector-Schlüssel weiter ab (`unknown_product`).
+- `add()` liefert `true`, wenn der Connector angenommen ist. Er bleibt trotzdem aus, bis der Betreiber ihn freigibt (siehe unten).
+- Ereignisse gibt der Connector wie jeder Adapter über `Consumer::capture( $adapter, $event )` ab (`WorkflowCaptain\Plugin::instance()->consumer()`).
 
-4. **Anmeldung und Prüfung (WF-CONNECTOR-03):** Der Kern prüft das Manifest, die Vertragsversion und die Mindestversionen. Passt etwas nicht, bleibt der Connector abgeschaltet und die Admin-Seite „Eigene Connectoren“ zeigt den Grund. Andere Connectoren und Adapter laufen weiter. Felder mit der Datenklasse „personenbezogen“ sind ab Werk aus. Der Betreiber muss sie je Connector einschalten (WF-CONNECTOR-11).
-5. **Lizenz:** Der Kern prüft keine Lizenz (R-2.4). Ein Projektprodukt prüft seine eigene Lizenz (Entscheidung 17). Ob die Ausführung eigener Connectoren zusätzlich Workflow Captain Pro voraussetzt, ist F-18a.
+## Manifest
+
+Geprüft von `WorkflowCaptain\Connector\Manifest::violations()`. Das Ergebnis sind Fehlercodes ohne Werte.
+
+| Feld | Pflicht | Inhalt |
+|---|---|---|
+| `key` | ja | Schlüssel nach der Regel oben |
+| `name` | ja | Anzeigename, höchstens 80 Zeichen |
+| `version` | ja | Plugin-Version des Connectors (SemVer, Zusatz wie `-beta.1` erlaubt); wird `source.core_version` |
+| `contract_version` | ja | Version des eigenen Vertrags des Connectors (`MAJOR.MINOR.PATCH`); wird `source.contract_version` |
+| `requires` | ja | `workflow_captain`: Mindestversion von `WORKFLOW_CAPTAIN_CONTRACT_VERSION` (`MAJOR.MINOR.PATCH`). Weitere Schlüssel (zum Beispiel das eigene Projekt) sind erlaubt und werden nur auf ihre Form geprüft |
+| `events` | ja | Objekt `Typ → Angaben`, höchstens 50 Typen; jeder Typ beginnt mit dem Präfix des Schlüssels |
+| `events.<typ>.fields` | ja | Objekt `Feld → { "type": …, "class": … }`, höchstens 24 Felder. `type`: `integer`, `number`, `boolean`, `string`, `currency`, `datetime` (wie `data_types` im Katalog). `class`: `normal` oder `personal`. Feldnamen nach dem Schema (`^[a-z][a-z0-9_]*$`), keine verbotenen Namen nach Abschnitt 5 (`Validator::FORBIDDEN_DATA_NAME`) |
+| `events.<typ>.after_commit` | ja | `true`, wenn der Hook belegt nach dem Commit feuert; sonst wird gegengelesen |
+| `events.<typ>.actor` | ja | Bedeutung von `actor_user_id` für diesen Typ (Text, leer erlaubt) |
+| `actions` | nein | Liste der Aktionsschlüssel (höchstens 50), jeder mit dem Präfix und genau zwei weiteren Teilen |
+| `description` | nein | Kurzbeschreibung, höchstens 500 Zeichen |
+
+Weitere Felder auf der obersten Ebene lehnt die Prüfung ab (`manifest:unknown_field`). Berechtigung (R-8.6), Idempotenz (R-8.4), Konfigurationsschema und Fehlercodes einer Aktion stehen nicht im Manifest, sondern in der Aktion selbst (`WorkflowCaptain\Engine\Action`).
+
+## Prüfung und Gründe (WF-CONNECTOR-03)
+
+Passt etwas nicht, bleibt der Connector aus, und die Admin-Seite „Eigene Connectoren“ zeigt den Grund. Andere Connectoren und Adapter laufen weiter.
+
+| Grund | Bedeutung |
+|---|---|
+| `invalid_manifest` | Das Manifest verletzt eine Regel oben, oder `product()` des Adapters ist nicht `key` (`adapter:product_mismatch`); die Fehlercodes stehen dabei |
+| `requires_newer_core` | `requires.workflow_captain` ist höher als `WORKFLOW_CAPTAIN_CONTRACT_VERSION` |
+| `contract_major` | `requires.workflow_captain` hat eine andere Hauptversion als `WORKFLOW_CAPTAIN_CONTRACT_VERSION` |
+| `duplicate` | Der Schlüssel ist schon angemeldet; die erste Anmeldung bleibt gültig |
+| `not_enabled` | angenommen, aber noch nicht freigegeben |
+
+## Freigabe durch den Betreiber (WF-CONNECTOR-11)
+
+- Ein Connector ist **aus**, bis der Betreiber ihn unter **Workflow Captain → Eigene Connectoren** freigibt. Die Seite braucht das Recht `manage_workflow_integrations`; Administratoren bekommen es bei der Aktivierung, anderen Rollen gibt man es unter „Rollen & Rechte“. Jede Änderung landet im Protokoll der sicherheitsrelevanten Änderungen.
+- Gespeichert wird in der Option `workflow_captain_connectors`: `Schlüssel → { "enabled": bool, "personal_fields": { Typ: [Feld, …] } }`.
+- Bis zur Freigabe lehnt der Consumer jedes Ereignis des Connectors beim Erfassen ab (Grund `connector:not_enabled`) und speichert nichts. Seine Ereignistypen erscheinen nicht im Builder, seine Aktionen werden nicht angeboten, ein Workflow mit ihnen lässt sich nicht veröffentlichen, und ein Schritt mit ihnen pausiert (`action_unavailable`).
+- Wird ein Connector nach dem Speichern eines Ereignisses abgeschaltet, pausiert das Ereignis (`connector_not_enabled`) und kann nach der erneuten Freigabe wieder eingereiht werden. Fehlt ein Connector, der beim letzten Aufruf angemeldet war, pausieren seine offenen Ereignisse (R-10.7). Gelöscht wird nichts.
+- Felder der Datenklasse `personal` sind auch nach der Freigabe aus. Der Betreiber schaltet sie einzeln je Ereignistyp ein.
+
+## Was der Kern beim Erfassen erzwingt (WF-CONNECTOR-04)
+
+`Consumer::capture()` schickt jedes Ereignis eines Connector-Schlüssels durch die Hülle, die die Registry angemeldet hat, gleich welches Adapter-Objekt der Connector übergibt. So lässt sich die Prüfung nicht umgehen:
+
+1. Nicht angemeldeter Schlüssel: abgelehnt (`connector:not_registered`).
+2. Nicht freigegeben: abgelehnt (`connector:not_enabled`).
+3. Typ nicht im Manifest: abgelehnt (`connector:undeclared_type`).
+4. `data` wird aus den Feldern des Manifests neu aufgebaut (Positivliste, R-5.2). Nicht angemeldete Felder fallen weg, personenbezogene ohne Freigabe ebenso. Ein Wert mit falschem Datentyp lehnt das Ereignis ab (`connector:field_type`).
+5. Danach gelten Schema und Validator wie für jedes Ereignis (R-5.5), einschließlich `type:product_mismatch`.
+
+Abgelehnte Ereignisse zählen in der Diagnose (`rejected_envelopes`), nur mit den Codes, nie mit Werten.
+
+## Builder (WF-CONNECTOR-10)
+
+Die Ereignistypen freigegebener Connectoren stehen in der Auswahl der Auslöser, ihre Felder mit Datentyp in `config.fields` wie die Felder des Katalogs (personenbezogene nur nach Freigabe). Aktionen eines Connectors sind gewöhnliche `Action`-Objekte an `workflow_captain_actions_v1`. Eine Aktion mit dem Präfix `x` ist nur verfügbar, solange ein angemeldeter, freigegebener Connector mit diesem Präfix sie in `actions` nennt (`ActionRegistry::set_availability()`).
+
+## Lizenz
+
+Der Kern prüft keine Lizenz (R-2.4). Ein Projektprodukt prüft seine eigene Lizenz (Entscheidung 17). Ob die Ausführung eigener Connectoren zusätzlich Workflow Captain Pro voraussetzt, ist weiter F-18a.
 
 ## Starter-Connector (WF-CONNECTOR-05)
 
-Folgt nach der Antwort auf F-22. Er wird ein Beispiel-Plugin mit einem Ereignis und einer Aktion, einem Manifest und einem Integrationstest auf Basis von [`../tests/adapter-kit/`](../tests/adapter-kit/).
+[`../examples/starter-connector/`](../examples/starter-connector/) ist ein eigenständiges Plugin `wfc-starter-connector` (Schlüssel `starter-connector`) mit dem Ereignis `xstarterconnector.ticket.closed`, der idempotenten Aktion `xstarterconnector.ticket.note`, dem Manifest und einer Anleitung. Es wird nicht mit Workflow Captain ausgeliefert. `tests/connector-tests.php` prüft es Ende zu Ende: Anmeldung, Ablehnung vor der Freigabe, Erfassen, Workflow-Lauf und Idempotenz der Aktion.

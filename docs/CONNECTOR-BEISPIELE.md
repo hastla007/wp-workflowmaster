@@ -1,6 +1,6 @@
 # Praxisbeispiele für eigene Connectoren
 
-Stand: 16.11.2026, Plugin 0.2.x. Aufgabe WF-CONNECTOR-14 in [`../TODO.md`](../TODO.md). Gehört zu [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md) und [`SDK.md`](SDK.md).
+Stand: 16.11.2026, Plugin 0.2.x (mit eigenen Connectoren nach F-22). Aufgabe WF-CONNECTOR-14 in [`../TODO.md`](../TODO.md). Gehört zu [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md) und [`SDK.md`](SDK.md).
 
 ## Die eine Regel
 
@@ -16,10 +16,12 @@ Stand: 16.11.2026, Plugin 0.2.x. Aufgabe WF-CONNECTOR-14 in [`../TODO.md`](../TO
 
 Ein Workflow ist damit eine **Abfolge von Aufrufen**, nie der Ort, an dem Geschäftsregeln stehen. Steht eine Regel nur im Workflow, kann der Betreiber sie versehentlich löschen. Steht sie im Connector, gilt sie auch ohne Workflow.
 
-## Was heute schon geht und was noch fehlt
+## Was heute schon geht
 
-- **Aktionen eines Connectors gehen heute.** Er meldet sie an `workflow_captain_actions_v1` an (Beispiel unten). Der Builder bietet sie an, die Engine prüft die Berechtigung des Veröffentlichenden vor jeder Ausführung (R-8.6 bis R-8.8) und bucht den Seiteneffekt (R-8.12).
-- **Eigene Ereignisse eines Connectors gehen noch nicht.** Das Schema lässt in `type` und `source.product` nur die Captain-Produkte zu. Der Vorschlag mit dem Präfix `x…` hängt an F-22. Bis dahin nutzen die Beispiele Ereignisse der Suite als Auslöser; die Typen mit `x…` unten sind als Vorschau markiert.
+- **Eigene Ereignisse eines Connectors gehen.** Der Connector meldet sich mit Manifest an `workflow_captain_register_connectors_v1` an und gibt Ereignisse mit dem Präfix `x…` über `Consumer::capture()` ab (F-22, [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md)). Der Kern baut `data` aus den Feldern des Manifests neu auf; personenbezogene Felder sind ab Werk aus.
+- **Aktionen eines Connectors gehen.** Er meldet sie an `workflow_captain_actions_v1` an (Beispiel unten) und nennt ihre Schlüssel im Manifest unter `actions`. Der Builder bietet sie an, die Engine prüft die Berechtigung des Veröffentlichenden vor jeder Ausführung (R-8.6 bis R-8.8) und bucht den Seiteneffekt (R-8.12).
+- **Beides erst nach der Freigabe.** Bis der Betreiber den Connector unter „Eigene Connectoren“ freigibt, speichert Workflow Captain keine seiner Ereignisse und bietet keine seiner Aktionen an.
+- Ein lauffähiges Beispiel mit einem Ereignis und einer Aktion ist [`../examples/starter-connector/`](../examples/starter-connector/).
 
 ## Beispiel 1: Membership-Zugang nach Gutschein-Einlösung
 
@@ -75,7 +77,7 @@ add_action( 'workflow_captain_actions_v1', fn( $registry ) => $registry->add( ne
 - **Auslöser:** `pass.occurrence.cancelled`.
 - **Aktion des Connectors:** `xberth.booking.release` mit dem Termin als Bezug.
 - **Fachlogik im Connector:** Welche Buchung zu welchem Termin gehört, Stornoregeln, Gebühren, Benachrichtigung der Kunden des Buchungssystems. Workflow Captain kennt keine Liegeplätze.
-- **Vorschau nach F-22:** Das Buchungssystem meldet selbst `xberthbooking.booking.confirmed`. Ein Workflow wartet dann zum Beispiel 2 Tage vor dem Termin und ruft `notify.user` auf.
+- **Eigenes Ereignis (seit F-22):** Das Buchungssystem meldet selbst `xberthbooking.booking.confirmed`. Ein Workflow wartet dann zum Beispiel 2 Tage vor dem Termin und ruft `notify.user` auf.
 
 ## Beispiel 4: Benutzerdefinierte Benachrichtigung
 
