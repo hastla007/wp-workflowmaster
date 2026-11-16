@@ -99,6 +99,16 @@
 		write() {
 			this.textarea.value = JSON.stringify( this.graph, null, 2 );
 			this.textarea.dispatchEvent( new Event( 'input' ) );
+			// A text field fires "change" while Tab is moving the focus on: rebuild after the move, so the focus lands
+			// on the next field instead of the page start (WF-BUILDER-09).
+			// Depending on the browser, "change" comes before or after the old field lost the focus (then: body).
+			const doc = this.root ? this.root.ownerDocument : null;
+			const active = doc ? doc.activeElement : null;
+			if ( doc && ( ! active || active === doc.body || ( this.root.contains( active ) && active.matches( 'input:not([type=checkbox]):not([type=radio]), textarea' ) ) ) ) {
+				clearTimeout( this.pending );
+				this.pending = setTimeout( () => this.render(), 0 );
+				return;
+			}
 			this.render();
 		}
 
@@ -185,11 +195,16 @@
 			n.y = spot[ 1 ];
 			this.graph.nodes.push( n );
 			this.selected = n.id;
+			this.focusTarget = n.id;
 			this.commit();
 			this.announce( this.t( 'added', 'Knoten hinzugefügt:' ) + ' ' + this.label( n ) );
 		}
 
 		remove( id ) {
+			const before = this.graph.edges.find( ( e ) => e.to === id );
+			const trigger = this.graph.nodes.find( ( n ) => 'trigger' === n.type && n.id !== id );
+			// The focus goes to the node before the deleted one (or the trigger), never back to the page start.
+			this.focusTarget = before ? before.from : ( trigger ? trigger.id : null );
 			this.graph.nodes = this.graph.nodes.filter( ( n ) => n.id !== id );
 			this.graph.edges = this.graph.edges.filter( ( e ) => e.from !== id && e.to !== id );
 			this.selected = null;
@@ -220,13 +235,20 @@
 		}
 
 		render() {
+			// Rebuilding the DOM drops the focus; remember which control had it (WF-BUILDER-09, WCAG 2.4.3).
+			const restore = this.root ? this.focusables().indexOf( this.root.ownerDocument.activeElement ) : -1;
+			const linear = this.root ? this.root.querySelector( '.wfc-linear-wrap' ) : null;
+			if ( linear ) {
+				this.linearOpen = linear.open; // read here: the "toggle" event comes too late for this rebuild
+			}
 			if ( ! this.root ) {
 				this.root = el( 'div', { class: 'wfc-builder' } );
 				this.textarea.parentNode.insertBefore( this.root, this.textarea );
+				// Outside the part that is rebuilt, so screen readers keep the live region and hear every message.
+				this.live = el( 'div', { class: 'screen-reader-text', 'aria-live': 'polite' } );
+				this.root.parentNode.insertBefore( this.live, this.root );
 			}
 			this.root.innerHTML = '';
-			this.live = el( 'div', { class: 'screen-reader-text', 'aria-live': 'polite' } );
-			this.root.appendChild( this.live );
 			if ( this.error ) {
 				this.root.appendChild( el( 'div', { class: 'notice notice-error inline' }, [ el( 'p', { text: this.error } ) ] ) );
 			}
@@ -236,6 +258,38 @@
 			body.appendChild( this.inspector() );
 			this.root.appendChild( body );
 			this.root.appendChild( this.list() );
+			this.restoreFocus( restore );
+		}
+
+		focusables() {
+			return Array.from( this.root.querySelectorAll( 'button, input, select, textarea, summary, [tabindex="0"]' ) );
+		}
+
+		/**
+		 * After a rebuild: a node chosen by the last action gets the focus (on the canvas, or the inspector heading when
+		 * the canvas is hidden on small screens), otherwise the control at the same position as before.
+		 */
+		restoreFocus( index ) {
+			const target = this.focusTarget;
+			this.focusTarget = null;
+			if ( target ) {
+				const g = this.root.querySelector( `.wfc-node[data-id="${ target }"]` );
+				if ( g && g.getClientRects().length ) {
+					g.focus();
+					return;
+				}
+				const heading = this.selected === target ? this.root.querySelector( '.wfc-inspector h3' ) : null;
+				const item = this.root.querySelector( `.wfc-linear button[data-id="${ target }"]` );
+				const fallback = heading || ( item && item.getClientRects().length ? item : this.root.querySelector( '.wfc-linear-wrap summary' ) );
+				if ( fallback ) {
+					fallback.focus();
+				}
+				return;
+			}
+			const same = index >= 0 ? this.focusables()[ index ] : null;
+			if ( same ) {
+				same.focus();
+			}
 		}
 
 		toolbar() {
@@ -332,11 +386,8 @@
 				return;
 			}
 			this.selected = id;
+			this.focusTarget = id;
 			this.render();
-			const g = this.root.querySelector( `.wfc-node[data-id="${ id }"]` );
-			if ( g ) {
-				g.focus();
-			}
 		}
 
 		/** Keyboard: arrows move (Shift = 50 px), Delete removes, C starts a connection, Enter selects (WF-BUILDER-01, -09). */
@@ -534,7 +585,7 @@
 				box.appendChild( el( 'p', { class: 'description', text: this.t( 'selectHint', 'Einen Knoten auswählen, um ihn zu bearbeiten. Tastatur: Pfeile verschieben, C verbindet, Entf löscht.' ) } ) );
 				return box;
 			}
-			box.appendChild( el( 'h3', { text: this.label( n ) } ) );
+			box.appendChild( el( 'h3', { text: this.label( n ), tabindex: '-1' } ) );
 			const field = ( label, input ) => el( 'p', {}, [ el( 'label', { text: label } ), el( 'br' ), input ] );
 			const set = ( key, value, target ) => {
 				( target || n )[ key ] = value;
@@ -607,13 +658,14 @@
 				if ( ! n ) {
 					return;
 				}
-				ol.appendChild( el( 'li', {}, [ el( 'button', { type: 'button', class: 'button-link', text: prefix + this.label( n ), onclick: () => this.clickNode( id ) } ) ] ) );
+				ol.appendChild( el( 'li', {}, [ el( 'button', { type: 'button', class: 'button-link', 'data-id': id, text: prefix + this.label( n ), onclick: () => this.clickNode( id ) } ) ] ) );
 				this.graph.edges.filter( ( e ) => e.from === id ).forEach( ( e ) => walk( e.to, e.branch ? ( 'then' === e.branch ? this.t( 'then', 'Dann' ) : this.t( 'else', 'Sonst' ) ) + ': ' : '' ) );
 			};
 			const trigger = this.graph.nodes.find( ( n ) => 'trigger' === n.type );
 			walk( trigger && trigger.id, '' );
 			this.graph.nodes.filter( ( n ) => ! seen.has( n.id ) ).forEach( ( n ) => ol.appendChild( el( 'li', { class: 'wfc-unconnected' }, [ el( 'button', { type: 'button', class: 'button-link', text: this.t( 'unconnected', 'Nicht verbunden' ) + ': ' + this.label( n ), onclick: () => this.clickNode( n.id ) } ) ] ) ) );
-			return el( 'details', { class: 'wfc-linear-wrap' }, [ el( 'summary', { text: this.t( 'linear', 'Schritte der Reihe nach' ) } ), ol ] );
+			// Stays open across rebuilds, so choosing a step on a small screen does not close the list.
+			return el( 'details', { class: 'wfc-linear-wrap', open: !! this.linearOpen }, [ el( 'summary', { text: this.t( 'linear', 'Schritte der Reihe nach' ) } ), ol ] );
 		}
 	}
 
