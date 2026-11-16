@@ -1,0 +1,33 @@
+name: Spezifikation prüfen
+
+# WF-SPEC-04: Schema, Beispiele und Gegenbeispiele der Suite-Spezifikation bei jeder Änderung prüfen.
+on:
+  push:
+    paths:
+      - "docs/schema/**"
+      - "docs/examples/**"
+      - "bin/validate-spec-examples.py"
+      - ".github/workflows/validate-spec.yml"
+  pull_request:
+    paths:
+      - "docs/schema/**"
+      - "docs/examples/**"
+      - "bin/validate-spec-examples.py"
+      - ".github/workflows/validate-spec.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: jsonschema installieren
+        run: python -m pip install "jsonschema==4.26.0"
+      - name: Schema und Beispiele prüfen
+        run: python bin/validate-spec-examples.py

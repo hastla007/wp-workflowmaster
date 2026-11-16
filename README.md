@@ -16,6 +16,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`docs/examples/`](docs/examples/) | Beispiel-Umschläge. |
 | [`konzept.md`](konzept.md) | Produktkonzept. Wo es der Spezifikation widerspricht, gilt die Spezifikation; überholte Stellen sind gekennzeichnet. |
 | [`TODO.md`](TODO.md) | Umsetzungsliste. |
+| [`docs/UEBERGABE-E17-kundenconnectoren.md`](docs/UEBERGABE-E17-kundenconnectoren.md) | Übergabe der Aufgaben der Kundenconnectoren BoatingSchool und LearnBoating an die Projekt-Repositories (Entscheidung 17). |
 
 Andere Repositories der Suite verweisen für Ereignisnamen, Umschlag und Regeln auf `docs/SPEC-suite-events.md` und legen dafür nichts Eigenes fest.
 
@@ -25,5 +26,7 @@ Andere Repositories der Suite verweisen für Ereignisnamen, Umschlag und Regeln 
 pip install jsonschema   # nicht Teil des Repositorys
 python3 bin/validate-spec-examples.py
 ```
+
+Dieselbe Prüfung läuft in GitHub Actions (`.github/workflows/validate-spec.yml`), sobald Schema, Beispiele oder Skript sich ändern.
 
 Das Skript prüft, dass das Schema gültig ist, dass jedes Beispiel dazu passt und dass 20 Gegenbeispiele (zum Beispiel ein Code oder eine E-Mail-Adresse in den Nutzdaten) abgelehnt werden.

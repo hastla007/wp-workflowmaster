@@ -1,8 +1,8 @@
 # Offene Fragen zur Suite-Spezifikation
 
-Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.3. Die Folgeentscheidungen D8b, D11b und D13 und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
+Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.3. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
-**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18, F-19 (ohne Form) und W-1 bis W-9, W-11 (Teil Form), W-13.
+**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18a, F-19 (ohne Form) und W-1 bis W-9, W-11 (Teil Form), W-13.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -130,11 +130,19 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Entscheidung:** „Keine Codes“ meint nur geheime Codes (Gutscheincode, Ticketcode, Lizenzschlüssel, Token). Der öffentliche Partnercode und Geldbeträge mit Währung sind in den Nutzdaten erlaubt.
 - **In der Spezifikation:** R-5.1a, Katalog 4.4 (`affiliate.code_request.*` mit `partner_code`; Beträge als `amount_minor` mit `currency`), Schema und zwei Beispiele.
 
-### F-18 · Kundenconnectoren im Umfang der ersten Version
+### F-18 · Kundenconnectoren im Umfang der ersten Version — **Entschieden am 16.11.2026 (Entscheidung 17)**
 
 - **Frage:** Bleiben die Connectoren für BoatingSchool und LearnBoating Aufgaben von Workflow Captain 1.0?
 - **Stand:** `TODO.md` führt 19 Aufgaben dafür. Nach E6 ist der Learnboating-Connector ein eigenes Kundenprojekt und kein Teil von Voucher Pro. **Entschieden am 16.11.2026 (Entscheidung 17):** Alle Connectoren von BoatingSchool und LearnBoating sind eigene, nicht verkaufte Projektprodukte mit eigener Lizenz, außerhalb von Workflow Captain und Workflow Captain Pro. Die Aufgaben dazu stehen in `TODO.md` (WF-E17-01 bis -03).
-- **Empfehlung:** Beide als Kundenprojekte außerhalb der ersten Version führen; die Spezifikation regelt sie nicht.
+- **Empfehlung:** Beide als Kundenprojekte außerhalb der ersten Version führen; die Spezifikation regelt sie nicht. Die Entscheidung folgt der Empfehlung. Die Aufgaben gehen an die Projekt-Repositories (`docs/UEBERGABE-E17-kundenconnectoren.md`).
+
+### F-18a · Setzt ein Kundenconnector Workflow Captain Pro voraus?
+
+- **Frage:** Ein Connector für BoatingSchool oder LearnBoating hat nach Entscheidung 17 seine eigene Lizenz. Braucht er auf der Website zusätzlich ein installiertes und lizenziertes Workflow Captain Pro, oder genügt der kostenlose Kern `workflow-captain`?
+- **Stand:** `konzept.md` 16.1 und WF-CONNECTOR-12 binden die Ausführung eigener Connectoren an das Recht `workflow.custom_connectors` von Workflow Captain Pro. Dieses Recht ist nicht reserviert (F-01). WF-CUST2-02 nennt eine „Lizenz-/Capability-Prüfung“ ohne zu sagen, welche Lizenz.
+- **Annahme bis zur Antwort:** Der Connector prüft nur seine eigene Lizenz. Ob er Workflow Captain Pro braucht, ist eine technische Abhängigkeit (wo laufen Connector-Ausführung und Webhook-Verbindungen?), keine Deckung durch die Pro-Lizenz.
+- **Empfehlung:** Die Antwort an F-01 koppeln. Wird `workflow.custom_connectors` ein Recht von Workflow Captain Pro, braucht jeder fremde Connector Workflow Captain Pro als Laufzeit, auch ein Projektprodukt; das hält die Regel „Pro-Funktionen nur mit Pro“ einfach. Soll ein Kunde ohne Workflow Captain Pro auskommen, muss die Connector-Ausführung in den kostenlosen Kern, und `workflow.custom_connectors` entfällt. Für LearnBoating (lokal, ohne Webhook) wäre der kostenlose Kern technisch ausreichend; BoatingSchool braucht die geschützte Webhook-Verbindung (`workflow.webhooks`, Pro).
+- **Danach:** WF-CUST2-02 (im Übergabedokument) und WF-CONNECTOR-12 nach der Antwort umformulieren (`TODO.md` WF-E17-03).
 
 ### F-19 · Preise — **für Form Captain Pro entschieden am 16.11.2026; sonst offen**
 
