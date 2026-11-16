@@ -64,7 +64,7 @@ final class WorkflowsPage {
 		$path = is_array( $dry ) ? array_column( $dry['result']['path'], 'node' ) : array();
 		$fields = json_decode( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'assets/data/catalog-fields.json' ), true );
 		// Fields of enabled own connectors, from their manifests, in the same format (WF-CONNECTOR-10).
-		$fields = array_merge( is_array( $fields ) ? $fields : array(), $this->plugin->connectors()->builder_fields() );
+		$fields = array_merge( is_array( $fields ) ? $fields : array(), $this->plugin->connectors()->builder_fields(), \WorkflowCaptain\Engine\InboundTriggers::builder_fields() );
 		$mails  = json_decode( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'assets/data/core-mails.json' ), true );
 		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( array( 'actions' => $actions, 'events' => array_values( array_unique( $events ) ), 'fields' => array() !== $fields ? $fields : new \stdClass(), 'coreMails' => is_array( $mails ) && is_array( $mails['events'] ?? null ) ? $mails['events'] : new \stdClass(), 'path' => $path, 'errorNode' => is_array( $dry ) ? $dry['result']['error_node'] : null, 'i18n' => new \stdClass() ) ) . ';', 'before' );
 	}

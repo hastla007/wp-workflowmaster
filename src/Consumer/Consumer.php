@@ -217,6 +217,7 @@ final class Consumer {
 			}
 			$exclude = isset( $envelope['caused_by_workflow_id'] ) ? (int) $envelope['caused_by_workflow_id'] : null;
 			$result  = $this->dispatcher->dispatch( $envelope, $exclude );
+			$this->announce_processed( $envelope, (int) $row['id'] );
 			$finish( EventStore::DONE, array( 'last_error' => null, 'minimize' => ! $result->waiting ) );
 		} catch ( PermanentFailure $e ) {
 			$finish( $e->pause ? EventStore::PAUSED : EventStore::DEAD_LETTER, array( 'last_error' => self::code( $e->reason ) ) );
@@ -235,6 +236,42 @@ final class Consumer {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Tells add-ons that an event was processed (worker only, never during capture, R-7.6/7.7), before its data is
+	 * minimised (R-12.4). Meant for an outbox of the add-on (webhooks, n8n); a listener must not send synchronously.
+	 * A failing listener never changes the state of the event.
+	 */
+	private function announce_processed( array $envelope, int $event_id ): void {
+		if ( ! function_exists( 'do_action' ) ) {
+			return;
+		}
+		try {
+			/**
+			 * An event was processed by the worker.
+			 *
+			 * @since 0.2.0
+			 * @param array $envelope Valid envelope (section 6).
+			 * @param int   $event_id Row of the event store.
+			 */
+			do_action( 'workflow_captain_event_processed_v1', $envelope, $event_id );
+		} catch ( \Throwable $e ) {
+			( $this->on_reject )( array( 'listener:exception' ) );
+		}
+	}
+
+	/**
+	 * Stores a checked inbound call as "workflow.inbound.<trigger>" (4.10). Returns the capture result code
+	 * (captured, duplicate, rejected, …) or "unknown_trigger".
+	 */
+	public function capture_inbound( string $trigger, array $data, string $request_id ): string {
+		$event   = \WorkflowCaptain\Engine\InboundTriggers::event( $trigger, $data, $request_id );
+		$adapter = $this->adapters->get( 'workflow-captain' );
+		if ( null === $event || null === $adapter ) {
+			return 'unknown_trigger';
+		}
+		return $this->capture( $adapter, $event );
 	}
 
 	private function current_cause(): ?Causation {

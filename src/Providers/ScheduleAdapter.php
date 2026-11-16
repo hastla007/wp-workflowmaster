@@ -28,7 +28,8 @@ final class ScheduleAdapter implements Adapter {
 	}
 
 	public function types(): array {
-		return array( Schedule::EVENT );
+		// Own events of the core: schedules (WF-CORE-04) and inbound triggers declared by add-ons (4.10).
+		return array_merge( array( Schedule::EVENT ), \WorkflowCaptain\Engine\InboundTriggers::types() );
 	}
 
 	public function needs_reread( string $type ): bool {

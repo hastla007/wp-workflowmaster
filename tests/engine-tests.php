@@ -985,3 +985,38 @@ $smp = \WorkflowCaptain\Admin\ProvidersPage::sample_event( 'pass.ticket.checked_
 check( 'WF-INT-14 sample event: values per data type, no personal data', 'beispiel' === $smp['data']['checkin_source'] && 1 === $smp['data']['device_id'] && false === $smp['data']['reentry'] );
 $rep = \WorkflowCaptain\Admin\ProvidersPage::test_event( 'pass.ticket.checked_in', array( 'checkin_source' => 'string' ), $e->store, $e->actions );
 check( 'WF-INT-14 test event: every active workflow of the type runs as a test run, nothing executed', 1 === count( $rep ) && 0 === count( $e->store->find_runs( array(), 10, 0 ) ) && 0 === count( $e->dir->mails ?? array() ) );
+
+// ----- 4.10: inbound triggers and the processed-event hook for add-ons (webhooks, n8n)
+if ( ! function_exists( 'do_action' ) ) {
+	function do_action( $hook, ...$args ) {
+		foreach ( $GLOBALS['wfc_test_filters'][ $hook ] ?? array() as $callback ) {
+			$callback( ...$args );
+		}
+	}
+}
+use WorkflowCaptain\Engine\InboundTriggers;
+add_filter( 'workflow_captain_inbound_triggers_v1', fn( $t ) => $t + array( 'order_export' => array( 'label' => 'Export', 'fields' => array( 'order_id' => 'integer', 'status' => 'string', 'customer_email' => 'string', 'bad' => 'object' ) ), 'Bad Key' => array( 'fields' => array() ) ) );
+$decl = InboundTriggers::declared();
+check( '4.10 inbound: declared triggers checked, forbidden field names and unknown types dropped', array( 'order_export' ) === array_keys( $decl ) && array( 'order_id' => 'integer', 'status' => 'string' ) === $decl['order_export']['fields'] );
+$ev = InboundTriggers::event( 'order_export', array( 'order_id' => 5, 'status' => 'kunde@example.com', 'extra' => 1 ), 'req-12345678' );
+check( '4.10 inbound: only declared fields with the right type, no addresses', array( 'order_id' => 5 ) === $ev['data'] && 'workflow.inbound.order_export' === $ev['type'] && 'req-12345678' === $ev['discriminator'] );
+check( '4.10 inbound: unknown trigger or bad request id refused', null === InboundTriggers::event( 'nope', array(), 'req-12345678' ) && null === InboundTriggers::event( 'order_export', array(), 'x' ) );
+$e = engine_site();
+$e->registry->add_core( new \WorkflowCaptain\Providers\ScheduleAdapter() );
+$ig = array(
+	'nodes' => array(
+		array( 'id' => 't', 'type' => 'trigger', 'event' => 'workflow.inbound.order_export' ),
+		array( 'id' => 'g', 'type' => 'action', 'action' => 'workflow.tag.set', 'config' => array( 'tag' => 'export' ) ),
+		array( 'id' => 'e', 'type' => 'end' ),
+	),
+	'edges' => array( array( 'from' => 't', 'to' => 'g' ), array( 'from' => 'g', 'to' => 'e' ) ),
+);
+publish( $e, $ig );
+$processed = array();
+add_action( 'workflow_captain_event_processed_v1', function ( $env, $id ) use ( &$processed ) { $processed[] = $env['type']; } );
+$first  = $e->consumer->capture_inbound( 'order_export', array( 'order_id' => 7 ), 'req-abcdefgh' );
+$second = $e->consumer->capture_inbound( 'order_export', array( 'order_id' => 7 ), 'req-abcdefgh' );
+drain( $e );
+check( '4.10 inbound: stored once per request id, starts the workflow', 'captured' === $first && 'captured' !== $second && 1 === count( $e->store->find_runs( array(), 10, 0 ) ) );
+check( '4.10 hook: workflow_captain_event_processed_v1 fires once after processing', array( 'workflow.inbound.order_export' ) === $processed );
+check( '4.10 inbound: unknown trigger reported', 'unknown_trigger' === $e->consumer->capture_inbound( 'nope', array(), 'req-abcdefgh' ) );
