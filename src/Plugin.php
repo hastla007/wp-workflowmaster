@@ -48,6 +48,7 @@ final class Plugin {
 		add_action( 'init', array( $this, 'register_adapters' ), 20 );
 		add_action( Install::CRON_PROCESS, array( $this, 'run_worker' ) );
 		add_action( Install::CRON_DAILY, array( $this, 'run_maintenance' ) );
+		add_filter( 'workflow_captain_retention_days', array( Settings::class, 'retention' ), 5, 2 );
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->register();
 		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( '\WP_CLI' ) ) {
 			\WP_CLI::add_command( 'workflow-captain', \WorkflowCaptain\Cli\Command::class );
@@ -56,6 +57,7 @@ final class Plugin {
 		if ( is_admin() ) {
 			( new EventsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\WorkflowsPage( $this ) )->register();
+			( new \WorkflowCaptain\Admin\SettingsPage( $this ) )->register();
 		}
 		/**
 		 * Workflow Captain has booted. Adapters register on "workflow_captain_register_adapters_v1" (init, priority 20).
@@ -113,7 +115,7 @@ final class Plugin {
 			 * @param \WorkflowCaptain\Engine\ActionRegistry $registry
 			 */
 			do_action( 'workflow_captain_actions_v1', $actions );
-			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, wp_timezone_string() );
+			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, wp_timezone_string(), Settings::engine_limits( Settings::get() ) );
 		}
 		return $this->engine;
 	}
@@ -166,7 +168,7 @@ final class Plugin {
 		 * @since 0.1.0
 		 * @param int $limit
 		 */
-		$limit = max( 1, min( 200, (int) apply_filters( 'workflow_captain_worker_batch', 25 ) ) );
+		$limit = max( 1, min( 200, (int) apply_filters( 'workflow_captain_worker_batch', Settings::get()['batch'] ) ) );
 		$this->consumer()->process( $limit );
 		$this->consumer(); // Makes sure the engine knows the consumer before steps run (C-9).
 		$this->engine()->process( $limit );

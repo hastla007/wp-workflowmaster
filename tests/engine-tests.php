@@ -553,3 +553,14 @@ $e->clock->advance( 2 * DAY_IN_SECONDS );
 $stuck = \WorkflowCaptain\Admin\Diagnostics::stuck( $e->store, $e->clock->now() );
 check( 'WF-CORE-06 a lease expired for over a day is reported', 1 === $stuck['expired_leases'] );
 check( 'WF-CORE-06 reporting changes nothing', EngineStore::STEP_RUNNING === steps_of( $e )[0]['state'] );
+
+// ----- Settings -------------------------------------------------------------------------------------------------
+
+use WorkflowCaptain\Settings;
+check( 'settings: defaults', 25 === Settings::defaults()['batch'] && 30 === Settings::defaults()['retention_finished'] );
+check( 'settings: values clamped to their range', 200 === Settings::sanitize( array( 'batch' => 9999 ) )['batch'] && 1 === Settings::sanitize( array( 'max_site' => -3 ) )['max_site'] );
+check( 'settings: retention cannot exceed the proposal', 90 === Settings::sanitize( array( 'retention_stuck' => 365 ) )['retention_stuck'] );
+check( 'settings: unknown keys dropped', ! isset( Settings::sanitize( array( 'evil' => 1 ) )['evil'] ) );
+check( 'settings: engine limits mapped', array( 'site' => 5, 'workflow' => 2, 'catch_up' => 86400 ) === Settings::engine_limits( Settings::defaults() ) );
+$e = new Engine( new WpdbEngineStore( new FakeWpdb( FakeWpdb::memory() ) ), new ActionRegistry(), new FakeDirectory(), new FixedClock(), 'UTC', array( 'site' => 9, 'bogus' => 3, 'workflow' => 0 ) );
+check( 'engine: limits taken from settings, invalid ignored', array( 'site' => 9, 'workflow' => 2, 'catch_up' => 86400 ) === $e->limits() );
