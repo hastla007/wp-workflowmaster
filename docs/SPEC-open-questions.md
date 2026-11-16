@@ -133,7 +133,7 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 ### F-18 · Kundenconnectoren im Umfang der ersten Version
 
 - **Frage:** Bleiben die Connectoren für BoatingSchool und LearnBoating Aufgaben von Workflow Captain 1.0?
-- **Stand:** `TODO.md` führt 19 Aufgaben dafür. Nach E6 ist der Learnboating-Connector ein eigenes Kundenprojekt und kein Teil von Voucher Pro. **Entschieden am 16.11.2026 (Entscheidung 17, am selben Tag geändert):** Die Connectoren von BoatingSchool und LearnBoating sind in Pro enthalten: separat installierte Plugins, Code im jeweiligen Projekt-Repository, Lizenz über Workflow Captain Pro mit einem je Projekt eigenen, nicht öffentlich verkauften Recht; Updates über den Updater des Pro-Add-ons. Nicht Teil der Spezifikation und nicht Teil des kostenlosen Kerns 1.0. Aufgaben: `TODO.md` WF-CUST-LIC-01/02 und WF-E17-02. *Zwischenfassung, überholt:* eigene Projektprodukte mit eigener Lizenz außerhalb von Workflow Captain Pro.
+- **Stand:** `TODO.md` führt 19 Aufgaben dafür. Nach E6 ist der Learnboating-Connector ein eigenes Kundenprojekt und kein Teil von Voucher Pro. **Entschieden am 16.11.2026 (Entscheidung 17):** Alle Connectoren von BoatingSchool und LearnBoating sind eigene, nicht verkaufte Projektprodukte mit eigener Lizenz, außerhalb von Workflow Captain und Workflow Captain Pro. Die Aufgaben dazu stehen in `TODO.md` (WF-E17-01 bis -03).
 - **Empfehlung:** Beide als Kundenprojekte außerhalb der ersten Version führen; die Spezifikation regelt sie nicht.
 
 ### F-19 · Preise — **für Form Captain Pro entschieden am 16.11.2026; sonst offen**
