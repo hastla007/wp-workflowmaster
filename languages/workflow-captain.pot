@@ -834,6 +834,10 @@ msgstr ""
 msgid "Plugin / Vertrag"
 msgstr ""
 
+#: src/Security/SafeHttp.php:106
+msgid "Private Adresse oder interner Name: Die Verbindung braucht eine Ausnahme für genau diesen Host und Port. Der Test läuft vom WordPress-Server aus; Firewall, Docker-Netz oder Reverse Proxy müssen ihn durchlassen."
+msgstr ""
+
 #: src/Admin/ProvidersPage.php:82
 msgid "Produkt"
 msgstr ""
@@ -1171,4 +1175,8 @@ msgstr ""
 
 #: src/Admin/OverviewPage.php:28 src/Admin/OverviewPage.php:28
 msgid "Übersicht"
+msgstr ""
+
+#: src/Security/SafeHttp.php:102
+msgid "„localhost“ ist der WordPress-Server selbst, nicht Ihr Rechner. Läuft n8n in einem anderen Container oder auf einem anderen Gerät, dessen Namen oder Adresse im Netz eintragen (zum Beispiel den Docker-Dienstnamen)."
 msgstr ""

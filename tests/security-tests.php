@@ -183,3 +183,32 @@ foreach ( $it as $file ) {
 	}
 }
 check( 'SEO-04/05 no Yoast internals, no SQL on posts, no post writes without a reviewed action' . ( $seo_hits ? ' (' . implode( '; ', $seo_hits ) . ')' : '' ), array() === $seo_hits );
+
+// ----- WF-SEC-01 / WF-N8N-07 / WF-N8N-15: safe outbound HTTP with profiles, pinning and redirect checks ----------
+
+use WorkflowCaptain\Security\SafeHttp;
+$dns2   = array( 'hooks.example.com' => array( '93.184.216.34' ), 'evil.example.com' => array( '10.0.0.5' ), 'n8n' => array( '172.18.0.4' ), 'meta.example.com' => array( '169.254.169.254' ) );
+$sent   = array();
+$replies = array();
+$fake   = function ( string $url, array $args ) use ( &$sent, &$replies ) {
+	$sent[] = array( $url, $args );
+	return array_shift( $replies ) ?? array( 'code' => 200, 'headers' => array(), 'body' => 'ok' );
+};
+$http   = new SafeHttp( new OutboundPolicy( fn( $h ) => $dns2[ $h ] ?? array() ), $fake );
+check( 'SafeHttp webhook: public HTTPS allowed, pinned to the checked IP, no automatic redirects', true === $http->request( 'webhook', 'POST', 'https://hooks.example.com/x', array(), '{}' )['ok'] && array( '93.184.216.34' ) === $sent[0][1]['pin'] && 0 === $sent[0][1]['redirection'] && SafeHttp::MAX_BYTES === $sent[0][1]['limit_response_size'] );
+check( 'SafeHttp webhook: plain HTTP refused', 'target:https_required' === $http->request( 'webhook', 'POST', 'http://hooks.example.com/x' )['error'] );
+check( 'SafeHttp webhook: private target refused even with an exception', 'target:not_public' === ( $r = $http->request( 'webhook', 'POST', 'https://evil.example.com/x', array(), '', array( 'allow_private' => true, 'host' => 'evil.example.com', 'port' => 443 ) ) )['error'] || str_starts_with( $r['error'], 'target:' ) );
+$sent    = array();
+$replies = array( array( 'code' => 302, 'headers' => array( 'location' => 'https://evil.example.com/steal' ), 'body' => '' ) );
+$r       = $http->request( 'webhook', 'POST', 'https://hooks.example.com/x' );
+check( 'SafeHttp: redirect to a private address is refused, nothing sent there', ! $r['ok'] && str_starts_with( $r['error'], 'redirect:' ) && 1 === count( $sent ) );
+$replies = array( array( 'code' => 302, 'headers' => array( 'location' => '/y' ) ), array( 'code' => 302, 'headers' => array( 'location' => '/y' ) ), array( 'code' => 302, 'headers' => array( 'location' => '/y' ) ), array( 'code' => 302, 'headers' => array( 'location' => '/y' ) ) );
+check( 'SafeHttp: at most 3 redirects', 'redirect:too_many' === $http->request( 'webhook', 'GET', 'https://hooks.example.com/x' )['error'] );
+$exc = array( 'allow_private' => true, 'host' => 'n8n', 'port' => 5678, 'cidr' => array( '172.18.0.0/16' ), 'allow_http' => true );
+check( 'SafeHttp n8n: local Docker target allowed with the exception of this connection', true === $http->allowed( 'n8n', 'http://n8n:5678/webhook/abc', $exc )['ok'] );
+check( 'SafeHttp n8n: without exception refused, HTTP needs allow_http', ! $http->allowed( 'n8n', 'https://n8n:5678/webhook/abc' )['ok'] && 'https_required' === $http->allowed( 'n8n', 'http://n8n:5678/webhook/abc', array( 'allow_private' => true, 'host' => 'n8n', 'port' => 5678, 'cidr' => array( '172.18.0.0/16' ) ) )['reason'] );
+check( 'SafeHttp n8n: cloud metadata blocked even with an exception', ! $http->allowed( 'n8n', 'http://meta.example.com/', array( 'allow_private' => true, 'host' => 'meta.example.com', 'port' => 80, 'cidr' => array( '169.254.0.0/16' ), 'allow_http' => true ) )['ok'] );
+$replies = array( array( 'error' => 'http_request_failed: https://hooks.example.com/secret?token=abc' ) );
+$r       = $http->request( 'webhook', 'POST', 'https://hooks.example.com/x' );
+check( 'SafeHttp: transport errors become fixed codes without URL or token', ! str_contains( $r['error'], 'token' ) && ! str_contains( $r['error'], 'example' ) );
+check( 'SafeHttp: hint for localhost explains it is the WordPress server', str_contains( SafeHttp::local_hint( 'http://localhost:5678' ), 'WordPress-Server' ) && '' === SafeHttp::local_hint( 'https://hooks.example.com' ) );
