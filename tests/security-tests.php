@@ -92,3 +92,49 @@ $gate = static fn( ?string $v ) => null !== $v && version_compare( $v, '1.1.0', 
 check( 'kit: A-8 accepts a correct contract gate', array() === Kit::check_contract_gate( $gate, '1.1.0', 1 ) );
 check( 'kit: A-8 detects a gate that ignores the MAJOR', array() !== Kit::check_contract_gate( static fn( $v ) => null !== $v, '1.1.0', 1 ) );
 check( 'kit: A-9 detects forbidden commands', array( 'A-9: forbidden command offered: affiliate.payout.complete' ) === Kit::check_commands( array( 'notify.admin', 'voucher.void', 'affiliate.payout.complete' ) ) );
+
+// ----- WF-BUILDER-09: contrast of the builder colours (WCAG 2.1) -----------------------------------------------
+
+function wfc_luminance( string $hex ): float {
+	$hex = ltrim( $hex, '#' );
+	if ( 3 === strlen( $hex ) ) {
+		$hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+	}
+	$c = array_map( static function ( $v ) {
+		$v = hexdec( $v ) / 255;
+		return $v <= 0.03928 ? $v / 12.92 : ( ( $v + 0.055 ) / 1.055 ) ** 2.4;
+	}, str_split( $hex, 2 ) );
+	return 0.2126 * $c[0] + 0.7152 * $c[1] + 0.0722 * $c[2];
+}
+function wfc_contrast( string $a, string $b ): float {
+	$l = array( wfc_luminance( $a ), wfc_luminance( $b ) );
+	return ( max( $l ) + 0.05 ) / ( min( $l ) + 0.05 );
+}
+$css = file_get_contents( WORKFLOW_CAPTAIN_PATH . 'assets/css/builder.css' );
+preg_match_all( '/\.wfc-node(?:-(\w+))? rect \{ fill: (#[0-9a-f]{3,6}); stroke: (#[0-9a-f]{3,6})/', $css, $nodes, PREG_SET_ORDER );
+$text   = array( 'title' => '#1d2327', 'id' => '#50575e' );
+preg_match( '/\.wfc-node-title \{[^}]*fill: (#[0-9a-f]{6})/', $css, $m );
+$text['title'] = $m[1];
+preg_match( '/\.wfc-node-id \{[^}]*fill: (#[0-9a-f]{6})/', $css, $m );
+$text['id'] = $m[1];
+preg_match( '/\.wfc-canvas-wrap \{[^}]*background: (#[0-9a-f]{6})/', $css, $m );
+$canvas = $m[1];
+check( 'contrast: node styles found in builder.css', count( $nodes ) >= 6 );
+$low = array();
+foreach ( $nodes as $n ) {
+	foreach ( $text as $what => $colour ) {
+		if ( wfc_contrast( $colour, $n[2] ) < 4.5 ) {
+			$low[] = $what . ' on ' . ( $n[1] ?: 'node' ) . ' ' . round( wfc_contrast( $colour, $n[2] ), 2 );
+		}
+	}
+	if ( wfc_contrast( $n[3], $canvas ) < 3 ) {
+		$low[] = 'border of ' . ( $n[1] ?: 'node' ) . ' ' . round( wfc_contrast( $n[3], $canvas ), 2 );
+	}
+}
+foreach ( array( 'wfc-edge-then' => null, 'wfc-edge-else' => null ) as $class => $unused ) {
+	preg_match( '/\.' . $class . ' \{ stroke: (#[0-9a-f]{6})/', $css, $m );
+	if ( wfc_contrast( $m[1], $canvas ) < 3 ) {
+		$low[] = $class . ' ' . round( wfc_contrast( $m[1], $canvas ), 2 );
+	}
+}
+check( 'contrast: text at least 4.5:1, borders and edges at least 3:1' . ( $low ? ' (' . implode( '; ', $low ) . ')' : '' ), array() === $low );
