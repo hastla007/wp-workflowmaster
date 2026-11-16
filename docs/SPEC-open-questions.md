@@ -138,7 +138,7 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 
 ### F-19 · Preise — **für Form Captain Pro entschieden am 16.11.2026; sonst offen**
 
-- **Entschieden:** Form Captain Pro kostet 59, 129 und 249 Euro pro Jahr brutto für 1, 5 und 25 Websites (`single`, `business`, `agency`).
+- **Entschieden:** Form Captain Pro kostet 59, 129 und 249 Euro pro Jahr netto, zzgl. USt., für 1, 5 und 25 Websites (`single`, `business`, `agency`; Entscheidung des Inhabers vom 16.11.2026, berichtigt von brutto auf netto).
 - **Offen:** die Preise aller anderen Produkte. `konzept.md` und `TODO.md` dieses Repositorys nennen für Workflow Captain Pro 129, 229 und 399 Euro als festgelegt; bestätigt ist das nicht, auch nicht netto oder brutto.
 - **Empfehlung:** Keine; Geschäftsentscheidung. Bis dahin gelten die Beträge für Workflow als Vorschlag.
 
