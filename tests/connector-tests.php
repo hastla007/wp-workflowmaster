@@ -250,3 +250,19 @@ $GLOBALS['wfc_test_filters']['workflow_captain_connector_runtime_allowed_v1'][] 
 $reg_rt = new \WorkflowCaptain\Connector\ConnectorRegistry( new \WorkflowCaptain\Adapter\AdapterRegistry(), fn() => array(), '0.1.0' );
 check( 'WF-CONNECTOR-12 runtime switch: a refused runtime keeps the connector off with its own reason', false === $reg_rt->add( conn_manifest( 'blocked-connector' ), new TestAdapter( 'blocked-connector' ) ) && \WorkflowCaptain\Connector\ConnectorRegistry::RUNTIME_NOT_ALLOWED === $reg_rt->reason( 'blocked-connector' ) );
 unset( $GLOBALS['wfc_test_filters']['workflow_captain_connector_runtime_allowed_v1'] );
+
+// ----- Builder input fields of add-on actions (optional method builder_fields(), e.g. the voucher commands of Pro)
+$wfc_fields = \WorkflowCaptain\Admin\WorkflowsPage::clean_fields(
+	array(
+		array( 'key' => 'reason', 'label' => 'Grund', 'type' => 'select', 'options' => array( array( 'value' => 'goodwill', 'label' => 'Kulanz' ), 'bad' ) ),
+		array( 'key' => 'amount_minor', 'label' => 'Betrag', 'type' => 'number' ),
+		array( 'key' => 'Bad Key', 'label' => 'x' ),
+		array( 'key' => 'note', 'type' => 'script' ),
+		'nope',
+	)
+);
+check( 'builder fields of add-on actions: valid keys kept, select options cleaned, unknown types become text, invalid entries dropped', array(
+	array( 'key' => 'reason', 'label' => 'Grund', 'type' => 'select', 'options' => array( array( 'value' => 'goodwill', 'label' => 'Kulanz' ) ) ),
+	array( 'key' => 'amount_minor', 'label' => 'Betrag', 'type' => 'number' ),
+	array( 'key' => 'note', 'label' => 'note', 'type' => 'text' ),
+) === $wfc_fields );

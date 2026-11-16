@@ -54,7 +54,8 @@ final class WorkflowsPage {
 		);
 		$actions = array();
 		foreach ( $this->plugin->engine()->actions()->all() as $key => $action ) {
-			$actions[] = array( 'key' => $key, 'label' => $action->label(), 'fields' => $fields[ $key ] ?? array() );
+			$own       = method_exists( $action, 'builder_fields' ) ? self::clean_fields( (array) $action->builder_fields() ) : null;
+			$actions[] = array( 'key' => $key, 'label' => $action->label(), 'fields' => $own ?? ( $fields[ $key ] ?? array() ) );
 		}
 		$events = array();
 		foreach ( $this->plugin->adapters()->products() as $product ) {
@@ -380,5 +381,34 @@ final class WorkflowsPage {
 			EngineStore::RUN_CANCELLED       => __( 'Abgebrochen', 'workflow-captain' ),
 		);
 		return $labels[ $state ] ?? $state;
+	}
+
+	/**
+	 * Input fields an add-on action declares for the builder through the optional method builder_fields():
+	 * a list of array{key:string,label:string,type?:'text'|'textarea'|'number'|'select',options?:array<array{value:string,label:string}>}.
+	 * Anything else is dropped; the server still validates the configuration with validate_config().
+	 *
+	 * @param array<mixed> $declared Declared fields.
+	 * @return array<int,array<string,mixed>>
+	 */
+	public static function clean_fields( array $declared ): array {
+		$out = array();
+		foreach ( $declared as $f ) {
+			if ( ! is_array( $f ) || ! is_string( $f['key'] ?? null ) || ! preg_match( '/^[a-z][a-z0-9_]{0,63}$/', $f['key'] ) ) {
+				continue;
+			}
+			$type  = in_array( $f['type'] ?? 'text', array( 'text', 'textarea', 'number', 'select' ), true ) ? (string) ( $f['type'] ?? 'text' ) : 'text';
+			$field = array( 'key' => $f['key'], 'label' => is_string( $f['label'] ?? null ) ? $f['label'] : $f['key'], 'type' => $type );
+			if ( 'select' === $type ) {
+				$field['options'] = array();
+				foreach ( (array) ( $f['options'] ?? array() ) as $o ) {
+					if ( is_array( $o ) && is_scalar( $o['value'] ?? null ) ) {
+						$field['options'][] = array( 'value' => (string) $o['value'], 'label' => is_string( $o['label'] ?? null ) ? $o['label'] : (string) $o['value'] );
+					}
+				}
+			}
+			$out[] = $field;
+		}
+		return $out;
 	}
 }

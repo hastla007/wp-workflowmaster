@@ -553,9 +553,26 @@
 				n.config = n.config || {};
 				const def = this.config.actions.find( ( a ) => a.key === n.action );
 				( def ? def.fields : [] ).forEach( ( f ) => {
-					const input = 'textarea' === f.type
-						? el( 'textarea', { rows: 4, class: 'large-text', onchange: ( ev ) => set( f.key, ev.target.value, n.config ) } )
-						: el( 'input', { type: 'text', class: 'regular-text', value: n.config[ f.key ] || '', onchange: ( ev ) => set( f.key, ev.target.value, n.config ) } );
+					// An emptied field is removed from the configuration, so the server applies its default.
+					const put = ( value ) => {
+						if ( '' === value ) {
+							delete n.config[ f.key ];
+							this.commit();
+							return;
+						}
+						set( f.key, 'number' === f.type ? Number( value ) : value, n.config );
+					};
+					const current = undefined === n.config[ f.key ] ? '' : String( n.config[ f.key ] );
+					let input;
+					if ( 'textarea' === f.type ) {
+						input = el( 'textarea', { rows: 4, class: 'large-text', onchange: ( ev ) => set( f.key, ev.target.value, n.config ) } );
+					} else if ( 'select' === f.type ) {
+						input = el( 'select', { onchange: ( ev ) => put( ev.target.value ) }, [ el( 'option', { value: '', text: '—' } ) ].concat( ( f.options || [] ).map( ( o ) => el( 'option', { value: o.value, text: o.label, selected: o.value === current } ) ) ) );
+					} else if ( 'number' === f.type ) {
+						input = el( 'input', { type: 'number', min: '0', step: '1', class: 'small-text', value: current, onchange: ( ev ) => put( ev.target.value.trim() ) } );
+					} else {
+						input = el( 'input', { type: 'text', class: 'regular-text', value: n.config[ f.key ] || '', onchange: ( ev ) => set( f.key, ev.target.value, n.config ) } );
+					}
 					if ( 'textarea' === f.type ) {
 						input.value = n.config[ f.key ] || '';
 					}
