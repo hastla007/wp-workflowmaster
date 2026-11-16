@@ -1,6 +1,6 @@
 {
   "$comment": "Machine-readable part of docs/SPEC-suite-events.md (sections 4.2, 4.3, 6, 11). The spec text is normative; this file must match it. Checked by bin/validate-spec-examples.py.",
-  "spec_version": "1.0.0-draft.4",
+  "spec_version": "1.0.0-draft.5",
   "catalog_version": "1.0",
   "products": {
     "pass-captain": {
@@ -474,36 +474,322 @@
     "affiliate-captain": {
       "contract_constant": "WPAC_CONTRACT_VERSION",
       "min_contract": "1.4.0",
-      "example_required": false,
-      "fields_complete": false,
+      "example_required": true,
+      "fields_complete": true,
       "events": [
         {
-          "type": "affiliate.code_request.approved",
-          "hook": "wpac_code_request_approved",
-          "since": "1.4.0",
-          "subject_type": "code_request",
+          "type": "affiliate.affiliate.created",
+          "hook": "wpac_affiliate_created",
+          "since": "1.2.0/0.11.0",
+          "subject_type": "affiliate",
+          "id_kind": "record",
+          "data_fields": [
+            "status",
+            "group_id",
+            "referred_by",
+            "partner_user_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.affiliate.status_changed",
+          "hook": "wpac_affiliate_status_changed",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "affiliate",
+          "id_kind": "record",
+          "data_fields": [
+            "status",
+            "previous_status"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.affiliate.recruited",
+          "hook": "wpac_affiliate_recruited",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "affiliate",
+          "id_kind": "record",
+          "data_fields": [
+            "recruiter_id",
+            "status"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.affiliate.erased",
+          "hook": "wpac_affiliate_erased",
+          "since": "1.3.0/0.13.0",
+          "subject_type": "affiliate",
+          "id_kind": "record",
+          "data_fields": [
+            "deferred"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.sale.attributed",
+          "hook": "wpac_affiliate_attributed",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "order",
           "id_kind": "record",
           "data_fields": [
             "affiliate_id",
-            "partner_code",
-            "main"
+            "source",
+            "attribution_method"
           ],
-          "actor_user_id": "see_spec_6",
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.commission.created",
+          "hook": "wpac_commission_created",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "kind",
+            "status",
+            "amount_minor",
+            "currency",
+            "parent_id",
+            "source",
+            "order_id",
+            "payout_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.commission.adjusted",
+          "hook": "wpac_commission_adjusted",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "source",
+            "refund_id",
+            "adjustment_type",
+            "full",
+            "deleted",
+            "adjustment_count",
+            "affiliate_id",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
           "after_commit": "yes"
         },
         {
           "type": "affiliate.commission.approved",
           "hook": "wpac_commission_approved",
-          "since": "unverified",
+          "since": "1.0.0/0.1.0",
           "subject_type": "commission",
           "id_kind": "record",
           "data_fields": [
             "affiliate_id",
             "amount_minor",
             "currency",
-            "kind"
+            "kind",
+            "previous_status"
           ],
-          "actor_user_id": "see_spec_6",
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.commission.rejected",
+          "hook": "wpac_commission_rejected",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "kind",
+            "amount_minor",
+            "currency",
+            "previous_status"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.commission.paid",
+          "hook": "wpac_commission_paid",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "payout_id",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.commission.pending",
+          "hook": "wpac_commission_pending",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "kind",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.commission.review_reopened",
+          "hook": "wpac_commission_review",
+          "since": "1.3.0/0.13.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "kind",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.payout.created",
+          "hook": "wpac_payout_created",
+          "since": "1.2.0",
+          "subject_type": "payout",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "payout_number",
+            "status",
+            "method",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.payout.paid",
+          "hook": "wpac_payout_paid",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "payout",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "payout_number",
+            "method",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.payout.cancelled",
+          "hook": "wpac_payout_cancelled",
+          "since": "1.3.0",
+          "subject_type": "payout",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "payout_number",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.correction.generated",
+          "hook": "wpac_correction_generated",
+          "since": "1.3.0/0.12.0",
+          "subject_type": "correction",
+          "id_kind": "record",
+          "data_fields": [],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.creative.created",
+          "hook": "wpac_creative_created",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "creative",
+          "id_kind": "record",
+          "data_fields": [
+            "family_id",
+            "version",
+            "status",
+            "creative_type",
+            "group_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.creative.updated",
+          "hook": "wpac_creative_updated",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "creative",
+          "id_kind": "record",
+          "data_fields": [
+            "family_id",
+            "version",
+            "status",
+            "creative_type",
+            "group_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.code_request.created",
+          "hook": "wpac_code_requested",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "code_request",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "request_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.code_request.approved",
+          "hook": "wpac_code_request_approved",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "code_request",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "partner_code",
+            "main",
+            "request_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes"
+        },
+        {
+          "type": "affiliate.code_request.rejected",
+          "hook": "wpac_code_request_rejected",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "code_request",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "request_id"
+          ],
+          "actor_user_id": "none",
           "after_commit": "yes"
         }
       ]
@@ -511,13 +797,13 @@
     "wp-license": {
       "contract_constant": null,
       "min_contract": null,
-      "example_required": false,
+      "example_required": true,
       "fields_complete": true,
       "events": [
         {
           "type": "license.license.status_changed",
           "hook": "wplc/license_status_changed",
-          "since": "unverified",
+          "since": "0.1.0",
           "subject_type": "license",
           "id_kind": "record",
           "data_fields": [
@@ -528,12 +814,12 @@
             "lifecycle_action"
           ],
           "actor_user_id": "customer",
-          "after_commit": "unverified"
+          "after_commit": "autocommit_no_guarantee"
         },
         {
           "type": "license.license.issued",
           "hook": "wplc/license_issued_followup",
-          "since": "unverified",
+          "since": "0.1.0",
           "subject_type": "license",
           "id_kind": "record",
           "data_fields": [
@@ -542,12 +828,12 @@
             "status"
           ],
           "actor_user_id": "customer",
-          "after_commit": "unverified"
+          "after_commit": "autocommit_no_guarantee"
         },
         {
           "type": "license.license.plan_changed",
           "hook": "wplc/license_plan_changed",
-          "since": "unverified",
+          "since": "0.2.0",
           "subject_type": "license",
           "id_kind": "record",
           "data_fields": [
@@ -556,7 +842,7 @@
             "status"
           ],
           "actor_user_id": "customer",
-          "after_commit": "unverified"
+          "after_commit": "autocommit_no_guarantee"
         }
       ]
     }

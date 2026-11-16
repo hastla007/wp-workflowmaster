@@ -1,0 +1,24 @@
+{
+  "id": "d17eb6e1-c398-4db8-8085-ffa5c8e15cf4",
+  "type": "affiliate.correction.generated",
+  "spec_version": "1.0",
+  "source": {
+    "product": "affiliate-captain",
+    "core_version": "0.15.0",
+    "contract_version": "1.4.0"
+  },
+  "occurred_at": "2026-11-16T14:15:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "correction",
+    "id": "7",
+    "id_kind": "record"
+  },
+  "data": {},
+  "idempotency_key": "dc1ccbd19e1a923e62d09599463ecf1b994b5bd714dcc31ba16df41777f9c721",
+  "correlation_id": "d17eb6e1-c398-4db8-8085-ffa5c8e15cf4",
+  "causation_id": null,
+  "chain_depth": 0
+}

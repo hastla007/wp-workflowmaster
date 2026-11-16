@@ -1,0 +1,29 @@
+{
+  "id": "e4359121-79fe-4bbc-840a-45e9df097df4",
+  "type": "affiliate.payout.cancelled",
+  "spec_version": "1.0",
+  "source": {
+    "product": "affiliate-captain",
+    "core_version": "0.15.0",
+    "contract_version": "1.4.0"
+  },
+  "occurred_at": "2026-11-16T14:14:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "payout",
+    "id": "42",
+    "id_kind": "record"
+  },
+  "data": {
+    "affiliate_id": 57,
+    "payout_number": "AUS-2026-0042",
+    "amount_minor": 990,
+    "currency": "EUR"
+  },
+  "idempotency_key": "a07cd22681d39ea2bac6eef9b963698e13aa22a4ae119de280fa6e1e429e5a11",
+  "correlation_id": "e4359121-79fe-4bbc-840a-45e9df097df4",
+  "causation_id": null,
+  "chain_depth": 0
+}

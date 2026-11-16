@@ -31,4 +31,4 @@ Keine. Workflow Captain ruft in dieser Version keinen externen Dienst auf.
 == Changelog ==
 
 = 0.1.0 =
-* Erster Stand des Consumers nach docs/SPEC-suite-events.md (Entwurf 1.0.0-draft.4).
+* Erster Stand des Consumers nach docs/SPEC-suite-events.md (Entwurf 1.0.0-draft.5).

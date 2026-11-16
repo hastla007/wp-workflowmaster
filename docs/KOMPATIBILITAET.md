@@ -1,8 +1,8 @@
 # Kompatibilitätsmatrix der Provider (Entwurf)
 
-Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.4. Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“.
+Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.5. Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“.
 
-**Entwurf.** Veröffentlicht wird die Matrix erst mit dem ersten Release von Workflow Captain Pro. Bis dahin hält sie fest, welche Stände der Kerne die Spezifikation voraussetzt und was davon am Code belegt ist. Es gibt noch keinen Adapter; „Mindestvertrag“ ist das, was ein Adapter nach R-13.4 verlangen müsste, um den Katalog der Spezifikation vollständig abzudecken.
+**Entwurf.** Veröffentlicht wird die Matrix erst mit dem ersten Release von Workflow Captain Pro. Bis dahin hält sie fest, welche Stände der Kerne die Spezifikation voraussetzt und was davon am Code belegt ist. Es gibt noch keinen Adapter (der Consumer existiert seit Plugin 0.1.0); „Mindestvertrag“ ist das, was ein Adapter nach R-13.4 verlangen müsste, um den Katalog der Spezifikation vollständig abzudecken.
 
 ## Je Provider
 
@@ -10,10 +10,10 @@ Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0
 |---|---|---|---|---|---|---|
 | Pass Captain | `wp-passmaster` `claude/sharp-mendel-xiiwf3` `dd32087` | 1.5.0 | `WPCAP_CONTRACT_VERSION` = `1.1.0` | `1.1.0` (`wpcap_event_cancelled`, `wp_pass_captain_invoice_created_v1` und die drei Argumente von `wpcap_order_cancelled` gibt es erst seit Plugin 1.5.0) | 1 | ja, am 16.11.2026 am Code und Git-Verlauf |
 | Voucher Captain | `wp-couponmaster` `claude/sharp-mendel-xiiwf3` `ed7b791` | 1.2.0 | `VCAP_CONTRACT_VERSION` = `1.1.0` | `1.1.0`; die vier Gutschein-Befehle brauchen eine neue MINOR-Version (R-8.1), die es noch nicht gibt | 1 | ja, am 16.11.2026 am Code |
-| Affiliate Captain | `wpaffiliatemaster` `23f06be` (Spezifikation, Abschnitt 0) | 0.15.0 | `WPAC_CONTRACT_VERSION` = `1.4.0` | `1.4.0` (`creative.*`, `code_request.*`, `affiliate.recruited` seit 1.4.0) | 1 | nur aus der Spezifikation; in dieser Sitzung kein Zugriff |
-| Lizenzserver | `wp-license` `241ae7a` (Spezifikation, Abschnitt 0) | 0.2.0 | fehlt (F-03) | – („Vertrag unbekannt“, R-3.3; Ersatz über Plugin-Version nötig) | – | nur aus der Spezifikation |
-| Form Captain | `wp-formmaster` `0017025` | 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` | kein Katalog in v1 (4.6) | – | nur aus der Spezifikation |
-| Review Captain | `wp-reviewmaster` `faa5f89` | 0.1.0-dev | fehlt | kein Katalog in v1 (4.6) | – | nur aus der Spezifikation |
+| Affiliate Captain | `wpaffiliatemaster` `claude/sharp-mendel-xiiwf3` `6600392`, `main` `2a77ed3` (gleiches `src/`) | 0.15.0 | `WPAC_CONTRACT_VERSION` = `1.4.0` | `1.4.0` (`creative.*`, `code_request.*`, `affiliate.recruited` seit 1.4.0) | 1 | ja, am 16.11.2026 am Code, an Tags und Git-Verlauf |
+| Lizenzserver | `wp-license` `241ae7a`, `a113568`, `main` `c269e07` (gleiches `src/License/`) | 0.2.0 | fehlt auf allen Branches (F-03) | – („Vertrag unbekannt“, R-3.3; Ersatz über Plugin-Version 0.2.0, weil `plan_changed` erst dort kommt) | – | ja, am 16.11.2026 am Code |
+| Form Captain | `wp-formmaster` `main` `6f4785f` | 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` (trotz zwei neuer Actions) | kein Katalog in v1 (4.6) | – | ja, am 16.11.2026 am Code |
+| Review Captain | `wp-reviewmaster` `claude/sleepy-gates-6mm217` `b35fb95` (`main` ohne PHP-Code) | 0.1.0-dev | fehlt | kein Katalog in v1 (4.6) | – | ja, am 16.11.2026 am Code |
 | Course Captain | – | kein Code | fehlt | kein Katalog in v1 (4.6) | – | – |
 
 ## Stände auf `main`, die **nicht** genügen

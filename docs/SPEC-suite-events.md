@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | **1.0.0-draft.4** |
+| Version | **1.0.0-draft.5** |
 | Stand | 16.11.2026 |
 | Status | Entwurf zur Abnahme durch den Inhaber. Gebaut ist davon nichts. |
 | Ort | `hastla007/wp-workflowmaster`, `docs/SPEC-suite-events.md` (Entscheidung D1) |
@@ -25,11 +25,11 @@ Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D1
 |---|---|---|---|---|
 | VC | `wp-couponmaster` (Voucher Captain) | `claude/sharp-mendel-xiiwf3` | `df3eee2`; Z-05 bis Z-16 am 16.11.2026 an `ed7b791` geprüft, dazu `hvollo-refactors` `82145ed` und `main` `2d84943` | 1.2.0 (`voucher-captain.php:6`) |
 | PC | `wp-passmaster` (Pass Captain) | `claude/sharp-mendel-xiiwf3` | `bca8d85a`; Z-01 bis Z-04 und Z-07 am 16.11.2026 an `dd32087` geprüft (Nachfolger, nur `TODO.md` geändert), dazu `main` `b2b88ea` | 1.5.0 (`pass-captain.php:6`) |
-| AC | `wpaffiliatemaster` (Affiliate Captain) | `claude/sharp-mendel-xiiwf3` | `23f06be` (Katalog gelesen zwischen `70c23b7` und `dbb319d`; Entfernung des Workflow-Providers geprüft an `23f06be`) | 0.15.0 (`affiliate-captain.php:6`) |
-| LIC | `wp-license` (Lizenzserver) | `claude/sharp-mendel-xiiwf3` | `241ae7a` (committeter Stand) | 0.2.0 (`wp-license.php:23`) |
+| AC | `wpaffiliatemaster` (Affiliate Captain) | `claude/sharp-mendel-xiiwf3` | `23f06be` (Katalog gelesen zwischen `70c23b7` und `dbb319d`; Entfernung des Workflow-Providers geprüft an `23f06be`); Z-07 bis Z-13 am 16.11.2026 an `6600392` und `main` `2a77ed3` geprüft | 0.15.0 (`affiliate-captain.php:6`) |
+| LIC | `wp-license` (Lizenzserver) | `claude/sharp-mendel-xiiwf3` | `241ae7a` (committeter Stand); Z-10 und Z-14 am 16.11.2026 an `241ae7a`, `a113568` und `main` `c269e07` geprüft | 0.2.0 (`wp-license.php:23`) |
 | CP | `captain-pro` (Add-ons, Kernel) | `claude/sharp-mendel-xiiwf3` | `5e333f7` (Arbeitsverzeichnis mit uncommitteten Änderungen); am 16.11.2026 gegengeprüft an `07b5365` und `main` `2f23da7`: alle Fundstellen in `packages/addon-kernel` unverändert | – |
-| FC | `wp-formmaster` (Form Captain) | `claude/youthful-babbage-wkrqyv` | `0017025` | 1.0.0-dev |
-| RC | `wp-reviewmaster` (Review Captain) | `claude/sleepy-gates-6mm217` | `faa5f89` | 0.1.0-dev |
+| FC | `wp-formmaster` (Form Captain) | `claude/youthful-babbage-wkrqyv` | `0017025`; Z-11 am 16.11.2026 an `main` `6f4785f` und `0e6aea1` geprüft | 1.0.0-dev |
+| RC | `wp-reviewmaster` (Review Captain) | `claude/sleepy-gates-6mm217` | `faa5f89`; Z-12 am 16.11.2026 an `b35fb95` geprüft (`main` enthält keinen PHP-Code) | 0.1.0-dev |
 | CC | `wp-coursemaster` (Course Captain) | `claude/blissful-curie-tuuf7q` | `ae1bce9` | kein Code |
 
 **Begriffe.**
@@ -117,8 +117,8 @@ Die drei vorhandenen Kerne erfüllen R-3.1. Für Review Captain, Course Captain 
 |---|---|---|
 | Voucher Captain | `VC:docs/HOOKS.md` (220 Hooks, Spalte „Since“, aus dem Code erzeugt, `VC:docs/HOOKS.md:3-9`) | CI prüft mit `php bin/hooks.php --check` (`VC:docs/HOOKS.md:4`) |
 | Pass Captain | `PC:docs/EXTENSIONS.md:52` ff. für die 54 versionierten Punkte (`wp_pass_captain_*_v1`). Für die `wpcap_*`-Actions des Katalogs unten gibt es **keine** Angabe je Hook; ermittelt am 16.11.2026 aus dem Git-Verlauf und in 4.2 eingetragen (Z-01), im Kern nachzutragen | `PC:tests/integration/modules/zzzzzzzz_r16_contract.php` (`PC:docs/EXTENSIONS.md:49-50`) |
-| Affiliate Captain | keine Tabelle; „seit“ steht im Fließtext und im Änderungsabsatz (`AC:docs/CONTRACT.md:7`) | zu prüfen |
-| Lizenzserver | `LIC:docs/EXTENSION-POINTS.md` (36 Actions und 94 Filter, zusammen 130 Zeilen; ohne „seit“) | `tests/Contract/ExtensionPointsDocTest.php` (`LIC:docs/EXTENSION-POINTS.md:3`) |
+| Affiliate Captain | keine Tabelle; „seit“ steht im Fließtext und im Änderungsabsatz (`AC:docs/CONTRACT.md:7`); Werte am 16.11.2026 ermittelt und in 4.4 eingetragen | kein Test, der die Tabelle mit dem Code vergleicht (Z-09) |
+| Lizenzserver | `LIC:docs/EXTENSION-POINTS.md` (38 Actions und 92 Filter, zusammen 130 Zeilen an `241ae7a`; `main`: 38 und 91; ohne „seit“; geprüft 16.11.2026, Z-14) | `tests/Contract/ExtensionPointsDocTest.php` (`LIC:docs/EXTENSION-POINTS.md:3`) |
 
 Lücken gegenüber R-3.4: „seit“ je `wpcap_*`-Action in Pass Captain (Werte in 4.2 ermittelt, im Kern noch nicht eingetragen), eine Tabelle in Affiliate Captain, „seit“ im Lizenzserver.
 
@@ -268,33 +268,60 @@ Beträge übergibt der Kern als `float`. Der Adapter MUSS sie in die kleinste Ei
 
 ### 4.4 Affiliate Captain (`source.product` = `affiliate-captain`, 21 Actions, 21 Ereignisse)
 
-Vertrag 1.4.0. Alle Actions dieser Tabelle feuern erst nach dem Commit, seit Plugin 0.15.0 auch innerhalb einer äußeren Transaktion; wird eine Buchung zurückgerollt, feuert nichts (`AC:docs/CONTRACT.md:210`). Die Ereignisse sind Benachrichtigungen ohne Kundendaten, mit den dort genannten Ausnahmen. „Seit“ meint die Vertragsversion, „Plugin“ die Plugin-Version (`AC:docs/CONTRACT.md:5`).
+Vertrag 1.4.0. Alle Actions dieser Tabelle feuern erst nach dem Commit, seit Plugin 0.15.0 auch innerhalb einer äußeren Transaktion; wird eine Buchung zurückgerollt, feuert nichts (`AC:docs/CONTRACT.md:210`). Die Ereignisse sind Benachrichtigungen ohne Kundendaten, mit den dort genannten Ausnahmen. „Seit“ meint die Vertragsversion, „Plugin“ die Plugin-Version (`AC:docs/CONTRACT.md:5`). Die bisher offenen Werte sind am 16.11.2026 aus den Tag-Ständen v0.7.0 bis v0.14.0 und dem Git-Verlauf ermittelt (Z-08; gelesen an `6600392`, Nachfolger von `23f06be`, nur `TODO.md` geändert; `main` `2a77ed3` hat dasselbe `src/`). Geprüft ist auch „nach Commit“: Alle 31 Auslöseorte der 21 Actions liegen in `Db::after_commit` bzw. `PayoutService::after_commit` (`AC:src/Core/Db.php:249-256`, `:278-345`), getestet in `AC:tests/integration/r15-l3.php`. „Äußere Transaktion“ meint nur eine über `Db::transaction()` geöffnete.
 
 | Suite-Ereignis | PHP-Action | Seit | Argumente heute (`AC:docs/CONTRACT.md:187-206`) | Nicht weiterreichen |
 |---|---|---|---|---|
-| `affiliate.affiliate.created` | `wpac_affiliate_created` | zu prüfen | `int $affiliate_id, string $status` | – |
-| `affiliate.affiliate.status_changed` | `wpac_affiliate_status_changed` | zu prüfen | `int $affiliate_id, string $new, string $old` | – |
+| `affiliate.affiliate.created` | `wpac_affiliate_created` | 1.2.0, Plugin 0.11.0 (im Code seit 0.10.0) | `int $affiliate_id, string $status` | – |
+| `affiliate.affiliate.status_changed` | `wpac_affiliate_status_changed` | 1.0.0, Plugin 0.1.0 | `int $affiliate_id, string $new, string $old` | – |
 | `affiliate.affiliate.recruited` | `wpac_affiliate_recruited` | 1.4.0 | `int $affiliate_id, int $recruiter` (`AC:src/Affiliates/AffiliateRepository.php:363`) | – |
-| `affiliate.affiliate.erased` | `wpac_affiliate_erased` | zu prüfen | `int $affiliate_id, bool $open` | – (zugleich Löschsignal, R-12.5) |
-| `affiliate.sale.attributed` | `wpac_affiliate_attributed` | zu prüfen | `string $order_id, int $affiliate_id, string $method, string $source` | – |
-| `affiliate.commission.created` | `wpac_commission_created` | zu prüfen; für jede Buchungsart seit 1.3.0 | `int $commission_id` | – |
-| `affiliate.commission.adjusted` | `wpac_commission_adjusted` | zu prüfen | `array $refund, int[] $adjustment_ids` | **Freitext `reason` in `$refund`** (`AC:docs/CONTRACT.md:210`); Listen werden zu einer Anzahl |
-| `affiliate.commission.approved` | `wpac_commission_approved` | zu prüfen | `int $commission_id` | – |
-| `affiliate.commission.rejected` | `wpac_commission_rejected` | zu prüfen | `int $commission_id` | – |
-| `affiliate.commission.paid` | `wpac_commission_paid` | zu prüfen | `int $commission_id` | – |
-| `affiliate.commission.pending` | `wpac_commission_pending` | zu prüfen | `int $commission_id` | – |
-| `affiliate.commission.review_reopened` | `wpac_commission_review` | zu prüfen | `int $commission_id` | – |
+| `affiliate.affiliate.erased` | `wpac_affiliate_erased` | 1.3.0, Plugin 0.13.0 | `int $affiliate_id, bool $open` | – (zugleich Löschsignal, R-12.5) |
+| `affiliate.sale.attributed` | `wpac_affiliate_attributed` | 1.0.0, Plugin 0.1.0 | `string $order_id, int $affiliate_id, string $method, string $source` | – |
+| `affiliate.commission.created` | `wpac_commission_created` | 1.0.0, Plugin 0.1.0; für jede Buchungsart seit 1.3.0 | `int $commission_id` | – |
+| `affiliate.commission.adjusted` | `wpac_commission_adjusted` | 1.0.0, Plugin 0.1.0 | `array $refund, int[] $adjustment_ids` | **Freitext `reason` in `$refund`** (`AC:docs/CONTRACT.md:210`); Listen werden zu einer Anzahl |
+| `affiliate.commission.approved` | `wpac_commission_approved` | 1.0.0, Plugin 0.1.0 | `int $commission_id` | – |
+| `affiliate.commission.rejected` | `wpac_commission_rejected` | 1.0.0, Plugin 0.1.0 | `int $commission_id` | – |
+| `affiliate.commission.paid` | `wpac_commission_paid` | 1.0.0, Plugin 0.1.0 | `int $commission_id` | – |
+| `affiliate.commission.pending` | `wpac_commission_pending` | 1.0.0, Plugin 0.1.0 | `int $commission_id` | – |
+| `affiliate.commission.review_reopened` | `wpac_commission_review` | 1.3.0, Plugin 0.13.0 (erstmals dokumentiert; technisch über die allgemeine Action seit 1.0.0) | `int $commission_id` | – |
 | `affiliate.payout.created` | `wpac_payout_created` | 1.2.0 | `int $payout_id, int $affiliate_id` | – |
-| `affiliate.payout.paid` | `wpac_payout_paid` | zu prüfen | `int $payout_id` | – |
+| `affiliate.payout.paid` | `wpac_payout_paid` | 1.0.0, Plugin 0.1.0 | `int $payout_id` | – |
 | `affiliate.payout.cancelled` | `wpac_payout_cancelled` | 1.3.0 | `int $payout_id` | – |
-| `affiliate.correction.generated` | `wpac_correction_generated` | zu prüfen | `int $correction_id, string $path` | **`$path` (Dateipfad)** |
+| `affiliate.correction.generated` | `wpac_correction_generated` | 1.3.0, Plugin 0.12.0 | `int $correction_id, string $path` | **`$path` (Dateipfad)** |
 | `affiliate.creative.created` | `wpac_creative_created` | 1.4.0, Plugin 0.15.0 | `int $creative_id, array $info` | `title` |
 | `affiliate.creative.updated` | `wpac_creative_updated` | 1.4.0, Plugin 0.15.0 | `int $creative_id, array $info` | `title` |
 | `affiliate.code_request.created` | `wpac_code_requested` | 1.4.0, Plugin 0.15.0 | `int $affiliate_id, string $code, int $row_id` | – (`$code` ist der öffentliche Partnercode und erlaubt, D8b; Feld `partner_code`) |
 | `affiliate.code_request.approved` | `wpac_code_request_approved` | 1.4.0, Plugin 0.15.0 | `int $affiliate_id, string $code, int $row_id, bool $make_main` | – (Partnercode erlaubt, D8b) |
 | `affiliate.code_request.rejected` | `wpac_code_request_rejected` | 1.4.0, Plugin 0.15.0 | `int $affiliate_id, string $code, string $reason, int $row_id` | **`$reason`** (Partnercode erlaubt, D8b) |
 
-Geldbeträge sind erlaubt (D8b): Der Adapter KANN bei `affiliate.sale.attributed`, `affiliate.commission.*`, `affiliate.payout.*` und `affiliate.correction.generated` den Betrag als `amount_minor` (Integer, kleinste Einheit) mit `currency` (ISO 4217) mitgeben. Die Actions übergeben nur IDs; den Betrag liest der Adapter über `wpac_get_commission()` beziehungsweise `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`).
+Geldbeträge sind erlaubt (D8b): Der Adapter KANN bei `affiliate.sale.attributed`, `affiliate.commission.*`, `affiliate.payout.*` und `affiliate.correction.generated` den Betrag als `amount_minor` (Integer, kleinste Einheit) mit `currency` (ISO 4217) mitgeben. Die Actions übergeben nur IDs; den Betrag liest der Adapter über `wpac_get_commission()` beziehungsweise `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`). Für eine Gutschrift (`affiliate.correction.generated`) gibt es keine Lesefunktion; ihr Betrag kommt nur über das folgende `affiliate.commission.created` mit `kind` = `correction`.
+
+**Erlaubte Felder in `data` und Bedeutung von `actor_user_id` (WF-SPEC-03, 16.11.2026).** Positivliste nach R-5.2; Beträge über die Lesefunktionen als `amount_minor` mit `currency`. `id_kind` ist überall `record`. `actor_user_id` bleibt für Affiliate Captain **nicht gesetzt** (Abschnitt 6), auch wo ein angemeldeter Benutzer bekannt wäre. Nie weitergereicht werden: Name, E-Mail-Adresse, `slug` (aus dem Namen gebildet), `status_reason`, `website`, `channel`, `description`, `reference`, `paypal_email`, `claim` (Reservierungsschlüssel einer Auszahlung, wirkt wie ein Token), `$path`, `title` und jeder Grund.
+
+| Suite-Ereignis | `subject` | Erlaubte Felder in `data` |
+|---|---|---|
+| `affiliate.affiliate.created` | `affiliate` | `status`, `group_id`, `referred_by` (wenn größer 0), `partner_user_id` (WordPress-Benutzer des Partners, wenn größer 0) |
+| `affiliate.affiliate.status_changed` | `affiliate` | `status`, `previous_status` |
+| `affiliate.affiliate.recruited` | `affiliate` | `recruiter_id` (Partner-ID), `status` |
+| `affiliate.affiliate.erased` | `affiliate` | `deferred` (Wahrheitswert, `$open`) |
+| `affiliate.sale.attributed` | `order` (Bestellreferenz der Quelle) | `affiliate_id`, `source` (Schlüssel), `attribution_method` (`link`, `cookie`, `code`, `coupon`, `lifetime`, `manual`, `app`, `renewal`, sonst `other`) |
+| `affiliate.commission.created` | `commission` | `affiliate_id`, `kind`, `status`, `amount_minor`, `currency`, `parent_id`, `source`, `order_id`, `payout_id` |
+| `affiliate.commission.adjusted` | `order` | `source`, `refund_id`, `adjustment_type` (`refund`, `cancellation`, `chargeback`), `full`, `deleted` (Wahrheitswerte), `adjustment_count`, optional `affiliate_id`, `amount_minor`, `currency`; nie `reason` |
+| `affiliate.commission.approved` | `commission` | `affiliate_id`, `amount_minor`, `currency`, `kind`, `previous_status` |
+| `affiliate.commission.rejected` | `commission` | `affiliate_id`, `kind`, `amount_minor`, `currency`, `previous_status` |
+| `affiliate.commission.paid` | `commission` | `affiliate_id`, `payout_id`, `amount_minor`, `currency` |
+| `affiliate.commission.pending` | `commission` | `affiliate_id`, `kind`, `amount_minor`, `currency` |
+| `affiliate.commission.review_reopened` | `commission` | `affiliate_id`, `kind`, `amount_minor`, `currency` |
+| `affiliate.payout.created` | `payout` | `affiliate_id`, `payout_number`, `status`, `method` (`sepa`, `manual`), `amount_minor`, `currency` |
+| `affiliate.payout.paid` | `payout` | `affiliate_id`, `payout_number`, `method`, `amount_minor`, `currency` |
+| `affiliate.payout.cancelled` | `payout` | `affiliate_id`, `payout_number`, `amount_minor`, `currency` |
+| `affiliate.correction.generated` | `correction` | keine weiteren Felder |
+| `affiliate.creative.created`, `affiliate.creative.updated` | `creative` (Versions-ID) | `family_id`, `version`, `status` (`draft`, `approved`, `archived`), `creative_type` (`text`, `image`), `group_id` |
+| `affiliate.code_request.created` | `code_request` | `affiliate_id`, `request_id`; `partner_code` erst nach der Antwort auf F-21 |
+| `affiliate.code_request.approved` | `code_request` | `affiliate_id`, `partner_code`, `main` |
+| `affiliate.code_request.rejected` | `code_request` | `affiliate_id`, `request_id`; `partner_code` erst nach der Antwort auf F-21; nie `$reason` |
+
+`$method` und `$source` von `wpac_affiliate_attributed` sind frei gewählte Schlüssel des Connectors; der Adapter bildet `$method` auf die Liste oben ab. Der Feldname `payout_number` statt `number` hält die Felder eindeutig.
 
 Nicht im Katalog: `wpac_mail_sent`, `wpac_mail_failed` und `wpac_contract_not_queued` (enthalten Kundendaten, `AC:docs/CONTRACT.md:210`), `wpac_referral_captured`, `wpac_refund_after_correction`, `wpac_statement_generated`, `wpac_storno_generated`.
 
@@ -302,7 +329,7 @@ Nicht im Katalog: `wpac_mail_sent`, `wpac_mail_failed` und `wpac_contract_not_qu
 
 Affiliate Captain enthielt bis zum 16.11.2026 eine eigene Provider-Seite für Workflow Captain (`wpac_workflow_event( array $envelope )`, `wpac_workflow_read()`, `wpac_workflow_event_types()`, `docs/WORKFLOW-PROVIDER.md`). Sie entstand vor den Entscheidungen des Inhabers.
 
-**Stand (D13, umgesetzt am 16.11.2026):** Die Provider-Seite ist aus dem Affiliate-Kern entfernt (Commit `a928a14`, Stand `23f06be`). Im Code und in den Dokumenten des Kerns kommt `wpac_workflow` nicht mehr vor; ein Wächtertest in `AC:tests/run.php:365-372` schlägt fehl, sobald die Schnittstelle zurückkehrt, bevor die Aufgabe AFF-WF-08 abgehakt ist. Affiliate Captain 0.15.0 erscheint **ohne** Workflow-Provider; der Vertrag bleibt 1.4.0 (`AC:affiliate-captain.php:41`). Die Wiedereinführung ist dort als AFF-WF-08 geführt und setzt voraus, dass die drei Add-ons im Verkauf sind (D12) und diese Spezifikation abgenommen ist. Für den Voucher-Kern gilt dieselbe Entscheidung für den Provider aus Pull Request 16 (Umschlag `vcap_workflow_event`, Lizenzwissen, Mail-Übergabe); ob sie dort schon umgesetzt ist, ist zu prüfen (Z-16).
+**Stand (D13, umgesetzt am 16.11.2026):** Die Provider-Seite ist aus dem Affiliate-Kern entfernt (Commit `a928a14`, Stand `23f06be`). Im Code und in den Dokumenten des Kerns kommt `wpac_workflow` nicht mehr vor; ein Wächtertest in `AC:tests/run.php:365-372` schlägt fehl, sobald die Schnittstelle zurückkehrt, bevor die Aufgabe AFF-WF-08 abgehakt ist. Affiliate Captain 0.15.0 erscheint **ohne** Workflow-Provider; der Vertrag bleibt 1.4.0 (`AC:affiliate-captain.php:41`). Die Wiedereinführung ist dort als AFF-WF-08 geführt und setzt voraus, dass die drei Add-ons im Verkauf sind (D12) und diese Spezifikation abgenommen ist. Für den Voucher-Kern gilt dieselbe Entscheidung für den Provider aus Pull Request 16 (Umschlag `vcap_workflow_event`, Lizenzwissen, Mail-Übergabe); geprüft am 16.11.2026 (Z-16): auf `main` war der Provider nie, auf dem Branch `hvollo-refactors` (`82145ed`) ist er noch vorhanden.
 
 - R-4.4 `wpac_workflow_event`, `wpac_workflow_read()`, `wpac_workflow_event_types()` und `vcap_workflow_event` gibt es in keinem veröffentlichten Kern. Sie sind **nicht normativ**; kein Adapter, kein Consumer und kein Dokument DARF sie voraussetzen. Quelle der Affiliate-Ereignisse sind allein die 21 Actions der Tabelle oben.
 - R-4.5 Kein Kern baut einen eigenen Umschlag für die Suite (D5, D9, R-6.1). Ein Kern, der später wieder eine Provider-Seite bekommt, braucht dafür eine MINOR-Version dieser Spezifikation, die sie beschreibt.
@@ -321,13 +348,13 @@ Für die Wiedereinführung (AFF-WF-08) gilt zu den vier dort geführten Abweichu
 
 ### 4.5 Lizenzserver (`source.product` = `wp-license`, 3 Ereignisse, nur im Shop des Herstellers)
 
-Siehe Abschnitt 11 für Rahmen und fehlende Actions. Der Lizenzserver hat keine Vertragskonstante und keine Zusage „nach Commit“ (`LIC:docs/TODO.md`, Abschnitt 12, Absatz „Lizenzereignisse gibt es nur als PHP-Aktionen“).
+Siehe Abschnitt 11 für Rahmen und fehlende Actions. Der Lizenzserver hat keine Vertragskonstante und keine Zusage „nach Commit“ (`LIC:docs/TODO.md`, Abschnitt 12, Absatz „Lizenzereignisse gibt es nur als PHP-Aktionen“). Geprüft am 16.11.2026 an `241ae7a`, `a113568` (neuer Stand des Branches) und `main` `c269e07`; `src/License/` ist in allen drei gleich. Auf keinem der Branches gibt es eine Vertragskonstante, eine der vier fehlenden Actions oder eine Lesefassade (dort WFC-LIC-04, -05, -07 offen, „nach dem Verkaufsstart“). Es gibt keine Tags; „Seit“ ist die Plugin-Version beim ersten Commit der Action.
 
 | Suite-Ereignis | PHP-Action | Seit | Argumente heute | Nicht weiterreichen | Nach Commit |
 |---|---|---|---|---|---|
-| `license.license.issued` | `wplc/license_issued_followup` | zu prüfen | `int $license_id, int $order_id` (`LIC:src/License/LicenseIssuer.php:878`) | – | zu prüfen |
-| `license.license.status_changed` | `wplc/license_status_changed` | zu prüfen | `int $license_id, string $old_status, string $new_status, string $action` (`LIC:src/License/LicenseLifecycle.php:1221`) | – | zu prüfen |
-| `license.license.plan_changed` | `wplc/license_plan_changed` | zu prüfen | `int $license_id` (`LIC:src/License/PlanChange.php:1022`; „after all locks are released“) | – | zu prüfen |
+| `license.license.issued` | `wplc/license_issued_followup` | Plugin 0.1.0 (`3a30ef8`; der Docblock nennt 0.2.0, `LIC:src/License/LicenseIssuer.php:873`) | `int $license_id, int $order_id` (`LIC:src/License/LicenseIssuer.php:878`) | – | nach Schreibvorgängen im Autocommit, keine Transaktion (geprüft 16.11.2026, Z-10); keine dokumentierte Zusage, daher Gegenlesen (R-7.4); läuft als Hintergrundaufgabe und kann je Lizenz mehrfach feuern (`:869-870`), der Idempotenzschlüssel fängt das ab |
+| `license.license.status_changed` | `wplc/license_status_changed` | Plugin 0.1.0 (`bf72f9d`) | `int $license_id, string $old_status, string $new_status, string $action` (`LIC:src/License/LicenseLifecycle.php:1221`); `$action` ist einer von `order_refund`, `renewal_failed`, `renewal_succeeded`, `chargeback`, `order_cancelled`, `admin_restore`, `license_expired`, `admin_status_change`, `admin_extend` | – | nach dem COMMIT der Verlängerung (`:1724`, `:1736`) oder im Autocommit; während der Lizenzsperre gepuffert bis zu deren Freigabe (`:1207-1211`, `:2213-2222`), außer `announce_renewal()` (`:1604-1606`). Keine dokumentierte Zusage, daher Gegenlesen |
+| `license.license.plan_changed` | `wplc/license_plan_changed` | Plugin 0.2.0 (`67fe915`) | `int $license_id` (`LIC:src/License/PlanChange.php:1022`); den vorherigen Tarif übergibt die Action nicht | – | nach Schreibvorgängen im Autocommit, keine Transaktion (geprüft 16.11.2026, Z-10); keine dokumentierte Zusage, daher Gegenlesen (R-7.4); „after all locks are released“ (`:1013`) stimmt für `apply_pending_after_renewal` nicht (`:609`, `:648`) |
 
 **Ausdrücklich kein Suite-Ereignis:**
 
@@ -342,9 +369,9 @@ Weitere vorhandene Actions (zum Beispiel `wplc/license_owner_changed`, `wplc/act
 
 Die Präfixe `form.`, `review.` und `course.` sind reserviert. Ihre Kataloge kommen in einer Minor-Version dieser Spezifikation, sobald der jeweilige Kern veröffentlicht ist. Stand:
 
-- **Form Captain:** `FC:docs/spec/api-v1.md:23-32` nennt sechs Actions „nach Commit“: `form_captain_form_created_v1`, `form_captain_form_updated_v1`, `form_captain_entry_created_v1`, `form_captain_entry_status_changed_v1`, `form_captain_entry_deleted_v1`, `form_captain_notification_failed_v1`. Ob der Code sie auslöst, ist zu prüfen.
-- **Review Captain:** Im Code belegt sind `review_captain_review_created_v1`, `review_captain_review_status_changed_v1` und `review_captain_review_removed_v1`. `RC:docs/contracts/workflow-provider-v1.md` nennt weitere Actions für Anfragen; ob der Code sie auslöst, ist zu prüfen. Der Vertrag dort beschreibt einen eigenen Descriptor und eigene Nutzdaten und ist an diese Spezifikation anzupassen (F-12).
-- **Course Captain:** kein Code. Produktschlüssel `course-captain-pro` und Präfix `course.` kennt der Lizenzserver nicht (`LIC:src/Catalog/EntitlementCatalog.php:179-183` nennt nur Workflow, Form und Review).
+- **Form Captain:** `FC:docs/spec/api-v1.md:23-34` nennt auf `main` (`6f4785f`) acht Actions „nach Commit“: `form_captain_form_created_v1`, `form_captain_form_updated_v1`, `form_captain_entry_created_v1`, `form_captain_entry_status_changed_v1`, `form_captain_entry_deleted_v1`, `form_captain_entries_imported_v1`, `form_captain_consent_withdrawn_v1`, `form_captain_notification_failed_v1`; die beiden mittleren sind neu, `FORM_CAPTAIN_CONTRACT_VERSION` blieb `1.0.0`. Geprüft am 16.11.2026 (Z-11): Der Code löst alle acht aus, nach dem Commit oder im Autocommit. Ausnahme: Läuft `form_captain_entry_created_v1` innerhalb der Transaktion eines Aufrufers, ist das „Commit“ nur ein Savepoint und die Action feuert vor dessen Commit (`FC:src/Storage/EntryRepository.php:59`, `:366-380`). Die Übergabe der Mails an einen Workflow (`form_captain_mail_handoff`, `FC:src/Mail/MailJobHandler.php:112`) ist auf allen Branches noch vorhanden (F-12, W-11).
+- **Review Captain:** Im Code belegt sind `review_captain_review_created_v1`, `review_captain_review_status_changed_v1` und `review_captain_review_removed_v1`. `RC:docs/contracts/workflow-provider-v1.md:62-74` nennt weitere Actions für Anfragen (`review_captain_request_status_changed_v1`, `_request_reminder_sent_v1`, `_request_responded_v1`, `_recipient_opted_out_v1`); geprüft am 16.11.2026 an `b35fb95` (Z-12): Der Code löst **keine** davon aus, sie stehen nur in `docs/`. Eine Vertragskonstante hat Review Captain weiter nicht. Der Vertrag dort beschreibt einen eigenen Descriptor und eigene Nutzdaten und ist an diese Spezifikation anzupassen (F-12).
+- **Course Captain:** kein Code. Produktschlüssel `course-captain-pro` und Präfix `course.` kennt der Lizenzserver an `241ae7a` und `main` nicht (`LIC:src/Catalog/EntitlementCatalog.php:179-183` nennt nur Workflow, Form und Review); auf `a113568` gibt es inzwischen `catalogs/course-captain-pro.json` (F-16).
 
 ## 5. Regeln für verbotene Werte (D8)
 
@@ -439,7 +466,7 @@ Stand je Provider:
 | Voucher Captain | ja für alle Actions mit Vermerk „after COMMIT“ (9 der 15 Actions in 4.3); die sechs ohne Vermerk feuern nach Schreibvorgängen im Autocommit, ohne Puffer bis COMMIT (Z-05, geprüft 16.11.2026); für sie gilt Gegenlesen | `VC:docs/HOOKS.md:5-6`, `VC:CONNECTORS.md:39` |
 | Pass Captain | ja für alle 13 Actions in 4.2, an allen Auslöseorten nach COMMIT oder im Autocommit (Z-02, geprüft 16.11.2026); bei `wpcap_occurrence_rescheduled` und der Admin-Absage eines Termins feuert die Action auch, wenn das UPDATE fehlschlug, daher dort Gegenlesen | Fundstellen in 4.2 |
 | Affiliate Captain | ja für alle 21. Der Kern feuert nur diese fachlichen Actions; eine zusätzliche Workflow-Action gibt es seit der Entfernung nach D13 nicht mehr | `AC:docs/CONTRACT.md:210` |
-| Lizenzserver | zu prüfen für alle 3; der Lizenzserver sagt selbst „keine Garantie nach dem Commit“ | `LIC:docs/TODO.md`, Abschnitt 12 |
+| Lizenzserver | alle 3 nach dem Commit oder im Autocommit, keine in einer offenen Transaktion (Z-10, geprüft 16.11.2026); eine Zusage gibt es nicht, der Lizenzserver sagt selbst „keine Garantie nach dem Commit“; daher Gegenlesen | `LIC:docs/TODO.md`, Abschnitt 12 |
 
 ### 7.3 Idempotenzschlüssel
 
@@ -516,7 +543,7 @@ Mit Wirkung im Provider, genau vier, alle im Voucher-Kern (D11b):
 | `voucher.reactivate` | einen gesperrten Gutschein reaktivieren |
 | `voucher.redeem` | einen Gutschein ganz oder teilweise einlösen |
 
-Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`); `wpac_workflow_read()` gibt es nicht mehr (R-4.6). Im Lizenzserver fehlt eine Lesefassade (`LIC:docs/TODO.md`, WFC-LIC-05).
+Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`, Vertrag seit 1.3.0, „Rückgabe stabil innerhalb von Version 1“, `AC:docs/CONTRACT.md:306-308`; geprüft am 16.11.2026, Z-07). Sie prüfen den angemeldeten Benutzer nicht. `wpac_get_affiliate()` liefert auch Name und E-Mail-Adresse, `wpac_get_payout()` auch `paypal_email` und `claim`; der Adapter liest daraus nur die Felder der Positivliste. Es fehlen Lesefunktionen für Gutschriften, Werbemittel, den Hauptcode eines Partners und Provisionen je Bestellung; `wpac_workflow_read()` gibt es nicht mehr (R-4.6). Im Lizenzserver fehlt eine Lesefassade (`LIC:docs/TODO.md`, WFC-LIC-05).
 
 **Anerkannte Lesefunktionen für Voucher Captain und Pass Captain (WF-SPEC-15, geprüft am 16.11.2026, Z-07).** „Vertrag“ heißt: im Kern als öffentliche Schnittstelle dokumentiert. Eine Funktion ohne Vertrag DARF ein Adapter nur bis zu einer dokumentierten Lesefassade nutzen, nur lesend und nur mit Positivliste (R-5.2, R-5.3); jede Nutzung nennt er in seiner Kompatibilitätsangabe (R-13.4).
 
@@ -764,11 +791,13 @@ Dazu für alle Lizenz-Actions des Katalogs: eine Vertragskonstante (R-3.1), „s
 |---|---|
 | `subject` | die Referenz der Lizenz. Heute gibt es nur die Datensatznummer `license_id` (`id_kind` = `record`); D2 erlaubt sie, weil Sender und Empfänger im selben WordPress laufen. Eine eigene öffentliche Lizenzreferenz gibt es nicht; `key_prefix`, das das Kundenkonto als „reference“ zeigt (`LIC:src/Account/CustomerPortal.php:616`), ist ein Teil des Schlüssels und wird nicht verwendet (F-02) |
 | `data.product` | Produktschlüssel, zum Beispiel `pass-captain-pro` |
-| `data.plan` | Tarifschlüssel `single`, `business` oder `agency` |
+| `data.plan` | Tarifschlüssel `single`, `business` oder `agency`. Im Lizenzserver ist `plan_key` freier Text; die drei Werte sind Konvention (`LIC:docs/CATALOG-CSV.md:23`). Ein anderer Wert wird weitergereicht, wenn er dem Muster eines Schlüssels entspricht, sonst entfällt das Feld |
 | `data.status`, `data.previous_status`, `data.lifecycle_action` | Zustand und Anlass |
-| `actor_user_id` | Benutzer-ID des Kunden |
+| `actor_user_id` | Benutzer-ID des Kunden aus `licenses.customer_id`; bei 0 nicht gesetzt. Keine Action übergibt einen Benutzer |
 
-**Nie:** der Lizenzschlüssel oder ein Teil davon, Zahlungsdaten, E-Mail-Adresse, Name, Adresse oder Kennung einer aktivierten Website, Signaturschlüssel.
+**Lesen ohne Lesefassade (geprüft 16.11.2026):** Die öffentlichen Methoden `PlanChange::get_license()` und `Notifications::get_license()` liefern die ganze Zeile mit Schlüssel-Hash, `key_prefix`, `license_uuid` (aus ihr wird der Schlüssel abgeleitet) und Zahlungsreferenzen. Bis zur Lesefassade (WFC-LIC-05) liest der Adapter nur die Spalten `product_key`, `plan_key`, `status` und `customer_id`.
+
+**Nie:** der Lizenzschlüssel oder ein Teil davon, `license_uuid`, Zahlungsdaten, E-Mail-Adresse, Name, Adresse oder Kennung einer aktivierten Website, Signaturschlüssel.
 
 ## 12. Datenschutz
 
@@ -866,21 +895,22 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 | Z-04 | Öffentliche Kennungen für Erstattung, Termin, Event und Beleg in Pass Captain; Format der `public_id` | Pass Captain: Tabellen und Klassen des Kerns — **Geklärt am 16.11.2026: nur Bestellung und Ticket haben `public_id` (32 Hex); sonst `record` (4.2)** |
 | Z-05 | „Nach Commit“ für `vcap_vouchers_issued`, `vcap_voucher_issued_standalone`, `vcap_voucher_delivered`, `vcap_voucher_delivery_given_up`, `vcap_voucher_bounced`, `vcap_voucher_reissued` (ohne Vermerk in der Hook-Tabelle) | Voucher Captain: `src/Issuer.php`, `src/Delivery.php`, `src/Reissue.php` — **Geklärt am 16.11.2026: keine der sechs Actions ist bis COMMIT gepuffert, keine läuft in einer eigenen Transaktion; sie feuern nach Schreibvorgängen im Autocommit (Tabelle 4.3). Gegenlesen nach R-7.4 bleibt** |
 | Z-06 | Was `vcap_ticket_checked_in` meldet | Voucher Captain: `src/Tickets.php` — **Geklärt am 16.11.2026: siehe Absatz unter der Tabelle 4.3** |
-| Z-07 | Genaue Lesefunktionen für Voucher Captain, Pass Captain und Affiliate Captain (für Gegenlesen und Empfängerauflösung); `wpac_workflow_read()` entfällt (D13) | `VC:API.md`, `PC:docs/EXTENSIONS.md` — **Für Voucher und Pass geklärt am 16.11.2026: Tabelle in 8.1; für Affiliate offen (kein Zugriff)** |
-| Z-08 | „Seit“ (Vertragsversion) der Affiliate-Actions ohne Angabe in 4.4 (13 Actions) | Affiliate Captain: Git-Verlauf; danach als Tabelle in `docs/CONTRACT.md` |
-| Z-09 | Ob Affiliate Captain einen Test hat, der die dokumentierten Actions gegen den Code prüft | Affiliate Captain: `tests/` |
-| Z-10 | „Seit“ und „nach Commit“ für die drei Lizenz-Actions des Katalogs | Lizenzserver: `src/License/LicenseLifecycle.php`, `LicenseIssuer.php`, `PlanChange.php` |
-| Z-11 | Ob der Code von Form Captain die sechs dokumentierten Actions auslöst | Form Captain: `src/` |
-| Z-12 | Ob der Code von Review Captain die Actions für Anfragen auslöst, die sein Workflow-Vertrag nennt | Review Captain: `src/`, `docs/hooks.md` |
-| Z-13 | Der Stand von `captain-pro` wurde im Arbeitsverzeichnis gelesen, das uncommittete Änderungen enthielt; in Affiliate Captain war während des Lesens zeitweise eine Datei uncommittet | **Für `captain-pro` geklärt am 16.11.2026:** Die Fundstellen `CoreRequirement.php:60-64`, `Feature.php:41-52`, `CoreCapabilities.php:35-36` und `:92` stimmen im committeten Stand `07b5365` und auf `main` (`2f23da7`); der Kernel kennt weiterhin keine Prüfung der Lizenz eines anderen Add-ons (F-06 bleibt offen). Für Affiliate Captain offen (kein Zugriff aus dieser Sitzung). |
+| Z-07 | Genaue Lesefunktionen für Voucher Captain, Pass Captain und Affiliate Captain (für Gegenlesen und Empfängerauflösung); `wpac_workflow_read()` entfällt (D13) | `VC:API.md`, `PC:docs/EXTENSIONS.md` — **Für Voucher und Pass geklärt am 16.11.2026: Tabelle in 8.1; für Affiliate geklärt am selben Tag (8.1)** |
+| Z-08 | „Seit“ (Vertragsversion) der Affiliate-Actions ohne Angabe in 4.4 (13 Actions) | Affiliate Captain: Git-Verlauf; danach als Tabelle in `docs/CONTRACT.md` — **Geklärt am 16.11.2026 aus Tag-Ständen und Git-Verlauf: Werte in 4.4; die Tabelle in `docs/CONTRACT.md` bleibt Aufgabe von Affiliate Captain (AC-1)** |
+| Z-09 | Ob Affiliate Captain einen Test hat, der die dokumentierten Actions gegen den Code prüft | Affiliate Captain: `tests/` — **Geklärt am 16.11.2026: Es gibt keinen Test, der die Tabelle in `docs/CONTRACT.md` mit dem Code vergleicht; für `wpac_commission_rejected`, `wpac_commission_pending` und `wpac_code_request_approved` gibt es gar keinen Test (AC-2)** |
+| Z-10 | „Seit“ und „nach Commit“ für die drei Lizenz-Actions des Katalogs | Lizenzserver: `src/License/LicenseLifecycle.php`, `LicenseIssuer.php`, `PlanChange.php` — **Geklärt am 16.11.2026: Werte in 4.5; alle nach dem Commit oder im Autocommit, ohne Zusage** |
+| Z-11 | Ob der Code von Form Captain die sechs dokumentierten Actions auslöst | Form Captain: `src/` — **Geklärt am 16.11.2026: alle acht Actions werden ausgelöst (4.6), Ausnahme Savepoint-Modus** |
+| Z-12 | Ob der Code von Review Captain die Actions für Anfragen auslöst, die sein Workflow-Vertrag nennt | Review Captain: `src/`, `docs/hooks.md` — **Geklärt am 16.11.2026: Die Actions für Anfragen löst der Code nicht aus (4.6)** |
+| Z-13 | Der Stand von `captain-pro` wurde im Arbeitsverzeichnis gelesen, das uncommittete Änderungen enthielt; in Affiliate Captain war während des Lesens zeitweise eine Datei uncommittet | **Für `captain-pro` geklärt am 16.11.2026:** Die Fundstellen `CoreRequirement.php:60-64`, `Feature.php:41-52`, `CoreCapabilities.php:35-36` und `:92` stimmen im committeten Stand `07b5365` und auf `main` (`2f23da7`); der Kernel kennt weiterhin keine Prüfung der Lizenz eines anderen Add-ons (F-06 bleibt offen). Für Affiliate Captain geklärt am 16.11.2026: Die Fundstellen stimmen an `6600392` und `main`; der D13-Wächter steht in `AC:tests/run.php:365-397`. |
 | Z-15 | Für Sperren, Reaktivieren und Einlösen im Voucher-Kern: Berechtigungsprüfung, Idempotenz, Wirkung von `$refund`/`$after_refund`; ob der Branch von Pull Request 16 dafür eigene Dienste enthält | Voucher Captain: `src/Issuer.php:2012-2110`, `src/API/V1/RedemptionService.php`, Branch `hvollo-refactors` — **Geklärt am 16.11.2026: siehe 8.3.3, 8.3.4 und R-8.6** |
 | Z-16 | Ob der vorläufige Workflow-Provider aus Pull Request 16 im Voucher-Kern schon entfernt ist (D13) | Voucher Captain: Branches `hvollo-refactors` und `main` — **Geklärt am 16.11.2026: auf `main` nie vorhanden; auf `hvollo-refactors` (`82145ed`) noch vorhanden (`src/Workflow/Provider.php`, `Services.php`, `Handover.php`, Hook `vcap_workflow_event`); Entfernen bleibt Aufgabe des Voucher-Kerns (dort VOUCH-WF-10)** |
-| Z-14 | Die Aufgabenstellung nennt 129 Hooks im Lizenzserver; gezählt wurden 36 Actions und 94 Filter, zusammen 130 | Lizenzserver: `docs/EXTENSION-POINTS.md` |
+| Z-14 | Die Aufgabenstellung nennt 129 Hooks im Lizenzserver; gezählt wurden 36 Actions und 94 Filter, zusammen 130 | Lizenzserver: `docs/EXTENSION-POINTS.md` — **Geklärt am 16.11.2026: 38 Actions und 92 Filter an `241ae7a` (130); `main` hat 129, weil `wplc_offer_planned_entitlements` fehlt (3.2)** |
 
 ## 16. Änderungsverlauf
 
 | Version | Datum | Änderung |
 |---|---|---|
+| 1.0.0-draft.5 | 16.11.2026 | Alle übrigen Stellen „zu prüfen“ geklärt: Affiliate Captain (Z-07, Z-08, Z-09, Z-13), Lizenzserver (Z-10, Z-14), Form Captain (Z-11), Review Captain (Z-12). Erlaubte Felder für die 21 Ereignistypen von Affiliate Captain (4.4) und Beispiele; neue Frage F-21 (beantragter Partnercode). Lesefunktionen von Affiliate Captain in 8.1; Lesen von Lizenzen ohne Fassade in 11. Berichtigt: Hook-Zahlen des Lizenzservers (3.2), acht statt sechs Actions in Form Captain (4.6), Course Captain im Katalog auf `a113568`. Erster Code des Consumers (Plugin 0.1.0) setzt diese Fassung um. |
 | 1.0.0-draft.4 | 16.11.2026 | Stellen „zu prüfen“ für Pass Captain (Z-01 bis Z-04), Voucher Captain (Z-05, Z-06, Z-15, Z-16), Lesefunktionen (Z-07 für beide) und `captain-pro` (Z-13) am Code geklärt und Tabellen 3.2, 4.2, 4.3, 7.2, 8.3.3, 8.3.4 und R-8.6 berichtigt. Erlaubte Felder und `actor_user_id` für alle 29 Ereignistypen von Pass und Voucher Captain (4.2, 4.3), je ein Beispiel, maschinenlesbarer Katalog `catalog/suite-events-v1.json`. Neue Regel R-4.7 (`reference`, `redemption_key` nicht weiterreichen); Beispiele `voucher.voucher.issued_standalone` und `voucher.voucher.redeemed` entsprechend ohne diese Felder; `public_id` im Beispiel im Format des Kerns. Tabelle der Lesefunktionen in 8.1 (WF-SPEC-15). Neuer Abschnitt 8.5 mit den Eigenschaften je Befehl und R-8.11 bis R-8.13. Offen bleiben die Stellen für Affiliate, Lizenzserver, Form und Review. Nachträge am selben Tag: Beispiele `license.license.issued` und `license.license.plan_changed`; Hinweis auf `Reconciliation::orders()` (Pass Captain, nicht gemergt) in 8.1. |
 | 1.0.0-draft.3 | 16.11.2026 | F-05 entschieden: feste Grenzen der vier Gutschein-Befehle als Tabelle in 8.3.1 (100 EUR und 50 je Tag; Einlösen jedes Gutscheins); neue Teilfrage F-05a für Shops ohne Euro. D13 im Affiliate-Kern umgesetzt: 4.4.1, R-4.4 bis R-4.6, 7.2 und R-13.6 nennen die Entfernung als Stand; neue Stelle Z-16 für den Voucher-Kern. |
 | 1.0.0-draft.2 | 16.11.2026 | Folgeentscheidungen eingearbeitet. D13: Abschnitt 4.4.1 neu, die vorläufigen Workflow-Provider werden vor dem Release aus den Kernen entfernt, `wpac_workflow_read()` ist keine anerkannte Lesefunktion. D8b: öffentlicher Partnercode und Geldbeträge erlaubt (R-5.1a, Katalog 4.4, Schema, zwei neue Beispiele). D11b: vier Gutschein-Befehle statt einem (Abschnitt 8 neu, Verbotsliste, Lizenzmatrix, R-13.6, P-8, A-9, neue Stelle Z-15). **Berichtigung:** Abschnitt 7.2 nannte für Voucher Captain „10 der 15“ Actions nach Commit und „fünf“ ohne Vermerk; richtig sind 9 und sechs. |

@@ -1,8 +1,8 @@
 # Offene Fragen zur Suite-Spezifikation
 
-Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.4. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
+Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.5. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
-**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18a, F-19 (ohne Form), F-20 und W-1 bis W-9, W-11 (Teil Form), W-13.
+**Noch offen:** F-01 bis F-04, F-05a, F-06 bis F-10, F-12 (Teil Form und Review), F-13 bis F-16, F-18a, F-19 (ohne Form), F-20, F-21 und W-1 bis W-9, W-11 (Teil Form), W-13.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -156,6 +156,13 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Frage:** In welchem Format sendet Workflow Captain Ereignisse aus WordPress und WooCommerce (zum Beispiel „Bestellung bezahlt“) an n8n und andere Webhook-Ziele?
 - **Stand:** Der Umschlag dieser Spezifikation gilt nur für Ereignisse der Captain-Produkte; das Schema erlaubt in `type` nur deren Präfixe. `konzept.md` 17.12 nennt „WooCommerce-Bestellung bezahlt → n8n“ als Szenario der Version 1.
 - **Empfehlung:** Denselben Umschlag verwenden und im Schema die Präfixe `wordpress` und `woocommerce` zulassen (`source.product` = `wordpress` bzw. `woocommerce`, `contract_version` = Version von WordPress bzw. WooCommerce). Die erlaubten Felder je Typ legt dann eine MINOR-Version dieser Spezifikation fest; die Regeln für verbotene Werte gelten unverändert. So brauchen Empfänger nur ein Format.
+
+### F-21 · Ist ein beantragter Partnercode ein „öffentlicher Partnercode“?
+
+- **Frage:** D8b erlaubt den öffentlichen Partnercode in den Nutzdaten. Gilt das auch für einen Code, den ein Partner nur **beantragt** hat (`wpac_code_requested`) oder dessen Antrag abgelehnt wurde (`wpac_code_request_rejected`)?
+- **Stand:** Ein beantragter Code ist noch nicht aktiv und wird vom Partner frei gewählt; das Beispiel im Kern ist „MARIA10“, er kann also einen Namen enthalten. Nach einer Ablehnung ist er wieder frei (geprüft am 16.11.2026, `AC:src/Codes/CodeRequests.php:270`, `:524`).
+- **Annahme der Spezifikation:** `partner_code` nur bei `affiliate.code_request.approved`; bei `created` und `rejected` nicht (4.4).
+- **Empfehlung:** So bestätigen. Öffentlich ist ein Code erst, wenn er freigegeben ist.
 
 ## Teil 2: Widersprüche zwischen den Entscheidungen vom 16.11.2026
 

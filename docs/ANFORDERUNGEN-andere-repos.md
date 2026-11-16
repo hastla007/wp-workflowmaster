@@ -1,6 +1,6 @@
 # Anforderungen an andere Repositories der Suite
 
-Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.4 (nach der Prüfung von Pass und Voucher Captain am Code). Aufgabe WF-SPEC-14 in [`../TODO.md`](../TODO.md).
+Stand: 16.11.2026, zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.5 (nach der Prüfung von Pass und Voucher Captain am Code). Aufgabe WF-SPEC-14 in [`../TODO.md`](../TODO.md).
 
 Die Spezifikation verlangt von anderen Repositories Änderungen. Dieses Dokument sammelt sie je Repository so, dass sie dort ohne weitere Recherche als Aufgaben angelegt werden können. Angelegt sind sie noch nicht: Diese Sitzung hat keine Schreibrechte in den anderen Repositories. Wer eine Aufgabe dort anlegt, trägt den Ort hier in der Spalte „Angelegt“ ein; sind alle angelegt, ist WF-SPEC-14 erledigt.
 
@@ -40,8 +40,8 @@ Regeln, die für alle gelten:
 
 | Nr. | Anforderung | Grundlage | Dringlichkeit | Angelegt |
 |---|---|---|---|---|
-| AC-1 | „Seit“-Tabelle für alle öffentlichen Actions in `docs/CONTRACT.md` (13 Actions ohne Angabe) | R-3.4, Z-08 | Dokumentation, jederzeit | |
-| AC-2 | Test, der die dokumentierten Actions gegen den Code prüft, falls es ihn nicht gibt | P-2, Z-09 | jederzeit | |
+| AC-1 | „Seit“-Tabelle für alle öffentlichen Actions in `docs/CONTRACT.md`; die 13 fehlenden Werte sind ermittelt (Spezifikation 4.4). Nebenbei: die Leerzeile `docs/CONTRACT.md:207` trennt `wpac_contract_not_queued` von der Tabelle | R-3.4, Z-08 | Dokumentation, jederzeit | |
+| AC-2 | Test, der die dokumentierten Actions gegen den Code prüft (geprüft: gibt es nicht); dazu Tests für `wpac_commission_rejected`, `wpac_commission_pending` und `wpac_code_request_approved`, die heute keinen haben | P-2, P-4, Z-09 | jederzeit | |
 | AC-3 | Wiedereinführung des Workflow-Providers nur als Lesefunktionen nach Abnahme der Spezifikation (dort AFF-WF-08) | D13, F-11 | nach Abnahme | |
 
 ## Lizenzserver (`wp-license`)
@@ -50,8 +50,9 @@ Regeln, die für alle gelten:
 |---|---|---|---|---|
 | LIC-1 | Vier fehlende Actions: Website aktiviert, Website deaktiviert, Site-Limit erreicht, Release veröffentlicht; ohne Schlüssel in den Argumenten | Abschnitt 11, D2 (dort WFC-LIC-04) | nach D12 | |
 | LIC-2 | Vertragskonstante nach R-3.1 (vorgeschlagen `WPLC_CONTRACT_VERSION`, F-03) | R-3.1, F-03 | nach der Antwort auf F-03 | |
-| LIC-3 | „Seit“ je Action und Zusage „nach dem Commit“ für die drei Lizenz-Actions des Katalogs | R-3.4, R-3.9, Z-10 | Dokumentation | |
-| LIC-4 | Lesefassade mit ausschließlich lesenden Methoden (dort WFC-LIC-05) | Abschnitt 11, 8.1 | nach D12 | |
+| LIC-3 | „Seit“ je Action und Zusage „nach dem Commit“ für die drei Lizenz-Actions des Katalogs (ermittelt: 0.1.0, 0.1.0, 0.2.0; alle nach Commit oder im Autocommit, aber ohne Zusage; der Docblock von `license_issued_followup` nennt fälschlich 0.2.0; „after all locks are released“ stimmt für `apply_pending_after_renewal` nicht) | R-3.4, R-3.9, Z-10 | Dokumentation | |
+| LIC-6 | `docs/EXTENSION-POINTS.md` auf `a113568` führt zwei Filter (`wplc_catalog_auto_import`, `wplc_price_change_notice_days`) unter „Actions“ | Z-14 | Dokumentation | |
+| LIC-4 | Lesefassade mit ausschließlich lesenden Methoden (dort WFC-LIC-05); dringlicher, weil die öffentlichen `get_license()`-Methoden die ganze Zeile mit Schlüssel-Hash und `license_uuid` liefern | Abschnitt 11, 8.1 | nach D12 | |
 | LIC-5 | Die sechs `workflow.*`-Schlüssel wandern mit dem Umbau (G2, E8) in die Katalogdatei von `workflow-captain-pro` | W-8 | mit dem Umbau | |
 
 ## Add-ons und Kernel (`captain-pro`)
@@ -67,7 +68,7 @@ Regeln, die für alle gelten:
 | Nr. | Anforderung | Grundlage | Dringlichkeit | Angelegt |
 |---|---|---|---|---|
 | FC-1 | Eigenen Workflow-Vertrag und die gebaute Übergabe der Mails an einen Workflow herausnehmen oder abschalten (Empfehlung zu F-12) | D10, F-12, W-11 | nach der Antwort auf F-12 | |
-| FC-2 | Belegen, dass der Code die sechs dokumentierten Actions auslöst | Z-11 | jederzeit | |
+| FC-2 | Geprüft: der Code löst alle acht dokumentierten Actions aus. Offen: `FORM_CAPTAIN_CONTRACT_VERSION` auf eine neue MINOR-Version heben, weil `entries_imported_v1` und `consent_withdrawn_v1` dazugekommen sind (R-3.2); im Savepoint-Modus feuert `entry_created_v1` vor dem Commit des Aufrufers | Z-11, R-3.2 | jederzeit | |
 | FC-3 | Katalog `form.*` kommt in einer MINOR-Version der Spezifikation vor dem ersten Release; bis dahin keinen eigenen Suite-Vertrag veröffentlichen | D1, 4.6 | vor dem ersten Release | |
 
 ## Review Captain (`wp-reviewmaster`)
@@ -75,5 +76,5 @@ Regeln, die für alle gelten:
 | Nr. | Anforderung | Grundlage | Dringlichkeit | Angelegt |
 |---|---|---|---|---|
 | RC-1 | `docs/contracts/workflow-provider-v1.md` als nicht normativ kennzeichnen oder herausnehmen (Empfehlung zu F-12) | D1, F-12 | nach der Antwort auf F-12 | |
-| RC-2 | Belegen, dass der Code die Actions für Anfragen auslöst, die sein Workflow-Vertrag nennt | Z-12 | jederzeit | |
+| RC-2 | Geprüft: Der Code löst die vier Actions für Anfragen aus `docs/contracts/workflow-provider-v1.md:62-74` nicht aus; Vertrag und Code angleichen; Vertragskonstante fehlt | Z-12, R-3.1 | jederzeit | |
 | RC-3 | Katalog `review.*` kommt in einer MINOR-Version der Spezifikation; Adapter für die Review-Einladung in Review Captain Pro nach den Regeln dieser Spezifikation (Empfehlung zu F-08) | F-08, 4.6 | nach der Antwort auf F-08 | |
