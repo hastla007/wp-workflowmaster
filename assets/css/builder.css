@@ -37,3 +37,8 @@
 .wfc-rule-value { width: 8em; }
 .wfc-token { margin-top: 4px; max-width: 100%; }
 .wfc-rule-type { font: 11px/1 monospace; color: #50575e; }
+
+.wfc-core-mails ul {
+	list-style: disc;
+	margin-left: 1.5em;
+}

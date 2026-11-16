@@ -63,7 +63,8 @@ final class WorkflowsPage {
 		$dry  = isset( $_GET['dryrun'] ) ? get_transient( 'workflow_captain_dryrun_' . get_current_user_id() ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
 		$path = is_array( $dry ) ? array_column( $dry['result']['path'], 'node' ) : array();
 		$fields = json_decode( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'assets/data/catalog-fields.json' ), true );
-		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( array( 'actions' => $actions, 'events' => array_values( array_unique( $events ) ), 'fields' => is_array( $fields ) ? $fields : new \stdClass(), 'path' => $path, 'errorNode' => is_array( $dry ) ? $dry['result']['error_node'] : null, 'i18n' => new \stdClass() ) ) . ';', 'before' );
+		$mails  = json_decode( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'assets/data/core-mails.json' ), true );
+		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( array( 'actions' => $actions, 'events' => array_values( array_unique( $events ) ), 'fields' => is_array( $fields ) ? $fields : new \stdClass(), 'coreMails' => is_array( $mails ) && is_array( $mails['events'] ?? null ) ? $mails['events'] : new \stdClass(), 'path' => $path, 'errorNode' => is_array( $dry ) ? $dry['result']['error_node'] : null, 'i18n' => new \stdClass() ) ) . ';', 'before' );
 	}
 
 	private static function url( string $page, array $args = array() ): string {

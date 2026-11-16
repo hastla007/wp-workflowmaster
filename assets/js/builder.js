@@ -470,6 +470,24 @@
 			return box;
 		}
 
+		/** Mails the core plugin already sends for the trigger event (R-9.4), so operators avoid duplicates. */
+		coreMailHint() {
+			const trigger = this.graph.nodes.find( ( x ) => 'trigger' === x.type );
+			const mails = ( trigger && this.config.coreMails && this.config.coreMails[ trigger.event ] ) || [];
+			const box = el( 'div', { class: 'wfc-core-mails notice notice-info inline' } );
+			if ( ! trigger || ! trigger.event ) {
+				return box;
+			}
+			if ( ! mails.length ) {
+				box.appendChild( el( 'p', { text: this.t( 'coreMailsNone', 'Das Kern-Plugin verschickt zu diesem Ereignis keine eigene Mail.' ) } ) );
+				return box;
+			}
+			box.appendChild( el( 'p', { text: this.t( 'coreMailsIntro', 'Das Kern-Plugin verschickt zu diesem Ereignis bereits:' ) } ) );
+			box.appendChild( el( 'ul', {}, mails.map( ( m ) => el( 'li', { text: m.to + ': ' + m.mail + ' (' + m.off + ( m.note ? '; ' + m.note : '' ) + ')' } ) ) ) );
+			box.appendChild( el( 'p', { text: this.t( 'coreMailsAdvice', 'Senden Sie dieselbe Information nicht ein zweites Mal. Workflow Captain schaltet keine Mail der Kerne ab.' ) } ) );
+			return box;
+		}
+
 		/** Configuration of the selected node (WF-BUILDER-04). */
 		inspector() {
 			const box = el( 'div', { class: 'wfc-inspector' } );
@@ -507,6 +525,9 @@
 					}
 					box.appendChild( p );
 				} );
+				if ( n.action && 0 === n.action.indexOf( 'notify.' ) ) {
+					box.appendChild( this.coreMailHint() );
+				}
 			} else if ( 'condition' === n.type ) {
 				const form = this.conditionForm( n );
 				if ( form ) {

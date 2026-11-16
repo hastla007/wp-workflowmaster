@@ -91,7 +91,7 @@ Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebau
 
 - [ ] Adapter für alle v1-Trigger aus Abschnitt 17 umsetzen.
 - [ ] Actions pro Zielplugin ausschließlich über öffentliche Serviceverträge implementieren.
-- [ ] Einrichtungsassistent bauen: zeigt beim Anlegen einer zusätzlichen Nachricht die Mail des Kerns zum selben Anlass und erkennt Duplikate (neu gefasst nach D10; Draftimport nativer Erinnerungen, Besitzerwechsel und Rollback entfallen).
+- [ ] Einrichtungsassistent bauen: zeigt beim Anlegen einer zusätzlichen Nachricht die Mail des Kerns zum selben Anlass und erkennt Duplikate (neu gefasst nach D10; Draftimport nativer Erinnerungen, Besitzerwechsel und Rollback entfallen). **Stand 16.11.2026 (R-9.4): Der Builder zeigt am Nachrichten-Knoten die Mails des Kerns zum Auslöser-Ereignis (Empfänger, Mail, ob abschaltbar); Daten in `assets/data/core-mails.json`, aus dem Mail-Code der vier Kerne gelesen, vom Validator gegen den Katalog geprüft. Offen: Duplikaterkennung (gleicher Empfänger, gleicher Inhalt) und Pflege bei neuen Kern-Versionen.**
 - [ ] Providerstatus, aktive Workflowlinks und gemeinsame Run-/Correlation-IDs in Suite-Admins anzeigen.
 - [ ] Testmatrix für Workflow vorhanden/fehlend/deaktiviert, Free/Pro/abgelaufene Lizenz, Fachplugin-Pro-Recht, inkompatiblen Vertrag und doppelte Events ergänzen.
 

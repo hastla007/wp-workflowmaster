@@ -96,6 +96,18 @@ def check_catalog(validator, docs):
         if shipped_fields != expected:
             print("FAIL catalog: assets/data/catalog-fields.json differs from the catalog (regenerate it)")
             failed += 1
+    mails = os.path.join(ROOT, "assets", "data", "core-mails.json")
+    if os.path.exists(mails):
+        with open(mails, encoding="utf-8") as handle:
+            core_mails = json.load(handle)
+        for name, entries in core_mails.get("events", {}).items():
+            if name not in by_type:
+                print("FAIL core-mails:", name, "is not a catalog type")
+                failed += 1
+            for entry in entries:
+                if not all(entry.get(key) for key in ("to", "mail", "off")):
+                    print("FAIL core-mails:", name, "entry needs to, mail and off")
+                    failed += 1
     if not failed:
         print("ok   catalog: %d types, all examples match" % len(by_type))
     return failed

@@ -32,9 +32,11 @@ $patterns = array(
 	'/[\'"](pre_wp_mail|wp_mail)[\'"]/'                                       => 'mail filter (C-12, R-9.2)',
 );
 
-// The single allowed occurrence: the list of field names the envelope validator rejects (it keeps license keys OUT).
+// Allowed occurrences: the list of field names the envelope validator rejects (it keeps license keys OUT), and the
+// names of wp-license's own mails in the setup hint (R-9.4), a line that holds nothing but those names.
 $allowed = array(
-	'src/Envelope/Validator.php' => '/const FORBIDDEN_DATA_NAME/',
+	'src/Envelope/Validator.php'  => '/const FORBIDDEN_DATA_NAME/',
+	'assets/data/core-mails.json' => '#^\s*"mail": "wplc_[a-z_]+( / wplc_[a-z_]+)*",?$#',
 );
 
 $files = array();

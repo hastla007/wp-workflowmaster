@@ -31,6 +31,7 @@ const config = {
 	],
 	events: [ 'pass.ticket.checked_in', 'pass.order.paid' ],
 	fields: { 'pass.ticket.checked_in': { checkin_source: 'string', device_id: 'integer', area_id: 'integer' } },
+	coreMails: { 'pass.order.paid': [ { to: 'Käufer', mail: 'tickets', off: 'nicht abschaltbar' } ] },
 	i18n: {},
 };
 const css = 'file://' + path.resolve( __dirname, '../assets/css/builder.css' );
@@ -129,6 +130,16 @@ function check( label, ok ) {
 	await page.click( '.wfc-node[data-id="mail"]' );
 	await page.selectOption( '.wfc-token', 'data.checkin_source' );
 	check( 'token picker inserts a placeholder', ( await graphNow() ).nodes.find( ( n ) => 'mail' === n.id ).config.subject.includes( '{{data.checkin_source}}' ) );
+
+	check( 'notify node: no core mail for check-in is stated', ( await page.$eval( '.wfc-core-mails', ( x ) => x.textContent ) ).includes( 'keine eigene Mail' ) );
+	await page.click( '.wfc-node[data-id="t"]' );
+	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.order.paid' );
+	await page.press( '.wfc-inspector input[list="wfc-events"]', 'Tab' );
+	await page.click( '.wfc-node[data-id="mail"]' );
+	check( 'notify node lists the core mail of the trigger event', ( await page.$eval( '.wfc-core-mails', ( x ) => x.textContent ) ).includes( 'Käufer: tickets' ) );
+	await page.click( '.wfc-node[data-id="t"]' );
+	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.ticket.checked_in' );
+	await page.press( '.wfc-inspector input[list="wfc-events"]', 'Tab' );
 
 	// Zoom
 	const width = async () => parseInt( await page.$eval( '.wfc-canvas', ( s ) => s.getAttribute( 'width' ) ), 10 );

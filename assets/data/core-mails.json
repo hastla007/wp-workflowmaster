@@ -1,0 +1,228 @@
+{
+ "format": "workflow-captain/core-mails",
+ "version": 1,
+ "checked": "2026-11-16",
+ "source": "Mail-Code der Kern-Plugins (Pass Captain, Voucher Captain, Affiliate Captain, wp-license), nur gelesen",
+ "note": "Nicht aufgeführte Ereignistypen versenden im Kern-Plugin keine Mail.",
+ "events": {
+  "pass.order.paid": [
+   {
+    "to": "Käufer",
+    "mail": "tickets",
+    "off": "nicht abschaltbar (nur per Code-Filter)",
+    "note": "mit PDF-Tickets; bei WooCommerce-Bestellungen zusätzlich die Bestellmails von WooCommerce"
+   }
+  ],
+  "pass.order.tickets_issued": [
+   {
+    "to": "Käufer",
+    "mail": "tickets",
+    "off": "nicht abschaltbar (nur per Code-Filter)",
+    "note": "dieselbe Mail wie bei „Bestellung bezahlt“"
+   }
+  ],
+  "pass.order.refunded": [
+   {
+    "to": "Käufer",
+    "mail": "refund_confirmation",
+    "off": "nur per Filter wpcap_send_refund_mail",
+    "note": "nicht bei WooCommerce-Bestellungen (dort WooCommerce) und nicht bei Erstattungen im Dashboard des Zahlungsanbieters"
+   }
+  ],
+  "pass.refund.completed": [
+   {
+    "to": "Käufer",
+    "mail": "refund_confirmation",
+    "off": "nur per Filter wpcap_send_refund_mail",
+    "note": "mit Gutschrift; nicht bei WooCommerce-Bestellungen"
+   }
+  ],
+  "pass.occurrence.rescheduled": [
+   {
+    "to": "Ticketinhaber",
+    "mail": "occurrence_rescheduled",
+    "off": "nicht abschaltbar (nur per Code-Filter)"
+   }
+  ],
+  "pass.occurrence.cancelled": [
+   {
+    "to": "Ticketinhaber",
+    "mail": "occurrence_cancelled",
+    "off": "nicht abschaltbar (nur per Code-Filter)"
+   }
+  ],
+  "pass.event.cancelled": [
+   {
+    "to": "Ticketinhaber",
+    "mail": "event_cancelled",
+    "off": "nicht abschaltbar (nur per Code-Filter)",
+    "note": "je betroffenem Termin zusätzlich die Absage des Termins"
+   }
+  ],
+  "voucher.order.vouchers_issued": [
+   {
+    "to": "Käufer",
+    "mail": "vcap_voucher_buyer",
+    "off": "abschaltbar unter WooCommerce → Einstellungen → E-Mails"
+   },
+   {
+    "to": "Beschenkter",
+    "mail": "vcap_voucher_recipient",
+    "off": "abschaltbar unter WooCommerce → Einstellungen → E-Mails"
+   },
+   {
+    "to": "Käufer",
+    "mail": "vcap_voucher_bundle",
+    "off": "abschaltbar unter WooCommerce → Einstellungen → E-Mails",
+    "note": "bei vielen Codes; mit Lieferdatum erst zum Lieferzeitpunkt"
+   }
+  ],
+  "voucher.voucher.issued_standalone": [
+   {
+    "to": "Empfänger oder Käufer",
+    "mail": "vcap_voucher_buyer / vcap_voucher_recipient",
+    "off": "abschaltbar unter WooCommerce → Einstellungen → E-Mails",
+    "note": "nur wenn beim Ausstellen „senden“ gewählt ist (Standard)"
+   }
+  ],
+  "voucher.voucher.delivered": [
+   {
+    "to": "Käufer",
+    "mail": "vcap_gift_delivered",
+    "off": "abschaltbar unter WooCommerce → Einstellungen → E-Mails, ab Werk aus",
+    "note": "die Gutscheinmail selbst ging schon vor diesem Ereignis hinaus"
+   }
+  ],
+  "voucher.voucher.redeemed": [
+   {
+    "to": "Käufer",
+    "mail": "vcap_gift_used",
+    "off": "abschaltbar unter WooCommerce → Einstellungen → E-Mails, ab Werk aus",
+    "note": "nur Geschenke, nur bei der ersten Einlösung"
+   }
+  ],
+  "affiliate.affiliate.created": [
+   {
+    "to": "Betreiber",
+    "mail": "application_received",
+    "off": "nicht abschaltbar (nur per Code-Filter)",
+    "note": "bei Bewerbung ohne automatische Freigabe"
+   },
+   {
+    "to": "Partner",
+    "mail": "application_confirmed / application_approved / partner_created",
+    "off": "nicht abschaltbar (nur per Code-Filter)",
+    "note": "je nach Weg: Bewerbung, automatische Freigabe oder Anlage im Admin"
+   }
+  ],
+  "affiliate.affiliate.status_changed": [
+   {
+    "to": "Partner",
+    "mail": "application_approved / application_rejected / status_paused / status_terminated / status_active",
+    "off": "nicht abschaltbar (nur per Code-Filter)",
+    "note": "je nach Statuswechsel"
+   }
+  ],
+  "affiliate.commission.created": [
+   {
+    "to": "Partner",
+    "mail": "commission",
+    "off": "Einstellung notify_commissions (ab Werk aus) und Abmeldung des Partners"
+   },
+   {
+    "to": "Betreiber",
+    "mail": "review_digest",
+    "off": "Einstellung notify_admin_review",
+    "note": "nur wenn die Provision in Prüfung geht; später per Cron"
+   }
+  ],
+  "affiliate.commission.approved": [
+   {
+    "to": "Partner",
+    "mail": "commission",
+    "off": "Einstellung notify_commissions (ab Werk aus) und Abmeldung des Partners"
+   }
+  ],
+  "affiliate.commission.rejected": [
+   {
+    "to": "Partner",
+    "mail": "commission",
+    "off": "Einstellung notify_commissions (ab Werk aus) und Abmeldung des Partners"
+   }
+  ],
+  "affiliate.commission.review_reopened": [
+   {
+    "to": "Betreiber",
+    "mail": "review_digest",
+    "off": "Einstellung notify_admin_review",
+    "note": "später per Cron"
+   }
+  ],
+  "affiliate.payout.created": [
+   {
+    "to": "Partner",
+    "mail": "credit_note",
+    "off": "nur per Filter wpac_notify_credit_note"
+   }
+  ],
+  "affiliate.payout.paid": [
+   {
+    "to": "Partner",
+    "mail": "payout_paid / payout_paid_manual",
+    "off": "Einstellung notify_payout_paid (ab Werk an)"
+   }
+  ],
+  "affiliate.payout.cancelled": [
+   {
+    "to": "Partner",
+    "mail": "credit_note_cancelled",
+    "off": "nur per Filter wpac_notify_credit_note",
+    "note": "nur wenn es eine Gutschrift gab"
+   }
+  ],
+  "affiliate.correction.generated": [
+   {
+    "to": "Partner",
+    "mail": "credit_note_corrected",
+    "off": "nur per Filter wpac_notify_credit_note"
+   }
+  ],
+  "affiliate.code_request.created": [
+   {
+    "to": "Betreiber",
+    "mail": "code_request_admin",
+    "off": "nicht abschaltbar (nur per Code-Filter)"
+   }
+  ],
+  "affiliate.code_request.approved": [
+   {
+    "to": "Partner",
+    "mail": "code_request_approved",
+    "off": "nicht abschaltbar (nur per Code-Filter)"
+   }
+  ],
+  "affiliate.code_request.rejected": [
+   {
+    "to": "Partner",
+    "mail": "code_request_rejected",
+    "off": "nicht abschaltbar (nur per Code-Filter)"
+   }
+  ],
+  "license.license.issued": [
+   {
+    "to": "Kunde",
+    "mail": "wplc_license_issued",
+    "off": "abschaltbar unter WooCommerce → Einstellungen → E-Mails",
+    "note": "zusätzlich die Bestellmails von WooCommerce"
+   }
+  ],
+  "license.license.status_changed": [
+   {
+    "to": "Kunde",
+    "mail": "wplc_license_renewed / wplc_payment_failed / wplc_license_expired / wplc_license_suspended / wplc_license_revoked",
+    "off": "abschaltbar unter WooCommerce → Einstellungen → E-Mails",
+    "note": "je nach Wechsel; Reaktivierung ohne Mail"
+   }
+  ]
+ }
+}
