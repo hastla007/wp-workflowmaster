@@ -9,7 +9,7 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 define( 'WORKFLOW_CAPTAIN_PATH', __DIR__ . '/' );
 if ( ! defined( 'WORKFLOW_CAPTAIN_DB_VERSION' ) ) {
-	define( 'WORKFLOW_CAPTAIN_DB_VERSION', '2' );
+	define( 'WORKFLOW_CAPTAIN_DB_VERSION', '3' );
 }
 require_once __DIR__ . '/src/Store/EventStore.php';
 require_once __DIR__ . '/src/Store/WpdbEventStore.php';

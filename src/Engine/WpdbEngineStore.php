@@ -124,6 +124,7 @@ final class WpdbEngineStore implements EngineStore {
 				'event_key'     => (string) $run['event_key'],
 				'context'       => self::json( $run['context'] ),
 				'actor_user_id' => $run['actor_user_id'] ?? null,
+				'serial_key'    => $run['serial_key'] ?? null,
 				'state'         => self::RUN_RUNNING,
 				'created_at'    => $now,
 				'updated_at'    => $now,
@@ -144,6 +145,72 @@ final class WpdbEngineStore implements EngineStore {
 	public function get_run( int $id ): ?array {
 		$row = $this->db->get_row( $this->db->prepare( "SELECT * FROM {$this->t( 'runs' )} WHERE id = %d", $id ), ARRAY_A );
 		return $row ? self::run_row( $row ) : null;
+	}
+
+	public function older_open_run( int $workflow_id, int $run_id, string $serial_key ): bool {
+		return null !== $this->db->get_var(
+			$this->db->prepare(
+				"SELECT id FROM {$this->t( 'runs' )} WHERE workflow_id = %d AND serial_key = %s AND id < %d AND state IN ('running','action_required','paused') LIMIT 1",
+				$workflow_id,
+				$serial_key,
+				$run_id
+			)
+		);
+	}
+
+	public function due_steps( int $limit, string $now ): array {
+		$rows = $this->db->get_results(
+			$this->db->prepare(
+				"SELECT s.id, s.run_id, r.workflow_id, r.serial_key FROM {$this->t( 'steps' )} s JOIN {$this->t( 'runs' )} r ON r.id = s.run_id
+				WHERE ( ( s.state IN ('queued','retry_wait') AND s.due_at <= %s ) OR ( s.state = 'running' AND s.lease_until < %s ) )
+				ORDER BY s.due_at ASC, s.id ASC LIMIT %d",
+				$now,
+				$now,
+				$limit
+			),
+			ARRAY_A
+		);
+		return array_map(
+			static fn( $r ) => array( 'id' => (int) $r['id'], 'run_id' => (int) $r['run_id'], 'workflow_id' => (int) $r['workflow_id'], 'serial_key' => isset( $r['serial_key'] ) ? (string) $r['serial_key'] : null ),
+			(array) $rows
+		);
+	}
+
+	public function running_counts( string $now ): array {
+		$rows  = $this->db->get_results(
+			$this->db->prepare(
+				"SELECT r.workflow_id, COUNT(*) AS n FROM {$this->t( 'steps' )} s JOIN {$this->t( 'runs' )} r ON r.id = s.run_id WHERE s.state = 'running' AND s.lease_until >= %s GROUP BY r.workflow_id",
+				$now
+			),
+			ARRAY_A
+		);
+		$by    = array();
+		$total = 0;
+		foreach ( (array) $rows as $row ) {
+			$by[ (int) $row['workflow_id'] ] = (int) $row['n'];
+			$total                          += (int) $row['n'];
+		}
+		return array( 'total' => $total, 'by_workflow' => $by );
+	}
+
+	public function claim_step( int $id, string $now, string $owner, string $lease_until ): ?array {
+		$hit = $this->db->query(
+			$this->db->prepare(
+				"UPDATE {$this->t( 'steps' )} SET state = 'running', lease_owner = %s, lease_until = %s, updated_at = %s
+				WHERE id = %d AND ( ( state IN ('queued','retry_wait') AND due_at <= %s ) OR ( state = 'running' AND lease_until < %s ) )",
+				$owner,
+				$lease_until,
+				$now,
+				$id,
+				$now,
+				$now
+			)
+		);
+		return 1 === (int) $hit ? $this->get_step( $id ) : null;
+	}
+
+	public function extend_lease( int $id, string $owner, string $lease_until, string $now ): bool {
+		return 1 === (int) $this->db->update( $this->t( 'steps' ), array( 'lease_until' => $lease_until, 'updated_at' => $now ), array( 'id' => $id, 'lease_owner' => $owner, 'state' => self::STEP_RUNNING ) );
 	}
 
 	public function set_run_state( int $id, string $state, ?string $last_error, string $now ): bool {
@@ -390,6 +457,7 @@ final class WpdbEngineStore implements EngineStore {
 			'event_key'     => (string) $row['event_key'],
 			'context'       => self::decode( $row['context'] ),
 			'actor_user_id' => isset( $row['actor_user_id'] ) ? (int) $row['actor_user_id'] : null,
+			'serial_key'    => isset( $row['serial_key'] ) ? (string) $row['serial_key'] : null,
 			'state'         => (string) $row['state'],
 			'last_error'    => isset( $row['last_error'] ) ? (string) $row['last_error'] : null,
 			'created_at'    => (string) $row['created_at'],

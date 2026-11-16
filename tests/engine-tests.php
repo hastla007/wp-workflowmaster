@@ -432,3 +432,87 @@ $report = \WorkflowCaptain\Admin\Diagnostics::report( $e->events, $e->store, $e-
 $json   = json_encode( $report );
 check( 'diagnostics: counts and reasons present', 1 === $report['runs']['action_required'] && 1 === $report['action_required_reasons']['unclear_outcome'] && array( 'pass-captain' ) === $report['adapters']['registered'] );
 check( 'diagnostics: no address, no subject ID, no user ID', ! str_contains( $json, '@' ) && ! str_contains( $json, '8f3a1c0d9e7b' ) && ! str_contains( $json, '"actor_user_id"' ) );
+
+// ----- WF-CORE-05: concurrency, fairness, serialisation --------------------------------------------------------
+
+/** Workflow whose first step is a tag action; many events give many due steps. */
+function tag_graph(): array {
+	return array(
+		'nodes' => array(
+			array( 'id' => 't', 'type' => 'trigger', 'event' => 'pass.ticket.checked_in' ),
+			array( 'id' => 'tag', 'type' => 'action', 'action' => 'workflow.tag.set', 'config' => array( 'tag' => 'x' ) ),
+			array( 'id' => 'e', 'type' => 'end' ),
+		),
+		'edges' => array( array( 'from' => 't', 'to' => 'tag' ), array( 'from' => 'tag', 'to' => 'e' ) ),
+	);
+}
+
+$e = engine_site();
+$x = publish( $e, tag_graph(), 'X' );
+$y = publish( $e, tag_graph(), 'Y' );
+for ( $i = 0; $i < 6; $i++ ) {
+	$e->consumer->capture( $e->adapter, checkin( str_pad( (string) $i, 32, 'a' ), 'k' . $i ) );
+}
+$e->consumer->process( 100 );
+function tag_done( object $e ): array {
+	$by = array();
+	foreach ( $e->store->find_runs( array(), 100, 0 ) as $r ) {
+		foreach ( $e->store->steps_for_run( $r['id'] ) as $s ) {
+			if ( 'tag' === $s['node_id'] && EngineStore::STEP_SUCCEEDED === $s['state'] ) {
+				$by[ $r['workflow_id'] ] = ( $by[ $r['workflow_id'] ] ?? 0 ) + 1;
+			}
+		}
+	}
+	return $by;
+}
+$e->engine->process( 4 );
+$done = tag_done( $e );
+check( 'WF-CORE-05 fairness: a batch of 4 gives each of two workflows at most 2', 2 === ( $done[ $x ] ?? 0 ) && 2 === ( $done[ $y ] ?? 0 ) );
+
+$e = engine_site();
+$x = publish( $e, tag_graph(), 'X' );
+for ( $i = 0; $i < 7; $i++ ) {
+	$e->consumer->capture( $e->adapter, checkin( str_pad( (string) $i, 32, 'b' ), 'k' . $i ) );
+}
+$e->consumer->process( 100 );
+$held = $e->store->claim_steps( 5, $e->clock->mysql(), 'other-worker', $e->clock->mysql( $e->clock->now() + 300 ) );
+check( 'WF-CORE-05 site limit: with 5 steps held elsewhere nothing more runs', 5 === count( $held ) && 0 === $e->engine->process( 25 ) );
+
+$e = engine_site();
+$x = publish( $e, tag_graph(), 'X' );
+$y = publish( $e, tag_graph(), 'Y' );
+for ( $i = 0; $i < 3; $i++ ) {
+	$e->consumer->capture( $e->adapter, checkin( str_pad( (string) $i, 32, 'c' ), 'k' . $i ) );
+}
+$e->consumer->process( 100 );
+// Hold two steps of workflow X in another worker.
+$xsteps = array();
+foreach ( $e->store->find_runs( array( 'workflow_id' => $x ), 10, 0 ) as $r ) {
+	$xsteps[] = $e->store->steps_for_run( $r['id'] )[0]['id'];
+}
+$e->store->claim_step( $xsteps[0], $e->clock->mysql(), 'other', $e->clock->mysql( $e->clock->now() + 300 ) );
+$e->store->claim_step( $xsteps[1], $e->clock->mysql(), 'other', $e->clock->mysql( $e->clock->now() + 300 ) );
+$e->engine->process( 25 );
+$done = tag_done( $e );
+check( 'WF-CORE-05 workflow limit: X with 2 held runs nothing more, Y runs all', 0 === ( $done[ $x ] ?? 0 ) && 3 === ( $done[ $y ] ?? 0 ) );
+
+$e = engine_site();
+$g = tag_graph();
+$g['nodes'][0]['serialize'] = 'subject';
+$g['nodes'][] = array( 'id' => 'wait', 'type' => 'delay', 'unit' => 'hours', 'amount' => 1 );
+$g['edges'][0] = array( 'from' => 't', 'to' => 'wait' );
+$g['edges'][] = array( 'from' => 'wait', 'to' => 'tag' );
+publish( $e, $g );
+$e->consumer->capture( $e->adapter, checkin( 'dddddddddddddddddddddddddddddddd', 'first' ) );
+$e->consumer->capture( $e->adapter, checkin( 'dddddddddddddddddddddddddddddddd', 'second' ) );
+$e->consumer->capture( $e->adapter, checkin( 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'other' ) );
+drain( $e );
+$runs  = array_reverse( $e->store->find_runs( array(), 10, 0 ) );
+$steps = array_map( fn( $r ) => count( $e->store->steps_for_run( $r['id'] ) ), $runs );
+check( 'WF-CORE-05 serialisation: second run on the same object waits, other object runs', array( 2, 1, 2 ) === $steps );
+$e->clock->advance( 3600 );
+drain( $e );
+$e->clock->advance( 3600 );
+drain( $e );
+check( 'WF-CORE-05 serialisation: after the first run the second follows', 3 === count( array_filter( $e->store->find_runs( array(), 10, 0 ), fn( $r ) => EngineStore::RUN_SUCCEEDED === $r['state'] ) ) );
+check( 'graph: invalid serialize mode refused', in_array( 'node:t:invalid_serialize', Graph::violations( array( 'nodes' => array( array( 'id' => 't', 'type' => 'trigger', 'event' => 'pass.order.paid', 'serialize' => 'order' ), array( 'id' => 'e', 'type' => 'end' ) ), 'edges' => array( array( 'from' => 't', 'to' => 'e' ) ) ), $e->actions ), true ) );

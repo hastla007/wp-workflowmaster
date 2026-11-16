@@ -31,13 +31,31 @@ final class Engine implements Dispatcher {
 
 	private ?Consumer $consumer = null;
 
+	/** Limits of konzept 15.3 "Parallelität und Reihenfolge"; start values, adjustable in the settings. */
+	private array $limits = array(
+		'site'     => 5,
+		'workflow' => 2,
+		'catch_up' => DAY_IN_SECONDS,
+	);
+
 	public function __construct(
 		private EngineStore $store,
 		private ActionRegistry $actions,
 		private Directory $directory,
 		private Clock $clock,
-		private string $timezone = 'UTC'
-	) {}
+		private string $timezone = 'UTC',
+		array $limits = array()
+	) {
+		foreach ( $limits as $key => $value ) {
+			if ( isset( $this->limits[ $key ] ) && (int) $value > 0 ) {
+				$this->limits[ $key ] = (int) $value;
+			}
+		}
+	}
+
+	public function limits(): array {
+		return $this->limits;
+	}
 
 	/** The consumer whose run_command() gives events caused by an action their causation (C-9). */
 	public function set_consumer( Consumer $consumer ): void {
@@ -74,6 +92,7 @@ final class Engine implements Dispatcher {
 					'event_key'     => (string) $envelope['idempotency_key'],
 					'context'       => $envelope,
 					'actor_user_id' => isset( $envelope['actor_user_id'] ) ? (int) $envelope['actor_user_id'] : null,
+					'serial_key'    => self::serial_key( $trigger, $envelope, (int) $version['workflow_id'] ),
 				),
 				$now
 			);
@@ -87,6 +106,21 @@ final class Engine implements Dispatcher {
 		return new DispatchResult( $started, false );
 	}
 
+	/**
+	 * Serialisation key of a run (konzept 15.3): with "serialize" = "subject" or "actor" on the trigger, at most one run
+	 * of the workflow per object or user progresses at a time; the others wait in start order.
+	 */
+	public static function serial_key( array $trigger, array $envelope, int $workflow_id ): ?string {
+		$mode = $trigger['serialize'] ?? null;
+		if ( 'subject' === $mode ) {
+			return hash( 'sha256', $workflow_id . '|s|' . ( $envelope['source']['product'] ?? '' ) . '|' . ( $envelope['subject']['type'] ?? '' ) . '|' . ( $envelope['subject']['id'] ?? '' ) );
+		}
+		if ( 'actor' === $mode && isset( $envelope['actor_user_id'] ) ) {
+			return hash( 'sha256', $workflow_id . '|a|' . (int) $envelope['actor_user_id'] );
+		}
+		return null;
+	}
+
 	/** Key of a step: workflow, version, event and node (R-8.4). */
 	public static function step_key( array $version, array $envelope, string $node_id ): string {
 		return hash( 'sha256', implode( '|', array( $version['workflow_id'], $version['version'], (string) $envelope['id'], $node_id ) ) );
@@ -94,15 +128,55 @@ final class Engine implements Dispatcher {
 
 	// ----- Worker ---------------------------------------------------------------------------------------------
 
-	/** Runs due steps. Returns the number handled. */
+	/**
+	 * Runs due steps one at a time within the limits (konzept 15.3): at most "site" steps held by workers at once,
+	 * at most "workflow" per workflow, at most half a batch for one workflow while others wait, and serialised runs in
+	 * start order. Returns the number handled.
+	 */
 	public function process( int $limit = 25 ): int {
-		$now   = $this->clock->now();
-		$owner = Uuid::v4();
-		$steps = $this->store->claim_steps( $limit, $this->clock->mysql( $now ), $owner, $this->clock->mysql( $now + self::LEASE_SECONDS ) );
-		foreach ( $steps as $step ) {
+		$owner   = Uuid::v4();
+		$handled = 0;
+		$per_wf  = array();
+		$skip    = array();
+		$half    = max( 1, (int) ceil( $limit / 2 ) );
+		while ( $handled < $limit ) {
+			$now     = $this->clock->now();
+			$mysql   = $this->clock->mysql( $now );
+			$running = $this->store->running_counts( $mysql );
+			if ( $running['total'] >= $this->limits['site'] ) {
+				break;
+			}
+			$candidates = array_filter( $this->store->due_steps( 4 * $limit + 10, $mysql ), static fn( $c ) => ! isset( $skip[ $c['id'] ] ) );
+			if ( array() === $candidates ) {
+				break;
+			}
+			$several = count( array_unique( array_column( $candidates, 'workflow_id' ) ) ) > 1;
+			$picked  = null;
+			foreach ( $candidates as $c ) {
+				$wf = $c['workflow_id'];
+				if ( ( $running['by_workflow'][ $wf ] ?? 0 ) >= $this->limits['workflow'] || ( $several && ( $per_wf[ $wf ] ?? 0 ) >= $half ) ) {
+					continue;
+				}
+				if ( null !== $c['serial_key'] && $this->store->older_open_run( $wf, $c['run_id'], $c['serial_key'] ) ) {
+					$skip[ $c['id'] ] = true;
+					continue;
+				}
+				$picked = $c;
+				break;
+			}
+			if ( null === $picked ) {
+				break;
+			}
+			$skip[ $picked['id'] ] = true;
+			$step                  = $this->store->claim_step( $picked['id'], $mysql, $owner, $this->clock->mysql( $now + self::LEASE_SECONDS ) );
+			if ( null === $step ) {
+				continue; // Another worker was faster.
+			}
 			$this->handle( $step, $owner );
+			$per_wf[ $picked['workflow_id'] ] = ( $per_wf[ $picked['workflow_id'] ] ?? 0 ) + 1;
+			++$handled;
 		}
-		return count( $steps );
+		return $handled;
 	}
 
 	private function handle( array $step, string $owner ): void {
@@ -203,7 +277,7 @@ final class Engine implements Dispatcher {
 			return;
 		}
 		if ( EngineStore::EFFECT_DONE !== $step['effect'] ) {
-			if ( 1 === $attempts && strtotime( $step['due_at'] . ' UTC' ) < $this->clock->now() - self::CATCH_UP_SECONDS ) {
+			if ( 1 === $attempts && strtotime( $step['due_at'] . ' UTC' ) < $this->clock->now() - $this->limits['catch_up'] ) {
 				$this->stop( $step, $owner, $run, EngineStore::STEP_ACTION_REQUIRED, EngineStore::RUN_ACTION_REQUIRED, 'overdue', $attempts );
 				return;
 			}

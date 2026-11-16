@@ -66,6 +66,9 @@ final class Graph {
 			if ( 'trigger' === $type && ( ! is_string( $node['event'] ?? null ) || ! preg_match( Validator::TYPE, $node['event'] ) ) ) {
 				$v[] = 'node:' . $id . ':invalid_event';
 			}
+			if ( 'trigger' === $type && isset( $node['serialize'] ) && ! in_array( $node['serialize'], array( 'subject', 'actor' ), true ) ) {
+				$v[] = 'node:' . $id . ':invalid_serialize';
+			}
 			if ( 'action' === $type ) {
 				$action = is_string( $node['action'] ?? null ) ? $actions->get( $node['action'] ) : null;
 				if ( null === $action ) {

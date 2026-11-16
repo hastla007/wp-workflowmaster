@@ -66,13 +66,32 @@ interface EngineStore {
 	/**
 	 * Creates a run unless one exists for this version and event (C-10).
 	 *
-	 * @param array{workflow_id:int,version_id:int,event_row_id:int,event_key:string,context:array,actor_user_id:?int} $run
+	 * @param array{workflow_id:int,version_id:int,event_row_id:int,event_key:string,context:array,actor_user_id:?int,serial_key?:?string} $run
 	 * @return array{0:int,1:bool} Run ID and whether it was created now.
 	 */
 	public function create_run( array $run, string $now ): array;
 
 	/** @return array<string,mixed>|null */
 	public function get_run( int $id ): ?array;
+
+	/** Whether an older run of this workflow with the same serialisation key is still open (konzept 15.3). */
+	public function older_open_run( int $workflow_id, int $run_id, string $serial_key ): bool;
+
+	/**
+	 * Due steps that are not held by a worker, with workflow and serialisation key of their run, oldest due first.
+	 *
+	 * @return array<int,array{id:int,run_id:int,workflow_id:int,serial_key:?string}>
+	 */
+	public function due_steps( int $limit, string $now ): array;
+
+	/** @return array{total:int,by_workflow:array<int,int>} Steps currently held by a worker with a valid lease. */
+	public function running_counts( string $now ): array;
+
+	/** Claims one step if it is still due; returns it or null (WF-CORE-06). */
+	public function claim_step( int $id, string $now, string $owner, string $lease_until ): ?array;
+
+	/** Extends the lease of a step the worker holds (heartbeat, WF-CORE-06). */
+	public function extend_lease( int $id, string $owner, string $lease_until, string $now ): bool;
 
 	public function set_run_state( int $id, string $state, ?string $last_error, string $now ): bool;
 
