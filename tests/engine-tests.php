@@ -29,6 +29,7 @@ function engine_site( string $tz = 'UTC' ): object {
 	$db->create_tables();
 	$db->create_engine_tables();
 	$e            = new stdClass();
+	$e->pdo       = $pdo;
 	$e->clock     = new FixedClock();
 	$e->dir       = new FakeDirectory();
 	$e->store     = new WpdbEngineStore( $db );
@@ -601,3 +602,49 @@ list( $id ) = $wf->save( null, 'Ohne Provider', sample_graph() );
 check( 'WF-BUILDER-11 publishing without a provider for the trigger is blocked', in_array( 'node:t:provider_unavailable', $wf->publish( $id, 1 ), true ) );
 $wf = new Workflows( $e->store, $e->actions, $e->dir, $e->clock, fn() => array( 'pass.ticket.checked_in' ) );
 check( 'WF-BUILDER-11 with the provider registered it publishes', array() === $wf->publish( $id, 1 ) );
+
+
+// ----- WF-SEC-04: end-to-end data flow ---------------------------------------------------------------------------
+
+/** Every value of every table, as one string. */
+function dump_all( PDO $pdo ): string {
+	$out = '';
+	foreach ( $pdo->query( "SELECT name FROM sqlite_master WHERE type = 'table'" )->fetchAll( PDO::FETCH_COLUMN ) as $table ) {
+		$out .= json_encode( $pdo->query( 'SELECT * FROM ' . $table )->fetchAll( PDO::FETCH_ASSOC ) );
+	}
+	return $out;
+}
+
+$e      = engine_site();
+$marker = 'datenfluss.marker@example.invalid';
+$e->dir->emails[17] = $marker;
+$g = sample_graph();
+$g['nodes'][2] = array( 'id' => 'mail', 'type' => 'action', 'action' => 'notify.user', 'config' => array( 'subject' => 'Hallo {{data.checkin_source}}', 'message' => 'Text' ) );
+publish( $e, $g );
+$e->dir->fail_mails = 1;                                     // first attempt fails (retry path)
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+$e->clock->advance( 60 );
+drain( $e );
+$GLOBALS['wfc_test_users'] = array( 17 => $marker );
+$privacy = new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, fn() => $e->store );
+$export  = json_encode( $privacy->export( $marker ) );
+$diag    = json_encode( \WorkflowCaptain\Admin\Diagnostics::report( $e->events, $e->store, $e->registry, array() ) );
+check( 'SEC-04 the mail reached the user', $marker === ( $e->dir->sent[0][0] ?? '' ) );
+check( 'SEC-04 the address is stored in no table (events, runs, steps, tags, notes, causes)', ! str_contains( dump_all( $e->pdo ), $marker ) && ! str_contains( dump_all( $e->pdo ), 'datenfluss.marker' ) );
+check( 'SEC-04 the address is in neither diagnostics nor export', ! str_contains( $diag, $marker ) && ! str_contains( $export, $marker ) );
+
+// Forbidden field names never reach storage; a crash after sending leaves no address either.
+$e = engine_site();
+publish( $e, $g );
+$e->dir->emails[17]       = $marker;
+$e->dir->crash_after_send = true;
+$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'x', array( 'customer_email' => $marker ) ) );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+check( 'SEC-04 an event with a forbidden field is rejected, the clean one runs', 1 === count( $e->events->find( array(), 10, 0 ) ) && 1 === count( $e->store->find_runs( array(), 10, 0 ) ) );
+check( 'SEC-04 after a crash after sending, no address in any table or error', ! str_contains( dump_all( $e->pdo ), $marker ) );
+$privacy = new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, fn() => $e->store );
+$GLOBALS['wfc_test_users'] = array( 17 => 'person@example.com' );
+$privacy->erase( 'person@example.com' );
+check( 'SEC-04 after erasure no user ID 17 remains in events or runs', ! preg_match( '/"actor_user_id":17\b/', dump_all( $e->pdo ) ) );
