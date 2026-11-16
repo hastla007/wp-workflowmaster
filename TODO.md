@@ -133,6 +133,11 @@ Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebau
 
 ### Kundenconnector 1 – BoatingSchool B2B / Laravel
 
+> **Lizenz der Kundenconnectoren (Entscheidung Nr. 17, geändert vom Inhaber am 16.11.2026).** Die Connectoren von BoatingSchool und LearnBoating sind in PRO enthalten. Sie bleiben separat installierte Plugins, laufen aber nur mit der Lizenz von Workflow Captain Pro (fail-closed). Ein eigenes Projektprodukt gibt es nicht. Details und offene Fragen (O1 Ort des Codes, O2 nur Projektlizenzen oder jede Pro-Lizenz, O3 Update-Weg) stehen in captain-pro `TODO.md` Abschnitt 13.
+>
+> - [ ] **WF-CUST-LIC-01** – Beide Kundenconnectoren prüfen ihr Recht über die Lizenzauskunft von Workflow Captain Pro. Das ist die nur lesende Kernel-Erweiterung aus F-06 (captain-pro K-01); die Connectoren haben keinen eigenen Lizenzclient. Recht: `workflow.custom_connectors` (F-01, dann als Recht reservieren) oder je Projekt ein eigenes Recht, je nach O2. Abgelaufen: neue Runs pausieren, Konfiguration und Logs bleiben lesbar (wie WF-CONNECTOR-12).
+> - [ ] **WF-CUST-LIC-02** – In WF-CUST2-02 und WF-CUST1-08 „Lizenz-/Capability-Prüfung“ auf WF-CUST-LIC-01 beziehen. Adapter zu Fachplugins brauchen nach D6/WF-INT-12 zusätzlich die Pro-Lizenz des Fachprodukts; für reine Projekt-Connectoren gilt nur Workflow Captain Pro, außer der Connector nutzt eine Pro-Funktion eines anderen Produkts.
+
 - [ ] WF-CUST1-01 – Vorhandenen WooCommerce-Connector als fachlichen Owner von Paid-Order-Codezustellung, Idempotenz pro Order-Position, Retry und Refund-Sperrung festhalten; Workflow darf diese Befehle nicht nochmals ausführen.
 - [ ] WF-CUST1-02 – In BoatingSchool einen eigenen dauerhaften Workflow-Event-Outbox-Dispatcher nach Commit ergänzen. Nicht die vorhandene `tenant.provision`-Shop-Outbox oder bloße Commerce-Logs als allgemeine Zustellgarantie voraussetzen.
 - [ ] WF-CUST1-03 – Versionierte Events für Shopkonto registriert/verknüpft/deaktiviert, Provisionierung erfolgreich/fehlgeschlagen sowie Code-Batch geliefert/entwertet veröffentlichen; stabile Event-IDs und tenant-/shop-scoped Correlation-IDs nutzen.
