@@ -1390,6 +1390,10 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:356
+msgid "System/WP-CLI"
+msgstr ""
+
 #: src/Admin/ProvidersPage.php:145
 msgid "Testereignis"
 msgstr ""
