@@ -31,6 +31,9 @@ final class Engine implements Dispatcher {
 
 	private ?Consumer $consumer = null;
 
+	/** Runs whose definition lives outside this site (network workflows, R-17.4). */
+	private ForeignRuns $foreign;
+
 	/** Global emergency pause (WF-SET-11): no step runs while it is set. */
 	private bool $paused = false;
 
@@ -55,6 +58,12 @@ final class Engine implements Dispatcher {
 				$this->limits[ $key ] = (int) $value;
 			}
 		}
+		$this->foreign = new ForeignRuns();
+	}
+
+	/** Extension point for runs from another site of the network (resolver, gate, observer). */
+	public function foreign(): ForeignRuns {
+		return $this->foreign;
 	}
 
 	/** @var callable():array<string,?string>|null */
@@ -257,8 +266,17 @@ final class Engine implements Dispatcher {
 			$this->finish( $step, $owner, EngineStore::STEP_CANCELLED );
 			return;
 		}
-		$version = $this->store->get_version( (int) $run['version_id'] );
-		$node    = null === $version ? null : Graph::node( $version['graph'], (string) $step['node_id'] );
+		$foreign = ForeignRuns::is_foreign( $run );
+		$version = $foreign ? $this->foreign->version( $run ) : $this->store->get_version( (int) $run['version_id'] );
+		if ( $foreign && null === $version ) {
+			// The definition is not available here (add-on inactive, workflow gone): pause, never guess (R-17.4).
+			$this->stop( $step, $owner, $run, EngineStore::STEP_PAUSED, EngineStore::RUN_PAUSED, ForeignRuns::UNAVAILABLE, $attempts );
+			return;
+		}
+		if ( $foreign ) {
+			$this->foreign->observe( $run, EngineStore::RUN_RUNNING, null );
+		}
+		$node = null === $version ? null : Graph::node( $version['graph'], (string) $step['node_id'] );
 		if ( null === $node ) {
 			$this->stop( $step, $owner, $run, EngineStore::STEP_ACTION_REQUIRED, EngineStore::RUN_ACTION_REQUIRED, 'node_missing', $attempts );
 			return;
@@ -268,14 +286,14 @@ final class Engine implements Dispatcher {
 			switch ( $node['type'] ) {
 				case 'end':
 					$this->finish( $step, $owner, EngineStore::STEP_SUCCEEDED, array( 'attempts' => $attempts ) );
-					$this->store->set_run_state( $run['id'], EngineStore::RUN_SUCCEEDED, null, $this->clock->mysql() );
+					$this->run_state( $run, EngineStore::RUN_SUCCEEDED, null );
 					return;
 
 				case 'condition':
 					$outcome = Conditions::evaluate( (array) ( $node['rules'] ?? array() ), $envelope, (string) ( $node['missing'] ?? 'false' ) );
 					if ( Conditions::STOP === $outcome ) {
 						$this->finish( $step, $owner, EngineStore::STEP_SUCCEEDED, array( 'attempts' => $attempts, 'result' => array( 'outcome' => 'stop' ) ) );
-						$this->store->set_run_state( $run['id'], EngineStore::RUN_STOPPED, 'condition_field_missing', $this->clock->mysql() );
+						$this->run_state( $run, EngineStore::RUN_STOPPED, 'condition_field_missing' );
 						return;
 					}
 					if ( Conditions::ERROR === $outcome ) {
@@ -314,6 +332,10 @@ final class Engine implements Dispatcher {
 			$unclear = ! $e instanceof TransientFailure && null !== $action && ! $action->idempotent() && EngineStore::EFFECT_STARTED === ( $fresh['effect'] ?? '' );
 			$delay   = $unclear ? null : RetryPlan::delay( $attempts );
 			if ( null === $delay ) {
+				if ( $e instanceof TransientFailure && EngineStore::EFFECT_STARTED === ( $fresh['effect'] ?? '' ) ) {
+					// The action said nothing happened: a human may continue without accepting a repeated side effect.
+					$this->store->set_effect( (int) $step['id'], $owner, EngineStore::EFFECT_NONE, $this->clock->mysql() );
+				}
 				$this->stop( $step, $owner, $run, EngineStore::STEP_ACTION_REQUIRED, EngineStore::RUN_ACTION_REQUIRED, self::code( $unclear ? 'unclear_outcome' : $reason ), $attempts );
 				return;
 			}
@@ -348,6 +370,21 @@ final class Engine implements Dispatcher {
 			$this->stop( $step, $owner, $run, EngineStore::STEP_PAUSED, EngineStore::RUN_PAUSED, 'not_authorized', $attempts );
 			return;
 		}
+		$step_id   = (int) $step['id'];
+		$heartbeat = fn(): bool => $this->store->extend_lease( $step_id, $owner, $this->clock->mysql( $this->clock->now() + self::LEASE_SECONDS ), $this->clock->mysql() );
+		$context   = new ActionContext( $envelope, (array) ( $node['config'] ?? array() ), (string) $step['step_key'], (int) $run['workflow_id'], (int) $run['id'], $step_id, $authorized_by, $heartbeat );
+		if ( ForeignRuns::is_foreign( $run ) ) {
+			// R-17.4: only network-safe actions, only while the add-on agrees (consent, license, site), and only when the
+			// action itself agrees on this site (for example: the addressed user is a member here).
+			$reason = $action instanceof NetworkSafe ? $this->foreign->gate( $run, $node ) : 'action_not_network_safe';
+			if ( null === $reason && $action instanceof NetworkSafe ) {
+				$reason = $action->network_check( $context );
+			}
+			if ( null !== $reason ) {
+				$this->stop( $step, $owner, $run, EngineStore::STEP_PAUSED, EngineStore::RUN_PAUSED, self::code( $reason ), $attempts );
+				return;
+			}
+		}
 		if ( EngineStore::EFFECT_DONE !== $step['effect'] ) {
 			if ( 1 === $attempts && strtotime( $step['due_at'] . ' UTC' ) < $this->clock->now() - $this->limits['catch_up'] ) {
 				$this->stop( $step, $owner, $run, EngineStore::STEP_ACTION_REQUIRED, EngineStore::RUN_ACTION_REQUIRED, 'overdue', $attempts );
@@ -360,9 +397,6 @@ final class Engine implements Dispatcher {
 			if ( ! $action->idempotent() ) {
 				$this->store->set_effect( (int) $step['id'], $owner, EngineStore::EFFECT_STARTED, $this->clock->mysql() );
 			}
-			$step_id   = (int) $step['id'];
-			$heartbeat = fn(): bool => $this->store->extend_lease( $step_id, $owner, $this->clock->mysql( $this->clock->now() + self::LEASE_SECONDS ), $this->clock->mysql() );
-			$context   = new ActionContext( $envelope, (array) ( $node['config'] ?? array() ), (string) $step['step_key'], (int) $run['workflow_id'], (int) $run['id'], $step_id, $authorized_by, $heartbeat );
 			$execute = static fn() => $action->execute( $context );
 			$result  = null === $this->consumer ? $execute() : $this->consumer->run_command( Consumer::cause_for( $envelope, (int) $run['workflow_id'] ), $execute );
 			$this->store->set_effect( (int) $step['id'], $owner, EngineStore::EFFECT_DONE, $this->clock->mysql() );
@@ -376,17 +410,26 @@ final class Engine implements Dispatcher {
 	private function advance( array $step, string $owner, array $run, array $version, array $node, ?string $branch, string $due, array $result, int $attempts ): void {
 		$next = Graph::next( $version['graph'], (string) $node['id'], $branch );
 		if ( null !== $next ) {
-			$this->store->ensure_step( (int) $run['id'], $next, self::step_key( $version, $run['context'], $next ), $due, $this->clock->mysql() );
+			$key = ForeignRuns::is_foreign( $run ) ? ForeignRuns::step_key( (string) $run['event_key'], $next ) : self::step_key( $version, $run['context'], $next );
+			$this->store->ensure_step( (int) $run['id'], $next, $key, $due, $this->clock->mysql() );
 		}
 		$this->finish( $step, $owner, EngineStore::STEP_SUCCEEDED, array( 'attempts' => $attempts, 'result' => $result, 'last_error' => null ) );
 		if ( null === $next ) {
-			$this->store->set_run_state( (int) $run['id'], EngineStore::RUN_SUCCEEDED, null, $this->clock->mysql() );
+			$this->run_state( $run, EngineStore::RUN_SUCCEEDED, null );
 		}
 	}
 
 	private function stop( array $step, string $owner, array $run, string $step_state, string $run_state, string $reason, int $attempts ): void {
 		$this->finish( $step, $owner, $step_state, array( 'attempts' => $attempts, 'last_error' => $reason ) );
-		$this->store->set_run_state( (int) $run['id'], $run_state, $reason, $this->clock->mysql() );
+		$this->run_state( $run, $run_state, $reason );
+	}
+
+	/** Sets the state of a run; a run from another site is also reported to the observer (R-17.6). */
+	private function run_state( array $run, string $state, ?string $reason ): void {
+		$this->store->set_run_state( (int) $run['id'], $state, $reason, $this->clock->mysql() );
+		if ( ForeignRuns::is_foreign( $run ) ) {
+			$this->foreign->observe( $run, $state, $reason );
+		}
 	}
 
 	private function finish( array $step, string $owner, string $state, array $change = array() ): void {

@@ -1020,3 +1020,133 @@ drain( $e );
 check( '4.10 inbound: stored once per request id, starts the workflow', 'captured' === $first && 'captured' !== $second && 1 === count( $e->store->find_runs( array(), 10, 0 ) ) );
 check( '4.10 hook: workflow_captain_event_processed_v1 fires once after processing', array( 'workflow.inbound.order_export' ) === $processed );
 check( '4.10 inbound: unknown trigger reported', 'unknown_trigger' === $e->consumer->capture_inbound( 'nope', array(), 'req-abcdefgh' ) );
+// ----- Spec section 17: runs from another site of the network (ForeignRuns, WF-MS-10, -15, -21, R-17.3 to R-17.7) -----
+
+use WorkflowCaptain\Engine\ForeignRuns;
+
+$shared = FakeWpdb::memory();
+$src    = engine_site( 'UTC', $shared, 'wp_', 1 );
+$dst    = engine_site( 'UTC', $shared, 'wp_3_', 3 );
+$src->consumer->capture( $src->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'net-1', array( 'customer_user_id' => 17 ) ) );
+$source_env = $src->events->find( array(), 1, 0 )[0]['envelope'];
+$source_env['chain_depth'] = 1; // As if a workflow on the source site had caused it.
+$fgraph = array(
+	'nodes' => array(
+		array( 'id' => 't', 'type' => 'trigger', 'event' => 'pass.ticket.checked_in' ),
+		array( 'id' => 'a1', 'type' => 'action', 'action' => 'notify.admin', 'config' => array( 'subject' => 'Netz {{subject.id}}', 'message' => 'Von Website 1' ) ),
+		array( 'id' => 'a2', 'type' => 'action', 'action' => 'workflow.tag.set', 'config' => array( 'tag' => 'netz' ) ),
+		array( 'id' => 'e', 'type' => 'end' ),
+	),
+	'edges' => array( array( 'from' => 't', 'to' => 'a1' ), array( 'from' => 'a1', 'to' => 'a2' ), array( 'from' => 'a2', 'to' => 'e' ) ),
+);
+$wrapper = array( 'network_id' => 1, 'source_blog_id' => 1, 'workflow_id' => 12, 'version' => 2, 'run_id' => 40 );
+$fkey    = hash( 'sha256', 'network-run-40|target-3' );
+$q       = ForeignRuns::enqueue( $dst->store, $fgraph, $source_env, $wrapper, $fkey, 'network:12', 'Netzwerk: Test', $dst->clock->mysql() );
+$frun    = $dst->store->get_run( $q['run_id'] );
+check( 'R-17.4 foreign run: queued on the target site only, with one first step', $q['created'] && null !== $frun && array() === $src->store->find_runs( array(), 10, 0 ) && 1 === count( $dst->store->steps_for_run( $q['run_id'] ) ) );
+check( 'R-17.3 foreign run: actor_user_id never reaches the target snapshot', ! array_key_exists( 'actor_user_id', $frun['context'] ) && null === $frun['actor_user_id'] && isset( $source_env['actor_user_id'] ) );
+check( 'R-17.5 foreign run: network IDs in their own wrapper next to the snapshot, not inside it', $wrapper === $frun['network'] && ! array_key_exists( 'network', $frun['context'] ) && $frun['context']['id'] === $source_env['id'] );
+$q2 = ForeignRuns::enqueue( $dst->store, $fgraph, $source_env, $wrapper, $fkey, 'network:12', 'Netzwerk: Test', $dst->clock->mysql() );
+check( 'WF-MS-15 foreign run: a repeated delivery with the same key creates nothing', ! $q2['created'] && $q2['run_id'] === $q['run_id'] && 1 === count( $dst->store->steps_for_run( $q['run_id'] ) ) );
+check( 'foreign run: the anchor workflow is not listed and cannot be edited, published or archived', array() === $dst->store->list_workflows( 10, 0 ) && array( 'workflow:network' ) === $dst->workflows->publish( $q['anchor'], 1 ) && array( 'workflow:network' ) === $dst->workflows->save( $q['anchor'], 'x', sample_graph() )[1] && ! $dst->workflows->archive( $q['anchor'] ) && ! $dst->workflows->resume( $q['anchor'] ) && 0 === $dst->workflows->duplicate( $q['anchor'] ) );
+check( 'foreign run: consistency check does not report it as a run without version', array() === array_filter( $dst->store->consistency() ) );
+$bad = false;
+try {
+	ForeignRuns::enqueue( $dst->store, $fgraph, $source_env, $wrapper + array( 'target' => 'all' ), hash( 'sha256', 'x' ), 'network:12', 'x', $dst->clock->mysql() );
+} catch ( \InvalidArgumentException $ex ) {
+	$bad = true;
+}
+check( 'R-17.5 foreign run: a wrapper with other keys is refused', $bad );
+
+// Without an add-on nobody resolves the run: it pauses, nothing runs.
+drain( $dst );
+check( 'foreign run: without a resolver the step pauses (foreign_unavailable)', EngineStore::RUN_PAUSED === $dst->store->get_run( $q['run_id'] )['state'] && 'foreign_unavailable' === $dst->store->get_run( $q['run_id'] )['last_error'] && array() === $dst->dir->sent );
+
+$seen    = array();
+$consent = null;
+$dst->engine->foreign()->set_resolver( fn( array $n ) => 12 === $n['workflow_id'] ? array( 'graph' => $fgraph, 'version' => 2, 'authorized_by_user_id' => 1 ) : null );
+$dst->engine->foreign()->set_gate( function ( array $n, array $run, array $node ) use ( &$consent ) { return $consent; } );
+$dst->engine->foreign()->set_observer( function ( array $run, string $state, ?string $reason ) use ( &$seen ) { $seen[] = $state . ( null === $reason ? '' : ':' . $reason ); } );
+$consent = 'paused_site_consent';
+check( 'foreign run: a paused run is resumed by a human', 1 === ForeignRuns::resume( $dst->store, $fkey, $dst->clock->mysql() ) );
+drain( $dst );
+check( 'R-17.2 foreign run: the gate pauses the step with its reason (revoked consent)', 'paused_site_consent' === $dst->store->get_run( $q['run_id'] )['last_error'] && array() === $dst->dir->sent && in_array( 'paused:paused_site_consent', $seen, true ) );
+$consent = null;
+ForeignRuns::resume( $dst->store, $fkey, $dst->clock->mysql() );
+drain( $dst );
+check( 'R-17.4 foreign run: runs on the target site with its own engine and actions', EngineStore::RUN_SUCCEEDED === $dst->store->get_run( $q['run_id'] )['state'] && 1 === count( $dst->dir->sent ) && array( 'netz' ) === $dst->store->tags_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' ) && array() === $src->store->tags_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' ) );
+check( 'R-17.6 foreign run: the observer hears running and succeeded', in_array( 'running', $seen, true ) && 'succeeded' === end( $seen ) );
+check( 'WF-MS-15 foreign run: step keys derive from network run + target + node', ForeignRuns::step_key( $fkey, 'a1' ) === $dst->store->steps_for_run( $q['run_id'] )[0]['step_key'] );
+check( 'foreign run: find() reads run and steps; cancel of a finished run does nothing', 3 === count( ForeignRuns::find( $dst->store, $fkey )['steps'] ) && ! ForeignRuns::cancel( $dst->store, $fkey, $dst->clock->mysql() ) );
+
+// Only network-safe actions run (R-17.4); notify.user only for a member of the target site.
+$g2 = $fgraph;
+$g2['nodes'][1] = array( 'id' => 'a1', 'type' => 'action', 'action' => 'test.write', 'config' => array() );
+$g3 = array();
+$dst->engine->foreign()->set_resolver( function ( array $n ) use ( &$g2, &$g3 ) { return array( 'graph' => 13 === $n['workflow_id'] ? $g2 : $g3, 'version' => 1, 'authorized_by_user_id' => 1 ); } );
+$dst->dir->caps[1][] = 'vcap_manage_vouchers';
+$k2 = hash( 'sha256', 'network-run-41|target-3' );
+$q3 = ForeignRuns::enqueue( $dst->store, $g2, $source_env, array( 'workflow_id' => 13 ) + $wrapper, $k2, 'network:13', 'Netzwerk: B', $dst->clock->mysql() );
+drain( $dst );
+check( 'R-17.4 foreign run: an action that is not network-safe pauses (action_not_network_safe)', 'action_not_network_safe' === $dst->store->get_run( $q3['run_id'] )['last_error'] && 0 === $dst->cap->runs );
+$g3 = $fgraph;
+$g3['nodes'][1] = array( 'id' => 'a1', 'type' => 'action', 'action' => 'notify.user', 'config' => array( 'subject' => 'Hallo', 'message' => 'Text', 'user_field' => 'data.customer_user_id' ) );
+$sent_before = count( $dst->dir->sent );
+$dst->dir->members = array( 1 );
+$k3 = hash( 'sha256', 'network-run-42|target-3' );
+$q4 = ForeignRuns::enqueue( $dst->store, $g3, $source_env, array( 'workflow_id' => 14 ) + $wrapper, $k3, 'network:14', 'Netzwerk: C', $dst->clock->mysql() );
+drain( $dst );
+check( 'R-17.4 notify.user: a user who is no member of the target site is not addressed', 'user_not_member' === $dst->store->get_run( $q4['run_id'] )['last_error'] && $sent_before === count( $dst->dir->sent ) );
+$dst->dir->members = array( 1, 17 );
+ForeignRuns::resume( $dst->store, $k3, $dst->clock->mysql() );
+drain( $dst );
+check( 'R-17.4 notify.user: a member of the target site gets the message', $sent_before + 1 === count( $dst->dir->sent ) && 'person@example.com' === end( $dst->dir->sent )[0] );
+check( 'network_safe in the action catalog matches the classes', array() === array_filter( $acat['actions'], fn( $r ) => 'workflow-captain' === $r['owner'] && ( $e->actions->get( $r['key'] ) instanceof \WorkflowCaptain\Engine\NetworkSafe ) !== ( true === ( $r['network_safe'] ?? null ) ) ) );
+
+// R-17.7: an event caused by a step on the target site continues the chain of the source site.
+$probe = new class( $dst ) implements \WorkflowCaptain\Engine\Action, \WorkflowCaptain\Engine\NetworkSafe {
+	public function __construct( private object $site ) {}
+	public function key(): string { return 'test.capture'; }
+	public function label(): string { return 'probe'; }
+	public function capability(): ?string { return null; }
+	public function idempotent(): bool { return true; }
+	public function validate_config( array $config ): array { return array(); }
+	public function network_check( \WorkflowCaptain\Engine\ActionContext $context ): ?string { return null; }
+	public function execute( \WorkflowCaptain\Engine\ActionContext $context ): array {
+		$this->site->consumer->capture( $this->site->adapter, checkin( '7e2b0c9d8e6a3f1e5b4c0d9a8b7e6f5c', 'caused-on-3' ) );
+		return array();
+	}
+};
+$dst->actions->add( $probe );
+$g4 = $fgraph;
+$g4['nodes'][1] = array( 'id' => 'a1', 'type' => 'action', 'action' => 'test.capture', 'config' => array() );
+$dst->engine->foreign()->set_resolver( fn( array $n ) => array( 'graph' => $g4, 'version' => 1, 'authorized_by_user_id' => 1 ) );
+$k4 = hash( 'sha256', 'network-run-43|target-3' );
+$q5 = ForeignRuns::enqueue( $dst->store, $g4, $source_env, array( 'workflow_id' => 15 ) + $wrapper, $k4, 'network:15', 'Netzwerk: D', $dst->clock->mysql() );
+$dst->engine->process( 10 );
+$caused = null;
+foreach ( $dst->events->find( array(), 20, 0 ) as $row ) {
+	if ( '7e2b0c9d8e6a3f1e5b4c0d9a8b7e6f5c' === $row['envelope']['subject']['id'] ) {
+		$caused = $row['envelope'];
+	}
+}
+check( 'R-17.7 caused event on the target: chain depth counts across sites, correlation of the source event', null !== $caused && 2 === $caused['chain_depth'] && $source_env['correlation_id'] === $caused['correlation_id'] && 3 === $caused['site']['blog_id'] );
+check( 'R-7.14 caused event on the target: caused_by_workflow_id is the anchor, which no local workflow has', null !== $caused && $q5['anchor'] === $caused['caused_by_workflow_id'] && EngineStore::WF_NETWORK === $dst->store->get_workflow( $q5['anchor'] )['status'] );
+check( 'anchors: one per origin, reused', $q['anchor'] === ForeignRuns::enqueue( $dst->store, $fgraph, $source_env, $wrapper, hash( 'sha256', 'other' ), 'network:12', 'Netzwerk: Test', $dst->clock->mysql() )['anchor'] );
+
+// A foreign step whose action failed temporarily until the plan ran out: a human continues it without confirmation.
+$dst->engine->foreign()->set_resolver( fn( array $n ) => array( 'graph' => $fgraph, 'version' => 2, 'authorized_by_user_id' => 1 ) );
+$dst->dir->fail_mails = 100;
+$k5  = hash( 'sha256', 'network-run-44|target-3' );
+$q6  = ForeignRuns::enqueue( $dst->store, $fgraph, $source_env, array( 'workflow_id' => 16 ) + $wrapper, $k5, 'network:16', 'Netzwerk: E', $dst->clock->mysql() );
+for ( $i = 0; $i < 10; $i++ ) {
+	$dst->engine->process( 10 );
+	$dst->clock->advance( DAY_IN_SECONDS );
+}
+$st6 = $dst->store->steps_for_run( $q6['run_id'] )[0];
+check( 'R-8.12 after the last temporary failure the effect booking is cleared (the action said nothing happened)', EngineStore::STEP_ACTION_REQUIRED === $st6['state'] && EngineStore::EFFECT_NONE === $st6['effect'] );
+$dst->dir->fail_mails = 0;
+$sent_before          = count( $dst->dir->sent );
+check( 'foreign run: resume also requeues a step that needs a decision', 1 === ForeignRuns::resume( $dst->store, $k5, $dst->clock->mysql() ) );
+drain( $dst );
+check( 'foreign run: the resumed step runs once', EngineStore::RUN_SUCCEEDED === $dst->store->get_run( $q6['run_id'] )['state'] && $sent_before + 1 === count( $dst->dir->sent ) );

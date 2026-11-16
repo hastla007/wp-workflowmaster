@@ -16,7 +16,7 @@
 defined( 'ABSPATH' ) || exit;
 
 define( 'WORKFLOW_CAPTAIN_VERSION', '0.2.0' );
-define( 'WORKFLOW_CAPTAIN_DB_VERSION', '3' );
+define( 'WORKFLOW_CAPTAIN_DB_VERSION', '4' );
 /*
  * Version of the interface at which adapters register (docs/SPEC-suite-events.md, R-13.7; name as proposed in F-03).
  * Independent of the plugin version. MAJOR = generation of the adapter interface, MINOR rises when methods or hooks are

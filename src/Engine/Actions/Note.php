@@ -10,12 +10,13 @@ namespace WorkflowCaptain\Engine\Actions;
 use WorkflowCaptain\Clock;
 use WorkflowCaptain\Engine\Action;
 use WorkflowCaptain\Engine\ActionContext;
+use WorkflowCaptain\Engine\NetworkSafe;
 use WorkflowCaptain\Engine\EngineStore;
 use WorkflowCaptain\Engine\Template;
 
 defined( 'ABSPATH' ) || exit;
 
-final class Note implements Action {
+final class Note implements Action, NetworkSafe {
 
 	public function __construct( private EngineStore $store, private Clock $clock ) {}
 
@@ -37,6 +38,11 @@ final class Note implements Action {
 
 	public function validate_config( array $config ): array {
 		return Template::validate( $config['text'] ?? null, 'text', 1000 );
+	}
+
+	/** Writes only on the site it runs on and needs no user of the source site (R-17.4). */
+	public function network_check( ActionContext $context ): ?string {
+		return null;
 	}
 
 	public function execute( ActionContext $context ): array {

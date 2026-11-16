@@ -122,9 +122,8 @@ final class Plugin {
 				get_current_blog_id(),
 				array( self::class, 'record_rejection' )
 			);
-			if ( $dispatcher === $this->engine ) {
-				$this->engine->set_consumer( $this->consumer );
-			}
+			// Also when an add-on wraps the engine (filter above): steps keep giving caused events their causation (C-9).
+			$this->engine()->set_consumer( $this->consumer );
 		}
 		return $this->consumer;
 	}
@@ -153,6 +152,14 @@ final class Plugin {
 			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, wp_timezone_string(), Settings::engine_limits( Settings::get() ) );
 			$this->engine->set_paused( EmergencyPause::active() );
 			$this->engine->set_provider_contracts( array( $this, 'provider_contracts' ) );
+			/**
+			 * Runs whose definition lives outside this site (network workflows of a multisite network, spec section 17):
+			 * an add-on sets resolver, gate and observer. Without them such runs pause ("foreign_unavailable").
+			 *
+			 * @since 0.2.0
+			 * @param \WorkflowCaptain\Engine\ForeignRuns $foreign
+			 */
+			do_action( 'workflow_captain_foreign_runs_v1', $this->engine->foreign() );
 		}
 		return $this->engine;
 	}

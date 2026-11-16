@@ -364,6 +364,7 @@ final class WorkflowsPage {
 			EngineStore::WF_ACTIVE => __( 'Aktiv', 'workflow-captain' ),
 			EngineStore::WF_PAUSED => __( 'Pausiert', 'workflow-captain' ),
 			EngineStore::WF_ARCHIVED => __( 'Archiviert', 'workflow-captain' ),
+			EngineStore::WF_NETWORK  => __( 'Netzwerk', 'workflow-captain' ),
 		);
 		return $labels[ $status ] ?? $status;
 	}

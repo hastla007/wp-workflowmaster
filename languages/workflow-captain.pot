@@ -29,7 +29,7 @@ msgid "%d Std."
 msgstr ""
 
 #. translators: %s: name of the original workflow
-#: src/Engine/Workflows.php:149
+#: src/Engine/Workflows.php:154
 msgid "%s (Kopie)"
 msgstr ""
 
@@ -49,7 +49,7 @@ msgstr ""
 msgid "4. Veröffentlichen. Ab dann startet jedes passende Ereignis einen Lauf; die Version bleibt für laufende Läufe unverändert."
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:379
+#: src/Admin/WorkflowsPage.php:380
 msgid "Abgebrochen"
 msgstr ""
 
@@ -77,7 +77,7 @@ msgstr ""
 msgid "Aktion"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:377
+#: src/Admin/WorkflowsPage.php:378
 msgid "Aktion erforderlich"
 msgstr ""
 
@@ -167,7 +167,7 @@ msgstr ""
 msgid "Auslöser"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:375
+#: src/Admin/WorkflowsPage.php:376
 msgid "Beendet (Bedingung)"
 msgstr ""
 
@@ -212,7 +212,7 @@ msgstr ""
 msgid "Connector freigeben"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:86 src/Admin/WorkflowsPage.php:97 src/Admin/WorkflowsPage.php:110 src/Admin/WorkflowsPage.php:116 src/Admin/WorkflowsPage.php:127 src/Admin/WorkflowsPage.php:140 src/Admin/WorkflowsPage.php:156 src/Admin/WorkflowsPage.php:170 src/Plugin.php:343 src/Plugin.php:358
+#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:48 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:86 src/Admin/WorkflowsPage.php:97 src/Admin/WorkflowsPage.php:110 src/Admin/WorkflowsPage.php:116 src/Admin/WorkflowsPage.php:127 src/Admin/WorkflowsPage.php:140 src/Admin/WorkflowsPage.php:156 src/Admin/WorkflowsPage.php:170 src/Plugin.php:350 src/Plugin.php:365
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
@@ -434,7 +434,7 @@ msgstr ""
 msgid "Ereignistypen"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:374
+#: src/Admin/WorkflowsPage.php:375
 msgid "Erfolgreich"
 msgstr ""
 
@@ -493,7 +493,7 @@ msgstr ""
 msgid "Exportieren"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:376
+#: src/Admin/WorkflowsPage.php:377
 msgid "Fehlgeschlagen"
 msgstr ""
 
@@ -607,7 +607,7 @@ msgstr ""
 msgid "Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows."
 msgstr ""
 
-#: src/Plugin.php:379
+#: src/Plugin.php:386
 msgid "Jede Minute (Workflow Captain)"
 msgstr ""
 
@@ -706,7 +706,7 @@ msgstr ""
 msgid "Läufe, die eine Entscheidung brauchen"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:373
+#: src/Admin/WorkflowsPage.php:374
 msgid "Läuft"
 msgstr ""
 
@@ -718,11 +718,11 @@ msgstr ""
 msgid "Markierung"
 msgstr ""
 
-#: src/Engine/Actions/Tag.php:26
+#: src/Engine/Actions/Tag.php:27
 msgid "Markierung entfernen"
 msgstr ""
 
-#: src/Engine/Actions/Tag.php:26
+#: src/Engine/Actions/Tag.php:27
 msgid "Markierung setzen"
 msgstr ""
 
@@ -734,16 +734,20 @@ msgstr ""
 msgid "Nachricht"
 msgstr ""
 
-#: src/Engine/Actions/NotifyUser.php:28
+#: src/Engine/Actions/NotifyUser.php:30
 msgid "Nachricht an Benutzer"
 msgstr ""
 
-#: src/Engine/Actions/NotifyAdmin.php:31
+#: src/Engine/Actions/NotifyAdmin.php:32
 msgid "Nachricht an Betreiber"
 msgstr ""
 
 #: src/Admin/ConnectorsPage.php:102 src/Admin/WorkflowsPage.php:222 src/Admin/WorkflowsPage.php:252
 msgid "Name"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:367
+msgid "Netzwerk"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:195
@@ -794,7 +798,7 @@ msgstr ""
 msgid "Notiz"
 msgstr ""
 
-#: src/Engine/Actions/Note.php:27
+#: src/Engine/Actions/Note.php:28
 msgid "Notiz hinzufügen"
 msgstr ""
 
@@ -818,7 +822,7 @@ msgstr ""
 msgid "Pausieren"
 msgstr ""
 
-#: src/Admin/EventsPage.php:141 src/Admin/WorkflowsPage.php:365 src/Admin/WorkflowsPage.php:378
+#: src/Admin/EventsPage.php:141 src/Admin/WorkflowsPage.php:365 src/Admin/WorkflowsPage.php:379
 msgid "Pausiert"
 msgstr ""
 

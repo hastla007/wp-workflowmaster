@@ -87,6 +87,8 @@ final class Workflows {
 		$name = '' === $name ? __( 'Ohne Namen', 'workflow-captain' ) : mb_substr( $name, 0, 191 );
 		if ( null === $id ) {
 			$id = $this->store->create_workflow( $name, $graph, $this->clock->mysql() );
+		} elseif ( $this->is_anchor( $id ) ) {
+			return array( $id, array( 'workflow:network' ) );
 		} else {
 			$this->store->update_draft( $id, $name, $graph, $this->clock->mysql() );
 		}
@@ -102,6 +104,9 @@ final class Workflows {
 		$workflow = $this->store->get_workflow( $id );
 		if ( null === $workflow ) {
 			return array( 'workflow:not_found' );
+		}
+		if ( EngineStore::WF_NETWORK === $workflow['status'] ) {
+			return array( 'workflow:network' );
 		}
 		$graph = $workflow['draft'];
 		$v     = array_merge( Graph::violations( $graph, $this->actions ), $this->availability( $graph ) );
@@ -130,19 +135,19 @@ final class Workflows {
 	}
 
 	public function pause( int $id ): bool {
-		return $this->store->set_workflow_status( $id, EngineStore::WF_PAUSED, $this->clock->mysql() );
+		return ! $this->is_anchor( $id ) && $this->store->set_workflow_status( $id, EngineStore::WF_PAUSED, $this->clock->mysql() );
 	}
 
 	/** Activates the last published version again. */
 	public function resume( int $id ): bool {
 		$workflow = $this->store->get_workflow( $id );
-		return null !== $workflow && null !== $workflow['published_version_id'] && $this->store->set_workflow_status( $id, EngineStore::WF_ACTIVE, $this->clock->mysql() );
+		return null !== $workflow && EngineStore::WF_NETWORK !== $workflow['status'] && null !== $workflow['published_version_id'] && $this->store->set_workflow_status( $id, EngineStore::WF_ACTIVE, $this->clock->mysql() );
 	}
 
 	/** Copies the draft into a new draft workflow (konzept 8.2). Returns the new ID. */
 	public function duplicate( int $id ): int {
 		$wf = $this->store->get_workflow( $id );
-		if ( null === $wf ) {
+		if ( null === $wf || EngineStore::WF_NETWORK === $wf['status'] ) {
 			return 0;
 		}
 		/* translators: %s: name of the original workflow */
@@ -155,7 +160,7 @@ final class Workflows {
 	 * open continue; a human cancels them if wanted.
 	 */
 	public function archive( int $id ): bool {
-		return null !== $this->store->get_workflow( $id ) && $this->store->set_workflow_status( $id, EngineStore::WF_ARCHIVED, $this->clock->mysql() );
+		return null !== $this->store->get_workflow( $id ) && ! $this->is_anchor( $id ) && $this->store->set_workflow_status( $id, EngineStore::WF_ARCHIVED, $this->clock->mysql() );
 	}
 
 	/** Brings an archived workflow back as paused (if it was published) or as draft. */
@@ -165,6 +170,15 @@ final class Workflows {
 			return false;
 		}
 		return $this->store->set_workflow_status( $id, null === $wf['published_version_id'] ? EngineStore::WF_DRAFT : EngineStore::WF_PAUSED, $this->clock->mysql() );
+	}
+
+	/**
+	 * Whether the workflow is the anchor of runs from another site of the network (EngineStore::WF_NETWORK): it is
+	 * defined in the Network Admin and is never edited, published, paused or archived on this site.
+	 */
+	private function is_anchor( int $id ): bool {
+		$wf = $this->store->get_workflow( $id );
+		return null !== $wf && EngineStore::WF_NETWORK === $wf['status'];
 	}
 
 	/** Cancels a run: waiting steps do not run; finished actions are not undone (konzept 15.3). */

@@ -96,7 +96,14 @@ final class FixedClock extends Clock {
 	}
 }
 
-final class FakeDirectory implements \WorkflowCaptain\Engine\Directory {
+final class FakeDirectory implements \WorkflowCaptain\Engine\Directory, \WorkflowCaptain\Engine\SiteMembers {
+
+	/** @var int[] Users who are members of this site (multisite). */
+	public array $members = array( 1, 17 );
+
+	public function is_member( int $user_id ): bool {
+		return in_array( $user_id, $this->members, true );
+	}
 
 	/** @var array<int,string[]> Capabilities per user. */
 	public array $caps = array( 1 => array( 'activate_workflows', 'manage_options' ) );
