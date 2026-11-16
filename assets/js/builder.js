@@ -471,10 +471,13 @@
 		}
 
 		/** Mails the core plugin already sends for the trigger event (R-9.4), so operators avoid duplicates. */
-		coreMailHint() {
+		coreMailHint( action ) {
 			const trigger = this.graph.nodes.find( ( x ) => 'trigger' === x.type );
 			const mails = ( trigger && this.config.coreMails && this.config.coreMails[ trigger.event ] ) || [];
-			const box = el( 'div', { class: 'wfc-core-mails notice notice-info inline' } );
+			// Possible duplicate: the same circle of recipients already gets a core mail (operator vs. customers).
+			const toOperator = ( m ) => 'Betreiber' === m.to;
+			const duplicate = mails.some( ( m ) => ( 'notify.admin' === action ) === toOperator( m ) );
+			const box = el( 'div', { class: 'wfc-core-mails notice inline ' + ( duplicate ? 'notice-warning wfc-core-mails-duplicate' : 'notice-info' ) } );
 			if ( ! trigger || ! trigger.event ) {
 				return box;
 			}
@@ -484,6 +487,9 @@
 			}
 			box.appendChild( el( 'p', { text: this.t( 'coreMailsIntro', 'Das Kern-Plugin verschickt zu diesem Ereignis bereits:' ) } ) );
 			box.appendChild( el( 'ul', {}, mails.map( ( m ) => el( 'li', { text: m.to + ': ' + m.mail + ' (' + m.off + ( m.note ? '; ' + m.note : '' ) + ')' } ) ) ) );
+			if ( duplicate ) {
+				box.appendChild( el( 'p', { role: 'status', text: this.t( 'coreMailsDuplicate', 'Möglicherweise doppelt: Dieser Empfängerkreis bekommt zum selben Anlass schon eine Mail des Kern-Plugins.' ) } ) );
+			}
 			box.appendChild( el( 'p', { text: this.t( 'coreMailsAdvice', 'Senden Sie dieselbe Information nicht ein zweites Mal. Workflow Captain schaltet keine Mail der Kerne ab.' ) } ) );
 			return box;
 		}
@@ -526,7 +532,7 @@
 					box.appendChild( p );
 				} );
 				if ( n.action && 0 === n.action.indexOf( 'notify.' ) ) {
-					box.appendChild( this.coreMailHint() );
+					box.appendChild( this.coreMailHint( n.action ) );
 				}
 			} else if ( 'condition' === n.type ) {
 				const form = this.conditionForm( n );

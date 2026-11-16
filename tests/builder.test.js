@@ -28,6 +28,7 @@ const config = {
 	actions: [
 		{ key: 'notify.admin', label: 'Nachricht an Betreiber', fields: [ { key: 'subject', label: 'Betreff' } ] },
 		{ key: 'workflow.tag.set', label: 'Markierung setzen', fields: [ { key: 'tag', label: 'Markierung' } ] },
+		{ key: 'notify.user', label: 'Nachricht an Benutzer', fields: [ { key: 'subject', label: 'Betreff' } ] },
 	],
 	events: [ 'pass.ticket.checked_in', 'pass.order.paid' ],
 	fields: { 'pass.ticket.checked_in': { checkin_source: 'string', device_id: 'integer', area_id: 'integer' } },
@@ -137,6 +138,10 @@ function check( label, ok ) {
 	await page.press( '.wfc-inspector input[list="wfc-events"]', 'Tab' );
 	await page.click( '.wfc-node[data-id="mail"]' );
 	check( 'notify node lists the core mail of the trigger event', ( await page.$eval( '.wfc-core-mails', ( x ) => x.textContent ) ).includes( 'Käufer: tickets' ) );
+	check( 'operator message is not flagged when the core mail goes to the buyer', 0 === ( await page.$$( '.wfc-core-mails-duplicate' ) ).length );
+	await page.selectOption( '.wfc-inspector select', 'notify.user' );
+	check( 'customer message is flagged as possible duplicate of the buyer mail', 1 === ( await page.$$( '.wfc-core-mails-duplicate' ) ).length );
+	await page.selectOption( '.wfc-inspector select', 'notify.admin' );
 	await page.click( '.wfc-node[data-id="t"]' );
 	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.ticket.checked_in' );
 	await page.press( '.wfc-inspector input[list="wfc-events"]', 'Tab' );
