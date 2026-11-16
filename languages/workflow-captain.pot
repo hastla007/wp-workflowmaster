@@ -65,7 +65,7 @@ msgstr ""
 msgid "Action Scheduler (von WooCommerce)"
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:82
+#: src/Admin/ProvidersPage.php:133
 msgid "Adapter"
 msgstr ""
 
@@ -98,7 +98,7 @@ msgstr ""
 msgid "Aktive Notfallpause"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:42 src/Admin/ProvidersPage.php:82
+#: src/Admin/OverviewPage.php:42 src/Admin/ProvidersPage.php:133
 msgid "Aktive Workflows"
 msgstr ""
 
@@ -418,7 +418,7 @@ msgstr ""
 msgid "Ereignisse"
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:77
+#: src/Admin/ProvidersPage.php:128
 msgid "Ereignisse der Captain-Produkte kommen über Adapter aus den Pro-Add-ons. Die Adapter für WordPress und WooCommerce (ab Version 8.2) sind eingebaut und brauchen keine Lizenz. Ohne Adapter werden offene Ereignisse pausiert, nicht gelöscht."
 msgstr ""
 
@@ -430,7 +430,7 @@ msgstr ""
 msgid "Ereignisse und Schritte je Worker-Durchlauf"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:102 src/Admin/ProvidersPage.php:82
+#: src/Admin/ConnectorsPage.php:102 src/Admin/ProvidersPage.php:133
 msgid "Ereignistypen"
 msgstr ""
 
@@ -550,7 +550,7 @@ msgstr ""
 msgid "Gespeichert."
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:82
+#: src/Admin/ProvidersPage.php:133
 msgid "Gespeicherte Ereignisse"
 msgstr ""
 
@@ -613,6 +613,10 @@ msgstr ""
 
 #: src/Admin/EventsPage.php:80
 msgid "Kein Adapter angemeldet. Ereignisse der Captain-Produkte kommen erst an, wenn ein Add-on einen Adapter anmeldet."
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:102
+msgid "Kein aktiver Workflow hört auf dieses Ereignis."
 msgstr ""
 
 #: src/Admin/SiteHealth.php:72
@@ -746,7 +750,7 @@ msgstr ""
 msgid "Neu"
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:79
+#: src/Admin/ProvidersPage.php:130
 msgid "Noch kein Adapter angemeldet und keine Ereignisse gespeichert."
 msgstr ""
 
@@ -830,7 +834,7 @@ msgstr ""
 msgid "Planung des Workers"
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:82
+#: src/Admin/ProvidersPage.php:133
 msgid "Plugin / Vertrag"
 msgstr ""
 
@@ -838,11 +842,11 @@ msgstr ""
 msgid "Private Adresse oder interner Name: Die Verbindung braucht eine Ausnahme für genau diesen Host und Port. Der Test läuft vom WordPress-Server aus; Firewall, Docker-Netz oder Reverse Proxy müssen ihn durchlassen."
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:82
+#: src/Admin/ProvidersPage.php:133
 msgid "Produkt"
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:76 src/Admin/TemplatesPage.php:76
+#: src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:123 src/Admin/TemplatesPage.php:76
 msgid "Provider"
 msgstr ""
 
@@ -904,6 +908,15 @@ msgstr ""
 
 #: src/Admin/ConnectorsPage.php:102 src/Admin/SettingsPage.php:73
 msgid "Status"
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:145
+msgid "Testereignis"
+msgstr ""
+
+#. translators: %s: event type
+#: src/Admin/ProvidersPage.php:100
+msgid "Testereignis %s mit Beispielwerten, als Testlauf ohne Seiteneffekte:"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:262
@@ -1007,6 +1020,11 @@ msgstr ""
 msgid "Workflow"
 msgstr ""
 
+#. translators: 1: workflow number, 2: outcome code, 3: number of steps
+#: src/Admin/ProvidersPage.php:108
+msgid "Workflow %1$d: %2$s nach %3$d Schritten"
+msgstr ""
+
 #: src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:57 src/Admin/SiteHealth.php:27 src/Admin/SiteHealth.php:77 src/Admin/SiteHealth.php:94
 msgid "Workflow Captain"
 msgstr ""
@@ -1093,11 +1111,11 @@ msgstr ""
 msgid "Zustand: %s"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:76 src/Admin/ProvidersPage.php:73
+#: src/Admin/ConnectorsPage.php:76 src/Admin/ProvidersPage.php:120
 msgid "abgelehnt"
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:72
+#: src/Admin/ProvidersPage.php:119
 msgid "angemeldet"
 msgstr ""
 
@@ -1125,7 +1143,7 @@ msgstr ""
 msgid "ja – System-Cron nötig: wp workflow-captain process"
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:74
+#: src/Admin/ProvidersPage.php:121
 msgid "kein Adapter (Add-on fehlt, inaktiv oder ohne Lizenz)"
 msgstr ""
 

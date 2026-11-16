@@ -977,3 +977,11 @@ $core_keys = array_column( array_filter( $acat['actions'], fn( $r ) => 'workflow
 check( 'WF-INT-01 action catalog: every core action listed with capability and idempotency as in the code', $ok && 5 === count( $core_keys ) );
 $engine_code = (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/Engine.php' );
 check( 'WF-INT-01 action catalog: every documented pause reason exists in the engine', array() === array_filter( $acat['pause_reasons'], fn( $r ) => ! str_contains( $engine_code, "'" . $r . "'" ) ) );
+
+// ----- WF-INT-14: test event per provider (test run without side effects)
+$e   = engine_site();
+publish( $e, sample_graph() );
+$smp = \WorkflowCaptain\Admin\ProvidersPage::sample_event( 'pass.ticket.checked_in', array( 'checkin_source' => 'string', 'device_id' => 'integer', 'reentry' => 'boolean' ) );
+check( 'WF-INT-14 sample event: values per data type, no personal data', 'beispiel' === $smp['data']['checkin_source'] && 1 === $smp['data']['device_id'] && false === $smp['data']['reentry'] );
+$rep = \WorkflowCaptain\Admin\ProvidersPage::test_event( 'pass.ticket.checked_in', array( 'checkin_source' => 'string' ), $e->store, $e->actions );
+check( 'WF-INT-14 test event: every active workflow of the type runs as a test run, nothing executed', 1 === count( $rep ) && 0 === count( $e->store->find_runs( array(), 10, 0 ) ) && 0 === count( $e->dir->mails ?? array() ) );
