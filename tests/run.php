@@ -386,6 +386,7 @@ check( 'C-16 site B sees no event of site A', array() === $b->store->find( array
 check( 'C-16 the same event on site B is not a duplicate', Consumer::CAPTURED === $b->consumer->capture( $b->adapter, checkin() ) );
 
 require __DIR__ . '/engine-tests.php';
+require __DIR__ . '/security-tests.php';
 
 echo "\n{$passed} passed, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );
