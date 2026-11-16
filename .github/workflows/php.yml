@@ -5,7 +5,8 @@ on:
   push:
     paths:
       - "**.php"
-      - "docs/examples/**"
+      - "docs/**"
+      - "languages/**"
       - ".github/workflows/php.yml"
   pull_request:
     paths:
@@ -37,3 +38,5 @@ jobs:
         run: php tests/license-guard.php
       - name: Tests
         run: php tests/run.php
+      - name: Translation template up to date
+        run: php bin/make-pot.php --check
