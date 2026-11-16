@@ -1,6 +1,6 @@
 # Kompatibilitätsmatrix der Provider
 
-Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.7, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
+Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.8, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
 
 Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens die Mindestversion hat und dieselbe MAJOR-Version trägt (R-3.3, R-13.4). Die Plugin-Version allein entscheidet nicht. Alle Angaben sind am Code gelesen; „Branch“ heißt: noch nicht nach `main` gemergt.
 
@@ -16,7 +16,7 @@ Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens 
 | Affiliate Captain | `wpaffiliatemaster` Branch `claude/plugin-todo-liste-2a83v4` `a3f20cc` | 0.15.0 | `WPAC_CONTRACT_VERSION` = `1.4.0` | `1.4.0` | 21 Ereignistypen | Pro, `AffiliateAdapter` |
 | Lizenzserver (nur im Shop des Anbieters) | `wp-license` Branch `claude/zen-babbage-7q4nac` `caebdcc` | 0.2.0 | `WPLC_CONTRACT_VERSION` = `1.0.0` | `1.0.0` mit Lesefunktion `WPLC\Events\LicenseReader::get()`; ohne Konstante Rückfall über Plugin 0.2.0 und `PlanChange::get_license()` (veraltet) | 3 Ereignistypen | Pro, `LicenseAdapter` |
 | Form Captain | `wp-formmaster` `fc1f206` | 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.0.0` | Major 1 | Katalog `form.*` seit Spezifikation 1.0.0-draft.7 (4.6.1, 4.6.2); eigener Workflow-Vertrag zurückgezogen (F-12) | Workflow Captain Pro (`FormAdapter`), bleibt aus bis Form Captain Pro |
-| Review Captain | `wp-reviewmaster` `main` `33d1362` | 0.1.0-dev | fehlt auf `main` | – | kein Katalog in Version 1 (4.6) | keiner |
+| Review Captain | `wp-reviewmaster` `main` `863b92b`, Branch `claude/plugin-todo-liste-2a83v4` (Vertragskonstante) | 0.1.0-dev | `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.0.0` (nur Branch; auf `main` fehlt sie) | Major 1, mindestens `1.0.0`; ohne Konstante Rückfall über `REVIEW_CAPTAIN_VERSION` und `Events::SCHEMA` = `review_captain.review.v1` (R-3.3, veraltet, sobald die Konstante auf `main` ist). Sterne über `reviews()->find_by_uuid()` ohne Vertrag (R-4.27) | Katalog `review.*` (3 Typen) seit Spezifikation 1.0.0-draft.8 (4.6.3); keine Befehle (R-4.30, F-23); eigener Workflow-Vertrag nicht normativ (F-12) | Workflow Captain Pro (`ReviewAdapter`), bleibt aus bis Review Captain Pro (captain-pro Pull Request 10) |
 | Course Captain | – | kein Code | – | – | – | keiner |
 | Eigene Connectoren | eigenes Plugin | eigene | `contract` im Manifest (`CONNECTOR-CONTRACT.md`) | Workflow Captain Pro als Laufzeit (Filter `workflow_captain_connector_runtime_allowed_v1`, F-18a); die eigene Lizenz prüft der Connector selbst | eigene Typen `x<präfix>.*` | im Kern, freigeschaltet durch Pro |
 
