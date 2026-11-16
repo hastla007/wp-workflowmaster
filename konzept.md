@@ -220,13 +220,13 @@ Eigene Connector-Plugins können projektbezogene Trigger und Aktionen bereitstel
 ### Affiliate Captain
 
 **Mögliche Trigger:** Partnerbewerbung eingegangen, Partner freigegeben/abgelehnt/pausiert, Provision erstellt/freigegeben/abgelehnt, Auszahlung abgeschlossen (wenn offizieller Hook verfügbar).  
-**Mögliche Aktionen:** Admin-/Partnerbenachrichtigung; erlaubte Partnerstatusaktion nur über vorhandene Kern-API und eigene Capability. Keine eigene Provisionsberechnung, Auszahlung, Bankdatenbearbeitung oder Kopie von Partner-/Kundendaten.  
+**Mögliche Aktionen:** Admin-/Partnerbenachrichtigung; erlaubte Partnerstatusaktion nur über vorhandene Kern-API und eigene Capability. Keine eigene Provisionsberechnung, Auszahlung, Bankdatenbearbeitung oder Kopie von Partner-/Kundendaten. *[Überholt durch D11 (Spezifikation 8.1, 8.2): Ein Workflow ändert keinen Partnerstatus und bucht oder korrigiert keine Provision; erlaubt sind nur Benachrichtigungen, Markierungen und Notizen im Consumer und die vier Gutschein-Befehle.]*
 **Sicherheit:** Steuer-, IBAN-, Bewerbungs- und Kundendaten sind keine Workflow-Tokens. Provisionsereignisse bleiben idempotent und werden nicht durch parallele WooCommerce-/Voucher-Verkäufe doppelt erzeugt.
 
 ### Form Captain
 
 **Mögliche Trigger:** Formular abgeschickt, bestimmtes Formular/Antwort-/Feldbedingung erfüllt, Spam erkannt, Einreichung freigegeben/abgelehnt.  
-**Mögliche Aktionen:** Admin-Mail, interner Follow-up, Felder an erlaubte Suite-API übergeben, Einreichung markieren/archivieren. Formular besitzt Einsendungen; Workflow bekommt nur explizit freigegebene, datenschutzmarkierte Felder. Datenweitergabe an Dritte erfordert klare Betreiberkonfiguration und Einwilligungsprüfung.
+**Mögliche Aktionen:** Admin-Mail, interner Follow-up, Felder an erlaubte Suite-API übergeben, Einreichung markieren/archivieren. Formular besitzt Einsendungen; Workflow bekommt nur explizit freigegebene, datenschutzmarkierte Felder. Datenweitergabe an Dritte erfordert klare Betreiberkonfiguration und Einwilligungsprüfung. *[Überholt durch D11 (Spezifikation 8.1): Version 1 kennt keinen Befehl, der Formularwerte an einen Captain-Dienst übergibt oder einen Partner- bzw. Review-Eintrag anlegt; ein Gutschein entsteht nur über `voucher.issue` mit den Grenzen aus 8.3. Der Katalog `form.*` folgt in einer MINOR-Version (4.6).]*
 
 ### Review Captain (Folgephase)
 
@@ -632,7 +632,7 @@ Die folgende Liste ist verbindlicher Zielumfang. Die PHP-Eventnamen sind nicht a
 #### Form Captain
 
 **Trigger:** Formular eingereicht; bestimmte freigegebene Felder erfüllen Bedingung; Spam erkannt; Einsendung markiert/archiviert.  
-**Aktionen:** Admin-Benachrichtigung; Submission-Status markieren; Formularwerte an einen erlaubten Captain-Service übergeben; bei klarer Bestätigung einen Voucher- oder Partnerantrag über dessen Service erstellen.  
+**Aktionen:** Admin-Benachrichtigung; Submission-Status markieren; Formularwerte an einen erlaubten Captain-Service übergeben; bei klarer Bestätigung einen Voucher- oder Partnerantrag über dessen Service erstellen. *[Überholt durch D11 (Spezifikation 8.1): Version 1 kennt keinen Befehl, der Formularwerte an einen Captain-Dienst übergibt oder einen Partner- bzw. Review-Eintrag anlegt; ein Gutschein entsteht nur über `voucher.issue` mit den Grenzen aus 8.3. Der Katalog `form.*` folgt in einer MINOR-Version (4.6).]*
 **Schutz:** Auswahl konkreter Felder im Editor, Datenschutzkennzeichnung und Consent-Check. Keine komplette Einsendung ungeprüft per E-Mail/HTTP kopieren. Keine Zahlung oder Vertragsannahme ohne ausdrückliche Bestätigung im Formularflow.
 
 #### Review Captain
@@ -728,7 +728,7 @@ Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punk
 | Nutzungslimits | Keine Task-Credits oder monatlichen Run-Limits. Nur Lizenz-Site-Limits und technische Queue-Schutzgrenzen. |
 | Integrationsemantik | Mehrere Einstiegsereignisse starten grundsätzlich je einen eigenen Lauf; Warten auf zusammengehörige Ereignisse erfolgt nur über einen expliziten Pro-Korrelationsknoten. |
 | Ausführungsbasis | Lokal auf der WordPress-Seite; Action Scheduler bei WooCommerce, WP-Cron-Fallback mit System-Cron-Empfehlung |
-| Multisite | Site-lokale Flows bleiben getrennt; netzwerkweite Cross-Site-Flows sind Pro v1, nur innerhalb derselben WP-Multisite und mit expliziter Teilnahme-/Ziel-Site-Freigabe |
+| Multisite | Site-lokale Flows bleiben getrennt; netzwerkweite Cross-Site-Flows sind Pro v1, nur innerhalb derselben WP-Multisite und mit expliziter Teilnahme-/Ziel-Site-Freigabe *[Offen (F-07): Die Spezifikation nimmt bis zur Antwort des Inhabers an, dass Ereignisse ihre Website nicht verlassen und netzwerkweite Abläufe nicht Teil von Version 1 sind (Spezifikation Abschnitt 1, R-12.6).]* |
 | Multisite-Sitelimit | Jede eindeutige beteiligte Blog-ID (Quell- oder Ziel-Site) zählt gegen den Plan-Sitelimit; Netzwerkmodus braucht mindestens zwei lizenzierte Sites; Fan-out bleibt auf lizenzierte und freigegebene Sites begrenzt |
 | Kompatibilität | WordPress 6.8+, PHP 8.3+; WooCommerce 8.0+ optional für Shop-Provider. Jeder Suite-Adapter verlangt zusätzlich die im Providervertrag definierte Kernplugin-Mindestversion. |
 | Externe Systeme | v1 enthält versionierte Connector-SDK/Providerverträge für kundenspezifische WordPress-Projekte sowie Pro-Webhooks für externe Systeme. Keine breite Bibliothek fertiger Drittanbieter-Apps. |
@@ -817,6 +817,8 @@ Workflow-Aktionen laufen als typisierte Commands im Plugin, das die Daten besitz
 | Contract-Major ist inkompatibel | Provider schließt sicher; nur betroffene Runs pausieren mit Migrationshinweis. Andere Provider laufen weiter. |
 
 ### 16.5 Netzwerkweite Workflows in WordPress Multisite
+
+> **Offen (F-07):** Die Spezifikation (`docs/SPEC-suite-events.md`, Abschnitt 1, R-12.6) nimmt bis zur Antwort des Inhabers an, dass Ereignisse ihre Website nicht verlassen und netzwerkweite Abläufe nicht Teil von Version 1 sind; die Empfehlung ist, sie in eine spätere MINOR-Version zu verschieben. Dieser Abschnitt beschreibt den Plan für den Fall, dass sie kommen.
 
 **Geltungsbereich und Lizenz**
 
@@ -917,7 +919,7 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 
 **Auslöser:** validierte Einsendung gespeichert; Spamentscheidung; Eintrag geprüft, freigegeben, abgelehnt oder archiviert. Tokens stammen nur aus ausgewählten Feld-IDs und enthalten Consent-/Feldstatus.
 
-**Aktionen:** interne E-Mail/Folgeaufgabe; Submission markieren; nach menschlicher Freigabe Voucher, Affiliate-Pending oder Review-Entwurf über Zielservice anlegen. Keine Zahlung, Partnerfreigabe oder öffentliche Reviewveröffentlichung.
+**Aktionen:** interne E-Mail/Folgeaufgabe; Submission markieren; nach menschlicher Freigabe Voucher, Affiliate-Pending oder Review-Entwurf über Zielservice anlegen. Keine Zahlung, Partnerfreigabe oder öffentliche Reviewveröffentlichung. *[Überholt durch D11 (Spezifikation 8.1): Version 1 kennt keinen Befehl, der Formularwerte an einen Captain-Dienst übergibt oder einen Partner- bzw. Review-Eintrag anlegt; ein Gutschein entsteht nur über `voucher.issue` mit den Grenzen aus 8.3. Der Katalog `form.*` folgt in einer MINOR-Version (4.6).]*
 
 **Szenarien:** Firmenanfrage → Form speichert, Workflow informiert Vertrieb, nach Freigabe erstellt Voucher Service den Gutschein. Partnerformular → Affiliate-Pending. Feedbackformular → Review erhält ausdrücklich gemappte Felder zur Moderation, standardmäßig unverifiziert.
 
@@ -936,7 +938,7 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 | Kauf → Voucher → Einlösung → Review | Order paid beobachten; Voucher-Einlösung abwarten; Anfrage planen, bei Refund/Opt-out stoppen | Woo: Order; Voucher: Code/Saldo; Review: Anfrage |
 | Ticket → Einlass → Eventfeedback | Pass-Check-in; Verzögerung; Teilnehmerresolver; Review-Schedule; Absage/Refund unterdrücken | Pass: Ticket/Einlass; Review: Anfrage |
 | Event abgesagt | Teilnehmer informieren; offene Review-Anfrage stornieren; Refundstatus beobachten | Pass: Absage; Woo: Refund |
-| Formular → Freigabe → Gutschein/Partner | Interne Freigabe; Voucher ausstellen oder Affiliate-Pending erstellen | Form, Voucher bzw. Affiliate bleiben Besitzer |
+| Formular → Freigabe → Gutschein/Partner | Interne Freigabe; Voucher ausstellen oder Affiliate-Pending erstellen | Form, Voucher bzw. Affiliate bleiben Besitzer. *[Überholt durch D11: nur der Gutschein über `voucher.issue`; kein Affiliate-Pending.]* |
 | Refund → Affiliatekorrektur | Dedupe nach Refund-ID; Affiliate-Ergebnis verknüpfen; Hinweis senden | Affiliate: Verkaufs-/Refundquelle und Ledger |
 | License/payment status | Admin-/Kundenhinweis; keine Lizenzstatusänderung | WP License: Vertrag, Lizenz und Zahlung |
 
@@ -1052,6 +1054,8 @@ flowchart LR
 
 ### 17.13 Multisite-Netzwerkabläufe: Site A → Site B
 
+> **Offen (F-07):** Die Spezifikation (`docs/SPEC-suite-events.md`, Abschnitt 1, R-12.6) nimmt bis zur Antwort des Inhabers an, dass Ereignisse ihre Website nicht verlassen und netzwerkweite Abläufe nicht Teil von Version 1 sind; die Empfehlung ist, sie in eine spätere MINOR-Version zu verschieben. Dieser Abschnitt beschreibt den Plan für den Fall, dass sie kommen.
+
 Diese V1-Szenarien laufen nur innerhalb derselben Multisite und setzen lizenzierte, freigegebene Quell-/Ziel-Sites voraus.
 
 | Quell-Site / Ereignis | Ziel-Site / erlaubte Aktion | Guardrails |
@@ -1142,6 +1146,8 @@ Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native
 
 Die detaillierten Arbeitspakete für Providerverträge, Lizenz-/Shoppläne, UI, Migration, Kompatibilität und Releaseprüfung stehen in [TODO.md](TODO.md), Abschnitt Suite-Provider. Abschnitt 18 beschreibt weiterhin die verbindliche Architektur und Ownership-Grenzen.
 ### 18.8 Multisite-Netzwerkmodus und Site-Ownership
+
+> **Offen (F-07):** Die Spezifikation (`docs/SPEC-suite-events.md`, Abschnitt 1, R-12.6) nimmt bis zur Antwort des Inhabers an, dass Ereignisse ihre Website nicht verlassen und netzwerkweite Abläufe nicht Teil von Version 1 sind; die Empfehlung ist, sie in eine spätere MINOR-Version zu verschieben. Dieser Abschnitt beschreibt den Plan für den Fall, dass sie kommen.
 
 Site-lokale Workflows bleiben unabhängig. Netzwerkweite Flows sind eine zusätzliche, bewusst aktivierte Pro-Ebene mit Network-Admin als Orchestrator und expliziten Quell-/Ziel-Site-Freigaben. Netzwerk-Admin darf nicht automatisch alle lokalen Datenfelder oder Aktionen jeder Site erhalten. Quell- und Ziel-Site können ihre Teilnahme und Scopes widerrufen; laufende Netzwerk-Runs stoppen nur die noch nicht ausgeführten betroffenen Steps. Erfolgreiche Side Effects bleiben als Child-Steps sichtbar.
 
