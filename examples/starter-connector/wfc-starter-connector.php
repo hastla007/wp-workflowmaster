@@ -14,19 +14,23 @@
 
 defined( 'ABSPATH' ) || exit;
 
-require_once __DIR__ . '/src/Manifest.php';
-require_once __DIR__ . '/src/TicketAdapter.php';
-require_once __DIR__ . '/src/TicketNoteAction.php';
-
 /*
- * Without Workflow Captain these hooks simply never fire: the connector keeps working on its own.
+ * The classes implement interfaces of Workflow Captain, so they are loaded only inside its hooks: plugins load in
+ * alphabetical order (this folder may come before "workflow-captain"), and without Workflow Captain the hooks never
+ * fire and the connector keeps working on its own.
  */
+function wfc_starter_connector_load(): void {
+	require_once __DIR__ . '/src/Manifest.php';
+	require_once __DIR__ . '/src/TicketAdapter.php';
+	require_once __DIR__ . '/src/TicketNoteAction.php';
+}
 
 // 1. Register the connector with its manifest. It stays off until the operator enables it under
 // "Workflow Captain → Eigene Connectoren".
 add_action(
 	'workflow_captain_register_connectors_v1',
 	static function ( $registry ): void {
+		wfc_starter_connector_load();
 		$adapter = new \WfcStarterConnector\TicketAdapter();
 		if ( $registry->add( \WfcStarterConnector\Manifest::get(), $adapter ) ) {
 			$adapter->listen();
@@ -38,6 +42,7 @@ add_action(
 add_action(
 	'workflow_captain_actions_v1',
 	static function ( $registry ): void {
+		wfc_starter_connector_load();
 		$registry->add( new \WfcStarterConnector\TicketNoteAction() );
 	}
 );
