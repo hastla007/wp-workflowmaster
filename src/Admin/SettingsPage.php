@@ -7,6 +7,7 @@
 
 namespace WorkflowCaptain\Admin;
 
+use WorkflowCaptain\Audit;
 use WorkflowCaptain\Install;
 use WorkflowCaptain\Plugin;
 use WorkflowCaptain\Security\Vault;
@@ -24,10 +25,30 @@ final class SettingsPage {
 		add_action( 'admin_menu', array( $this, 'menu' ), 30 );
 		add_action( 'admin_init', array( $this, 'register_setting' ) );
 		add_action( 'admin_post_workflow_captain_roles', array( $this, 'handle_roles' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+		add_action( 'update_option_' . Settings::OPTION, array( Audit::class, 'settings_updated' ), 10, 2 );
+	}
+
+	/** Warning on unsaved changes and the confirmed reset of a tab (WF-SET-13). */
+	public function enqueue( string $hook ): void {
+		if ( false === strpos( $hook, self::SLUG ) ) {
+			return;
+		}
+		wp_enqueue_script( 'workflow-captain-settings', plugins_url( 'assets/js/settings.js', WORKFLOW_CAPTAIN_FILE ), array(), WORKFLOW_CAPTAIN_VERSION, true );
+		wp_add_inline_script(
+			'workflow-captain-settings',
+			'window.workflowCaptainSettings = ' . wp_json_encode(
+				array(
+					'unsaved' => __( 'Es gibt ungespeicherte Änderungen. Seite trotzdem verlassen?', 'workflow-captain' ),
+					'reset'   => __( 'Alle Felder dieses Tabs auf die Standardwerte setzen? Gespeichert wird erst mit „Änderungen speichern“.', 'workflow-captain' ),
+				)
+			) . ';',
+			'before'
+		);
 	}
 
 	public function register_setting(): void {
-		register_setting( 'workflow_captain', Settings::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Settings::class, 'sanitize' ), 'default' => Settings::defaults() ) );
+		register_setting( 'workflow_captain', Settings::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Settings::class, 'sanitize_and_report' ), 'default' => Settings::defaults() ) );
 	}
 
 	public function menu(): void {
@@ -53,6 +74,7 @@ final class SettingsPage {
 			echo '<a class="nav-tab' . ( $tab === $key ? ' nav-tab-active' : '' ) . '" href="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => $key ), admin_url( 'admin.php' ) ) ) . '">' . esc_html( $label ) . '</a>';
 		}
 		echo '</nav>';
+		settings_errors( Settings::OPTION );
 		if ( 'status' === $tab ) {
 			$this->status();
 			echo '</div>';
@@ -71,7 +93,7 @@ final class SettingsPage {
 		$s      = Settings::get();
 		$fields = 'notify' === $tab
 			? array(
-				'notify_daily' => array( __( 'Tägliche Hinweis-Mail an die Betreiber-Adresse (1 = an, 0 = aus)', 'workflow-captain' ), __( 'Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen.', 'workflow-captain' ) ),
+				'notify_daily' => array( __( 'Tägliche Hinweis-Mail an die Betreiber-Adresse', 'workflow-captain' ), __( 'Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen.', 'workflow-captain' ) ),
 			)
 			: ( 'execution' === $tab
 			? array(
@@ -85,7 +107,7 @@ final class SettingsPage {
 				'retention_runs'     => array( __( 'Erledigte Läufe mit Schrittprotokoll löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 30 Tage; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf.', 'workflow-captain' ) ),
 				'retention_stuck'    => array( __( 'Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 90 Tage; nur kürzer möglich. Die Fristen sind ein Vorschlag bis zur Rechtsprüfung.', 'workflow-captain' ) ),
 			) );
-		echo '<form method="post" action="options.php">';
+		echo '<form method="post" action="options.php" class="wfc-settings-form">';
 		settings_fields( 'workflow_captain' );
 		// Keep the values of the other tab: the option holds all fields.
 		foreach ( $s as $key => $value ) {
@@ -94,17 +116,36 @@ final class SettingsPage {
 			}
 		}
 		echo '<table class="form-table" role="presentation">';
+		$errors = array();
+		foreach ( function_exists( 'get_settings_errors' ) ? get_settings_errors( Settings::OPTION ) : array() as $error ) {
+			$errors[ $error['code'] ] = $error['message'];
+		}
 		foreach ( $fields as $key => list( $label, $help ) ) {
-			list( , $min, $max ) = Settings::FIELDS[ $key ];
-			$id                  = 'wfc-' . $key;
-			echo '<tr><th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label></th><td><input id="' . esc_attr( $id ) . '" type="number" min="' . (int) $min . '" max="' . (int) $max . '" name="' . esc_attr( Settings::OPTION . '[' . $key . ']' ) . '" value="' . (int) $s[ $key ] . '" class="small-text">';
+			list( $default, $min, $max ) = Settings::FIELDS[ $key ];
+			$id                          = 'wfc-' . $key;
+			$name                        = Settings::OPTION . '[' . $key . ']';
+			$range                       = 0 === $min && 1 === $max ? '' : sprintf( /* translators: 1: lowest, 2: highest, 3: default value */ __( 'Erlaubt: %1$d bis %2$d. Standard: %3$d.', 'workflow-captain' ), $min, $max, $default );
+			$help                        = trim( $help . ' ' . $range );
+			$described                   = trim( ( '' !== $help ? $id . '-help' : '' ) . ( isset( $errors[ $id ] ) ? ' ' . $id . '-error' : '' ) );
+			$aria                        = ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( isset( $errors[ $id ] ) ? ' aria-invalid="true"' : '' );
+			echo '<tr><th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label></th><td>';
+			if ( 0 === $min && 1 === $max ) {
+				// A switch is a checkbox; the hidden field sends 0 when it is unchecked.
+				echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="0"><input id="' . esc_attr( $id ) . '" type="checkbox" name="' . esc_attr( $name ) . '" value="1" data-default="' . (int) $default . '"' . ( 1 === $s[ $key ] ? ' checked' : '' ) . $aria . '>';
+			} else {
+				echo '<input id="' . esc_attr( $id ) . '" type="number" required min="' . (int) $min . '" max="' . (int) $max . '" name="' . esc_attr( $name ) . '" value="' . (int) $s[ $key ] . '" data-default="' . (int) $default . '" class="small-text"' . $aria . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $aria is escaped above.
+			}
+			if ( isset( $errors[ $id ] ) ) {
+				echo '<p id="' . esc_attr( $id . '-error' ) . '" class="wfc-field-error" style="color:#b32d2e">' . esc_html( $errors[ $id ] ) . '</p>';
+			}
 			if ( '' !== $help ) {
-				echo '<p class="description">' . esc_html( $help ) . '</p>';
+				echo '<p id="' . esc_attr( $id . '-help' ) . '" class="description">' . esc_html( $help ) . '</p>';
 			}
 			echo '</td></tr>';
 		}
-		echo '</table>';
-		submit_button();
+		echo '</table><p class="submit">';
+		submit_button( null, 'primary', 'submit', false );
+		echo ' <button type="button" class="button wfc-reset-tab">' . esc_html__( 'Standardwerte dieses Tabs', 'workflow-captain' ) . '</button></p>';
 		echo '</form>';
 	}
 
@@ -131,7 +172,7 @@ final class SettingsPage {
 			'retry_workflow_runs'     => __( 'Wiederholen, fortsetzen, abbrechen', 'workflow-captain' ),
 			'manage_workflow_captain' => __( 'Einstellungen, Notfallpause, Diagnose', 'workflow-captain' ),
 		);
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_roles">';
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="wfc-settings-form"><input type="hidden" name="action" value="workflow_captain_roles">';
 		wp_nonce_field( 'workflow_captain_roles' );
 		echo '<table class="widefat striped" style="max-width:900px"><thead><tr><th scope="col">' . esc_html__( 'Rolle', 'workflow-captain' ) . '</th>';
 		foreach ( $labels as $label ) {
@@ -156,6 +197,7 @@ final class SettingsPage {
 			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
 		}
 		check_admin_referer( 'workflow_captain_roles' );
+		$changes = array();
 		$wanted = isset( $_POST['caps'] ) && is_array( $_POST['caps'] ) ? wp_unslash( $_POST['caps'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- keys and values checked against fixed lists below.
 		foreach ( wp_roles()->role_objects as $key => $role ) {
 			if ( 'administrator' === $key ) {
@@ -163,8 +205,15 @@ final class SettingsPage {
 			}
 			$given = array_intersect( (array) ( $wanted[ $key ] ?? array() ), Install::CAPS );
 			foreach ( Install::CAPS as $cap ) {
-				in_array( $cap, $given, true ) ? $role->add_cap( $cap ) : $role->remove_cap( $cap );
+				$want = in_array( $cap, $given, true );
+				if ( $want !== $role->has_cap( $cap ) ) {
+					$changes[ $key ][] = ( $want ? '+' : '-' ) . $cap;
+				}
+				$want ? $role->add_cap( $cap ) : $role->remove_cap( $cap );
 			}
+		}
+		if ( $changes ) {
+			Audit::record( 'roles', $changes );
 		}
 		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'roles', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
 		exit;
@@ -189,5 +238,33 @@ final class SettingsPage {
 		}
 		echo '</tbody></table>';
 		echo '<p class="description">' . esc_html( sprintf( /* translators: %s: option name */ __( 'Gespeichert in der Option %s.', 'workflow-captain' ), Install::DB_OPTION ) ) . '</p>';
+		$this->audit();
+	}
+
+	/** The last security-relevant changes (WF-SET-13). */
+	private function audit(): void {
+		$labels = array(
+			'settings'  => __( 'Einstellungen geändert', 'workflow-captain' ),
+			'roles'     => __( 'Rechte der Rollen geändert', 'workflow-captain' ),
+			'pause_on'  => __( 'Notfallpause eingeschaltet', 'workflow-captain' ),
+			'pause_off' => __( 'Notfallpause aufgehoben', 'workflow-captain' ),
+		);
+		echo '<h2>' . esc_html__( 'Letzte sicherheitsrelevante Änderungen', 'workflow-captain' ) . '</h2>';
+		$entries = array_slice( Audit::entries(), 0, 20 );
+		if ( ! $entries ) {
+			echo '<p>' . esc_html__( 'Noch keine Einträge.', 'workflow-captain' ) . '</p>';
+			return;
+		}
+		echo '<table class="widefat striped"><thead><tr><th scope="col">' . esc_html__( 'Zeit (UTC)', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Benutzer', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Änderung', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Einzelheiten', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		foreach ( $entries as $e ) {
+			$user   = get_userdata( (int) $e['user'] );
+			$detail = array();
+			foreach ( (array) $e['detail'] as $key => $value ) {
+				$detail[] = $key . ': ' . ( is_array( $value ) ? implode( ' → ', array_map( 'strval', $value ) ) : (string) $value );
+			}
+			echo '<tr><td>' . esc_html( (string) $e['at'] ) . '</td><td>' . esc_html( $user ? $user->display_name : '#' . (int) $e['user'] ) . '</td><td>' . esc_html( $labels[ $e['what'] ] ?? (string) $e['what'] ) . '</td><td>' . esc_html( implode( '; ', $detail ) ) . '</td></tr>';
+		}
+		echo '</tbody></table>';
+		echo '<p class="description">' . esc_html( sprintf( /* translators: 1: number, 2: option name */ __( 'Es bleiben die letzten %1$d Einträge in der Option %2$s.', 'workflow-captain' ), Audit::KEEP, Audit::OPTION ) ) . '</p>';
 	}
 }

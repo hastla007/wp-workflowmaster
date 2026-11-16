@@ -828,6 +828,10 @@ check( 'scheduler: without Action Scheduler WP-Cron is planned', Scheduler::WP_C
 // ----- WF-SET-07: separate retention for runs -----------------------------------------------------------------
 
 check( 'settings: separate run retention, at most 30', 30 === Settings::defaults()['retention_runs'] && 30 === Settings::sanitize( array( 'retention_runs' => 99 ) )['retention_runs'] );
+$p = Settings::problems( array( 'batch' => '9999', 'max_site' => 'abc', 'max_workflow' => '3', 'notify_daily' => '1' ) );
+check( 'WF-SET-13 settings: out-of-range and non-numeric values are reported per field, valid ones are not', array( 'batch', 'max_site' ) === array_keys( $p ) && array( '9999', 200, 1, 200 ) === $p['batch'] && 5 === $p['max_site'][1] );
+check( 'WF-SET-13 settings: no problems for an untouched form', array() === Settings::problems( Settings::defaults() ) && array() === Settings::problems( 'x' ) );
+check( 'WF-SET-13 settings: report callback stores the clamped values', 200 === Settings::sanitize_and_report( array( 'batch' => '9999' ) )['batch'] );
 $GLOBALS['wfc_test_filters']['workflow_captain_retention_days'] = array( fn( $days, $group ) => 'runs' === $group ? 5 : $days );
 $e = engine_site();
 publish( $e, sample_graph() );
@@ -837,3 +841,11 @@ $e->clock->advance( 6 * DAY_IN_SECONDS );
 ( new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, fn() => $e->store ) )->apply_retention();
 check( 'retention: runs after 5 days gone, the event (30 days) stays', array() === $e->store->find_runs( array(), 10, 0 ) && 1 === count( $e->events->find( array(), 10, 0 ) ) );
 $GLOBALS['wfc_test_filters']['workflow_captain_retention_days'] = array();
+
+// ----- WF-SET-13: audit trail of security-relevant changes
+$log = array();
+for ( $i = 0; $i < 60; $i++ ) {
+	$log = \WorkflowCaptain\Audit::append( $log, 'settings', 1, array( 'n' => $i ), '2026-11-16T00:00:00Z' );
+}
+check( 'WF-SET-13 audit: newest first, at most 50 entries', 50 === count( $log ) && 59 === $log[0]['detail']['n'] );
+check( 'WF-SET-13 audit: only changed setting keys with old and new value', array( 'batch' => array( 25, 50 ) ) === \WorkflowCaptain\Audit::changed( array( 'batch' => 25, 'max_site' => 5 ), array( 'batch' => 50, 'max_site' => 5 ) ) );

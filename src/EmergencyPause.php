@@ -26,6 +26,8 @@ final class EmergencyPause {
 	}
 
 	public static function set( bool $active, int $user_id ): void {
-		update_option( self::OPTION, $active ? array( 'active' => true, 'since' => gmdate( 'Y-m-d\TH:i:s\Z' ), 'by' => $user_id ) : array( 'active' => false ), false );
+		update_option( self::OPTION, $active ? array( 'active' => true, 'since' => gmdate( 'Y-m-d\TH:i:s\Z' ), 'by' => $user_id ) : array( 'active' => false ), false );		if ( function_exists( 'get_current_user_id' ) ) {
+			Audit::record( $active ? 'pause_on' : 'pause_off' );
+		}
 	}
 }
