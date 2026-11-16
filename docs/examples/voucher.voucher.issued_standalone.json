@@ -1,0 +1,31 @@
+{
+  "id": "3c5e7a91-2b4d-4f6a-8c0e-1a3b5c7d9e0f",
+  "type": "voucher.voucher.issued_standalone",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-17T09:00:05Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "voucher",
+    "id": "4907",
+    "id_kind": "record"
+  },
+  "actor_user_id": 233,
+  "data": {
+    "amount_minor": 2500,
+    "currency": "EUR",
+    "issue_source": "workflow",
+    "reference": "wf-12-run-3391-step-2"
+  },
+  "idempotency_key": "5b6c7d8e9f00112233445566778899aabbccddeeff00112233445566778899aa",
+  "correlation_id": "5f0c2a1e-7b3d-4c8a-9e21-3d4f5a6b7c8d",
+  "causation_id": "e2a4c6f8-1b3d-4a5c-9e7f-0a1b2c3d4e5f",
+  "caused_by_workflow_id": 12,
+  "chain_depth": 1
+}
