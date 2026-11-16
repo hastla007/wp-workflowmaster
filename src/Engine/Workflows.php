@@ -19,7 +19,29 @@ final class Workflows {
 
 	const PUBLISH_CAP = 'activate_workflows';
 
-	public function __construct( private EngineStore $store, private ActionRegistry $actions, private Directory $directory, private Clock $clock ) {}
+	/** @var callable():string[]|null Event types offered by registered adapters; null = not checked (tests). */
+	private $available_types;
+
+	public function __construct( private EngineStore $store, private ActionRegistry $actions, private Directory $directory, private Clock $clock, ?callable $available_types = null ) {
+		$this->available_types = $available_types;
+	}
+
+	/**
+	 * Provider availability (WF-BUILDER-11): the trigger must be offered by a registered adapter. A workflow whose
+	 * provider is missing, inactive or unlicensed cannot be published.
+	 *
+	 * @return string[]
+	 */
+	public function availability( array $graph ): array {
+		if ( null === $this->available_types ) {
+			return array();
+		}
+		$trigger = Graph::trigger( $graph );
+		if ( null === $trigger || in_array( (string) ( $trigger['event'] ?? '' ), (array) ( $this->available_types )(), true ) ) {
+			return array();
+		}
+		return array( 'node:' . $trigger['id'] . ':provider_unavailable' );
+	}
 
 	/**
 	 * Saves a draft; a draft may be incomplete. Returns the workflow ID and the violations that would block publishing.
@@ -48,7 +70,7 @@ final class Workflows {
 			return array( 'workflow:not_found' );
 		}
 		$graph = $workflow['draft'];
-		$v     = Graph::violations( $graph, $this->actions );
+		$v     = array_merge( Graph::violations( $graph, $this->actions ), $this->availability( $graph ) );
 		if ( array() !== $v ) {
 			return $v;
 		}

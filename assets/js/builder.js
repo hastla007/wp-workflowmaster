@@ -280,8 +280,15 @@
 			} );
 
 			this.graph.nodes.forEach( ( n ) => {
-				const g = svg( 'g', { class: 'wfc-node wfc-node-' + n.type + ( this.selected === n.id ? ' is-selected' : '' ), transform: `translate(${ n.x },${ n.y })`, tabindex: '0', role: 'button', 'aria-label': this.label( n ), 'data-id': n.id } );
+				const unavailable = ( 'trigger' === n.type && this.config.events.length && ! this.config.events.includes( n.event ) ) || ( 'action' === n.type && ! this.config.actions.some( ( x ) => x.key === n.action ) );
+				const state = ( ( this.config.path || [] ).includes( n.id ) ? ' is-path' : '' ) + ( this.config.errorNode === n.id ? ' is-error' : '' ) + ( unavailable ? ' is-unavailable' : '' );
+				const g = svg( 'g', { class: 'wfc-node wfc-node-' + n.type + state + ( this.selected === n.id ? ' is-selected' : '' ), transform: `translate(${ n.x },${ n.y })`, tabindex: '0', role: 'button', 'aria-label': this.label( n ), 'data-id': n.id } );
 				g.appendChild( svg( 'rect', { width: W, height: H, rx: 'end' === n.type || 'trigger' === n.type ? 28 : 6 } ) );
+				if ( unavailable ) {
+					const warn = svg( 'text', { x: W - 22, y: 22, class: 'wfc-node-warn' } );
+					warn.textContent = '!';
+					g.appendChild( warn );
+				}
 				const title = svg( 'text', { x: 12, y: 24, class: 'wfc-node-title' } );
 				const full = this.label( n );
 				title.textContent = full.length > 22 ? full.slice( 0, 21 ) + '…' : full;

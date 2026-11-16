@@ -577,3 +577,27 @@ $by   = array_column( $rows, null, 'product' );
 check( 'providers: registered adapter with versions, types and active workflows', 'registered' === $by['pass-captain']['status'] && '1.1.0' === $by['pass-captain']['contract_version'] && 1 === $by['pass-captain']['active_workflows']['pass.ticket.checked_in'] && 1 === $by['pass-captain']['events']['received'] );
 check( 'providers: refused adapter shows its reason', 'refused' === $by['shop']['status'] && 'unknown_product' === $by['shop']['reason'] );
 check( 'providers: product with events but no adapter is shown as missing', 'missing' === $by['voucher-captain']['status'] && 1 === $by['voucher-captain']['events']['paused'] );
+
+// ----- Dry run and provider availability (WF-BUILDER-10, -11) ---------------------------------------------------
+
+use WorkflowCaptain\Engine\DryRun;
+$e   = engine_site();
+$dry = DryRun::run( sample_graph(), array( 'data' => array( 'checkin_source' => 'scanner' ), 'subject' => array( 'type' => 'ticket', 'id' => 'T-1', 'id_kind' => 'public' ) ), $e->actions );
+check( 'dry run: follows the then branch and ends', 'succeeded' === $dry['outcome'] && array( 't', 'c', 'mail', 'tag', 'e1' ) === array_column( $dry['path'], 'node' ) );
+check( 'dry run: renders the message text', 'Einlass T-1' === $dry['path'][2]['would']['subject'] );
+check( 'dry run: no side effect', array() === $e->dir->sent && array() === $e->store->find_runs( array(), 10, 0 ) );
+$dry = DryRun::run( sample_graph(), array( 'data' => array( 'checkin_source' => 'web' ) ), $e->actions );
+check( 'dry run: else branch', array( 't', 'c', 'e2' ) === array_column( $dry['path'], 'node' ) );
+$g = sample_graph();
+$g['nodes'][1]['missing'] = 'error';
+$dry = DryRun::run( $g, array( 'data' => array() ), $e->actions );
+check( 'dry run: missing field marks the node', 'condition_field_missing' === $dry['outcome'] && 'c' === $dry['error_node'] );
+$g = sample_graph();
+$g['nodes'][2]['action'] = 'gone.action';
+check( 'dry run: unavailable action marks the node', 'mail' === DryRun::run( $g, array( 'data' => array( 'checkin_source' => 'scanner' ) ), $e->actions )['error_node'] );
+
+$wf = new Workflows( $e->store, $e->actions, $e->dir, $e->clock, fn() => array( 'pass.order.paid' ) );
+list( $id ) = $wf->save( null, 'Ohne Provider', sample_graph() );
+check( 'WF-BUILDER-11 publishing without a provider for the trigger is blocked', in_array( 'node:t:provider_unavailable', $wf->publish( $id, 1 ), true ) );
+$wf = new Workflows( $e->store, $e->actions, $e->dir, $e->clock, fn() => array( 'pass.ticket.checked_in' ) );
+check( 'WF-BUILDER-11 with the provider registered it publishes', array() === $wf->publish( $id, 1 ) );

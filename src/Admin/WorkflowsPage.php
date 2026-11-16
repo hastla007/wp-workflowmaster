@@ -58,7 +58,9 @@ final class WorkflowsPage {
 		foreach ( $this->plugin->adapters()->products() as $product ) {
 			$events = array_merge( $events, (array) $this->plugin->adapters()->get( $product )?->types() );
 		}
-		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( array( 'actions' => $actions, 'events' => array_values( array_unique( $events ) ), 'i18n' => new \stdClass() ) ) . ';', 'before' );
+		$dry  = isset( $_GET['dryrun'] ) ? get_transient( 'workflow_captain_dryrun_' . get_current_user_id() ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+		$path = is_array( $dry ) ? array_column( $dry['result']['path'], 'node' ) : array();
+		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( array( 'actions' => $actions, 'events' => array_values( array_unique( $events ) ), 'path' => $path, 'errorNode' => is_array( $dry ) ? $dry['result']['error_node'] : null, 'i18n' => new \stdClass() ) ) . ';', 'before' );
 	}
 
 	private static function url( string $page, array $args = array() ): string {
@@ -73,6 +75,17 @@ final class WorkflowsPage {
 		$do        = isset( $_POST['do'] ) ? sanitize_key( wp_unslash( $_POST['do'] ) ) : '';
 		$workflows = $this->plugin->workflows();
 		$errors    = array();
+		if ( 'dryrun' === $do ) {
+			if ( ! current_user_can( 'edit_workflows' ) ) {
+				wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+			}
+			$graph  = json_decode( isset( $_POST['graph'] ) ? (string) wp_unslash( $_POST['graph'] ) : '', true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON, validated by the engine.
+			$sample = json_decode( isset( $_POST['sample'] ) ? (string) wp_unslash( $_POST['sample'] ) : '', true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- JSON, only read.
+			$result = \WorkflowCaptain\Engine\DryRun::run( is_array( $graph ) ? $graph : array(), is_array( $sample ) ? $sample : array(), $this->plugin->engine()->actions() );
+			set_transient( 'workflow_captain_dryrun_' . get_current_user_id(), array( 'result' => $result, 'graph' => $graph, 'sample' => $sample ), 300 );
+			wp_safe_redirect( self::url( self::SLUG_WORKFLOWS, array( 'edit' => $id > 0 ? $id : 'new', 'dryrun' => 1 ) ) );
+			exit;
+		}
 		if ( 'save' === $do || 'publish' === $do ) {
 			if ( ! current_user_can( 'edit_workflows' ) ) {
 				wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
@@ -187,6 +200,28 @@ final class WorkflowsPage {
 		if ( null !== $wf ) {
 			echo '<p>' . esc_html( sprintf( /* translators: %s: status */ __( 'Zustand: %s', 'workflow-captain' ), self::status_label( $wf['status'] ) ) ) . '</p>';
 		}
+		$dry = isset( $_GET['dryrun'] ) ? get_transient( 'workflow_captain_dryrun_' . get_current_user_id() ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+		$sample = is_array( $dry ) && is_array( $dry['sample'] ) ? $dry['sample'] : array( 'data' => new \stdClass() );
+		echo '<details' . ( is_array( $dry ) ? ' open' : '' ) . '><summary><strong>' . esc_html__( 'Testlauf mit Beispieldaten (ohne Seiteneffekte)', 'workflow-captain' ) . '</strong></summary>';
+		echo '<p><label for="wfc-sample">' . esc_html__( 'Beispielereignis (JSON, mindestens "data")', 'workflow-captain' ) . '</label><br><textarea id="wfc-sample" name="sample" rows="5" class="large-text code">' . esc_textarea( (string) wp_json_encode( $sample, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) ) . '</textarea></p>';
+		echo '<p><button class="button" name="do" value="dryrun">' . esc_html__( 'Testlauf starten', 'workflow-captain' ) . '</button></p>';
+		if ( is_array( $dry ) ) {
+			echo '<p><strong>' . esc_html( sprintf( /* translators: %s: outcome code */ __( 'Ergebnis: %s', 'workflow-captain' ), $dry['result']['outcome'] ) ) . '</strong></p><ol>';
+			foreach ( $dry['result']['path'] as $entry ) {
+				$detail = array();
+				foreach ( array( 'outcome', 'action', 'wait' ) as $key ) {
+					if ( isset( $entry[ $key ] ) ) {
+						$detail[] = $key . ': ' . $entry[ $key ];
+					}
+				}
+				foreach ( (array) ( $entry['would'] ?? array() ) as $field => $text ) {
+					$detail[] = $field . ' → ' . $text;
+				}
+				echo '<li><code>' . esc_html( $entry['node'] ) . '</code> (' . esc_html( $entry['type'] ) . ')' . ( $detail ? ' – ' . esc_html( implode( '; ', $detail ) ) : '' ) . '</li>';
+			}
+			echo '</ol>';
+		}
+		echo '</details>';
 		echo '<p><button class="button" name="do" value="save">' . esc_html__( 'Als Entwurf speichern', 'workflow-captain' ) . '</button> ';
 		if ( current_user_can( 'activate_workflows' ) ) {
 			echo '<button class="button button-primary" name="do" value="publish">' . esc_html__( 'Prüfen und veröffentlichen', 'workflow-captain' ) . '</button> ';

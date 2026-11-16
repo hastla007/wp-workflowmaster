@@ -127,7 +127,16 @@ final class Plugin {
 
 	public function workflows(): \WorkflowCaptain\Engine\Workflows {
 		$engine = $this->engine();
-		return new \WorkflowCaptain\Engine\Workflows( $engine->store(), $engine->actions(), new \WorkflowCaptain\Engine\WpDirectory(), new Clock() );
+		return new \WorkflowCaptain\Engine\Workflows( $engine->store(), $engine->actions(), new \WorkflowCaptain\Engine\WpDirectory(), new Clock(), array( $this, 'available_event_types' ) );
+	}
+
+	/** @return string[] Event types the registered adapters deliver. */
+	public function available_event_types(): array {
+		$types = array();
+		foreach ( $this->adapters->products() as $product ) {
+			$types = array_merge( $types, (array) $this->adapters->get( $product )?->types() );
+		}
+		return array_values( array_unique( $types ) );
 	}
 
 	public function store(): \WorkflowCaptain\Store\EventStore {

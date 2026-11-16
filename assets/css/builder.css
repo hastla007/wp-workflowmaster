@@ -29,3 +29,6 @@
 	.wfc-linear-wrap { display: block; }
 	.wfc-linear-wrap:not([open]) > summary::after { content: " ▸"; }
 }
+.wfc-node.is-path rect { stroke: #2271b1; stroke-width: 3; }
+.wfc-node.is-error rect, .wfc-node.is-unavailable rect { stroke: #b32d2e; stroke-width: 3; }
+.wfc-node-warn { font: 700 18px/1 sans-serif; fill: #b32d2e; }
