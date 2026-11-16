@@ -30,7 +30,7 @@ const config = {
 		{ key: 'workflow.tag.set', label: 'Markierung setzen', fields: [ { key: 'tag', label: 'Markierung' } ] },
 	],
 	events: [ 'pass.ticket.checked_in', 'pass.order.paid' ],
-	fields: { 'pass.ticket.checked_in': [ 'checkin_source', 'device_id', 'area_id' ] },
+	fields: { 'pass.ticket.checked_in': { checkin_source: 'string', device_id: 'integer', area_id: 'integer' } },
 	i18n: {},
 };
 const css = 'file://' + path.resolve( __dirname, '../assets/css/builder.css' );
@@ -122,6 +122,7 @@ function check( label, ok ) {
 	await page.press( '.wfc-rule:nth-of-type(2) .wfc-rule-value', 'Tab' );
 	rule = ( await graphNow() ).nodes.find( ( n ) => 'condition1' === n.id ).rules.items[ 1 ];
 	check( 'condition form: list values for "in"', 'in' === rule.operator && 'scanner' === rule.value[ 0 ] && 'web' === rule.value[ 1 ] );
+	check( 'condition form shows the data type of the field', 'integer' === await page.$eval( '.wfc-rule-type', ( x ) => x.textContent ) );
 	check( 'condition form offers the catalog fields', ( await page.$$eval( '#wfc-fields option', ( o ) => o.map( ( x ) => x.value ) ) ).includes( 'data.checkin_source' ) );
 
 	// Token picker

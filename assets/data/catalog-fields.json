@@ -1,338 +1,338 @@
 {
- "affiliate.affiliate.created": [
-  "status",
-  "group_id",
-  "referred_by",
-  "partner_user_id"
- ],
- "affiliate.affiliate.erased": [
-  "deferred"
- ],
- "affiliate.affiliate.recruited": [
-  "recruiter_id",
-  "status"
- ],
- "affiliate.affiliate.status_changed": [
-  "status",
-  "previous_status"
- ],
- "affiliate.code_request.approved": [
-  "affiliate_id",
-  "partner_code",
-  "main",
-  "request_id"
- ],
- "affiliate.code_request.created": [
-  "affiliate_id",
-  "request_id"
- ],
- "affiliate.code_request.rejected": [
-  "affiliate_id",
-  "request_id"
- ],
- "affiliate.commission.adjusted": [
-  "source",
-  "refund_id",
-  "adjustment_type",
-  "full",
-  "deleted",
-  "adjustment_count",
-  "affiliate_id",
-  "amount_minor",
-  "currency"
- ],
- "affiliate.commission.approved": [
-  "affiliate_id",
-  "amount_minor",
-  "currency",
-  "kind",
-  "previous_status"
- ],
- "affiliate.commission.created": [
-  "affiliate_id",
-  "kind",
-  "status",
-  "amount_minor",
-  "currency",
-  "parent_id",
-  "source",
-  "order_id",
-  "payout_id"
- ],
- "affiliate.commission.paid": [
-  "affiliate_id",
-  "payout_id",
-  "amount_minor",
-  "currency"
- ],
- "affiliate.commission.pending": [
-  "affiliate_id",
-  "kind",
-  "amount_minor",
-  "currency"
- ],
- "affiliate.commission.rejected": [
-  "affiliate_id",
-  "kind",
-  "amount_minor",
-  "currency",
-  "previous_status"
- ],
- "affiliate.commission.review_reopened": [
-  "affiliate_id",
-  "kind",
-  "amount_minor",
-  "currency"
- ],
- "affiliate.correction.generated": [],
- "affiliate.creative.created": [
-  "family_id",
-  "version",
-  "status",
-  "creative_type",
-  "group_id"
- ],
- "affiliate.creative.updated": [
-  "family_id",
-  "version",
-  "status",
-  "creative_type",
-  "group_id"
- ],
- "affiliate.payout.cancelled": [
-  "affiliate_id",
-  "payout_number",
-  "amount_minor",
-  "currency"
- ],
- "affiliate.payout.created": [
-  "affiliate_id",
-  "payout_number",
-  "status",
-  "method",
-  "amount_minor",
-  "currency"
- ],
- "affiliate.payout.paid": [
-  "affiliate_id",
-  "payout_number",
-  "method",
-  "amount_minor",
-  "currency"
- ],
- "affiliate.sale.attributed": [
-  "affiliate_id",
-  "source",
-  "attribution_method"
- ],
- "license.license.issued": [
-  "product",
-  "plan",
-  "status"
- ],
- "license.license.plan_changed": [
-  "product",
-  "plan",
-  "status"
- ],
- "license.license.status_changed": [
-  "product",
-  "plan",
-  "status",
-  "previous_status",
-  "lifecycle_action"
- ],
- "pass.event.cancelled": [
-  "occurrence_count",
-  "revoked_tickets",
-  "cancelled_orders"
- ],
- "pass.invoice.created": [
-  "document_type",
-  "document_number",
-  "order_id",
-  "invoice_id",
-  "refund_id",
-  "partner_id",
-  "period",
-  "currency",
-  "total_minor",
-  "tax_minor"
- ],
- "pass.occurrence.cancelled": [
-  "event_id",
-  "issued_tickets",
-  "starts_at",
-  "scope"
- ],
- "pass.occurrence.rescheduled": [
-  "event_id",
-  "old_starts_at",
-  "new_starts_at",
-  "timezone",
-  "issued_tickets"
- ],
- "pass.order.cancelled": [
-  "status",
-  "previous_payment_status",
-  "reason_class",
-  "currency",
-  "total_minor"
- ],
- "pass.order.paid": [
-  "status",
-  "payment_status",
-  "payment_provider",
-  "currency",
-  "total_minor",
-  "refunded_minor",
-  "ticket_count",
-  "customer_user_id"
- ],
- "pass.order.refunded": [
-  "status",
-  "payment_status",
-  "currency",
-  "total_minor",
-  "refunded_minor",
-  "reason_class",
-  "refund_id"
- ],
- "pass.order.tickets_issued": [
-  "issued_count",
-  "currency",
-  "total_minor"
- ],
- "pass.refund.completed": [
-  "order_id",
-  "amount_minor",
-  "tax_minor",
-  "deducted_minor",
-  "currency",
-  "ticket_count",
-  "refund_source"
- ],
- "pass.refund.rejected": [
-  "order_id",
-  "amount_minor",
-  "currency"
- ],
- "pass.ticket.checked_in": [
-  "checkin_source",
-  "device_id",
-  "area_id",
-  "occurrence_id",
-  "event_id",
-  "ticket_type_id",
-  "reentry"
- ],
- "pass.ticket.checked_out": [
-  "checkin_source",
-  "device_id",
-  "area_id",
-  "occurrence_id",
-  "event_id",
-  "ticket_type_id"
- ],
- "pass.ticket.revoked": [
-  "order_id",
-  "ticket_type_id",
-  "occurrence_id",
-  "event_id",
-  "reason_class"
- ],
- "voucher.gift_card.topped_up": [
-  "amount_minor",
-  "currency",
-  "order_id",
-  "balance_minor"
- ],
- "voucher.order.vouchers_issued": [
-  "order_id",
-  "voucher_count",
-  "background"
- ],
- "voucher.redemption.refunded": [
-  "refunded_minor",
-  "refunded_total_minor",
-  "currency"
- ],
- "voucher.redemption.released": [
-  "amount_minor",
-  "currency",
-  "balance_after_minor",
-  "expires_at",
-  "state",
-  "expired"
- ],
- "voucher.redemption.reserved": [
-  "amount_minor",
-  "currency",
-  "balance_after_minor",
-  "expires_at",
-  "state"
- ],
- "voucher.redemption.reversed": [
-  "reversed_event_id",
-  "amount_minor",
-  "currency"
- ],
- "voucher.store_credit.changed": [
-  "amount_minor",
-  "balance_minor",
-  "currency",
-  "credit_event",
-  "order_id"
- ],
- "voucher.voucher.bounced": [
-  "role"
- ],
- "voucher.voucher.delivered": [
-  "address_count",
-  "roles",
-  "bundled"
- ],
- "voucher.voucher.delivery_failed": [
-  "failures"
- ],
- "voucher.voucher.expired": [
-  "balance_minor",
-  "currency",
-  "voucher_type"
- ],
- "voucher.voucher.issued_standalone": [
-  "amount_minor",
-  "currency",
-  "voucher_type",
-  "usage_mode",
-  "status",
-  "paid",
-  "issue_source",
-  "send"
- ],
- "voucher.voucher.reactivated": [
-  "balance_minor",
-  "currency",
-  "order_id",
-  "change_source"
- ],
- "voucher.voucher.redeemed": [
-  "amount_minor",
-  "currency",
-  "order_id",
-  "channel",
-  "redemption_source",
-  "committed_at",
-  "balance_after_minor"
- ],
- "voucher.voucher.reissued": [
-  "status"
- ],
- "voucher.voucher.voided": [
-  "balance_minor",
-  "currency",
-  "order_id",
-  "change_source",
-  "void_reason"
- ]
+ "affiliate.affiliate.created": {
+  "status": "string",
+  "group_id": "integer",
+  "referred_by": "integer",
+  "partner_user_id": "integer"
+ },
+ "affiliate.affiliate.erased": {
+  "deferred": "boolean"
+ },
+ "affiliate.affiliate.recruited": {
+  "recruiter_id": "integer",
+  "status": "string"
+ },
+ "affiliate.affiliate.status_changed": {
+  "status": "string",
+  "previous_status": "string"
+ },
+ "affiliate.code_request.approved": {
+  "affiliate_id": "integer",
+  "partner_code": "string",
+  "main": "boolean",
+  "request_id": "integer"
+ },
+ "affiliate.code_request.created": {
+  "affiliate_id": "integer",
+  "request_id": "integer"
+ },
+ "affiliate.code_request.rejected": {
+  "affiliate_id": "integer",
+  "request_id": "integer"
+ },
+ "affiliate.commission.adjusted": {
+  "source": "string",
+  "refund_id": "integer",
+  "adjustment_type": "string",
+  "full": "boolean",
+  "deleted": "boolean",
+  "adjustment_count": "integer",
+  "affiliate_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.commission.approved": {
+  "affiliate_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency",
+  "kind": "string",
+  "previous_status": "string"
+ },
+ "affiliate.commission.created": {
+  "affiliate_id": "integer",
+  "kind": "string",
+  "status": "string",
+  "amount_minor": "integer",
+  "currency": "currency",
+  "parent_id": "integer",
+  "source": "string",
+  "order_id": "integer",
+  "payout_id": "integer"
+ },
+ "affiliate.commission.paid": {
+  "affiliate_id": "integer",
+  "payout_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.commission.pending": {
+  "affiliate_id": "integer",
+  "kind": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.commission.rejected": {
+  "affiliate_id": "integer",
+  "kind": "string",
+  "amount_minor": "integer",
+  "currency": "currency",
+  "previous_status": "string"
+ },
+ "affiliate.commission.review_reopened": {
+  "affiliate_id": "integer",
+  "kind": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.correction.generated": {},
+ "affiliate.creative.created": {
+  "family_id": "integer",
+  "version": "integer",
+  "status": "string",
+  "creative_type": "string",
+  "group_id": "integer"
+ },
+ "affiliate.creative.updated": {
+  "family_id": "integer",
+  "version": "integer",
+  "status": "string",
+  "creative_type": "string",
+  "group_id": "integer"
+ },
+ "affiliate.payout.cancelled": {
+  "affiliate_id": "integer",
+  "payout_number": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.payout.created": {
+  "affiliate_id": "integer",
+  "payout_number": "string",
+  "status": "string",
+  "method": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.payout.paid": {
+  "affiliate_id": "integer",
+  "payout_number": "string",
+  "method": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.sale.attributed": {
+  "affiliate_id": "integer",
+  "source": "string",
+  "attribution_method": "string"
+ },
+ "license.license.issued": {
+  "product": "string",
+  "plan": "string",
+  "status": "string"
+ },
+ "license.license.plan_changed": {
+  "product": "string",
+  "plan": "string",
+  "status": "string"
+ },
+ "license.license.status_changed": {
+  "product": "string",
+  "plan": "string",
+  "status": "string",
+  "previous_status": "string",
+  "lifecycle_action": "string"
+ },
+ "pass.event.cancelled": {
+  "occurrence_count": "integer",
+  "revoked_tickets": "integer",
+  "cancelled_orders": "integer"
+ },
+ "pass.invoice.created": {
+  "document_type": "string",
+  "document_number": "string",
+  "order_id": "integer",
+  "invoice_id": "integer",
+  "refund_id": "integer",
+  "partner_id": "integer",
+  "period": "string",
+  "currency": "currency",
+  "total_minor": "integer",
+  "tax_minor": "integer"
+ },
+ "pass.occurrence.cancelled": {
+  "event_id": "integer",
+  "issued_tickets": "integer",
+  "starts_at": "datetime",
+  "scope": "string"
+ },
+ "pass.occurrence.rescheduled": {
+  "event_id": "integer",
+  "old_starts_at": "datetime",
+  "new_starts_at": "datetime",
+  "timezone": "string",
+  "issued_tickets": "integer"
+ },
+ "pass.order.cancelled": {
+  "status": "string",
+  "previous_payment_status": "string",
+  "reason_class": "string",
+  "currency": "currency",
+  "total_minor": "integer"
+ },
+ "pass.order.paid": {
+  "status": "string",
+  "payment_status": "string",
+  "payment_provider": "string",
+  "currency": "currency",
+  "total_minor": "integer",
+  "refunded_minor": "integer",
+  "ticket_count": "integer",
+  "customer_user_id": "integer"
+ },
+ "pass.order.refunded": {
+  "status": "string",
+  "payment_status": "string",
+  "currency": "currency",
+  "total_minor": "integer",
+  "refunded_minor": "integer",
+  "reason_class": "string",
+  "refund_id": "integer"
+ },
+ "pass.order.tickets_issued": {
+  "issued_count": "integer",
+  "currency": "currency",
+  "total_minor": "integer"
+ },
+ "pass.refund.completed": {
+  "order_id": "integer",
+  "amount_minor": "integer",
+  "tax_minor": "integer",
+  "deducted_minor": "integer",
+  "currency": "currency",
+  "ticket_count": "integer",
+  "refund_source": "string"
+ },
+ "pass.refund.rejected": {
+  "order_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "pass.ticket.checked_in": {
+  "checkin_source": "string",
+  "device_id": "integer",
+  "area_id": "integer",
+  "occurrence_id": "integer",
+  "event_id": "integer",
+  "ticket_type_id": "integer",
+  "reentry": "boolean"
+ },
+ "pass.ticket.checked_out": {
+  "checkin_source": "string",
+  "device_id": "integer",
+  "area_id": "integer",
+  "occurrence_id": "integer",
+  "event_id": "integer",
+  "ticket_type_id": "integer"
+ },
+ "pass.ticket.revoked": {
+  "order_id": "integer",
+  "ticket_type_id": "integer",
+  "occurrence_id": "integer",
+  "event_id": "integer",
+  "reason_class": "string"
+ },
+ "voucher.gift_card.topped_up": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "order_id": "integer",
+  "balance_minor": "integer"
+ },
+ "voucher.order.vouchers_issued": {
+  "order_id": "integer",
+  "voucher_count": "integer",
+  "background": "boolean"
+ },
+ "voucher.redemption.refunded": {
+  "refunded_minor": "integer",
+  "refunded_total_minor": "integer",
+  "currency": "currency"
+ },
+ "voucher.redemption.released": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "balance_after_minor": "integer",
+  "expires_at": "datetime",
+  "state": "string",
+  "expired": "boolean"
+ },
+ "voucher.redemption.reserved": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "balance_after_minor": "integer",
+  "expires_at": "datetime",
+  "state": "string"
+ },
+ "voucher.redemption.reversed": {
+  "reversed_event_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "voucher.store_credit.changed": {
+  "amount_minor": "integer",
+  "balance_minor": "integer",
+  "currency": "currency",
+  "credit_event": "string",
+  "order_id": "integer"
+ },
+ "voucher.voucher.bounced": {
+  "role": "string"
+ },
+ "voucher.voucher.delivered": {
+  "address_count": "integer",
+  "roles": "string",
+  "bundled": "boolean"
+ },
+ "voucher.voucher.delivery_failed": {
+  "failures": "integer"
+ },
+ "voucher.voucher.expired": {
+  "balance_minor": "integer",
+  "currency": "currency",
+  "voucher_type": "string"
+ },
+ "voucher.voucher.issued_standalone": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "voucher_type": "string",
+  "usage_mode": "string",
+  "status": "string",
+  "paid": "boolean",
+  "issue_source": "string",
+  "send": "boolean"
+ },
+ "voucher.voucher.reactivated": {
+  "balance_minor": "integer",
+  "currency": "currency",
+  "order_id": "integer",
+  "change_source": "string"
+ },
+ "voucher.voucher.redeemed": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "order_id": "integer",
+  "channel": "string",
+  "redemption_source": "string",
+  "committed_at": "datetime",
+  "balance_after_minor": "integer"
+ },
+ "voucher.voucher.reissued": {
+  "status": "string"
+ },
+ "voucher.voucher.voided": {
+  "balance_minor": "integer",
+  "currency": "currency",
+  "order_id": "integer",
+  "change_source": "string",
+  "void_reason": "string"
+ }
 }

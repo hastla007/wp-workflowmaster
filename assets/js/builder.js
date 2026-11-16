@@ -393,8 +393,18 @@
 
 		/** Data fields the trigger's event type allows (catalog), for conditions and placeholders. */
 		dataFields() {
+			const types = this.dataTypes();
+			return Object.keys( types );
+		}
+
+		/** Field => data type of the trigger's event (catalog); accepts a plain list as well. */
+		dataTypes() {
 			const trigger = this.graph.nodes.find( ( n ) => 'trigger' === n.type );
-			return ( this.config.fields && trigger && this.config.fields[ trigger.event ] ) || [];
+			const raw = ( this.config.fields && trigger && this.config.fields[ trigger.event ] ) || {};
+			if ( Array.isArray( raw ) ) {
+				return Object.fromEntries( raw.map( ( f ) => [ f, '' ] ) );
+			}
+			return raw;
 		}
 
 		/** Placeholder picker next to a text field (WF-BUILDER-04): inserts {{…}} at the cursor. */
@@ -425,7 +435,8 @@
 				return null;
 			}
 			const fields = [ 'type', 'subject.type', 'subject.id', 'subject.id_kind', 'source.product', 'actor_user_id' ].concat( this.dataFields().map( ( f ) => 'data.' + f ) );
-			box.appendChild( el( 'datalist', { id: 'wfc-fields' }, fields.map( ( f ) => el( 'option', { value: f } ) ) ) );
+			const types = this.dataTypes();
+			box.appendChild( el( 'datalist', { id: 'wfc-fields' }, fields.map( ( f ) => el( 'option', { value: f, label: f.startsWith( 'data.' ) && types[ f.slice( 5 ) ] ? types[ f.slice( 5 ) ] : null } ) ) ) );
 			box.appendChild( el( 'p', {}, [ el( 'label', { text: this.t( 'combine', 'Verknüpfung' ) + ' ' } ), el( 'select', { class: 'wfc-op', onchange: ( ev ) => { rules.op = ev.target.value; n.rules = rules; this.commit(); } }, [ [ 'and', 'alle Regeln (UND)' ], [ 'or', 'eine Regel (ODER)' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: rules.op === v } ) ) ) ] ) );
 			const ops = [ [ 'eq', '=' ], [ 'neq', '≠' ], [ 'gt', '>' ], [ 'gte', '≥' ], [ 'lt', '<' ], [ 'lte', '≤' ], [ 'in', 'in Liste' ], [ 'not_in', 'nicht in Liste' ], [ 'contains', 'enthält' ], [ 'exists', 'vorhanden' ], [ 'not_exists', 'fehlt' ] ];
 			const parse = ( op, raw ) => {
@@ -444,6 +455,10 @@
 			rules.items.forEach( ( r, i ) => {
 				const row = el( 'div', { class: 'wfc-rule' } );
 				row.appendChild( el( 'input', { type: 'text', class: 'wfc-rule-field', list: 'wfc-fields', value: r.field || '', 'aria-label': this.t( 'field', 'Feld' ), onchange: ( ev ) => { r.field = ev.target.value.trim(); n.rules = rules; this.commit(); } } ) );
+				const dtype = ( r.field || '' ).startsWith( 'data.' ) ? types[ r.field.slice( 5 ) ] : '';
+				if ( dtype ) {
+					row.appendChild( el( 'span', { class: 'wfc-rule-type', text: dtype } ) );
+				}
 				row.appendChild( el( 'select', { class: 'wfc-rule-op', 'aria-label': this.t( 'operator', 'Operator' ), onchange: ( ev ) => { r.operator = ev.target.value; r.value = parse( r.operator, show( r.value ) ); n.rules = rules; this.commit(); } }, ops.map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: r.operator === v } ) ) ) );
 				if ( ! [ 'exists', 'not_exists' ].includes( r.operator ) ) {
 					row.appendChild( el( 'input', { type: 'text', class: 'wfc-rule-value', value: show( r.value ), 'aria-label': this.t( 'value', 'Wert' ), onchange: ( ev ) => { r.value = parse( r.operator, ev.target.value ); n.rules = rules; this.commit(); } } ) );

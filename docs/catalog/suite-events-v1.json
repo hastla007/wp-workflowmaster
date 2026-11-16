@@ -25,7 +25,17 @@
             "customer_user_id"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "payment_status": "string",
+            "payment_provider": "string",
+            "currency": "currency",
+            "total_minor": "integer",
+            "refunded_minor": "integer",
+            "ticket_count": "integer",
+            "customer_user_id": "integer"
+          }
         },
         {
           "type": "pass.order.cancelled",
@@ -41,7 +51,14 @@
             "total_minor"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "previous_payment_status": "string",
+            "reason_class": "string",
+            "currency": "currency",
+            "total_minor": "integer"
+          }
         },
         {
           "type": "pass.order.refunded",
@@ -59,7 +76,16 @@
             "refund_id"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "payment_status": "string",
+            "currency": "currency",
+            "total_minor": "integer",
+            "refunded_minor": "integer",
+            "reason_class": "string",
+            "refund_id": "integer"
+          }
         },
         {
           "type": "pass.order.tickets_issued",
@@ -73,7 +99,12 @@
             "total_minor"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "issued_count": "integer",
+            "currency": "currency",
+            "total_minor": "integer"
+          }
         },
         {
           "type": "pass.refund.completed",
@@ -91,7 +122,16 @@
             "refund_source"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "order_id": "integer",
+            "amount_minor": "integer",
+            "tax_minor": "integer",
+            "deducted_minor": "integer",
+            "currency": "currency",
+            "ticket_count": "integer",
+            "refund_source": "string"
+          }
         },
         {
           "type": "pass.refund.rejected",
@@ -105,7 +145,12 @@
             "currency"
           ],
           "actor_user_id": "staff",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "order_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "pass.ticket.revoked",
@@ -121,7 +166,14 @@
             "reason_class"
           ],
           "actor_user_id": "staff_on_admin_path_else_none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "order_id": "integer",
+            "ticket_type_id": "integer",
+            "occurrence_id": "integer",
+            "event_id": "integer",
+            "reason_class": "string"
+          }
         },
         {
           "type": "pass.ticket.checked_in",
@@ -139,7 +191,16 @@
             "reentry"
           ],
           "actor_user_id": "staff",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "checkin_source": "string",
+            "device_id": "integer",
+            "area_id": "integer",
+            "occurrence_id": "integer",
+            "event_id": "integer",
+            "ticket_type_id": "integer",
+            "reentry": "boolean"
+          }
         },
         {
           "type": "pass.ticket.checked_out",
@@ -156,7 +217,15 @@
             "ticket_type_id"
           ],
           "actor_user_id": "staff",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "checkin_source": "string",
+            "device_id": "integer",
+            "area_id": "integer",
+            "occurrence_id": "integer",
+            "event_id": "integer",
+            "ticket_type_id": "integer"
+          }
         },
         {
           "type": "pass.occurrence.rescheduled",
@@ -172,7 +241,14 @@
             "issued_tickets"
           ],
           "actor_user_id": "staff",
-          "after_commit": "autocommit_unchecked"
+          "after_commit": "autocommit_unchecked",
+          "data_types": {
+            "event_id": "integer",
+            "old_starts_at": "datetime",
+            "new_starts_at": "datetime",
+            "timezone": "string",
+            "issued_tickets": "integer"
+          }
         },
         {
           "type": "pass.occurrence.cancelled",
@@ -187,7 +263,13 @@
             "scope"
           ],
           "actor_user_id": "staff",
-          "after_commit": "yes_or_autocommit_unchecked"
+          "after_commit": "yes_or_autocommit_unchecked",
+          "data_types": {
+            "event_id": "integer",
+            "issued_tickets": "integer",
+            "starts_at": "datetime",
+            "scope": "string"
+          }
         },
         {
           "type": "pass.event.cancelled",
@@ -201,7 +283,12 @@
             "cancelled_orders"
           ],
           "actor_user_id": "staff",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "occurrence_count": "integer",
+            "revoked_tickets": "integer",
+            "cancelled_orders": "integer"
+          }
         },
         {
           "type": "pass.invoice.created",
@@ -222,7 +309,19 @@
             "tax_minor"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "document_type": "string",
+            "document_number": "string",
+            "order_id": "integer",
+            "invoice_id": "integer",
+            "refund_id": "integer",
+            "partner_id": "integer",
+            "period": "string",
+            "currency": "currency",
+            "total_minor": "integer",
+            "tax_minor": "integer"
+          }
         }
       ]
     },
@@ -243,7 +342,12 @@
             "background"
           ],
           "actor_user_id": "none",
-          "after_commit": "autocommit"
+          "after_commit": "autocommit",
+          "data_types": {
+            "order_id": "integer",
+            "voucher_count": "integer",
+            "background": "boolean"
+          }
         },
         {
           "type": "voucher.voucher.issued_standalone",
@@ -262,7 +366,17 @@
             "send"
           ],
           "actor_user_id": "staff_if_logged_in",
-          "after_commit": "autocommit"
+          "after_commit": "autocommit",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "voucher_type": "string",
+            "usage_mode": "string",
+            "status": "string",
+            "paid": "boolean",
+            "issue_source": "string",
+            "send": "boolean"
+          }
         },
         {
           "type": "voucher.voucher.delivered",
@@ -276,7 +390,12 @@
             "bundled"
           ],
           "actor_user_id": "none",
-          "after_commit": "autocommit"
+          "after_commit": "autocommit",
+          "data_types": {
+            "address_count": "integer",
+            "roles": "string",
+            "bundled": "boolean"
+          }
         },
         {
           "type": "voucher.voucher.delivery_failed",
@@ -288,7 +407,10 @@
             "failures"
           ],
           "actor_user_id": "none",
-          "after_commit": "autocommit"
+          "after_commit": "autocommit",
+          "data_types": {
+            "failures": "integer"
+          }
         },
         {
           "type": "voucher.voucher.bounced",
@@ -300,7 +422,10 @@
             "role"
           ],
           "actor_user_id": "none",
-          "after_commit": "autocommit"
+          "after_commit": "autocommit",
+          "data_types": {
+            "role": "string"
+          }
         },
         {
           "type": "voucher.voucher.redeemed",
@@ -318,7 +443,16 @@
             "balance_after_minor"
           ],
           "actor_user_id": "user_id_from_args_if_positive",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "order_id": "integer",
+            "channel": "string",
+            "redemption_source": "string",
+            "committed_at": "datetime",
+            "balance_after_minor": "integer"
+          }
         },
         {
           "type": "voucher.redemption.reserved",
@@ -334,7 +468,14 @@
             "state"
           ],
           "actor_user_id": "user_id_from_args_if_positive",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "balance_after_minor": "integer",
+            "expires_at": "datetime",
+            "state": "string"
+          }
         },
         {
           "type": "voucher.redemption.released",
@@ -351,7 +492,15 @@
             "expired"
           ],
           "actor_user_id": "user_id_from_args_if_positive",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "balance_after_minor": "integer",
+            "expires_at": "datetime",
+            "state": "string",
+            "expired": "boolean"
+          }
         },
         {
           "type": "voucher.redemption.refunded",
@@ -365,7 +514,12 @@
             "currency"
           ],
           "actor_user_id": "user_id_from_args_if_positive",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "refunded_minor": "integer",
+            "refunded_total_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "voucher.redemption.reversed",
@@ -379,7 +533,12 @@
             "currency"
           ],
           "actor_user_id": "staff_if_logged_in",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "reversed_event_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "voucher.voucher.expired",
@@ -393,7 +552,12 @@
             "voucher_type"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "balance_minor": "integer",
+            "currency": "currency",
+            "voucher_type": "string"
+          }
         },
         {
           "type": "voucher.voucher.reissued",
@@ -405,7 +569,10 @@
             "status"
           ],
           "actor_user_id": "staff",
-          "after_commit": "autocommit"
+          "after_commit": "autocommit",
+          "data_types": {
+            "status": "string"
+          }
         },
         {
           "type": "voucher.voucher.voided",
@@ -421,7 +588,14 @@
             "void_reason"
           ],
           "actor_user_id": "user_id_arg_if_positive",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "balance_minor": "integer",
+            "currency": "currency",
+            "order_id": "integer",
+            "change_source": "string",
+            "void_reason": "string"
+          }
         },
         {
           "type": "voucher.voucher.reactivated",
@@ -436,7 +610,13 @@
             "change_source"
           ],
           "actor_user_id": "user_id_arg_if_positive",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "balance_minor": "integer",
+            "currency": "currency",
+            "order_id": "integer",
+            "change_source": "string"
+          }
         },
         {
           "type": "voucher.store_credit.changed",
@@ -452,7 +632,14 @@
             "order_id"
           ],
           "actor_user_id": "customer",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "balance_minor": "integer",
+            "currency": "currency",
+            "credit_event": "string",
+            "order_id": "integer"
+          }
         },
         {
           "type": "voucher.gift_card.topped_up",
@@ -467,7 +654,13 @@
             "balance_minor"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "order_id": "integer",
+            "balance_minor": "integer"
+          }
         }
       ]
     },
@@ -490,7 +683,13 @@
             "partner_user_id"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "group_id": "integer",
+            "referred_by": "integer",
+            "partner_user_id": "integer"
+          }
         },
         {
           "type": "affiliate.affiliate.status_changed",
@@ -503,7 +702,11 @@
             "previous_status"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "previous_status": "string"
+          }
         },
         {
           "type": "affiliate.affiliate.recruited",
@@ -516,7 +719,11 @@
             "status"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "recruiter_id": "integer",
+            "status": "string"
+          }
         },
         {
           "type": "affiliate.affiliate.erased",
@@ -528,7 +735,10 @@
             "deferred"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "deferred": "boolean"
+          }
         },
         {
           "type": "affiliate.sale.attributed",
@@ -542,7 +752,12 @@
             "attribution_method"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "source": "string",
+            "attribution_method": "string"
+          }
         },
         {
           "type": "affiliate.commission.created",
@@ -562,7 +777,18 @@
             "payout_id"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "kind": "string",
+            "status": "string",
+            "amount_minor": "integer",
+            "currency": "currency",
+            "parent_id": "integer",
+            "source": "string",
+            "order_id": "integer",
+            "payout_id": "integer"
+          }
         },
         {
           "type": "affiliate.commission.adjusted",
@@ -582,7 +808,18 @@
             "currency"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "source": "string",
+            "refund_id": "integer",
+            "adjustment_type": "string",
+            "full": "boolean",
+            "deleted": "boolean",
+            "adjustment_count": "integer",
+            "affiliate_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "affiliate.commission.approved",
@@ -598,7 +835,14 @@
             "previous_status"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency",
+            "kind": "string",
+            "previous_status": "string"
+          }
         },
         {
           "type": "affiliate.commission.rejected",
@@ -614,7 +858,14 @@
             "previous_status"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "kind": "string",
+            "amount_minor": "integer",
+            "currency": "currency",
+            "previous_status": "string"
+          }
         },
         {
           "type": "affiliate.commission.paid",
@@ -629,7 +880,13 @@
             "currency"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "payout_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "affiliate.commission.pending",
@@ -644,7 +901,13 @@
             "currency"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "kind": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "affiliate.commission.review_reopened",
@@ -659,7 +922,13 @@
             "currency"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "kind": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "affiliate.payout.created",
@@ -676,7 +945,15 @@
             "currency"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "payout_number": "string",
+            "status": "string",
+            "method": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "affiliate.payout.paid",
@@ -692,7 +969,14 @@
             "currency"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "payout_number": "string",
+            "method": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "affiliate.payout.cancelled",
@@ -707,7 +991,13 @@
             "currency"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "payout_number": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
         },
         {
           "type": "affiliate.correction.generated",
@@ -717,7 +1007,8 @@
           "id_kind": "record",
           "data_fields": [],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {}
         },
         {
           "type": "affiliate.creative.created",
@@ -733,7 +1024,14 @@
             "group_id"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "family_id": "integer",
+            "version": "integer",
+            "status": "string",
+            "creative_type": "string",
+            "group_id": "integer"
+          }
         },
         {
           "type": "affiliate.creative.updated",
@@ -749,7 +1047,14 @@
             "group_id"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "family_id": "integer",
+            "version": "integer",
+            "status": "string",
+            "creative_type": "string",
+            "group_id": "integer"
+          }
         },
         {
           "type": "affiliate.code_request.created",
@@ -762,7 +1067,11 @@
             "request_id"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "request_id": "integer"
+          }
         },
         {
           "type": "affiliate.code_request.approved",
@@ -777,7 +1086,13 @@
             "request_id"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "partner_code": "string",
+            "main": "boolean",
+            "request_id": "integer"
+          }
         },
         {
           "type": "affiliate.code_request.rejected",
@@ -790,7 +1105,11 @@
             "request_id"
           ],
           "actor_user_id": "none",
-          "after_commit": "yes"
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "request_id": "integer"
+          }
         }
       ]
     },
@@ -814,7 +1133,14 @@
             "lifecycle_action"
           ],
           "actor_user_id": "customer",
-          "after_commit": "autocommit_no_guarantee"
+          "after_commit": "autocommit_no_guarantee",
+          "data_types": {
+            "product": "string",
+            "plan": "string",
+            "status": "string",
+            "previous_status": "string",
+            "lifecycle_action": "string"
+          }
         },
         {
           "type": "license.license.issued",
@@ -828,7 +1154,12 @@
             "status"
           ],
           "actor_user_id": "customer",
-          "after_commit": "autocommit_no_guarantee"
+          "after_commit": "autocommit_no_guarantee",
+          "data_types": {
+            "product": "string",
+            "plan": "string",
+            "status": "string"
+          }
         },
         {
           "type": "license.license.plan_changed",
@@ -842,7 +1173,12 @@
             "status"
           ],
           "actor_user_id": "customer",
-          "after_commit": "autocommit_no_guarantee"
+          "after_commit": "autocommit_no_guarantee",
+          "data_types": {
+            "product": "string",
+            "plan": "string",
+            "status": "string"
+          }
         }
       ]
     }

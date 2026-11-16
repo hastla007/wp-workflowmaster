@@ -36,3 +36,4 @@
 .wfc-rule-field { width: 11em; }
 .wfc-rule-value { width: 8em; }
 .wfc-token { margin-top: 4px; max-width: 100%; }
+.wfc-rule-type { font: 11px/1 monospace; color: #50575e; }

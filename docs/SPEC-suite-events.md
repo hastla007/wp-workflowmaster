@@ -429,7 +429,7 @@ Weitere Felder auf der obersten Ebene sind nicht erlaubt.
 
 Der Gast eines Tickets und der Empfänger eines Gutscheins haben oft kein WordPress-Konto. Für sie gibt es dann keine Benutzer-ID; der Adapter erreicht sie nur über die Lesefunktionen des Providers (R-5.6, F-13).
 
-**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für Pass Captain und Voucher Captain stehen die Listen in den Feldtabellen in 4.2 und 4.3; maschinenlesbar in [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json). Außerdem gilt:
+**Erlaubte Felder in `data`.** Für jeden Ereignistyp legt der Adapter eine feste Liste an und veröffentlicht sie mit seinem Add-on. Für Pass Captain und Voucher Captain stehen die Listen in den Feldtabellen in 4.2 und 4.3; maschinenlesbar in [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json), dort mit dem Datentyp je Feld (`data_types`: `integer`, `number`, `boolean`, `string`, `currency`, `datetime`). Außerdem gilt:
 
 | Ereignistyp | Felder |
 |---|---|

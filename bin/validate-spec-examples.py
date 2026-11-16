@@ -68,6 +68,23 @@ def check_catalog(validator, docs):
             print("FAIL catalog:", name, "subject does not match the catalog")
             failed += 1
         extra = sorted(set(doc["data"]) - set(event["data_fields"]))
+        types = event.get("data_types", {})
+        if set(types) != set(event["data_fields"]):
+            print("FAIL catalog:", event["type"], "data_types does not cover exactly the data_fields")
+            failed += 1
+        for field, value in doc["data"].items():
+            want = types.get(field)
+            ok = {
+                "integer": isinstance(value, int) and not isinstance(value, bool),
+                "number": isinstance(value, (int, float)) and not isinstance(value, bool),
+                "boolean": isinstance(value, bool),
+                "string": isinstance(value, str),
+                "currency": isinstance(value, str) and len(value) == 3 and value.isupper(),
+                "datetime": isinstance(value, str) and value.endswith("Z"),
+            }.get(want, True)
+            if want and value is not None and not ok:
+                print("FAIL catalog:", name, "field", field, "is not of type", want)
+                failed += 1
         if extra:
             print("FAIL catalog:", name, "data fields not in the catalog:", ", ".join(extra))
             failed += 1
@@ -75,7 +92,7 @@ def check_catalog(validator, docs):
     if os.path.exists(shipped):
         with open(shipped, encoding="utf-8") as handle:
             shipped_fields = json.load(handle)
-        expected = {t: entry[2]["data_fields"] for t, entry in by_type.items()}
+        expected = {t: entry[2].get("data_types", {}) for t, entry in by_type.items()}
         if shipped_fields != expected:
             print("FAIL catalog: assets/data/catalog-fields.json differs from the catalog (regenerate it)")
             failed += 1
