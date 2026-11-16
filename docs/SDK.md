@@ -6,7 +6,7 @@ Stand: Plugin 0.2.0, Spezifikation [`SPEC-suite-events.md`](SPEC-suite-events.md
 
 | Baustein | Klasse | Aufgabe |
 |---|---|---|
-| Adapter | `WorkflowCaptain\Adapter\Adapter` | liefert Ereignisse eines Providers an den Consumer; liegt in einem Add-on, nie im Kern (A-1) |
+| Adapter | `WorkflowCaptain\Adapter\Adapter` | liefert Ereignisse eines Providers an den Consumer; liegt für Captain-Produkte in einem Add-on, nie im Kern (A-1). Eingebaut sind nur die Adapter für WordPress und WooCommerce (`src/Providers`, F-20) |
 | Consumer | `WorkflowCaptain\Consumer\Consumer` | baut den Umschlag, speichert einmal je Idempotenzschlüssel, wiederholt, schützt vor Schleifen |
 | Engine | `WorkflowCaptain\Engine\Engine` | startet Läufe veröffentlichter Workflows und führt ihre Schritte aus |
 | Aktion | `WorkflowCaptain\Engine\Action` | ein Befehl, den ein Schritt ausführt; nur Befehle aus Abschnitt 8.1 der Spezifikation |
@@ -88,7 +88,7 @@ Bis zum visuellen Editor werden Workflows als JSON bearbeitet (Admin „Workflow
 | Hook | Art | Zweck |
 |---|---|---|
 | `workflow_captain_loaded` | Action | Kern ist geladen |
-| `workflow_captain_register_adapters_v1` | Action | Adapter anmelden (`init`, Priorität 20) |
+| `workflow_captain_register_adapters_v1` | Action | Adapter anmelden (`init`, Priorität 20). Die eingebauten Adapter `wordpress` und `woocommerce` sind dann schon angemeldet; ein zweiter Adapter für dasselbe Produkt wird abgelehnt (`already_registered`) |
 | `workflow_captain_actions_v1` | Action | Aktionen anmelden |
 | `workflow_captain_dispatcher` | Filter | eigene Engine statt der des Kerns (selten) |
 | `workflow_captain_worker_batch` | Filter | Ereignisse und Schritte je Worker-Durchlauf (1 bis 200, Standard 25) |

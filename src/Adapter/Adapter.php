@@ -3,7 +3,8 @@
  * Public interface an adapter implements to deliver events to the consumer (WF-SPEC-06; versioned with
  * WORKFLOW_CAPTAIN_CONTRACT_VERSION, R-13.7).
  *
- * An adapter lives in an add-on, never in the free core (A-1). It hooks itself to the PHP actions of its provider and,
+ * An adapter for a Captain product lives in an add-on, never in the free core (A-1); the only built-in adapters are
+ * those for WordPress and WooCommerce (src/Providers, F-20, SPEC-suite-events 4.7). An adapter hooks itself to the PHP actions of its provider and,
  * in each callback, builds the event from a fixed list of allowed fields (R-5.2) and hands it to
  * Consumer::capture(). The consumer knows no product key and no license right (C-1): whether an adapter may register
  * at all is decided in the add-on before it calls AdapterRegistry::add().

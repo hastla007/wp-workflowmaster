@@ -180,6 +180,17 @@ final class Plugin {
 	 * last time but not now (R-10.7, C-15). Nothing is deleted and nothing is caught up later (R-10.6, R-10.8).
 	 */
 	public function register_adapters(): void {
+		// WordPress and WooCommerce are built in, need no license and register first (F-20, SPEC-suite-events 4.7).
+		$sink = function ( \WorkflowCaptain\Adapter\Adapter $adapter, array $event ): void {
+			$this->consumer()->capture( $adapter, $event );
+		};
+		\WorkflowCaptain\Providers\CoreAdapter::register(
+			$this->adapters,
+			array(
+				new \WorkflowCaptain\Providers\WordPressAdapter( $sink ),
+				new \WorkflowCaptain\Providers\WooCommerceAdapter( $sink ),
+			)
+		);
 		/**
 		 * Register adapters here: $registry->add( new My_Adapter() ). Interface version: WORKFLOW_CAPTAIN_CONTRACT_VERSION.
 		 *
