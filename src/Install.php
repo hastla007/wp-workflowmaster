@@ -38,12 +38,7 @@ final class Install {
 
 	public static function activate_site(): void {
 		self::create_tables();
-		$role = get_role( 'administrator' );
-		if ( $role ) {
-			foreach ( self::CAPS as $cap ) {
-				$role->add_cap( $cap );
-			}
-		}
+		self::grant_admin_caps();
 		Plugin::schedule_events();
 	}
 
@@ -72,9 +67,22 @@ final class Install {
 		$state = self::schema_state( get_option( self::DB_OPTION ), WORKFLOW_CAPTAIN_DB_VERSION );
 		if ( self::SCHEMA_UPGRADE === $state ) {
 			self::create_tables();
-			return self::SCHEMA_CURRENT;
+			$state = self::SCHEMA_CURRENT;
 		}
+		self::grant_admin_caps();
 		return $state;
+	}
+
+	/** Administrators get capabilities added by an update without reactivation (only missing ones are added). */
+	public static function grant_admin_caps(): void {
+		$role = function_exists( 'get_role' ) ? get_role( 'administrator' ) : null;
+		if ( $role ) {
+			foreach ( self::CAPS as $cap ) {
+				if ( ! $role->has_cap( $cap ) ) {
+					$role->add_cap( $cap );
+				}
+			}
+		}
 	}
 
 	public static function create_tables(): void {
