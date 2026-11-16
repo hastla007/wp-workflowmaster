@@ -74,7 +74,7 @@ final class ProvidersPage {
 			'missing'    => __( 'kein Adapter (Add-on fehlt, inaktiv oder ohne Lizenz)', 'workflow-captain' ),
 		);
 		echo '<div class="wrap"><h1>' . esc_html__( 'Provider', 'workflow-captain' ) . '</h1>';
-		echo '<p class="description">' . esc_html__( 'Ereignisse der Captain-Produkte kommen über Adapter aus den Pro-Add-ons. Ohne Adapter werden offene Ereignisse pausiert, nicht gelöscht.', 'workflow-captain' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Ereignisse der Captain-Produkte kommen über Adapter aus den Pro-Add-ons. Die Adapter für WordPress und WooCommerce (ab Version 8.2) sind eingebaut und brauchen keine Lizenz. Ohne Adapter werden offene Ereignisse pausiert, nicht gelöscht.', 'workflow-captain' ) . '</p>';
 		if ( array() === $rows ) {
 			echo '<p>' . esc_html__( 'Noch kein Adapter angemeldet und keine Ereignisse gespeichert.', 'workflow-captain' ) . '</p></div>';
 			return;
