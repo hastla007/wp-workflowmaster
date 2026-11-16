@@ -75,6 +75,9 @@ interface EventStore {
 	/** @return array<string,int> Count per state. */
 	public function count_by_state(): array;
 
+	/** @return array<string,array<string,int>> Count per product and state. */
+	public function count_by_product(): array;
+
 	/** @return array<int,array<string,mixed>> Every row whose actor is this user (R-12.5). */
 	public function by_actor( int $user_id, int $limit, int $offset ): array;
 

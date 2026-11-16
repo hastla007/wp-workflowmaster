@@ -182,6 +182,14 @@ final class WpdbEventStore implements EventStore {
 		return $counts;
 	}
 
+	public function count_by_product(): array {
+		$out = array();
+		foreach ( (array) $this->db->get_results( "SELECT product, state, COUNT(*) AS n FROM {$this->t()} GROUP BY product, state", ARRAY_A ) as $row ) {
+			$out[ $row['product'] ][ $row['state'] ] = (int) $row['n'];
+		}
+		return $out;
+	}
+
 	public function by_actor( int $user_id, int $limit, int $offset ): array {
 		$rows = $this->db->get_results(
 			$this->db->prepare( "SELECT * FROM {$this->t()} WHERE actor_user_id = %d ORDER BY id ASC LIMIT %d OFFSET %d", $user_id, $limit, $offset ),

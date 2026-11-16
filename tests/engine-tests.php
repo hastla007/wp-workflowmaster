@@ -564,3 +564,16 @@ check( 'settings: unknown keys dropped', ! isset( Settings::sanitize( array( 'ev
 check( 'settings: engine limits mapped', array( 'site' => 5, 'workflow' => 2, 'catch_up' => 86400 ) === Settings::engine_limits( Settings::defaults() ) );
 $e = new Engine( new WpdbEngineStore( new FakeWpdb( FakeWpdb::memory() ) ), new ActionRegistry(), new FakeDirectory(), new FixedClock(), 'UTC', array( 'site' => 9, 'bogus' => 3, 'workflow' => 0 ) );
 check( 'engine: limits taken from settings, invalid ignored', array( 'site' => 9, 'workflow' => 2, 'catch_up' => 86400 ) === $e->limits() );
+
+// ----- Provider overview (WF-INT-14 part) ----------------------------------------------------------------------
+
+$e = engine_site();
+publish( $e, sample_graph() );
+$e->registry->add( new TestAdapter( 'shop' ) );                       // refused: unknown product
+$e->consumer->capture( $e->adapter, checkin() );
+$e->events->insert( array( 'id' => \WorkflowCaptain\Envelope\Uuid::v4(), 'site' => array( 'blog_id' => 1 ), 'idempotency_key' => str_repeat( 'f', 64 ), 'type' => 'voucher.voucher.redeemed', 'source' => array( 'product' => 'voucher-captain' ), 'subject' => array( 'type' => 'voucher', 'id' => '1' ), 'data' => array() ), EventStore::PAUSED, $e->clock->mysql() );
+$rows = \WorkflowCaptain\Admin\ProvidersPage::rows( $e->registry, $e->events, $e->store );
+$by   = array_column( $rows, null, 'product' );
+check( 'providers: registered adapter with versions, types and active workflows', 'registered' === $by['pass-captain']['status'] && '1.1.0' === $by['pass-captain']['contract_version'] && 1 === $by['pass-captain']['active_workflows']['pass.ticket.checked_in'] && 1 === $by['pass-captain']['events']['received'] );
+check( 'providers: refused adapter shows its reason', 'refused' === $by['shop']['status'] && 'unknown_product' === $by['shop']['reason'] );
+check( 'providers: product with events but no adapter is shown as missing', 'missing' === $by['voucher-captain']['status'] && 1 === $by['voucher-captain']['events']['paused'] );
