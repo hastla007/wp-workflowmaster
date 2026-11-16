@@ -12,6 +12,8 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 
 ### F-01 · Drei Workflow-Rechte ohne Vormerkung
 
+**Stand 16.11.2026:** `workflow.custom_connectors` und `workflow.multisite_network` sind im Lizenzserver als geplant vorgemerkt (wp-license, Branch `claude/plugin-todo-liste-2a83v4`, `410ca78`), wie empfohlen; `workflow.delays` nicht. Die Bestätigung des Inhabers steht aus.
+
 - **Frage:** Sollen `workflow.custom_connectors`, `workflow.delays` und `workflow.multisite_network` Rechte von Workflow Captain Pro werden?
 - **Stand:** `konzept.md` nennt neun Rechte als bestätigt. Der Lizenzserver merkt sechs vor (`LIC:src/Catalog/EntitlementCatalog.php:118-125`). `konzept.md` gibt Verzögerungen außerdem dem kostenlosen Kern und führt sie zugleich als Pro-Recht.
 - **Annahme der Spezifikation:** Die drei sind „nicht reserviert, Entscheidung offen“ (Abschnitt 10.2).

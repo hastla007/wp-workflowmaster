@@ -20,7 +20,7 @@ Regeln, die für alle gelten:
 | VC-4 | Satz in `README.md:96` („Kein Formular und kein Workflow stellt selbstständig Gutscheine aus.“) an D11b anpassen | 8.3.4 | sofort | |
 | VC-5 | Vorläufigen Workflow-Provider aus Pull Request 16 vor dem Release entfernen und auf einem geparkten Branch aufbewahren; Wächtertest wie im Affiliate-Kern | D13, R-4.4 bis R-4.6, Z-16 (geprüft: auf `hvollo-refactors` `82145ed` noch vorhanden, auf `main` nie; dort VOUCH-WF-10) | vor dem nächsten Release | |
 | VC-6 | „Nach Commit“ für die Actions ohne Vermerk in der Hook-Tabelle belegen oder als „nicht nach Commit“ kennzeichnen | R-3.9, Z-05 | Dokumentation, jederzeit | |
-| VC-7 | Lesefunktionen für Zustand eines Gutscheins und für Kontakt und Einwilligung des Empfängers als dokumentierten Vertrag führen (additiv) | 8.1, F-13, Z-07 | nach der Antwort auf F-13 | |
+| VC-7 | Lesefunktionen für Zustand eines Gutscheins und für Kontakt und Einwilligung des Empfängers als dokumentierten Vertrag führen (additiv) | 8.1, F-13, Z-07 | nach der Antwort auf F-13 | **Zustand gebaut am 16.11.2026** in wp-couponmaster (Branch `claude/plugin-todo-liste-2a83v4`, `fa1a66f`): `vcap_read_voucher()` u. a., Vertrag 1.2.0; Kontakt/Einwilligung wartet auf F-13 |
 | VC-8 | Wächtertest „kein Lizenzcode im Kern“ in der CI | R-3.11 | jederzeit | |
 | VC-9 | `reactivate()` prüft die Berechtigung nur, wenn ein Benutzer angemeldet ist; der neue Einstiegspunkt darf sich darauf nicht verlassen. `void()` und die Einlöse-API prüfen in PHP keine Berechtigung | 8.3.3, 8.3.4, Z-15 | mit VC-1 | |
 | VC-10 | Kartenimport bildet die Idempotenzreferenz aus einem Hash des Codes (`src/Admin/CardImport.php:92-94`, der Docblock in Zeile 13 nennt fälschlich `import:<code>`); Referenz ohne Bezug zum Code bilden | R-4.7 | jederzeit | |
@@ -33,7 +33,7 @@ Regeln, die für alle gelten:
 | PC-2 | „Nach Commit“ für die sechs Actions aus Z-02 in `docs/HOOKS.md` vermerken (geprüft: alle nach COMMIT oder im Autocommit) | R-3.9, Z-02 | Dokumentation, jederzeit | |
 | PC-6 | `wpcap_occurrence_rescheduled` und `wpcap_occurrence_cancelled` feuern im Admin auch, wenn das UPDATE fehlschlug (`src/Admin/EventsPage.php:207-218`, `:242-245`); Ergebnis prüfen | Z-02, 4.2 | jederzeit | |
 | PC-3 | Dokumentieren, dass `$reason` bei `wpcap_order_cancelled` und `wpcap_ticket_revoked` Freitext sein kann (Admin; bei `wpcap_order_cancelled` auch beliebiger Text über `wp_pass_captain_ticket_service_v1`), und die festen Präfixe auflisten | Abschnitt 5, Z-03 | Dokumentation | |
-| PC-4 | Lesefunktionen für Zustand von Bestellung und Ticket und für Kontakt und Einwilligung zu einem Ticket als dokumentierten Vertrag führen (additiv). Geprüft: heute ist nur `wpcap_get_invoice()` Vertrag; auf dem Branch `claude/youthful-bardeen-7ejd7a` liegt mit `Reconciliation::orders()` ein versionierter Ansatz für Bestellungen (nicht gemergt) | 8.1, F-13, Z-07 | nach der Antwort auf F-13 | |
+| PC-4 | Lesefunktionen für Zustand von Bestellung und Ticket und für Kontakt und Einwilligung zu einem Ticket als dokumentierten Vertrag führen (additiv). Geprüft: heute ist nur `wpcap_get_invoice()` Vertrag; auf dem Branch `claude/youthful-bardeen-7ejd7a` liegt mit `Reconciliation::orders()` ein versionierter Ansatz für Bestellungen (nicht gemergt) | 8.1, F-13, Z-07 | nach der Antwort auf F-13 | **Zustand gebaut am 16.11.2026** in wp-passmaster (Branch `claude/plugin-todo-liste-2a83v4`, `8293d65`): `wpcap_get_order_state()` u. a., Vertrag 1.2.0; Kontakt/Einwilligung wartet auf F-13 |
 | PC-5 | Wächtertest „kein Lizenzcode im Kern“ in der CI | R-3.11 | jederzeit | |
 
 ## Affiliate Captain (`wpaffiliatemaster`)
@@ -52,7 +52,7 @@ Regeln, die für alle gelten:
 | LIC-2 | Vertragskonstante nach R-3.1 (vorgeschlagen `WPLC_CONTRACT_VERSION`, F-03) | R-3.1, F-03 | nach der Antwort auf F-03 | |
 | LIC-3 | „Seit“ je Action und Zusage „nach dem Commit“ für die drei Lizenz-Actions des Katalogs (ermittelt: 0.1.0, 0.1.0, 0.2.0; alle nach Commit oder im Autocommit, aber ohne Zusage; der Docblock von `license_issued_followup` nennt fälschlich 0.2.0; „after all locks are released“ stimmt für `apply_pending_after_renewal` nicht) | R-3.4, R-3.9, Z-10 | Dokumentation | |
 | LIC-6 | `docs/EXTENSION-POINTS.md` auf `a113568` führt zwei Filter (`wplc_catalog_auto_import`, `wplc_price_change_notice_days`) unter „Actions“ | Z-14 | Dokumentation | |
-| LIC-4 | Lesefassade mit ausschließlich lesenden Methoden (dort WFC-LIC-05); dringlicher, weil die öffentlichen `get_license()`-Methoden die ganze Zeile mit Schlüssel-Hash und `license_uuid` liefern | Abschnitt 11, 8.1 | nach D12 | |
+| LIC-4 | Lesefassade mit ausschließlich lesenden Methoden (dort WFC-LIC-05); dringlicher, weil die öffentlichen `get_license()`-Methoden die ganze Zeile mit Schlüssel-Hash und `license_uuid` liefern | Abschnitt 11, 8.1 | nach D12 | **Gebaut am 16.11.2026** in wp-license (Branch `claude/plugin-todo-liste-2a83v4`, `57f5b7b`): `WPLC\License\ReadFacade::get()` |
 | LIC-5 | Die sechs `workflow.*`-Schlüssel wandern mit dem Umbau (G2, E8) in die Katalogdatei von `workflow-captain-pro` | W-8 | mit dem Umbau | |
 
 ## Add-ons und Kernel (`captain-pro`)
