@@ -738,7 +738,7 @@ Diese Tabelle fasst für jeden Befehl der Version 1 zusammen, was 8.1 bis 8.4, 7
 | `voucher.reactivate` | wie `voucher.issue` | reaktiviert einen gesperrten Gutschein | wie `voucher.issue` | `vcap_increase_balance` (R-8.6) | wie `voucher.issue` | wie `voucher.issue` |
 | `voucher.redeem` | wie `voucher.issue` | löst einen Gutschein ganz oder teilweise ein | wie `voucher.issue` | `vcap_redeem_api` (R-8.6) | wie `voucher.issue` | wie `voucher.issue` |
 
-„Wie das auslösende Ereignis“ heißt: Kommt das Ereignis aus einem Captain-Produkt, gilt R-10.1; kommt es aus WordPress oder WooCommerce, ist die Lizenz offen (D3, F-10).
+„Wie das auslösende Ereignis“ heißt: Kommt das Ereignis aus einem Captain-Produkt, gilt R-10.1; kommt es aus WordPress oder WooCommerce, braucht es keine Lizenz (F-20, 4.7). Maschinenlesbar: [`catalog/actions-v1.json`](catalog/actions-v1.json).
 
 - R-8.11 Ein Schritt wird höchstens so oft wiederholt wie ein Ereignis (8 Versuche, Abstände aus 7.4) und nur bei vorübergehenden Fehlern. Danach bleibt der Lauf mit Grund stehen; ein Mensch kann den Schritt erneut einreihen, mit demselben Idempotenzschlüssel.
 - R-8.12 Für `notify.admin` und `notify.user` bucht der Consumer den Idempotenzschlüssel als „wird gesendet“, bevor er die Mail übergibt, und danach als „gesendet“ oder „fehlgeschlagen“. Findet er einen Schlüssel im Zustand „wird gesendet“ (Abbruch während des Versands), sendet er nicht von selbst erneut, sondern zeigt den Schritt zur Entscheidung durch einen Menschen. Eine Mail lieber nicht als doppelt.

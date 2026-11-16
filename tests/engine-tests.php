@@ -961,3 +961,19 @@ $runs = $e->store->find_runs( array(), 10, 0 );
 check( 'WF-CORE-04 schedule: each event starts only its own workflow, doubled timer starts one run', 2 === count( $runs ) && array( $w1, $w2 ) === array_values( array_unique( array_map( 'intval', array_column( array_reverse( $runs ), 'workflow_id' ) ) ) ) );
 $fired = array( $w1 => $due[0]['due'], $w2 => $due[1]['due'] );
 check( 'WF-CORE-04 schedule: not due again until the next time', array() === $e->engine->due_schedules( $fired ) );
+
+// ----- WF-INT-01: action catalog matches the action classes of the core
+$acat = json_decode( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'docs/catalog/actions-v1.json' ), true );
+$e    = engine_site();
+$ok   = true;
+foreach ( $acat['actions'] as $row ) {
+	if ( 'workflow-captain' !== $row['owner'] ) {
+		continue;
+	}
+	$a  = $e->actions->get( $row['key'] );
+	$ok = $ok && null !== $a && $a->capability() === $row['capability'] && $a->idempotent() === $row['idempotent'];
+}
+$core_keys = array_column( array_filter( $acat['actions'], fn( $r ) => 'workflow-captain' === $r['owner'] ), 'key' );
+check( 'WF-INT-01 action catalog: every core action listed with capability and idempotency as in the code', $ok && 5 === count( $core_keys ) );
+$engine_code = (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/Engine.php' );
+check( 'WF-INT-01 action catalog: every documented pause reason exists in the engine', array() === array_filter( $acat['pause_reasons'], fn( $r ) => ! str_contains( $engine_code, "'" . $r . "'" ) ) );

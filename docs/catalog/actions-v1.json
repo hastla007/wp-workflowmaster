@@ -1,0 +1,170 @@
+{
+  "$comment": "Machine-readable part of docs/SPEC-suite-events.md 8.1 and 8.5 (WF-INT-01). Checked by tests/engine-tests.php against the action classes of the core.",
+  "spec_version": "1.0.0-draft.6",
+  "pause_reasons": [
+    "action_unavailable",
+    "not_authorized",
+    "provider_contract_changed",
+    "unclear_outcome",
+    "overdue"
+  ],
+  "actions": [
+    {
+      "key": "notify.admin",
+      "owner": "workflow-captain",
+      "license": "free",
+      "capability": null,
+      "publish_capability": "activate_workflows",
+      "idempotent": false,
+      "side_effect": "zusätzliche Mail an Betreiber; nicht rückholbar",
+      "retry": "nur wenn sicher nicht versendet (R-8.12)",
+      "config_errors": [
+        "subject:required",
+        "subject:too_long",
+        "message:required",
+        "message:too_long",
+        "to:invalid"
+      ],
+      "run_errors": [
+        "mail_failed",
+        "unclear_outcome"
+      ]
+    },
+    {
+      "key": "notify.user",
+      "owner": "workflow-captain",
+      "license": "free",
+      "capability": null,
+      "publish_capability": "activate_workflows",
+      "idempotent": false,
+      "side_effect": "zusätzliche Mail an einen Benutzer; nicht rückholbar",
+      "retry": "nur wenn sicher nicht versendet (R-8.12)",
+      "config_errors": [
+        "subject:required",
+        "subject:too_long",
+        "message:required",
+        "message:too_long",
+        "user_field:invalid"
+      ],
+      "run_errors": [
+        "mail_failed",
+        "unclear_outcome"
+      ]
+    },
+    {
+      "key": "workflow.tag.set",
+      "owner": "workflow-captain",
+      "license": "free",
+      "capability": null,
+      "publish_capability": "activate_workflows",
+      "idempotent": true,
+      "side_effect": "Markierung im Speicher des Consumers",
+      "retry": "ja (R-8.11)",
+      "config_errors": [
+        "tag:invalid"
+      ],
+      "run_errors": []
+    },
+    {
+      "key": "workflow.tag.remove",
+      "owner": "workflow-captain",
+      "license": "free",
+      "capability": null,
+      "publish_capability": "activate_workflows",
+      "idempotent": true,
+      "side_effect": "entfernt eine Markierung",
+      "retry": "ja (R-8.11)",
+      "config_errors": [
+        "tag:invalid"
+      ],
+      "run_errors": []
+    },
+    {
+      "key": "workflow.note.add",
+      "owner": "workflow-captain",
+      "license": "free",
+      "capability": null,
+      "publish_capability": "activate_workflows",
+      "idempotent": true,
+      "side_effect": "Notiz im Speicher des Consumers, eindeutig je Idempotenzschlüssel",
+      "retry": "ja (R-8.11)",
+      "config_errors": [
+        "text:required",
+        "text:too_long"
+      ],
+      "run_errors": []
+    },
+    {
+      "key": "voucher.issue",
+      "owner": "workflow-captain-pro",
+      "license": "workflow.suite_integrations + Voucher Captain Pro",
+      "capability": "vcap_manage_vouchers",
+      "publish_capability": "vcap_manage_vouchers",
+      "idempotent": true,
+      "side_effect": "stellt einen Gutschein aus; geldwirksam, feste Grenzen (8.3.1)",
+      "retry": "ja mit demselben Schlüssel; Ablehnungen wegen Grenze, Schalter oder Recht endgültig (R-8.13)",
+      "config_errors": [],
+      "run_errors": [
+        "limit_reached",
+        "disabled",
+        "currency_not_allowed",
+        "not_authorized"
+      ],
+      "status": "wartet auf VC-1 im Voucher-Kern"
+    },
+    {
+      "key": "voucher.void",
+      "owner": "workflow-captain-pro",
+      "license": "workflow.suite_integrations + Voucher Captain Pro",
+      "capability": "vcap_manage_vouchers",
+      "publish_capability": "vcap_manage_vouchers",
+      "idempotent": true,
+      "side_effect": "sperrt einen Gutschein; geldwirksam, feste Grenzen (8.3.1)",
+      "retry": "ja mit demselben Schlüssel; Ablehnungen wegen Grenze, Schalter oder Recht endgültig (R-8.13)",
+      "config_errors": [],
+      "run_errors": [
+        "limit_reached",
+        "disabled",
+        "currency_not_allowed",
+        "not_authorized"
+      ],
+      "status": "wartet auf VC-1 im Voucher-Kern"
+    },
+    {
+      "key": "voucher.reactivate",
+      "owner": "workflow-captain-pro",
+      "license": "workflow.suite_integrations + Voucher Captain Pro",
+      "capability": "vcap_increase_balance",
+      "publish_capability": "vcap_increase_balance",
+      "idempotent": true,
+      "side_effect": "reaktiviert einen Gutschein; geldwirksam, feste Grenzen (8.3.1)",
+      "retry": "ja mit demselben Schlüssel; Ablehnungen wegen Grenze, Schalter oder Recht endgültig (R-8.13)",
+      "config_errors": [],
+      "run_errors": [
+        "limit_reached",
+        "disabled",
+        "currency_not_allowed",
+        "not_authorized"
+      ],
+      "status": "wartet auf VC-1 im Voucher-Kern"
+    },
+    {
+      "key": "voucher.redeem",
+      "owner": "workflow-captain-pro",
+      "license": "workflow.suite_integrations + Voucher Captain Pro",
+      "capability": "vcap_redeem_api",
+      "publish_capability": "vcap_redeem_api",
+      "idempotent": true,
+      "side_effect": "löst einen Gutschein ein; geldwirksam, feste Grenzen (8.3.1)",
+      "retry": "ja mit demselben Schlüssel; Ablehnungen wegen Grenze, Schalter oder Recht endgültig (R-8.13)",
+      "config_errors": [],
+      "run_errors": [
+        "limit_reached",
+        "disabled",
+        "currency_not_allowed",
+        "not_authorized"
+      ],
+      "status": "wartet auf VC-1 im Voucher-Kern"
+    }
+  ]
+}
