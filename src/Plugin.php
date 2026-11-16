@@ -30,6 +30,8 @@ final class Plugin {
 
 	private AdapterRegistry $adapters;
 
+	private string $schema = Install::SCHEMA_CURRENT;
+
 	public static function instance(): Plugin {
 		if ( null === self::$instance ) {
 			self::$instance = new self();
@@ -42,7 +44,17 @@ final class Plugin {
 	}
 
 	public function boot(): void {
-		Install::maybe_upgrade();
+		$this->schema = Install::maybe_upgrade();
+		if ( Install::SCHEMA_NEWER === $this->schema ) {
+			add_action(
+				'admin_notices',
+				static function (): void {
+					if ( current_user_can( 'manage_workflow_captain' ) ) {
+						echo '<div class="notice notice-error"><p>' . esc_html__( 'Workflow Captain: Die Datenbank stammt von einer neueren Version des Plugins. Ereignisse und Schritte werden nicht verarbeitet, bis die neuere Version wieder installiert ist. Es wurde nichts gelöscht.', 'workflow-captain' ) . '</p></div>';
+					}
+				}
+			);
+		}
 		add_filter( 'cron_schedules', array( self::class, 'cron_schedules' ) );
 		add_action( 'init', array( self::class, 'schedule_events' ) );
 		add_action( 'init', array( $this, 'register_adapters' ), 20 );
@@ -172,6 +184,9 @@ final class Plugin {
 	}
 
 	public function run_worker(): void {
+		if ( Install::SCHEMA_NEWER === $this->schema ) {
+			return; // Downgrade: older code does not touch a newer schema (WF-CORE-07).
+		}
 		/**
 		 * Events handled per worker run.
 		 *
@@ -201,6 +216,7 @@ final class Plugin {
 				'plugin'            => WORKFLOW_CAPTAIN_VERSION,
 				'schema'            => (string) get_option( Install::DB_OPTION ),
 				'schema_expected'   => WORKFLOW_CAPTAIN_DB_VERSION,
+				'schema_state'      => $this->schema,
 				'adapter_interface' => WORKFLOW_CAPTAIN_CONTRACT_VERSION,
 				'wordpress'         => (string) $wp_version,
 				'php'               => PHP_VERSION,

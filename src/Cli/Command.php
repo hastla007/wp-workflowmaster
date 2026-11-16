@@ -71,6 +71,9 @@ final class Command {
 	 * Creates or updates the tables of this site.
 	 */
 	public function migrate(): void {
+		if ( Install::SCHEMA_NEWER === Install::schema_state( get_option( Install::DB_OPTION ), WORKFLOW_CAPTAIN_DB_VERSION ) ) {
+			\WP_CLI::error( 'The stored schema is newer than this plugin (downgrade). Install the newer version; nothing was changed.' );
+		}
 		Install::create_tables();
 		\WP_CLI::success( 'Schema ' . WORKFLOW_CAPTAIN_DB_VERSION . ' in place.' );
 	}

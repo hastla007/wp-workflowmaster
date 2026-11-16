@@ -52,11 +52,29 @@ final class Install {
 		wp_clear_scheduled_hook( self::CRON_DAILY );
 	}
 
-	/** Creates or updates the tables when the stored schema version differs (also after an update). */
-	public static function maybe_upgrade(): void {
-		if ( WORKFLOW_CAPTAIN_DB_VERSION !== get_option( self::DB_OPTION ) ) {
-			self::create_tables();
+	const SCHEMA_CURRENT = 'current';
+	const SCHEMA_UPGRADE = 'upgrade';
+	const SCHEMA_NEWER   = 'newer';
+
+	/**
+	 * State of the stored schema against the code (WF-CORE-07): "newer" after a plugin downgrade – then the schema is
+	 * left alone and the worker pauses, so no older code writes into tables it does not know.
+	 */
+	public static function schema_state( $stored, string $expected ): string {
+		if ( (string) $stored === $expected ) {
+			return self::SCHEMA_CURRENT;
 		}
+		return ( is_numeric( $stored ) && (int) $stored > (int) $expected ) ? self::SCHEMA_NEWER : self::SCHEMA_UPGRADE;
+	}
+
+	/** Creates or updates the tables when the stored schema is older or missing (also after an update). */
+	public static function maybe_upgrade(): string {
+		$state = self::schema_state( get_option( self::DB_OPTION ), WORKFLOW_CAPTAIN_DB_VERSION );
+		if ( self::SCHEMA_UPGRADE === $state ) {
+			self::create_tables();
+			return self::SCHEMA_CURRENT;
+		}
+		return $state;
 	}
 
 	public static function create_tables(): void {

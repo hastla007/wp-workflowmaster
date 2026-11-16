@@ -648,3 +648,10 @@ $privacy = new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, 
 $GLOBALS['wfc_test_users'] = array( 17 => 'person@example.com' );
 $privacy->erase( 'person@example.com' );
 check( 'SEC-04 after erasure no user ID 17 remains in events or runs', ! preg_match( '/"actor_user_id":17\b/', dump_all( $e->pdo ) ) );
+
+// ----- WF-CORE-07: schema state --------------------------------------------------------------------------------
+
+use WorkflowCaptain\Install;
+check( 'schema: same version is current', Install::SCHEMA_CURRENT === Install::schema_state( '3', '3' ) );
+check( 'schema: missing or older version needs an upgrade', Install::SCHEMA_UPGRADE === Install::schema_state( false, '3' ) && Install::SCHEMA_UPGRADE === Install::schema_state( '2', '3' ) );
+check( 'schema: newer stored version is a downgrade', Install::SCHEMA_NEWER === Install::schema_state( '4', '3' ) );
