@@ -1,0 +1,33 @@
+name: Builder
+
+# Browser test of the visual builder (assets/js/builder.js) in headless Chromium.
+on:
+  push:
+    paths:
+      - "assets/**"
+      - "tests/builder.test.js"
+      - ".github/workflows/builder.yml"
+  pull_request:
+    paths:
+      - "assets/**"
+      - "tests/builder.test.js"
+      - ".github/workflows/builder.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Playwright
+        run: |
+          npm install --no-save playwright@1.48.2
+          npx playwright install --with-deps chromium
+      - name: Builder test
+        run: node tests/builder.test.js

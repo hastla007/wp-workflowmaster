@@ -14,7 +14,7 @@
  */
 
 $root  = isset( $argv[1] ) && '' !== $argv[1] ? rtrim( $argv[1], '/' ) : dirname( __DIR__ );
-$paths = array( 'workflow-captain.php', 'uninstall.php', 'readme.txt', 'src' );
+$paths = array( 'workflow-captain.php', 'uninstall.php', 'readme.txt', 'src', 'assets' );
 
 $patterns = array(
 	'/\bLicenseClient\b/'                                                     => 'license client',

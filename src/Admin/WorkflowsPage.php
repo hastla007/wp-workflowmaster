@@ -27,11 +27,38 @@ final class WorkflowsPage {
 		add_action( 'admin_menu', array( $this, 'menu' ), 20 );
 		add_action( 'admin_post_workflow_captain_workflow', array( $this, 'handle_workflow' ) );
 		add_action( 'admin_post_workflow_captain_run', array( $this, 'handle_run' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 	}
 
 	public function menu(): void {
 		add_submenu_page( EventsPage::SLUG, __( 'Workflows', 'workflow-captain' ), __( 'Workflows', 'workflow-captain' ), 'edit_workflows', self::SLUG_WORKFLOWS, array( $this, 'render_workflows' ) );
 		add_submenu_page( EventsPage::SLUG, __( 'Läufe', 'workflow-captain' ), __( 'Läufe', 'workflow-captain' ), 'view_workflow_logs', self::SLUG_RUNS, array( $this, 'render_runs' ) );
+	}
+
+	/** Loads the visual builder on the workflow editor (WF-BUILDER-01). */
+	public function enqueue( string $hook ): void {
+		if ( ! str_ends_with( $hook, self::SLUG_WORKFLOWS ) || ! isset( $_GET['edit'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- only decides which assets load.
+			return;
+		}
+		$base = plugins_url( 'assets/', WORKFLOW_CAPTAIN_FILE );
+		wp_enqueue_style( 'workflow-captain-builder', $base . 'css/builder.css', array(), WORKFLOW_CAPTAIN_VERSION );
+		wp_enqueue_script( 'workflow-captain-builder', $base . 'js/builder.js', array(), WORKFLOW_CAPTAIN_VERSION, true );
+		$fields  = array(
+			'notify.admin'        => array( array( 'key' => 'subject', 'label' => __( 'Betreff', 'workflow-captain' ) ), array( 'key' => 'message', 'label' => __( 'Nachricht', 'workflow-captain' ), 'type' => 'textarea' ), array( 'key' => 'to', 'label' => __( 'Empfänger (site_admin oder Berechtigung)', 'workflow-captain' ) ) ),
+			'notify.user'         => array( array( 'key' => 'subject', 'label' => __( 'Betreff', 'workflow-captain' ) ), array( 'key' => 'message', 'label' => __( 'Nachricht', 'workflow-captain' ), 'type' => 'textarea' ), array( 'key' => 'user_field', 'label' => __( 'Benutzer aus (actor_user_id oder data.…_user_id)', 'workflow-captain' ) ) ),
+			'workflow.tag.set'    => array( array( 'key' => 'tag', 'label' => __( 'Markierung', 'workflow-captain' ) ) ),
+			'workflow.tag.remove' => array( array( 'key' => 'tag', 'label' => __( 'Markierung', 'workflow-captain' ) ) ),
+			'workflow.note.add'   => array( array( 'key' => 'text', 'label' => __( 'Notiz', 'workflow-captain' ), 'type' => 'textarea' ) ),
+		);
+		$actions = array();
+		foreach ( $this->plugin->engine()->actions()->all() as $key => $action ) {
+			$actions[] = array( 'key' => $key, 'label' => $action->label(), 'fields' => $fields[ $key ] ?? array() );
+		}
+		$events = array();
+		foreach ( $this->plugin->adapters()->products() as $product ) {
+			$events = array_merge( $events, (array) $this->plugin->adapters()->get( $product )?->types() );
+		}
+		wp_add_inline_script( 'workflow-captain-builder', 'window.workflowCaptainBuilder = ' . wp_json_encode( array( 'actions' => $actions, 'events' => array_values( array_unique( $events ) ), 'i18n' => new \stdClass() ) ) . ';', 'before' );
 	}
 
 	private static function url( string $page, array $args = array() ): string {
