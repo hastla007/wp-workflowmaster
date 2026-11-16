@@ -13,7 +13,7 @@ Stand: Plugin 0.2.x. Aufgabe WF-CORE-10. Für Betreiber und Support.
 
 | Lage | Erkennen | Tun |
 |---|---|---|
-| WP-Cron läuft nicht (wenig Besucher, `DISABLE_WP_CRON`) | Website-Zustand „Worker überfällig“; Schritte „überfällig“ | System-Cron: `* * * * * wp --path=/pfad workflow-captain process` (bei Multisite je Website mit `--url`). Überfällige Schritte in **Läufe** einzeln „Fortsetzen“. |
+| WP-Cron läuft nicht (wenig Besucher, `DISABLE_WP_CRON`) | Website-Zustand „Worker überfällig“; Schritte „überfällig“ | System-Cron: `* * * * * wp --path=/pfad workflow-captain process` (bei Multisite je Website mit `--url`). Der Befehl holt auch die tägliche Wartung (Aufbewahrung, Datenschutz) nach, wenn sie länger als 25 Stunden nicht lief. Überfällige Schritte in **Läufe** einzeln „Fortsetzen“. |
 | Ereignisse in `dead_letter` | **Ereignisse**, Filter „Fehlgeschlagen“, Spalte „Letzter Fehler“ | Ursache beheben (Datenbank, Provider), dann auswählen → „Ausgewählte erneut einreihen“ oder `wp workflow-captain requeue <nr>` |
 | Ereignisse `paused` (`adapter_unregistered`) | **Provider**: Adapter „kein Adapter“ | Add-on aktivieren oder Lizenz verlängern. Es wird nichts von selbst nachgeholt (R-10.8). Danach gezielt erneut einreihen. |
 | Lauf „Aktion erforderlich“ – `unclear_outcome` | **Läufe** → Lauf öffnen | Der Worker brach während einer Nachricht ab; sie ging vielleicht schon hinaus. Nur mit Häkchen „Erneut senden?“ fortsetzen, sonst Lauf abbrechen. |

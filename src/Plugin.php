@@ -91,6 +91,13 @@ final class Plugin {
 			( new \WorkflowCaptain\Admin\ConnectorsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\SiteHealth( $this ) )->register();
 			( new \WorkflowCaptain\Admin\TemplatesPage( $this ) )->register();
+			// Narrow screens: wide data tables scroll inside their box, the page itself does not (E2E finding, 390px).
+			add_action(
+				'admin_head',
+				static function (): void {
+					echo '<style>@media (max-width:782px){body[class*="workflow-captain"] .wrap table.widefat,body[class*="workflow-captain"] .wrap table.form-table{display:block;max-width:100%;overflow-x:auto}}</style>';
+				}
+			);
 			( new \WorkflowCaptain\Admin\HelpPage() )->register();
 		}
 		/**
@@ -310,12 +317,30 @@ final class Plugin {
 			return null; // Downgrade (newer schema) or upgrade not yet run: the worker waits (WF-CORE-07).
 		}
 		$this->tick_schedules();
+		$this->catch_up_maintenance();
 		$events = $this->consumer()->process( $limit );
 		$this->consumer(); // Makes sure the engine knows the consumer before steps run (C-9).
 		return array( $events, $this->engine()->process( $limit ) );
 	}
 
+	/**
+	 * Runs the daily maintenance from the worker when it is overdue (more than 25 hours), so retention and privacy
+	 * purge also happen on sites where WP-Cron is off and only `wp workflow-captain process` runs (E2E finding).
+	 */
+	private function catch_up_maintenance(): void {
+		if ( ! function_exists( 'get_option' ) ) {
+			return;
+		}
+		$last = (int) get_option( 'workflow_captain_maintenance_at', 0 );
+		if ( time() - $last > 25 * HOUR_IN_SECONDS ) {
+			$this->run_maintenance();
+		}
+	}
+
 	public function run_maintenance(): void {
+		if ( function_exists( 'update_option' ) ) {
+			update_option( 'workflow_captain_maintenance_at', time(), false );
+		}
 		if ( 1 === Settings::get()['notify_daily'] ) {
 			$config = Notifications::config();
 			$mail   = Notifications::digest( $this->diagnostics(), admin_url( 'admin.php?page=workflow-captain' ), $config['kinds'] );

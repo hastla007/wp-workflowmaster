@@ -286,7 +286,7 @@ final class Install {
 		foreach ( \WorkflowCaptain\Engine\WpdbEngineStore::TABLES as $name ) {
 			$wpdb->query( 'DROP TABLE IF EXISTS ' . \WorkflowCaptain\Engine\WpdbEngineStore::table( $wpdb, $name ) );
 		}
-		foreach ( array( self::DB_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired' ) as $option ) {
+		foreach ( array( self::DB_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at' ) as $option ) {
 			delete_option( $option );
 		}
 		foreach ( wp_roles()->role_objects as $role ) {
