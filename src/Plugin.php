@@ -30,6 +30,8 @@ final class Plugin {
 
 	private AdapterRegistry $adapters;
 
+	private ?\WorkflowCaptain\Connector\ConnectorRegistry $connectors = null;
+
 	private string $schema = Install::SCHEMA_CURRENT;
 
 	public static function instance(): Plugin {
@@ -70,6 +72,7 @@ final class Plugin {
 		add_filter( 'cron_schedules', array( self::class, 'cron_schedules' ) );
 		add_action( 'init', array( self::class, 'schedule_events' ) );
 		add_action( 'init', array( $this, 'register_adapters' ), 20 );
+		add_action( 'init', array( $this, 'register_connectors' ), 20 );
 		add_action( Install::CRON_PROCESS, array( $this, 'run_worker' ) );
 		add_action( Install::CRON_DAILY, array( $this, 'run_maintenance' ) );
 		add_filter( 'workflow_captain_retention_days', array( Settings::class, 'retention' ), 5, 2 );
@@ -85,6 +88,7 @@ final class Plugin {
 			( new \WorkflowCaptain\Admin\WorkflowsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\SettingsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\ProvidersPage( $this ) )->register();
+			( new \WorkflowCaptain\Admin\ConnectorsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\SiteHealth( $this ) )->register();
 			( new \WorkflowCaptain\Admin\TemplatesPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\HelpPage() )->register();
@@ -133,6 +137,7 @@ final class Plugin {
 			$store     = new \WorkflowCaptain\Engine\WpdbEngineStore( $wpdb );
 			$directory = new \WorkflowCaptain\Engine\WpDirectory();
 			$actions   = new \WorkflowCaptain\Engine\ActionRegistry();
+			$actions->set_availability( array( $this->connectors(), 'action_available' ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyAdmin( $directory ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyUser( $directory ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Tag( $store, $clock ) );
@@ -177,6 +182,43 @@ final class Plugin {
 			$types = array_merge( $types, (array) $this->adapters->get( $product )?->types() );
 		}
 		return array_values( array_unique( $types ) );
+	}
+
+	/** Registry of own connectors (F-22); its connectors are also in adapters() once accepted. */
+	public function connectors(): \WorkflowCaptain\Connector\ConnectorRegistry {
+		if ( null === $this->connectors ) {
+			$this->connectors = new \WorkflowCaptain\Connector\ConnectorRegistry(
+				$this->adapters,
+				static fn() => (array) get_option( \WorkflowCaptain\Connector\ConnectorRegistry::OPTION, array() ),
+				WORKFLOW_CAPTAIN_CONTRACT_VERSION
+			);
+		}
+		return $this->connectors;
+	}
+
+	/**
+	 * Lets own connectors register with their manifest (init, priority 20, after the adapters), then pauses the open
+	 * events of every connector that was registered last time but not now (R-10.7). Nothing is deleted.
+	 */
+	public function register_connectors(): void {
+		/**
+		 * Register own connectors here: $registry->add( $manifest, new My_Connector_Adapter() ). Format of the manifest:
+		 * docs/CONNECTOR-CONTRACT.md. A connector stays off until the operator enables it.
+		 *
+		 * @since 0.2.0
+		 * @param \WorkflowCaptain\Connector\ConnectorRegistry $registry
+		 */
+		do_action( 'workflow_captain_register_connectors_v1', $this->connectors() );
+		$now      = array_keys( $this->connectors()->all() );
+		$previous = (array) get_option( \WorkflowCaptain\Connector\ConnectorRegistry::SEEN_OPTION, array() );
+		foreach ( array_diff( $previous, $now ) as $gone ) {
+			$this->consumer()->pause_product( (string) $gone );
+		}
+		sort( $now );
+		sort( $previous );
+		if ( $now !== $previous ) {
+			update_option( \WorkflowCaptain\Connector\ConnectorRegistry::SEEN_OPTION, $now, false );
+		}
 	}
 
 	public function store(): \WorkflowCaptain\Store\EventStore {

@@ -237,6 +237,7 @@ final class SettingsPage {
 			'activate_workflows'      => __( 'Workflows veröffentlichen und pausieren', 'workflow-captain' ),
 			'retry_workflow_runs'     => __( 'Wiederholen, fortsetzen, abbrechen', 'workflow-captain' ),
 			'manage_workflow_captain' => __( 'Einstellungen, Notfallpause, Diagnose', 'workflow-captain' ),
+			'manage_workflow_integrations' => __( 'Eigene Connectoren freigeben', 'workflow-captain' ),
 		);
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '" class="wfc-settings-form"><input type="hidden" name="action" value="workflow_captain_roles">';
 		wp_nonce_field( 'workflow_captain_roles' );
@@ -314,6 +315,7 @@ final class SettingsPage {
 			'roles'     => __( 'Rechte der Rollen geändert', 'workflow-captain' ),
 			'pause_on'  => __( 'Notfallpause eingeschaltet', 'workflow-captain' ),
 			'pause_off' => __( 'Notfallpause aufgehoben', 'workflow-captain' ),
+			'connector' => __( 'Freigabe eines eigenen Connectors geändert', 'workflow-captain' ),
 		);
 		echo '<h2>' . esc_html__( 'Letzte sicherheitsrelevante Änderungen', 'workflow-captain' ) . '</h2>';
 		$entries = array_slice( Audit::entries(), 0, 20 );
