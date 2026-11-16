@@ -9,6 +9,7 @@ namespace WorkflowCaptain\Admin;
 
 use WorkflowCaptain\Audit;
 use WorkflowCaptain\Install;
+use WorkflowCaptain\Notifications;
 use WorkflowCaptain\Plugin;
 use WorkflowCaptain\Security\Vault;
 use WorkflowCaptain\Settings;
@@ -25,6 +26,7 @@ final class SettingsPage {
 		add_action( 'admin_menu', array( $this, 'menu' ), 30 );
 		add_action( 'admin_init', array( $this, 'register_setting' ) );
 		add_action( 'admin_post_workflow_captain_roles', array( $this, 'handle_roles' ) );
+		add_action( 'admin_post_workflow_captain_test_mail', array( $this, 'handle_test_mail' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		add_action( 'update_option_' . Settings::OPTION, array( Audit::class, 'settings_updated' ), 10, 2 );
 	}
@@ -49,6 +51,8 @@ final class SettingsPage {
 
 	public function register_setting(): void {
 		register_setting( 'workflow_captain', Settings::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Settings::class, 'sanitize_and_report' ), 'default' => Settings::defaults() ) );
+		// Own group: options.php resets every option of a group that is missing in the request.
+		register_setting( 'workflow_captain_notify', Notifications::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Notifications::class, 'sanitize' ), 'default' => Notifications::sanitize( array() ) ) );
 	}
 
 	public function menu(): void {
@@ -147,6 +151,52 @@ final class SettingsPage {
 		submit_button( null, 'primary', 'submit', false );
 		echo ' <button type="button" class="button wfc-reset-tab">' . esc_html__( 'Standardwerte dieses Tabs', 'workflow-captain' ) . '</button></p>';
 		echo '</form>';
+		if ( 'notify' === $tab ) {
+			$this->notify();
+		}
+	}
+
+	/** Recipients, kinds and a test mail (WF-SET-06). */
+	private function notify(): void {
+		$c     = Notifications::config();
+		$kinds = array(
+			'decisions' => __( 'Läufe, die eine Entscheidung brauchen', 'workflow-captain' ),
+			'paused'    => __( 'Pausierte Läufe', 'workflow-captain' ),
+			'failed'    => __( 'Fehlgeschlagene Ereignisse (Queue-Ausfall)', 'workflow-captain' ),
+			'stuck'     => __( 'Hängende Schritte und Läufe', 'workflow-captain' ),
+			'pause'     => __( 'Aktive Notfallpause', 'workflow-captain' ),
+			'providers' => __( 'Abgelehnte oder inkompatible Provider', 'workflow-captain' ),
+		);
+		echo '<h2>' . esc_html__( 'Empfänger und Arten', 'workflow-captain' ) . '</h2><form method="post" action="options.php" class="wfc-settings-form">';
+		settings_fields( 'workflow_captain_notify' );
+		echo '<table class="form-table" role="presentation"><tr><th scope="row"><label for="wfc-recipients">' . esc_html__( 'Empfänger', 'workflow-captain' ) . '</label></th><td>';
+		echo '<input id="wfc-recipients" type="text" class="regular-text" name="' . esc_attr( Notifications::OPTION ) . '[recipients]" value="' . esc_attr( $c['recipients'] ) . '" aria-describedby="wfc-recipients-help">';
+		echo '<p id="wfc-recipients-help" class="description">' . esc_html( sprintf( /* translators: %s: e-mail address of the site */ __( 'Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website (%s). Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress.', 'workflow-captain' ), (string) get_option( 'admin_email' ) ) ) . '</p></td></tr>';
+		echo '<tr><th scope="row">' . esc_html__( 'Arten', 'workflow-captain' ) . '</th><td><fieldset><legend class="screen-reader-text">' . esc_html__( 'Arten', 'workflow-captain' ) . '</legend>';
+		// An empty list must still reach the server, otherwise all kinds would come back.
+		echo '<input type="hidden" name="' . esc_attr( Notifications::OPTION ) . '[kinds][]" value="">';
+		foreach ( $kinds as $key => $label ) {
+			echo '<label><input type="checkbox" name="' . esc_attr( Notifications::OPTION ) . '[kinds][]" value="' . esc_attr( $key ) . '"' . ( in_array( $key, $c['kinds'], true ) ? ' checked' : '' ) . '> ' . esc_html( $label ) . '</label><br>';
+		}
+		echo '</fieldset></td></tr></table>';
+		submit_button();
+		echo '</form>';
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_test_mail">';
+		wp_nonce_field( 'workflow_captain_test_mail' );
+		echo '<p><button class="button">' . esc_html__( 'Testnachricht senden', 'workflow-captain' ) . '</button> <span class="description">' . esc_html__( 'Ein Testereignis für einen Workflow gibt es im Editor als „Testlauf“.', 'workflow-captain' ) . '</span></p></form>';
+	}
+
+	public function handle_test_mail(): void {
+		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
+			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		check_admin_referer( 'workflow_captain_test_mail' );
+		$mail = Notifications::test_mail( wp_specialchars_decode( (string) get_option( 'blogname' ), ENT_QUOTES ) );
+		$sent = wp_mail( Notifications::recipients( Notifications::config(), (string) get_option( 'admin_email' ) ), $mail['subject'], $mail['message'], Notifications::headers() );
+		add_settings_error( Settings::OPTION, 'wfc-test-mail', $sent ? __( 'Testnachricht übergeben. Kommt sie nicht an, prüfen Sie den Mailversand der Website.', 'workflow-captain' ) : __( 'Die Testnachricht konnte nicht übergeben werden. Prüfen Sie den Mailversand der Website.', 'workflow-captain' ), $sent ? 'success' : 'error' );
+		set_transient( 'settings_errors', get_settings_errors(), 30 );
+		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'notify', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
+		exit;
 	}
 
 	/** Time zone and date format come from WordPress; the source is shown (WF-SET-04). */

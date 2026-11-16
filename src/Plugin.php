@@ -217,9 +217,10 @@ final class Plugin {
 
 	public function run_maintenance(): void {
 		if ( 1 === Settings::get()['notify_daily'] ) {
-			$mail = Notifications::digest( $this->diagnostics(), admin_url( 'admin.php?page=workflow-captain' ) );
+			$config = Notifications::config();
+			$mail   = Notifications::digest( $this->diagnostics(), admin_url( 'admin.php?page=workflow-captain' ), $config['kinds'] );
 			if ( null !== $mail ) {
-				wp_mail( (string) get_option( 'admin_email' ), $mail['subject'], $mail['message'] );
+				wp_mail( Notifications::recipients( $config, (string) get_option( 'admin_email' ) ), $mail['subject'], $mail['message'], Notifications::headers() );
 			}
 		}
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->apply_retention();

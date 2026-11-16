@@ -11,6 +11,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `workflow_captain_emergency_pause` | Notfallpause: aktiv, seit, von Benutzer | aus | Übersicht, `wp workflow-captain pause` | ja |
 | `workflow_captain_adapters` | Produkte, deren Adapter zuletzt angemeldet waren (für das Pausieren bei Wegfall, C-15) | leer | `Plugin::register_adapters()` | ja |
 | `workflow_captain_audit` | letzte 50 sicherheitsrelevante Änderungen: Zeit, Benutzer-ID, Art (Einstellungen, Rechte, Notfallpause), geänderte Schlüssel | leer | `Audit::record()` | ja |
+| `workflow_captain_notify` | Empfänger (bis zu zehn Adressen) und Arten der täglichen Hinweis-Mail | leer = Adresse der Website, alle Arten | Einstellungen → Benachrichtigungen | ja |
 | `workflow_captain_rejected` | Zahl abgelehnter Umschläge und die letzten Regelcodes, nie Werte | leer | `Plugin::record_rejection()` | ja |
 
 Kurzlebige Transients je Benutzer (60 bis 300 Sekunden): `workflow_captain_notice_{user}` (Ergebnis von Speichern und Import) und `workflow_captain_dryrun_{user}` (letzter Testlauf mit Beispieldaten). Sie enthalten nur, was der Benutzer selbst eingegeben hat.

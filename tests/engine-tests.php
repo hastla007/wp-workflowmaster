@@ -849,3 +849,13 @@ for ( $i = 0; $i < 60; $i++ ) {
 }
 check( 'WF-SET-13 audit: newest first, at most 50 entries', 50 === count( $log ) && 59 === $log[0]['detail']['n'] );
 check( 'WF-SET-13 audit: only changed setting keys with old and new value', array( 'batch' => array( 25, 50 ) ) === \WorkflowCaptain\Audit::changed( array( 'batch' => 25, 'max_site' => 5 ), array( 'batch' => 50, 'max_site' => 5 ) ) );
+
+// ----- WF-SET-06: recipients, kinds, test mail
+$cfg = Notifications::sanitize( array( 'recipients' => 'a@example.org, kaputt, B@example.org; a@example.org', 'kinds' => array( 'failed', 'evil' ) ) );
+check( 'WF-SET-06 notify: valid unique recipients, unknown kinds dropped', 'a@example.org, b@example.org' === $cfg['recipients'] && array( 'failed' ) === $cfg['kinds'] );
+check( 'WF-SET-06 notify: fallback to the site address, all kinds by default', array( 'admin@x' ) === Notifications::recipients( Notifications::sanitize( array() ), 'admin@x' ) && Notifications::KINDS === Notifications::sanitize( array() )['kinds'] );
+$only = Notifications::digest( array( 'runs' => array( 'action_required' => 2 ), 'events' => array( 'dead_letter' => 1 ), 'stuck' => array(), 'adapters' => array( 'refused' => array( 'pass-captain' => 'contract_too_old' ) ), 'environment' => array() ), 'u', array( 'failed', 'providers' ) );
+check( 'WF-SET-06 notify: only chosen kinds, refused providers reported', null !== $only && ! str_contains( $only['message'], 'Entscheidung' ) && str_contains( $only['message'], 'Provider' ) && str_contains( $only['message'], 'fehlgeschlagen' ) );
+check( 'WF-SET-06 notify: no kinds chosen, no mail', null === Notifications::digest( array( 'runs' => array( 'action_required' => 2 ) ), 'u', array() ) );
+check( 'WF-SET-06 notify: test mail carries no event data', ! str_contains( Notifications::test_mail( 'Shop' )['message'], '{{' ) );
+
