@@ -468,7 +468,7 @@ Kein Code. Produktschlüssel `course-captain-pro` und Präfix `course.` kennt de
 
 ### 4.7 WordPress und WooCommerce (`source.product` = `wordpress` bzw. `woocommerce`, F-20)
 
-Entschieden am 16.11.2026 (F-20): Ereignisse aus WordPress und WooCommerce nutzen denselben Umschlag. Der Adapter liegt im **kostenlosen Kern** `workflow-captain`; er braucht keine Lizenz (R-2.4 gilt unverändert). `source.core_version` und `source.contract_version` sind die Version von WordPress (`$wp_version`, auf drei Stellen ergänzt) bzw. WooCommerce (`WC_VERSION`). Eine Vertragskonstante gibt es nicht; die Mindestversionen sind WordPress 6.4 und WooCommerce 8.2.
+Entschieden am 16.11.2026 (F-20): Ereignisse aus WordPress und WooCommerce nutzen denselben Umschlag. Der Adapter liegt im **kostenlosen Kern** `workflow-captain`; er braucht keine Lizenz (R-2.4 gilt unverändert). `source.core_version` und `source.contract_version` sind die Version von WordPress (`$wp_version`, auf drei Stellen ergänzt) bzw. WooCommerce (`WC_VERSION`). Eine Vertragskonstante gibt es nicht; die Mindestversionen sind WordPress 7.0 und WooCommerce 11.2 (Entscheidung des Inhabers MINVER-1 vom 17.11.2026, einheitlich für die Suite; vorher 6.4 und 8.2).
 
 - R-4.8 WooCommerce-Bestellungen werden nur über die CRUD-Klassen gelesen (`wc_get_order()`), nie über `wp_posts` oder `wc_orders` direkt. So gilt dasselbe für HPOS und die klassische Speicherung.
 - R-4.9 Felder mit Personenbezug (Rechnungs- und Lieferadresse, E-Mail, Telefon, Name, IP, Kundennotiz, Kupon-Codes) werden nie weitergereicht. `customer_user_id` ist erlaubt, wie bei Pass Captain.

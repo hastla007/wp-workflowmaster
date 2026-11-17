@@ -75,7 +75,15 @@ abstract class CoreAdapter implements Adapter {
 		$registered = array();
 		foreach ( $adapters as $adapter ) {
 			try {
-				if ( $adapter instanceof self && $adapter->available() && $registry->add( $adapter ) ) {
+				if ( ! $adapter instanceof self ) {
+					continue;
+				}
+				// Provider present but older than the minimum: stays unregistered, with the reason on the adapters page.
+				if ( '' !== $adapter->version && ! version_compare( $adapter->version, $adapter->min_version(), '>=' ) ) {
+					$registry->note_refused( $adapter->product(), 'provider_too_old' );
+					continue;
+				}
+				if ( $adapter->available() && $registry->add( $adapter ) ) {
 					$adapter->hook();
 					$registered[] = $adapter->product();
 				}

@@ -1,7 +1,8 @@
 #!/bin/bash
 # E2E checks of Workflow Captain against a real database server (not shipped: /bin is export-ignore). Used by the
-# GitHub workflow .github/workflows/e2e-db.yml (MySQL 9.7 / MariaDB 12.3 service container, PHP 8.4 / 8.5) and run the
-# same way locally against the MariaDB of the test container. No browser.
+# GitHub workflow .github/workflows/e2e-db.yml (MySQL 9.7 / MariaDB 12.3 service container, PHP 8.5, PHP 8.6 experimental;
+# WordPress 7.1.4 and the minimum 7.0.8 / WooCommerce 11.2.2). It no longer runs locally as is: the plugin refuses PHP
+# below 8.5 (MINVER-1) and the test container has PHP 8.3, so earlier local runs are historical. No browser.
 #
 #   bin/e2e/ci-db.sh install    # WordPress, WooCommerce from wordpress.org, Workflow Captain from the release ZIP
 #   bin/e2e/ci-db.sh checks     # php -S on $E2E_URL, then a, c, d, f, g, migrations, counts, j; exit 1 on a failure
@@ -77,6 +78,8 @@ install() {
 	ok=0; [[ "$vers" == "$WP_VERSION / $WC_VERSION / PHP "* ]] && ok=1
 	if [ -n "${CI_DB_EXPECT:-}" ]; then [[ "$vers" == *"DB $CI_DB_EXPECT"* || "$vers" == *"DB 5.5.5-$CI_DB_EXPECT"* ]] || ok=0; fi
 	rec ci3 "versions: WordPress / WooCommerce / PHP / database server${CI_DB_EXPECT:+ (expected $CI_DB_EXPECT)}" $ok "$vers"
+	db=$(wp eval 'echo wp_json_encode( \WorkflowCaptain\Requirements::database( $GLOBALS["wpdb"]->db_server_info() ) );' 2>&1)
+	rec ci3-db 'MINVER-1 database server meets MySQL 9.7 / MariaDB 12.3 (Site Health "good")' $([[ "$db" == *'"status":"good","code":"ok"'* ]] && echo 1 || echo 0) "$db"
 	[ "$ok" = 1 ]
 }
 

@@ -1,5 +1,13 @@
 # E2E-Ergebnisse: Workflow Captain auf einer echten WordPress- und WooCommerce-Installation
 
+> **Hinweis (17.11.2026, MINVER-1):** Seit der Entscheidung des Inhabers verlangt Workflow Captain PHP 8.5, WordPress 7.0
+> und für den WooCommerce-Adapter WooCommerce 11.2; MySQL 9.7 bzw. MariaDB 12.3 sind empfohlen (älterer Server nur
+> Warnung). Alle Läufe auf dieser Seite liefen mit PHP 8.3.6 und MariaDB 10.11, zum Teil mit WordPress 6.9.11/6.4.5 und
+> WooCommerce 9.9.5/8.9.0. Sie sind ab jetzt **nur noch historisch**: mit dem aktuellen Stand bleibt das Plugin dort
+> inaktiv. Im Prüfcontainer steht kein PHP 8.5 zur Verfügung; die echten Läufe auf PHP 8.5 (8.6 experimentell) mit
+> MySQL 9.7 und MariaDB 12.3 macht die CI (`.github/workflows/e2e-db.yml`, `bin/e2e/ci-db.sh`, siehe
+> [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md)). Ein Lauf mit Browser auf einer echten Installation mit PHP 8.5 steht aus.
+
 Stand: 16.11.2026, Branch `wt/e2e` (Basis `claude/plugin-todo-liste-2a83v4`, `f8ab812`, Schema 4). Das Ergebnis jeder Prüfung
 steht unten in den Tabellen; erzeugt mit `bin/e2e/run-checks.sh` und `bin/e2e/release-zip.sh` (nicht ausgeliefert,
 `/bin` ist `export-ignore`). 189 von 199 Prüfungen des Hauptlaufs und alle 28 des ZIP-Laufs bestehen; die 10 offenen sind

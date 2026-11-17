@@ -108,11 +108,14 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 
 ## Laufzeitumgebung (WF-INT-16)
 
+Mindestversionen seit 17.11.2026 (MINVER-1): PHP 8.5, WordPress 7.0, WooCommerce 11.2 (Adapter), MySQL 9.7 oder MariaDB 12.3 (älterer Server nur Warnung). Einzelheiten in [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md).
+
 | Umgebung | Stand |
 |---|---|
-| PHP 8.1 bis 8.5 ohne WordPress (Syntax, `tests/run.php`; Deprecations gelten als Fehler) | automatisch (CI-Matrix `php.yml`; lokal nur 8.3) |
-| PHP 8.4 und 8.5 mit WordPress 7.1.4 und WooCommerce 11.3.0 gegen MySQL 8.4, MySQL 9.7 und MariaDB 12.3 | automatisch (`e2e-db.yml` mit `bin/e2e/ci-db.sh`; erster grüner Lauf steht aus) |
-| Dieselben Prüfungen gegen MariaDB 10.11 mit PHP 8.3 | lokal geprüft (96 von 96, siehe [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md)) |
-| WordPress 6.4.5, 6.9.11, 7.1.4 auf echter Installation | lokal geprüft ([`E2E-RESULTS.md`](E2E-RESULTS.md)) |
-| MySQL 8.4 | offen |
+| Prüfung der Mindestversionen mit eingesetzten Versionen (PHP 8.4 abgelehnt, 8.5 ok; WordPress 6.9 abgelehnt, 7.0 ok; MySQL 8.4/MariaDB 11.4 Warnung, 9.7/12.3 ok; WooCommerce-Adapter unter 11.2 abgelehnt mit Grund) | automatisch (`tests/engine-tests.php`, `tests/provider-tests.php`, „MINVER-1 …“) |
+| PHP 8.5 ohne WordPress (Syntax, `tests/run.php`; Deprecations gelten als Fehler); PHP 8.6 experimentell | automatisch (CI-Matrix `php.yml`; lokal läuft `tests/run.php` weiter auf 8.3) |
+| PHP 8.5 mit WordPress 7.1.4 und WooCommerce 11.3.0 gegen MySQL 9.7 und MariaDB 12.3; Mindestversionen WordPress 7.0.8/WooCommerce 11.2.2 gegen MariaDB 12.3; PHP 8.6 gegen MySQL 9.7 experimentell | automatisch (`e2e-db.yml` mit `bin/e2e/ci-db.sh`; erster grüner Lauf steht aus) |
+| Dieselben Prüfungen gegen MariaDB 10.11 mit PHP 8.3 | historisch (96 von 96 am 16.11.2026, vor MINVER-1) |
+| WordPress 6.4.5, 6.9.11, 7.1.4 auf echter Installation mit PHP 8.3 | historisch ([`E2E-RESULTS.md`](E2E-RESULTS.md)); mit PHP 8.5 nur in der CI |
+| Echte Installation mit PHP 8.5/8.6, MySQL 9.7 bzw. MariaDB 12.3 und Browser (Admin-Seiten, Multisite, klassische Bestellablage) | offen (lokal kein PHP 8.5; Test des Inhabers auf einem echten Host) |
 | Action Scheduler statt WP-Cron | automatisch in `e2e-db.yml` (a6, a10–a12, j5); lokal geprüft |

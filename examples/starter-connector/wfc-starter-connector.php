@@ -3,8 +3,8 @@
  * Plugin Name:       WFC Starter Connector
  * Description:       Beispiel für einen eigenen Connector von Workflow Captain: ein Ereignis, eine Aktion, ein Manifest.
  * Version:           1.0.0
- * Requires at least: 6.4
- * Requires PHP:      8.1
+ * Requires at least: 7.0
+ * Requires PHP:      8.5
  * Requires Plugins:  workflow-captain
  * License:           GPL-2.0-or-later
  * Text Domain:       wfc-starter-connector

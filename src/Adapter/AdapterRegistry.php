@@ -53,6 +53,18 @@ final class AdapterRegistry {
 	}
 
 	/**
+	 * Records why a product has no adapter although its provider is present, e.g. "provider_too_old" for a built-in
+	 * adapter whose WordPress or WooCommerce is older than the minimum (MINVER-1). Never overwrites a registration.
+	 *
+	 * @internal
+	 */
+	public function note_refused( string $product, string $reason ): void {
+		if ( ! isset( $this->adapters[ $product ] ) ) {
+			$this->refused[ $product ] = $reason;
+		}
+	}
+
+	/**
 	 * Internal path for own connectors: only ConnectorRegistry::add() calls this, after it checked the manifest
 	 * (F-22, WF-CONNECTOR-03). It takes only the core's wrapper, so the consumer always filters a connector's events
 	 * through it (ConnectorAdapter::filter()). add() keeps refusing connector keys.

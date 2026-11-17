@@ -1,6 +1,7 @@
 name: PHP
 
-# Syntax, license guard (WF-SPEC-12) and consumer tests (C-1 to C-16) of the free core on every supported PHP version.
+# Syntax, license guard (WF-SPEC-12) and consumer tests (C-1 to C-16) of the free core on every supported PHP version
+# (PHP 8.5+, MINVER-1). The code itself stays parseable on PHP 8.3, the version of the local development machine.
 on:
   push:
     paths:
@@ -20,11 +21,18 @@ permissions:
 
 jobs:
   test:
+    name: PHP ${{ matrix.php }}${{ matrix.experimental && ' (experimental)' || '' }}
     runs-on: ubuntu-latest
+    # Minimum PHP 8.5 (MINVER-1). PHP 8.6 runs as setup-php's nightly build: shown, but may fail without failing the run.
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
-        php: ["8.1", "8.2", "8.3", "8.4", "8.5"]
+        php: ["8.5"]
+        experimental: [false]
+        include:
+          - php: "8.6"
+            experimental: true
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -32,7 +40,7 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: pdo_sqlite, mbstring
           coverage: none
-      # Deprecations of newer PHP versions (8.4, 8.5) count as errors: "php -l" only prints them, so the output is checked.
+      # Deprecations of newer PHP versions (8.5, 8.6) count as errors: "php -l" only prints them, so the output is checked.
       - name: Syntax
         run: |
           find . -name '*.php' -not -path './vendor/*' -print0 | xargs -0 -n1 php -d error_reporting=-1 -l > "$RUNNER_TEMP/lint.txt" 2>&1 || { cat "$RUNNER_TEMP/lint.txt"; exit 1; }

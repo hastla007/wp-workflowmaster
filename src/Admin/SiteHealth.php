@@ -22,7 +22,7 @@ final class SiteHealth {
 	}
 
 	public function tests( array $tests ): array {
-		foreach ( array( 'cron', 'schema', 'attention', 'secret_key', 'pause' ) as $key ) {
+		foreach ( array( 'cron', 'schema', 'attention', 'secret_key', 'pause', 'database' ) as $key ) {
 			$tests['direct'][ 'workflow_captain_' . $key ] = array(
 				'label' => __( 'Workflow Captain', 'workflow-captain' ),
 				'test'  => function () use ( $key ): array {
@@ -53,6 +53,8 @@ final class SiteHealth {
 			'attention'  => $attention > 0 ? array( 'status' => 'recommended', 'code' => 'needs_attention' ) : array( 'status' => 'good', 'code' => 'ok' ),
 			'secret_key' => empty( $env['secret_key_own'] ) ? array( 'status' => 'recommended', 'code' => 'salts' ) : array( 'status' => 'good', 'code' => 'ok' ),
 			'pause'      => ! empty( $env['emergency_pause'] ) ? array( 'status' => 'critical', 'code' => 'active' ) : array( 'status' => 'good', 'code' => 'ok' ),
+			// MINVER-1: an older database server is only a recommendation, never critical and never a block.
+			'database'   => \WorkflowCaptain\Requirements::database( (string) ( $env['database'] ?? '' ) ),
 		);
 	}
 
@@ -69,6 +71,9 @@ final class SiteHealth {
 			'secret_key:ok'              => __( 'Ein eigener Schlüssel für Geheimnisse ist gesetzt.', 'workflow-captain' ),
 			'pause:ok'                   => __( 'Die Notfallpause von Workflow Captain ist nicht aktiv.', 'workflow-captain' ),
 			'pause:active'               => __( 'Die Notfallpause von Workflow Captain ist aktiv: Kein Schritt wird ausgeführt.', 'workflow-captain' ),
+			'database:ok'                => __( 'Der Datenbankserver erfüllt die Mindestversion von Workflow Captain (MySQL 9.7 oder MariaDB 12.3).', 'workflow-captain' ),
+			'database:unknown'           => __( 'Die Version des Datenbankservers ließ sich nicht lesen.', 'workflow-captain' ),
+			'database:old_server'        => __( 'Der Datenbankserver ist älter als MySQL 9.7 bzw. MariaDB 12.3. Workflow Captain arbeitet weiter, ältere Server werden aber nicht mehr getestet. Empfohlen: beim Hoster ein Update anfragen.', 'workflow-captain' ),
 			'secret_key:salts'           => __( 'Kein eigener Schlüssel gesetzt; Geheimnisse hängen an den WordPress-Salts. Empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php.', 'workflow-captain' ),
 		);
 		return array(

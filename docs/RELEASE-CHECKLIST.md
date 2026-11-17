@@ -4,7 +4,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-INT-18 (Teil Kern) und WF-SEO-10. Abgehakt wird
 
 ## Automatisch (CI muss grün sein)
 
-- [ ] `php tests/run.php` auf PHP 8.1 bis 8.4 (`.github/workflows/php.yml`)
+- [ ] `php tests/run.php` auf PHP 8.5 (8.6 experimentell) grün (`.github/workflows/php.yml`); `e2e-db.yml` gegen MySQL 9.7 und MariaDB 12.3 grün
 - [ ] `php tests/license-guard.php`: kein Lizenzcode, kein Produktschlüssel, kein `wp_set_current_user`, kein Mail-Filter
 - [ ] Test „keine Frontend-Ausgabe, keine öffentlichen Datenflächen“ in `tests/security-tests.php` (WF-SEO-03, -10)
 - [ ] `php bin/make-pot.php --check`: Übersetzungsvorlage aktuell

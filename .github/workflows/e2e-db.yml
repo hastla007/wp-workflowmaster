@@ -1,8 +1,9 @@
 name: E2E database
 
 # End-to-end checks of Workflow Captain on a real WordPress 7.1.4 + WooCommerce 11.3.0 site against MySQL 9.7 and
-# MariaDB 12.3 (service containers) on PHP 8.4 and 8.5. The plugin is installed from the release ZIP (git archive).
-# Steps and checks: bin/e2e/ci-db.sh (the same script runs locally against MariaDB 10.11). No browser.
+# MariaDB 12.3 (service containers) on PHP 8.5, plus PHP 8.6 (nightly) as an experimental cell and one cell with the
+# minimum WordPress 7.0.8 / WooCommerce 11.2.2. These are the minimum versions of MINVER-1. The plugin is installed from the release ZIP (git archive). Steps and checks:
+# bin/e2e/ci-db.sh (locally only with PHP 8.3, which the plugin now refuses: see docs/E2E-RESULTS.md). No browser.
 on:
   push:
     paths:
@@ -22,8 +23,9 @@ permissions:
 
 jobs:
   e2e:
-    name: ${{ matrix.database.name }} / PHP ${{ matrix.php }}
+    name: ${{ matrix.database.name }} / PHP ${{ matrix.php }}${{ matrix.experimental && ' (experimental)' || '' }}
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -33,15 +35,31 @@ jobs:
             image: mysql:9.7
             expect: "9.7"
             health_cmd: mysqladmin ping --host=127.0.0.1 --user=root --password=root
-          - name: MySQL 8.4
-            image: mysql:8.4
-            expect: "8.4"
-            health_cmd: mysqladmin ping --host=127.0.0.1 --user=root --password=root
           - name: MariaDB 12.3
             image: mariadb:12.3
             expect: "12.3"
             health_cmd: healthcheck.sh --connect --innodb_initialized
-        php: ["8.4", "8.5"]
+        php: ["8.5"]
+        experimental: [false]
+        include:
+          # PHP 8.6 (setup-php nightly) on the newest MySQL: shown, but may fail without failing the run.
+          - database:
+              name: MySQL 9.7
+              image: mysql:9.7
+              expect: "9.7"
+              health_cmd: mysqladmin ping --host=127.0.0.1 --user=root --password=root
+            php: "8.6"
+            experimental: true
+          # Minimum versions (MINVER-1): WordPress 7.0 and WooCommerce 11.2, newest patch releases, on MariaDB 12.3.
+          - database:
+              name: MariaDB 12.3 (minimum WP 7.0 / WC 11.2)
+              image: mariadb:12.3
+              expect: "12.3"
+              health_cmd: healthcheck.sh --connect --innodb_initialized
+            php: "8.5"
+            experimental: false
+            wp: 7.0.8
+            wc: 11.2.2
     services:
       db:
         image: ${{ matrix.database.image }}
@@ -67,8 +85,8 @@ jobs:
       E2E_DB_PASS: root
       E2E_HPOS: "yes"
       E2E_WP_CLI: php -d memory_limit=1024M ${{ github.workspace }}/../wp-cli.phar
-      CI_WP_VERSION: 7.1.4
-      CI_WC_VERSION: 11.3.0
+      CI_WP_VERSION: ${{ matrix.wp || '7.1.4' }}
+      CI_WC_VERSION: ${{ matrix.wc || '11.3.0' }}
       CI_DB_EXPECT: ${{ matrix.database.expect }}
     steps:
       - uses: actions/checkout@v4
@@ -97,7 +115,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-db-${{ matrix.database.expect }}-php${{ matrix.php }}
+          name: e2e-db-${{ matrix.database.expect }}-php${{ matrix.php }}-wp${{ matrix.wp || '7.1.4' }}
           path: |
             results-ci.jsonl
             debug.log

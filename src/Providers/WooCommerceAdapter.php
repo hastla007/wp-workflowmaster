@@ -1,7 +1,8 @@
 <?php
 /**
  * Adapter for WooCommerce orders (source.product "woocommerce", F-20, SPEC-suite-events 4.7). Lives in the free core
- * and needs no license; registers only while WooCommerce 8.2 or newer is active.
+ * and needs no license; registers only while WooCommerce 11.2 or newer is active
+ * (MINVER-1; with an older WooCommerce it stays unregistered and the adapters page names the reason).
  *
  * Orders are read only through wc_get_order() and the getters of WC_Order, never from wp_posts or wc_orders, so HPOS
  * and the classic storage behave the same (R-4.8). Addresses, e-mail, phone, names, IP, the customer note and coupon
@@ -40,7 +41,7 @@ final class WooCommerceAdapter extends CoreAdapter {
 	}
 
 	protected function min_version(): string {
-		return '8.2.0';
+		return \WorkflowCaptain\Requirements::WOOCOMMERCE;
 	}
 
 	public function available(): bool {

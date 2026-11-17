@@ -15,6 +15,10 @@
 # Downloads from wordpress.org and GitHub release archives are blocked in the build container, so everything comes
 # from git clones and composer source installs. WooCommerce JS is not built (no pnpm build): a feature-config.php is
 # generated with WooCommerce's own generator and empty asset registries are stubbed so wp-admin renders.
+#
+# Outdated since MINVER-1 (17.11.2026): the default tags WordPress 6.9.11 / WooCommerce 9.9.5 and the PHP 8.3 of the
+# container are below the minimum (PHP 8.5, WordPress 7.0, WooCommerce 11.2), so the plugin refuses to activate. Kept
+# for the history of docs/E2E-RESULTS.md; current runs: .github/workflows/e2e-db.yml (bin/e2e/ci-db.sh).
 set -euo pipefail
 
 ROOT=${E2E_ROOT:-/home/user/wp-e2e}

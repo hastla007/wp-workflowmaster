@@ -11,6 +11,9 @@
 #
 # Sites: /home/user/wp-e2e/staging (http://127.0.0.1:8090, database wp_staging), /home/user/wp-e2e/staging-ms
 # (http://127.0.0.1:8091, wp_staging_ms, multisite installed by run-checks.sh). Admin: admin / admin-e2e-pass.
+#
+# Since MINVER-1 (PHP 8.5, WordPress 7.0, WooCommerce 11.2) the local PHP 8.3 is below the minimum: the plugin stays
+# inactive here. Kept for the history in docs/E2E-RESULTS.md; current runs: .github/workflows/e2e-db.yml.
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
 PLUGIN=$(cd "$HERE/../../.." && pwd)

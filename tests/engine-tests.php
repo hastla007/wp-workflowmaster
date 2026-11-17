@@ -736,6 +736,27 @@ $off = $good;
 $off['environment']['wp_cron_disabled'] = true;
 check( 'site health: disabled WP-Cron asks for a system cron', 'system_cron_needed' === SiteHealth::evaluate( $off, $now )['cron']['code'] );
 
+// ----- Minimum platform (MINVER-1) -----------------------------------------------------------------------------
+
+use WorkflowCaptain\Requirements;
+check( 'MINVER-1 PHP 8.4 is refused', array( 'php' ) === Requirements::unmet( '8.4.14', '7.1.4' ) );
+check( 'MINVER-1 PHP 8.5 and 8.6 are accepted', array() === Requirements::unmet( '8.5.0', '7.1.4' ) && array() === Requirements::unmet( '8.6.0-dev', '7.1.4' ) );
+check( 'MINVER-1 WordPress 6.9 is refused', array( 'wordpress' ) === Requirements::unmet( '8.5.1', '6.9.4' ) );
+check( 'MINVER-1 WordPress 7.0 and its release candidate are accepted', array() === Requirements::unmet( '8.5.1', '7.0' ) && array() === Requirements::unmet( '8.5.1', '7.0-RC2-61200' ) );
+check( 'MINVER-1 both too old: both named; unreadable versions count as too old', array( 'php', 'wordpress' ) === Requirements::unmet( '8.3.6', '6.4.5' ) && array( 'php', 'wordpress' ) === Requirements::unmet( '', 'trunk' ) );
+check( 'MINVER-1 the notice names the minimum and the found versions', str_contains( Requirements::message( '8.4.1', '6.9' ), '8.5' ) && str_contains( Requirements::message( '8.4.1', '6.9' ), '7.0' ) && str_contains( Requirements::message( '8.4.1', '6.9' ), '8.4.1' ) );
+check( 'MINVER-1 database: MySQL 8.4 and MariaDB 11.4 only get a recommendation', array( 'status' => 'recommended', 'code' => 'old_server' ) === Requirements::database( '8.4.3' ) && array( 'status' => 'recommended', 'code' => 'old_server' ) === Requirements::database( '11.4.4-MariaDB-ubu2404' ) );
+check( 'MINVER-1 database: MySQL 9.7 and MariaDB 12.3 are good', array( 'status' => 'good', 'code' => 'ok' ) === Requirements::database( '9.7.0' ) && array( 'status' => 'good', 'code' => 'ok' ) === Requirements::database( '12.3.1-MariaDB' ) );
+check( 'MINVER-1 database: old MariaDB replication prefix is skipped, MariaDB is not compared with the MySQL limit', array( 'type' => 'mariadb', 'version' => '10.11.6' ) === Requirements::parse_db_server( '5.5.5-10.11.6-MariaDB' ) && 'old_server' === Requirements::database( '5.5.5-10.11.6-MariaDB' )['code'] && 'ok' === Requirements::database( '12.3.0-MariaDB' )['code'] );
+check( 'MINVER-1 database: unreadable version is no warning', array( 'status' => 'good', 'code' => 'unknown' ) === Requirements::database( '' ) );
+$old_db = $good;
+$old_db['environment']['database'] = '8.4.3';
+$r = SiteHealth::evaluate( $old_db, $now );
+check( 'MINVER-1 site health: an old database server is "recommended", never critical', 'recommended' === $r['database']['status'] && 'old_server' === $r['database']['code'] && ! in_array( 'critical', array_column( $r, 'status' ), true ) );
+$old_db['environment']['database'] = '9.7.1';
+check( 'MINVER-1 site health: MySQL 9.7 is good', 'good' === SiteHealth::evaluate( $old_db, $now )['database']['status'] );
+check( 'MINVER-1 plugin header, readme and runtime check name the same minimum', str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/workflow-captain.php' ), "Requires PHP:      " . Requirements::PHP ) && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/workflow-captain.php' ), "Requires at least: " . Requirements::WORDPRESS ) && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/readme.txt' ), "Requires PHP: " . Requirements::PHP ) && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/readme.txt' ), "Requires at least: " . Requirements::WORDPRESS ) );
+
 // ----- Example workflows (docs/recipes) ------------------------------------------------------------------------
 
 $e       = engine_site();

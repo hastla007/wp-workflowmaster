@@ -125,7 +125,7 @@ final class ProvidersPage {
 		if ( '' !== $test && preg_match( \WorkflowCaptain\Envelope\Validator::TYPE, $test ) ) {
 			$this->render_test( $test );
 		}
-		echo '<p class="description">' . esc_html__( 'Ereignisse der Captain-Produkte kommen über Adapter aus den Pro-Add-ons. Die Adapter für WordPress und WooCommerce (ab Version 8.2) sind eingebaut und brauchen keine Lizenz. Ohne Adapter werden offene Ereignisse pausiert, nicht gelöscht.', 'workflow-captain' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Ereignisse der Captain-Produkte kommen über Adapter aus den Pro-Add-ons. Die Adapter für WordPress und WooCommerce (ab Version 11.2) sind eingebaut und brauchen keine Lizenz. Ohne Adapter werden offene Ereignisse pausiert, nicht gelöscht.', 'workflow-captain' ) . '</p>';
 		if ( array() === $rows ) {
 			echo '<p>' . esc_html__( 'Noch kein Adapter angemeldet und keine Ereignisse gespeichert.', 'workflow-captain' ) . '</p></div>';
 			return;

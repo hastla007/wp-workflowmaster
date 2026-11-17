@@ -326,7 +326,7 @@ msgstr ""
 msgid "Connector freigeben"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:230 src/Admin/WorkflowsPage.php:241 src/Admin/WorkflowsPage.php:254 src/Admin/WorkflowsPage.php:260 src/Admin/WorkflowsPage.php:271 src/Admin/WorkflowsPage.php:287 src/Admin/WorkflowsPage.php:305 src/Admin/WorkflowsPage.php:334 src/Admin/WorkflowsPage.php:348 src/Plugin.php:390 src/Plugin.php:405
+#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:230 src/Admin/WorkflowsPage.php:241 src/Admin/WorkflowsPage.php:254 src/Admin/WorkflowsPage.php:260 src/Admin/WorkflowsPage.php:271 src/Admin/WorkflowsPage.php:287 src/Admin/WorkflowsPage.php:305 src/Admin/WorkflowsPage.php:334 src/Admin/WorkflowsPage.php:348 src/Plugin.php:403 src/Plugin.php:418
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
@@ -374,6 +374,14 @@ msgstr ""
 msgid "Der Dann-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen."
 msgstr ""
 
+#: src/Admin/SiteHealth.php:74
+msgid "Der Datenbankserver erfüllt die Mindestversion von Workflow Captain (MySQL 9.7 oder MariaDB 12.3)."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:76
+msgid "Der Datenbankserver ist älter als MySQL 9.7 bzw. MariaDB 12.3. Workflow Captain arbeitet weiter, ältere Server werden aber nicht mehr getestet. Empfohlen: beim Hoster ein Update anfragen."
+msgstr ""
+
 #: src/Admin/SchedulesPage.php:81
 msgid "Der Entwurf weicht ab; es gilt die veröffentlichte Version."
 msgstr ""
@@ -399,15 +407,15 @@ msgstr ""
 msgid "Der Worker läuft über WP-Cron, jede Minute. WP-Cron startet nur bei Seitenaufrufen; auf Websites mit wenig Besuch oder mit DISABLE_WP_CRON einen System-Cron einrichten: wp workflow-captain process (jede Minute)."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:61
+#: src/Admin/SiteHealth.php:63
 msgid "Der Worker von Workflow Captain ist geplant."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:62
+#: src/Admin/SiteHealth.php:64
 msgid "Der Worker von Workflow Captain ist nicht geplant. Plugin deaktivieren und wieder aktivieren oder wp workflow-captain process per System-Cron aufrufen."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:63
+#: src/Admin/SiteHealth.php:65
 msgid "Der Worker von Workflow Captain ist überfällig: WP-Cron läuft nicht zuverlässig. Einen System-Cron einrichten."
 msgstr ""
 
@@ -419,7 +427,7 @@ msgstr ""
 msgid "Diagnose herunterladen (ohne persönliche Daten)"
 msgstr ""
 
-#: src/Admin/SiteHealth.php:66
+#: src/Admin/SiteHealth.php:68
 msgid "Die Datenbank stammt von einer neueren Version von Workflow Captain; die Verarbeitung ist angehalten."
 msgstr ""
 
@@ -435,20 +443,24 @@ msgstr ""
 msgid "Die Notfallpause ist aktiv."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:71
+#: src/Admin/SiteHealth.php:73
 msgid "Die Notfallpause von Workflow Captain ist aktiv: Kein Schritt wird ausgeführt."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:70
+#: src/Admin/SiteHealth.php:72
 msgid "Die Notfallpause von Workflow Captain ist nicht aktiv."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:65
+#: src/Admin/SiteHealth.php:67
 msgid "Die Tabellen von Workflow Captain sind aktuell."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:212
 msgid "Die Testnachricht konnte nicht übergeben werden. Prüfen Sie den Mailversand der Website."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:75
+msgid "Die Version des Datenbankservers ließ sich nicht lesen."
 msgstr ""
 
 #: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:126
@@ -515,7 +527,7 @@ msgstr ""
 msgid "Ein Testereignis für einen Workflow gibt es im Editor als „Testlauf“."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:69
+#: src/Admin/SiteHealth.php:71
 msgid "Ein eigener Schlüssel für Geheimnisse ist gesetzt."
 msgstr ""
 
@@ -617,7 +629,7 @@ msgid "Ereignisse"
 msgstr ""
 
 #: src/Admin/ProvidersPage.php:128
-msgid "Ereignisse der Captain-Produkte kommen über Adapter aus den Pro-Add-ons. Die Adapter für WordPress und WooCommerce (ab Version 8.2) sind eingebaut und brauchen keine Lizenz. Ohne Adapter werden offene Ereignisse pausiert, nicht gelöscht."
+msgid "Ereignisse der Captain-Produkte kommen über Adapter aus den Pro-Add-ons. Die Adapter für WordPress und WooCommerce (ab Version 11.2) sind eingebaut und brauchen keine Lizenz. Ohne Adapter werden offene Ereignisse pausiert, nicht gelöscht."
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:564 src/Admin/WorkflowsPage.php:685
@@ -691,7 +703,7 @@ msgstr ""
 msgid "Es bleiben die letzten %1$d Einträge in der Option %2$s."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:68
+#: src/Admin/SiteHealth.php:70
 msgid "Es gibt fehlgeschlagene Ereignisse, hängende Schritte oder Läufe, die eine Entscheidung brauchen (Workflow Captain → Ereignisse und Läufe)."
 msgstr ""
 
@@ -887,7 +899,7 @@ msgstr ""
 msgid "Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows."
 msgstr ""
 
-#: src/Plugin.php:426
+#: src/Plugin.php:439
 msgid "Jede Minute (Workflow Captain)"
 msgstr ""
 
@@ -903,7 +915,7 @@ msgstr ""
 msgid "Kein aktiver oder pausierter Workflow startet nach Zeitplan. Ein Entwurf zählt erst nach dem Veröffentlichen."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:72
+#: src/Admin/SiteHealth.php:77
 msgid "Kein eigener Schlüssel gesetzt; Geheimnisse hängen an den WordPress-Salts. Empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php."
 msgstr ""
 
@@ -919,7 +931,7 @@ msgstr ""
 msgid "Keine Termine: Der Zeitplan ist unvollständig."
 msgstr ""
 
-#: src/Admin/SiteHealth.php:67
+#: src/Admin/SiteHealth.php:69
 msgid "Keine fehlgeschlagenen Ereignisse oder Läufe, die eine Entscheidung brauchen."
 msgstr ""
 
@@ -1493,7 +1505,7 @@ msgstr ""
 msgid "WP-Cron abgeschaltet"
 msgstr ""
 
-#: src/Admin/SiteHealth.php:64
+#: src/Admin/SiteHealth.php:66
 msgid "WP-Cron ist abgeschaltet. Ein System-Cron muss wp-cron.php oder wp workflow-captain process jede Minute aufrufen."
 msgstr ""
 
@@ -1554,8 +1566,13 @@ msgstr ""
 msgid "Workflow %1$d: %2$s nach %3$d Schritten"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:109 src/Admin/SiteHealth.php:27 src/Admin/SiteHealth.php:77 src/Admin/SiteHealth.php:94
+#: src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:109 src/Admin/SiteHealth.php:27 src/Admin/SiteHealth.php:82 src/Admin/SiteHealth.php:99 src/Requirements.php:128
 msgid "Workflow Captain"
+msgstr ""
+
+#. translators: 1: minimum PHP version, 2: minimum WordPress version, 3: PHP version of this site, 4: WordPress version of this site
+#: src/Requirements.php:103
+msgid "Workflow Captain braucht PHP %1$s und WordPress %2$s oder neuer; diese Website nutzt PHP %3$s und WordPress %4$s. Das Plugin bleibt inaktiv, gespeicherte Daten bleiben erhalten."
 msgstr ""
 
 #: src/Notifications.php:86

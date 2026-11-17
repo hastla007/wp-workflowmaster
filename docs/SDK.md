@@ -11,12 +11,25 @@ Stand: Plugin 0.2.0, Spezifikation [`SPEC-suite-events.md`](SPEC-suite-events.md
 | Engine | `WorkflowCaptain\Engine\Engine` | startet Läufe veröffentlichter Workflows und führt ihre Schritte aus |
 | Aktion | `WorkflowCaptain\Engine\Action` | ein Befehl, den ein Schritt ausführt; nur Befehle aus Abschnitt 8.1 der Spezifikation |
 
+## 0. Anforderungen (MINVER-1)
+
+Seit 17.11.2026 gelten für Workflow Captain, alle Pro-Add-ons und eigene Connectoren dieselben Mindestversionen:
+
+| Komponente | Mindestens | Hinweis |
+|---|---|---|
+| PHP | 8.5 | PHP 8.6 läuft in der CI experimentell mit; Code soll unter 8.6 ohne Deprecations laufen |
+| WordPress | 7.0 | getestet bis 7.1 |
+| WooCommerce | 11.2 | nur wo genutzt (eingebauter WooCommerce-Adapter, Connectoren mit Bestellbezug) |
+| Datenbank | MySQL 9.7 oder MariaDB 12.3 | ältere Server nur Warnung im Website-Zustand, keine Sperre |
+
+Ein Connector setzt im Plugin-Kopf `Requires at least: 7.0`, `Requires PHP: 8.5` und `Requires Plugins: workflow-captain` (Beispiel: `examples/starter-connector/wfc-starter-connector.php`). Unter PHP 8.5 oder WordPress 7.0 lädt Workflow Captain nicht (Hinweis im Admin, keine Aktivierung); die Hooks `workflow_captain_*` feuern dann nicht, ein Connector läuft also ohne den Kern weiter. Die Werte stehen im Code als Konstanten von `WorkflowCaptain\Requirements` (`PHP`, `WORDPRESS`, `WOOCOMMERCE`, `MYSQL`, `MARIADB`).
+
 ## 1a. Welche Adapter es gibt
 
 | Quelle | Produkt (`source.product`) | Wo der Adapter liegt | Voraussetzung |
 |---|---|---|---|
-| WordPress | `wordpress` | Kern, `src/Providers/WordPressAdapter.php` | WordPress ≥ 6.4 |
-| WooCommerce | `woocommerce` | Kern, `src/Providers/WooCommerceAdapter.php` | WooCommerce ≥ 8.2 aktiv (HPOS und klassisch) |
+| WordPress | `wordpress` | Kern, `src/Providers/WordPressAdapter.php` | WordPress ≥ 7.0 |
+| WooCommerce | `woocommerce` | Kern, `src/Providers/WooCommerceAdapter.php` | WooCommerce ≥ 11.2 aktiv (HPOS und klassisch); darunter meldet sich der Adapter nicht an (Grund `provider_too_old` auf der Seite „Provider“) |
 | Zeitplan | `workflow-captain` | Kern, `src/Providers/ScheduleAdapter.php`, `src/Engine/Schedule.php` | – |
 | Eingehende Auslöser | `workflow-captain` (`workflow.inbound.*`) | Kern, `src/Engine/InboundTriggers.php`; die Annahme (REST-Route, Signatur) liegt im Add-on | ein Add-on meldet Auslöser an |
 | Pass, Voucher, Affiliate Captain, Lizenzserver | `pass-captain`, `voucher-captain`, `affiliate-captain`, `wp-license` | Workflow Captain Pro (`src/Suite/`) | Vertragsversionen in [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md); je Produkt dessen Pro-Add-on (Spezifikation 10.1) |
@@ -167,11 +180,11 @@ Der Diagnose-Export (Seite „Ereignisse“ → „Diagnose herunterladen“ ode
 
 | Teil | Inhalt |
 |---|---|
-| `environment` | Versionen von Plugin, Schema (gespeichert/erwartet, Zustand, Aktualisierungssperre), Adapter-Schnittstelle, WordPress, PHP; Multisite; WP-Cron abgeschaltet; nächster Worker-Lauf; Planung (Action Scheduler oder WP-Cron); eigener Schlüssel gesetzt (ja/nein); Notfallpause; Zahl und Codes abgelehnter Umschläge |
+| `environment` | Versionen von Plugin, Schema (gespeichert/erwartet, Zustand, Aktualisierungssperre), Adapter-Schnittstelle, WordPress, PHP, Datenbankserver (`database`, z. B. `9.7.1` oder `12.3.2-MariaDB`); Multisite; WP-Cron abgeschaltet; nächster Worker-Lauf; Planung (Action Scheduler oder WP-Cron); eigener Schlüssel gesetzt (ja/nein); Notfallpause; Zahl und Codes abgelehnter Umschläge |
 | `adapters` | angemeldete Produkte und abgelehnte Adapter mit Grund |
 | `events`, `runs`, `workflows` | Anzahl je Zustand; Workflows gesamt, aktiv, pausiert |
 | `action_required_reasons` | Gründe der Läufe „Aktion erforderlich“ mit Anzahl (feste Codes) |
 | `stuck` | Schritte mit seit über einem Tag abgelaufener Sperrfrist, Läufe ohne offenen Schritt |
 | `consistency` | Zahl fehlender Verweise nach einer Wiederherstellung (Läufe ohne Version, Schritte ohne Lauf, aktive Workflows ohne Version); die Nummern nennt `wp workflow-captain verify` |
 
-Nie enthalten: Umschläge, Felder von Ereignissen, Benutzer-IDs, E-Mail-Adressen, Namen, Codes, Geheimnisse, URLs von Verbindungen. Der Website-Zustand von WordPress zeigt dieselben Prüfungen (Worker, Schema, Entscheidungen, Schlüssel, Notfallpause).
+Nie enthalten: Umschläge, Felder von Ereignissen, Benutzer-IDs, E-Mail-Adressen, Namen, Codes, Geheimnisse, URLs von Verbindungen. Der Website-Zustand von WordPress zeigt dieselben Prüfungen (Worker, Schema, Entscheidungen, Schlüssel, Notfallpause, Version des Datenbankservers – nur Empfehlung).

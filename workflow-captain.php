@@ -4,8 +4,8 @@
  * Plugin URI:        https://github.com/hastla007/wp-workflowmaster
  * Description:       Automatisierungsbaukasten der Captain Suite. Diese Fassung enthält den Ereignis-Abnehmer (Consumer): Speicher, Wiederholung, Schleifenschutz und die Anmeldeschnittstelle für Adapter.
  * Version:           0.2.0
- * Requires at least: 6.4
- * Requires PHP:      8.1
+ * Requires at least: 7.0
+ * Requires PHP:      8.5
  * Author:            Captain Suite
  * Text Domain:       workflow-captain
  * Domain Path:       /languages
@@ -14,6 +14,16 @@
  */
 
 defined( 'ABSPATH' ) || exit;
+
+/*
+ * Minimum platform (MINVER-1): PHP 8.5 and WordPress 7.0. Below that only a notice is loaded and activation is
+ * refused; the stored data stays untouched. Checked before anything else, so this part must parse on old PHP.
+ */
+require_once __DIR__ . '/src/Requirements.php';
+if ( array() !== \WorkflowCaptain\Requirements::unmet( PHP_VERSION, (string) get_bloginfo( 'version' ) ) ) {
+	\WorkflowCaptain\Requirements::refuse( __FILE__, PHP_VERSION, (string) get_bloginfo( 'version' ) );
+	return;
+}
 
 define( 'WORKFLOW_CAPTAIN_VERSION', '0.2.0' );
 define( 'WORKFLOW_CAPTAIN_DB_VERSION', '4' );

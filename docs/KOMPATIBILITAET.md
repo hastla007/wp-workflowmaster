@@ -1,6 +1,6 @@
 # Kompatibilitätsmatrix der Provider
 
-Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.8, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
+Stand: 17.11.2026 (Mindestversionen MINVER-1; Provider-Matrix 16.11.2026 abends), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.8, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
 
 Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens die Mindestversion hat und dieselbe MAJOR-Version trägt (R-3.3, R-13.4). Die Plugin-Version allein entscheidet nicht. Alle Angaben sind am Code gelesen; „Branch“ heißt: noch nicht nach `main` gemergt.
 
@@ -8,8 +8,8 @@ Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens 
 
 | Provider | Gelesener Stand | Plugin | Vertragskonstante | Adapter verlangt (Workflow Captain Pro) | Was der Stand bringt | Adapter |
 |---|---|---|---|---|---|---|
-| WordPress | – | ab 6.4 | `$wp_version` steht für den Vertrag (4.7) | WordPress ≥ 6.4 | `wordpress.user.registered`, `wordpress.post.published` | im kostenlosen Kern |
-| WooCommerce | – | ab 8.2 | `WC_VERSION` steht für den Vertrag (4.7) | WooCommerce ≥ 8.2, HPOS und klassische Bestelltabellen | `woocommerce.order.*` (5 Typen) | im kostenlosen Kern |
+| WordPress | – | ab 7.0 | `$wp_version` steht für den Vertrag (4.7) | WordPress ≥ 7.0 (MINVER-1) | `wordpress.user.registered`, `wordpress.post.published` | im kostenlosen Kern |
+| WooCommerce | – | ab 11.2 | `WC_VERSION` steht für den Vertrag (4.7) | WooCommerce ≥ 11.2 (MINVER-1; darunter auf der Seite „Provider“ „abgelehnt – provider_too_old“), HPOS und klassische Bestelltabellen | `woocommerce.order.*` (5 Typen) | im kostenlosen Kern |
 | Workflow Captain (Zeitplan, eingehende Auslöser) | Kern 0.2.x | 0.2.0 | `WORKFLOW_CAPTAIN_CONTRACT_VERSION` = `0.1.0` (Adapter-Schnittstelle) | – | `workflow.schedule.due`; `workflow.inbound.<auslöser>` nur, wenn ein Add-on Auslöser anmeldet | im kostenlosen Kern |
 | Pass Captain | `wp-passmaster` Branch `claude/plugin-todo-liste-2a83v4` `51da413` | 1.6.0 | `WPCAP_CONTRACT_VERSION` = `1.2.0` | `1.1.0` (Rückfall, veraltet); Lesefassade `wpcap_get_*_state()` ab `1.2.0` | 13 Ereignistypen, Lesefassade | Pro, `PassAdapter` |
 | Voucher Captain | `wp-couponmaster` Branch `claude/plugin-todo-liste-2a83v4` `689ab4a` | 1.3.0 | `VCAP_CONTRACT_VERSION` = `1.3.0` | `1.1.0` (Rückfall, veraltet); Lesefassade `vcap_read_*()` ab `1.2.0`; Gutschein-Befehle ab `1.3.0` | 16 Ereignistypen, Lesefassade, Einstiegspunkte für die Befehle Ausstellen, Sperren, Reaktivieren, Gutschreiben (R-8.3) | Pro, `VoucherAdapter` (Ereignisse); die Befehle als Workflow-Aktionen fehlen in Pro noch (WF-INT-03) |
@@ -67,7 +67,22 @@ Ein Adapter, der gegen `main` dieser Kerne läuft, meldet sich nach R-3.3 und R-
 
 ## Laufzeitumgebung
 
-Geprüft auf echten Installationen (WF-INT-16; Einzelheiten in [`E2E-RESULTS.md`](E2E-RESULTS.md)). `readme.txt`: „Requires at least: 6.4“, „Tested up to: 7.1“, „Requires PHP: 8.1“.
+**Mindestversionen ab 17.11.2026 (Entscheidung des Inhabers MINVER-1, einheitlich für alle Captain-Plugins, Pro-Add-ons und Connectoren):**
+
+| Komponente | Mindestens | Was darunter passiert |
+|---|---|---|
+| PHP | 8.5 (8.6 läuft in der CI als experimentelle Zelle mit, darf fehlschlagen) | Plugin bleibt inaktiv: Hinweis im (Netzwerk-)Admin, Aktivierung wird abgelehnt (`src/Requirements.php`); gespeicherte Daten bleiben |
+| WordPress | 7.0 (WordPress 6.8 wirft unter PHP 8.5 Deprecations im Core) | wie bei PHP |
+| WooCommerce | 11.2 (nur der eingebaute WooCommerce-Adapter) | Adapter meldet sich nicht an; Seite „Provider“ zeigt „abgelehnt – provider_too_old“; der Rest von Workflow Captain läuft |
+| MySQL / MariaDB | MySQL 9.7 oder MariaDB 12.3 (jeweils LTS) | keine Sperre; Website-Zustand zeigt die Empfehlung „Der Datenbankserver ist älter …“ (Status „recommended“) |
+
+`workflow-captain.php`: „Requires at least: 7.0“, „Requires PHP: 8.5“; `readme.txt`: „Requires at least: 7.0“, „Tested up to: 7.1“, „Requires PHP: 8.5“. Die Diagnose (`environment.database`) und die Debug-Informationen nennen die Version des Datenbankservers.
+
+Der Code in `src/` und `tests/` bleibt auf PHP 8.3 lauffähig (keine Syntax, die erst ab 8.4 geht), weil der Prüfcontainer nur PHP 8.3 hat; die Tests rufen die Prüfung mit eingesetzten Versionen auf (`Requirements::unmet()`, `Requirements::database()`).
+
+### Verlauf: geprüfte Installationen bis 16.11.2026 (vor MINVER-1)
+
+Die folgenden Läufe liefen auf PHP 8.3 und zum Teil unter WordPress 7.0 bzw. WooCommerce 11.2. Sie sind ab MINVER-1 nur noch historisch: mit diesem Stand würde das Plugin dort nicht mehr aktiviert. Geprüft auf echten Installationen (WF-INT-16; Einzelheiten in [`E2E-RESULTS.md`](E2E-RESULTS.md)). Damals: „Requires at least: 6.4“, „Requires PHP: 8.1“.
 
 | WordPress | WooCommerce | Yoast SEO | PHP | Datenbank | Bestellungen | Checkout | Multisite | Herkunft der Pakete | Ergebnis |
 |---|---|---|---|---|---|---|---|---|---|
@@ -79,22 +94,23 @@ Action Scheduler (aus WooCommerce) und System-Cron (`wp workflow-captain process
 
 ### PHP und Datenbankserver
 
-Im Prüfcontainer gibt es nur PHP 8.3 und MariaDB 10.11. Alles andere läuft nur in der CI auf GitHub. Die Spalte „in CI“ nennt, was der Workflow prüft; ob der Lauf grün war, steht in der letzten Zeile.
+Im Prüfcontainer gibt es nur PHP 8.3 und MariaDB 10.11 – beides unter der Mindestversion. Die gültigen Läufe macht ab MINVER-1 nur die CI auf GitHub. Die Spalte „in CI“ nennt, was der Workflow prüft; ob der Lauf grün war, steht in der letzten Zeile.
 
 | Umgebung | in CI | lokal geprüft |
 |---|---|---|
-| PHP 8.1, 8.2, 8.3, 8.4, 8.5 ohne WordPress | `php.yml`: Syntax, Lizenzwächter, `tests/run.php` (SQLite), POT; Deprecations, Warnungen und Notices gelten als Fehler | nur 8.3.6 |
-| PHP 8.4 und 8.5 mit WordPress 7.1.4, WooCommerce 11.3.0 (HPOS) | `e2e-db.yml`, je gegen MySQL 8.4, MySQL 9.7 und MariaDB 12.3 | – |
-| PHP 8.3 mit WordPress | – | alle Läufe der Tabelle oben; `bin/e2e/ci-db.sh` (siehe unten) |
+| PHP 8.5 ohne WordPress; 8.6 (Nightly von `setup-php`) experimentell | `php.yml`: Syntax, Lizenzwächter, `tests/run.php` (SQLite), POT; Deprecations, Warnungen und Notices gelten als Fehler; die 8.6-Zelle hat `continue-on-error` | `tests/run.php` weiter auf 8.3.6 (der Code bleibt dort lauffähig) |
+| PHP 8.5 mit WordPress 7.1.4, WooCommerce 11.3.0 (HPOS) | `e2e-db.yml`, je gegen MySQL 9.7 und MariaDB 12.3 | – |
+| PHP 8.5 mit den Mindestversionen WordPress 7.0.8, WooCommerce 11.2.2 | `e2e-db.yml`, gegen MariaDB 12.3 | – |
+| PHP 8.6 mit WordPress 7.1.4 | `e2e-db.yml`, gegen MySQL 9.7, experimentell (darf fehlschlagen) | – |
+| PHP 8.3 mit WordPress | – | nur historisch (Tabelle oben); das Plugin lehnt PHP 8.3 jetzt ab |
 | MySQL 9.7 | `e2e-db.yml` (Service-Container `mysql:9.7`) | – |
-| MySQL 8.4 | – | – (nicht geprüft) |
 | MariaDB 12.3 | `e2e-db.yml` (Service-Container `mariadb:12.3`) | – |
-| MariaDB 10.11 | – | alle Läufe der Tabelle oben; `bin/e2e/ci-db.sh` 96 von 96 |
+| MySQL 8.4, MariaDB 10.11/11.4 | nicht mehr (unter der Mindestversion; Website-Zustand warnt) | MariaDB 10.11 nur historisch |
 
-`e2e-db.yml` ruft `bin/e2e/ci-db.sh` auf: WordPress 7.1.4 und WooCommerce 11.3.0 von wordpress.org, Workflow Captain als Release-ZIP aus `git archive`, `php -S` als Webserver, kein Browser. Geprüft werden Aktivierung, Tabellen und Schema (ci1–ci4, a1–a12, b1–b5), der Bestellablauf mit HPOS (c0–c11), weitere Ereignisse (d0–d10), Zeitplan (f0–f3), Betrieb (g0–g11), Migrationen mit `migrate` und `verify` (m1–m9, auch ein abgebrochenes Upgrade, das eine wp-admin-Anfrage zu Ende führt), Blättern und Zählungen gegen SQL (`EventStore::count`/`find`, `EngineStore::count_runs`/`find_runs`, n1–n8), das PHP-Fehlerprotokoll (h20) sowie Deaktivieren und Löschen (j1–j9). Ergebnisse als Artefakt `results-ci.jsonl`; eine fehlgeschlagene Prüfung lässt den Job scheitern. Nicht in dieser CI: klassische Bestellablage, Multisite, Admin-Seiten im Browser, Checkout-Block, Yoast SEO und das Upgrade von einer älteren Plugin-Version (diese nur lokal, siehe Tabelle oben).
+`e2e-db.yml` ruft `bin/e2e/ci-db.sh` auf: WordPress 7.1.4 und WooCommerce 11.3.0 (in einer Zelle 7.0.8 und 11.2.2) von wordpress.org, Workflow Captain als Release-ZIP aus `git archive`, `php -S` als Webserver, kein Browser. Geprüft werden Aktivierung, Tabellen und Schema (ci1–ci4, a1–a12, b1–b5), der Bestellablauf mit HPOS (c0–c11), weitere Ereignisse (d0–d10), Zeitplan (f0–f3), Betrieb (g0–g11), Migrationen mit `migrate` und `verify` (m1–m9, auch ein abgebrochenes Upgrade, das eine wp-admin-Anfrage zu Ende führt), Blättern und Zählungen gegen SQL (`EventStore::count`/`find`, `EngineStore::count_runs`/`find_runs`, n1–n8), das PHP-Fehlerprotokoll (h20) sowie Deaktivieren und Löschen (j1–j9). Neu ist `ci3-db`: der Datenbankserver erfüllt die Mindestversion (Website-Zustand „good“). Ergebnisse als Artefakt `results-ci.jsonl`; eine fehlgeschlagene Prüfung lässt den Job scheitern. Nicht in dieser CI: klassische Bestellablage, Multisite, Admin-Seiten im Browser, Checkout-Block, Yoast SEO und das Upgrade von einer älteren Plugin-Version (diese nur lokal, siehe Tabelle oben).
 
-Lokal am 16.11.2026 mit denselben Schritten gegen MariaDB 10.11 und PHP 8.3.6 (frische Datenbank, `http://127.0.0.1:8095`): 96 von 96 bestanden.
+Lokal am 16.11.2026 mit denselben Schritten gegen MariaDB 10.11 und PHP 8.3.6 (frische Datenbank, `http://127.0.0.1:8095`): 96 von 96 bestanden (historisch, vor MINVER-1).
 
-**Stand der CI:** `e2e-db.yml` und PHP 8.5 in `php.yml` sind neu; das Ergebnis des ersten Laufs auf GitHub steht noch aus und wird hier eingetragen.
+**Stand der CI (17.11.2026):** Matrix auf MINVER-1 umgestellt (PHP 8.5, 8.6 experimentell; MySQL 9.7, MariaDB 12.3; eine Zelle mit WordPress 7.0.8/WooCommerce 11.2.2). Das Ergebnis des ersten Laufs auf GitHub steht noch aus und wird hier eingetragen.
 
 Hinweise aus dem Checkout-Test: `woocommerce.order.paid` hängt an `woocommerce_payment_complete`; Überweisung und Nachnahme lösen es in WooCommerce nie aus (auch nicht beim manuellen Wechsel auf „In Bearbeitung“), Workflows für diese Zahlarten nutzen den Statuswechsel. Der Block-Checkout erzeugt zusätzlich einen Statuswechsel `checkout-draft` → `pending`, der beim Gegenlesen verworfen wird (R-7.4).

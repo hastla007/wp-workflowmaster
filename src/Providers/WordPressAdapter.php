@@ -1,7 +1,7 @@
 <?php
 /**
  * Adapter for WordPress itself (source.product "wordpress", F-20, SPEC-suite-events 4.7): new users and published
- * posts. Lives in the free core and needs no license. Minimum WordPress 6.4.
+ * posts. Lives in the free core and needs no license. Minimum WordPress 7.0 (MINVER-1).
  *
  * Passes only the allowed fields of the catalog: never a name, e-mail address, login, title or content (R-4.9).
  *
@@ -36,7 +36,7 @@ final class WordPressAdapter extends CoreAdapter {
 	}
 
 	protected function min_version(): string {
-		return '6.4.0';
+		return \WorkflowCaptain\Requirements::WORDPRESS . '.0';
 	}
 
 	public function hook(): void {

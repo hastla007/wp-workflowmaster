@@ -4,6 +4,9 @@
 # from the main E2E site), activates it and runs activation, providers and the order flow once.
 #
 #   bin/e2e/release-zip.sh [ref]     # default HEAD
+#
+# Outdated since MINVER-1: WordPress 6.9.11 and the local PHP 8.3 are below the minimum; the release ZIP is checked in CI
+# by bin/e2e/ci-db.sh (checks ci1, ci2).
 set -euo pipefail
 ROOT=${E2E_ROOT:-/home/user/wp-e2e}
 PLUGIN=${E2E_PLUGIN:-$(cd "$(dirname "$0")/../.." && pwd)}

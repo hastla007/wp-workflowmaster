@@ -133,8 +133,8 @@ function provider_site(): object {
 		$p->events[] = $event;
 		return $p->consumer->capture( $adapter, $event );
 	};
-	$p->wp = new WordPressAdapter( $sink, '6.6' );
-	$p->wc = new WooCommerceAdapter( $sink, '8.9.3' );
+	$p->wp = new WordPressAdapter( $sink, '7.1' );
+	$p->wc = new WooCommerceAdapter( $sink, '11.3.1' );
 	$p->registry->add( $p->wp );
 	$p->registry->add( $p->wc );
 	return $p;
@@ -234,7 +234,7 @@ check(
 	'woocommerce.order.created: values from the WC_Order getters',
 	array( 'status' => 'processing', 'currency' => 'EUR', 'total_minor' => 5970, 'item_count' => 3, 'created_via' => 'checkout', 'customer_user_id' => 17 ) === $created['data']
 );
-check( 'woocommerce.order.created: source is woocommerce with its version', array( 'product' => 'woocommerce', 'core_version' => '8.9.3', 'contract_version' => '8.9.3' ) === ( $created['source'] ?? null ) );
+check( 'woocommerce.order.created: source is woocommerce with its version', array( 'product' => 'woocommerce', 'core_version' => '11.3.1', 'contract_version' => '11.3.1' ) === ( $created['source'] ?? null ) );
 check( 'woocommerce.order.created: subject is the order record', array( 'type' => 'order', 'id' => '5123', 'id_kind' => 'record' ) === ( $created['subject'] ?? null ) );
 check( 'woocommerce.order.paid: never an actor, even with a signed-in user', ! array_key_exists( 'actor_user_id', $stored['woocommerce.order.paid'] ?? array( 'actor_user_id' => 1 ) ) );
 check( 'woocommerce.order.paid: gateway id', 'stripe' === ( $stored['woocommerce.order.paid']['data']['payment_method'] ?? null ) );
@@ -245,7 +245,7 @@ check(
 );
 check( 'woocommerce.order.cancelled: from_status from the transition', 'processing' === ( $stored['woocommerce.order.cancelled']['data']['from_status'] ?? null ) );
 check( 'wordpress.user.registered: first role of the user', array( 'role' => 'customer' ) === ( $stored['wordpress.user.registered']['data'] ?? null ) );
-check( 'wordpress.user.registered: source is wordpress with X.Y.Z', array( 'product' => 'wordpress', 'core_version' => '6.6.0', 'contract_version' => '6.6.0' ) === ( $stored['wordpress.user.registered']['source'] ?? null ) );
+check( 'wordpress.user.registered: source is wordpress with X.Y.Z', array( 'product' => 'wordpress', 'core_version' => '7.1.0', 'contract_version' => '7.1.0' ) === ( $stored['wordpress.user.registered']['source'] ?? null ) );
 check( 'wordpress.post.published: fields', array( 'post_type' => 'post', 'author_user_id' => 3, 'previous_status' => 'draft' ) === ( $stored['wordpress.post.published']['data'] ?? null ) );
 
 // Guest order, other price decimals, full refund, currency check.
@@ -404,27 +404,31 @@ check( 'a currency that is not an ISO code is not passed on', array() === provid
 $noop = static function () {};
 check( 'version normalised to X.Y.Z', '6.6.0' === CoreAdapter::normalize_version( '6.6' ) && '8.9.3' === CoreAdapter::normalize_version( '8.9.3-beta.1' ) && '6.7.0' === CoreAdapter::normalize_version( '6.7-RC1-59000' ) && '' === CoreAdapter::normalize_version( 'trunk' ) );
 check( 'WooCommerce adapter not available without WooCommerce', false === ( new WooCommerceAdapter( $noop ) )->available() );
-check( 'WooCommerce adapter not available with WooCommerce 8.1', false === ( new WooCommerceAdapter( $noop, '8.1.9' ) )->available() );
-check( 'WooCommerce adapter available with WooCommerce 8.2', true === ( new WooCommerceAdapter( $noop, '8.2' ) )->available() );
-check( 'WordPress adapter not available with WordPress 6.3', false === ( new WordPressAdapter( $noop, '6.3.5' ) )->available() );
-check( 'WordPress adapter available with WordPress 6.4', true === ( new WordPressAdapter( $noop, '6.4' ) )->available() );
+check( 'MINVER-1 WooCommerce adapter not available with WooCommerce 11.1 (and not with the former minimum 8.2)', false === ( new WooCommerceAdapter( $noop, '11.1.9' ) )->available() && false === ( new WooCommerceAdapter( $noop, '8.2' ) )->available() );
+check( 'MINVER-1 WooCommerce adapter available with WooCommerce 11.2', true === ( new WooCommerceAdapter( $noop, '11.2' ) )->available() );
+check( 'MINVER-1 WordPress adapter not available with WordPress 6.9', false === ( new WordPressAdapter( $noop, '6.9.1' ) )->available() );
+check( 'MINVER-1 WordPress adapter available with WordPress 7.0 and its release candidate', true === ( new WordPressAdapter( $noop, '7.0' ) )->available() && true === ( new WordPressAdapter( $noop, '7.0-RC1-61000' ) )->available() );
 
 $GLOBALS['wfc_test_filters'] = array();
 $registry                    = new AdapterRegistry();
-$registered                  = CoreAdapter::register( $registry, array( new WordPressAdapter( $noop, '6.6.2' ), new WooCommerceAdapter( $noop ) ) );
+$registered                  = CoreAdapter::register( $registry, array( new WordPressAdapter( $noop, '7.1.4' ), new WooCommerceAdapter( $noop ) ) );
 check( 'without WooCommerce only the WordPress adapter registers', array( 'wordpress' ) === $registered && null === $registry->get( 'woocommerce' ) );
 check( 'no WooCommerce hook attached without WooCommerce', array( 'user_register', 'transition_post_status' ) === array_keys( $GLOBALS['wfc_test_filters'] ) );
-$registered = CoreAdapter::register( new AdapterRegistry(), array( new WooCommerceAdapter( $noop, '8.1.0' ) ) );
-check( 'too old WooCommerce does not register', array() === $registered );
+$old_registry = new AdapterRegistry();
+$registered   = CoreAdapter::register( $old_registry, array( new WooCommerceAdapter( $noop, '11.1.0' ) ) );
+check( 'MINVER-1 too old WooCommerce does not register and names the reason', array() === $registered && array( 'woocommerce' => 'provider_too_old' ) === $old_registry->refused() );
+$old_registry = new AdapterRegistry();
+CoreAdapter::register( $old_registry, array( new WooCommerceAdapter( $noop ) ) );
+check( 'MINVER-1 a missing WooCommerce is not reported as refused', array() === $old_registry->refused() );
 $GLOBALS['wfc_test_filters'] = array();
 $registry                    = new AdapterRegistry();
-$registered                  = CoreAdapter::register( $registry, array( new WordPressAdapter( $noop, '6.6.2' ), new WooCommerceAdapter( $noop, '8.9.3' ) ) );
+$registered                  = CoreAdapter::register( $registry, array( new WordPressAdapter( $noop, '7.1.4' ), new WooCommerceAdapter( $noop, '11.3.1' ) ) );
 $hooks                       = array_keys( $GLOBALS['wfc_test_filters'] );
-check( 'both register with WooCommerce 8.9', array( 'wordpress', 'woocommerce' ) === $registered && '8.9.3' === $registry->get( 'woocommerce' )->contract_version() );
+check( 'both register with WooCommerce 11.3', array( 'wordpress', 'woocommerce' ) === $registered && '11.3.1' === $registry->get( 'woocommerce' )->contract_version() );
 check( 'exactly the seven hooks of 4.7 are attached', array( 'user_register', 'transition_post_status', 'woocommerce_new_order', 'woocommerce_payment_complete', 'woocommerce_order_status_changed', 'woocommerce_order_refunded', 'woocommerce_order_status_cancelled' ) === $hooks );
 check( 'A-4 conformance: hooks are the catalog hooks', array() === array_merge( AdapterConformance::check_hooks( 'wordpress', array_slice( $hooks, 0, 2 ), array() ), AdapterConformance::check_hooks( 'woocommerce', array_slice( $hooks, 2 ), array() ) ) );
 check( 'R-7.5 hook priority above 10', CoreAdapter::PRIORITY > 10 );
-check( 'a second registration of the same product is refused', array() === CoreAdapter::register( $registry, array( new WordPressAdapter( $noop, '6.6.2' ) ) ) );
+check( 'a second registration of the same product is refused', array() === CoreAdapter::register( $registry, array( new WordPressAdapter( $noop, '7.1.4' ) ) ) );
 $GLOBALS['wfc_test_filters'] = array();
 
 // --- Adapter kit: released form answers (spec 4.6.2, data_field_prefix) --------------------------------------------

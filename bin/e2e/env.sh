@@ -28,6 +28,13 @@ if [ -n "${E2E_WP_CLI:-}" ]; then
 fi
 mkdir -p "$E2E_LOGS" "$E2E_BACKUPS"
 
+# MINVER-1: Workflow Captain needs PHP 8.5 and WordPress 7.0 (WooCommerce adapter: 11.2). Below that the plugin stays
+# inactive with a notice, so every check would fail. The local test container has PHP 8.3 and WordPress 6.9.11 /
+# 7.1.4: runs there are historical (docs/E2E-RESULTS.md); the real runs are the GitHub workflow e2e-db.yml.
+if ! php -r 'exit( version_compare( PHP_VERSION, "8.5", ">=" ) ? 0 : 1 );' 2>/dev/null; then
+	echo "Warning: PHP $(php -r 'echo PHP_VERSION;' 2>/dev/null) is below the Workflow Captain minimum 8.5 (MINVER-1); the plugin will refuse to activate." >&2
+fi
+
 # Puts the code under test in place on the single site (or with "ms" on the multisite): symlink or release ZIP.
 e2e_plugin_current() {
 	local base="$E2E_WWW" cli=wp

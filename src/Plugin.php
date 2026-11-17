@@ -358,6 +358,18 @@ final class Plugin {
 	}
 
 	/** Stores how many envelopes were rejected and the last violation codes; never a value (R-5.5). */
+	/** Version string of the database server, e.g. "9.7.1" or "12.3.2-MariaDB"; "" when unknown. */
+	private static function database_server(): string {
+		global $wpdb;
+		if ( ! is_object( $wpdb ) ) {
+			return '';
+		}
+		if ( method_exists( $wpdb, 'db_server_info' ) ) {
+			return (string) $wpdb->db_server_info();
+		}
+		return method_exists( $wpdb, 'db_version' ) ? (string) $wpdb->db_version() : '';
+	}
+
 	/** Support diagnostics (Admin\Diagnostics) with versions and cron state of this site. */
 	public function diagnostics(): array {
 		global $wp_version;
@@ -374,6 +386,7 @@ final class Plugin {
 				'adapter_interface' => WORKFLOW_CAPTAIN_CONTRACT_VERSION,
 				'wordpress'         => (string) $wp_version,
 				'php'               => PHP_VERSION,
+				'database'          => self::database_server(),
 				'multisite'         => is_multisite(),
 				'wp_cron_disabled'  => defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON,
 				'next_worker_run'   => null !== Scheduler::next_run() ? gmdate( 'Y-m-d\TH:i:s\Z', (int) Scheduler::next_run() ) : null,
