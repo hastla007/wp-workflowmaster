@@ -372,6 +372,8 @@ function check( label, ok ) {
 	await page.click( '.wfc-node[data-id="t"]' );
 	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.mmmmmmmmmmmmmmmmmmmmmmmmmm.wwwwwwwwww' );
 	await page.$eval( '.wfc-inspector input[list="wfc-events"]', ( i ) => i.dispatchEvent( new Event( 'change', { bubbles: true } ) ) );
+	// The texts are shortened after the rebuild has been laid out (measured in the next frame); wait for it.
+	await page.waitForFunction( () => ( document.querySelector( '.wfc-node[data-id="t"] .wfc-node-title' ) || {} ).textContent?.endsWith( '…' ), null, { timeout: 3000 } ).catch( () => {} );
 	const fit = await page.evaluate( () => ( {
 		widest: Math.max( ...Array.from( document.querySelectorAll( '.wfc-node-kicker, .wfc-node-title, .wfc-node-sub' ) ).map( ( t ) => t.getComputedTextLength() ) ),
 		title: document.querySelector( '.wfc-node[data-id="t"] .wfc-node-title' ).textContent,
