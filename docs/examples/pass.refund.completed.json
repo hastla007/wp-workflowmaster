@@ -1,0 +1,32 @@
+{
+  "id": "373372b8-3f95-4411-9cb8-0d4679364653",
+  "type": "pass.refund.completed",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T08:28:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "refund",
+    "id": "88",
+    "id_kind": "record"
+  },
+  "data": {
+    "order_id": 1204,
+    "amount_minor": 4800,
+    "tax_minor": 766,
+    "deducted_minor": 0,
+    "currency": "EUR",
+    "ticket_count": 2,
+    "refund_source": "native"
+  },
+  "idempotency_key": "9504369904c3f5178a0a856a58d5f159dc22c47491313ce7be05d0fc1df7d2c7",
+  "correlation_id": "373372b8-3f95-4411-9cb8-0d4679364653",
+  "causation_id": null,
+  "chain_depth": 0
+}

@@ -1,0 +1,38 @@
+{
+  "id": "9e2f5a3b-4c6d-4e7f-8a81-b2c3d4e5f6a7",
+  "type": "review.review.status_changed",
+  "spec_version": "1.0",
+  "source": {
+    "product": "review-captain",
+    "core_version": "0.1.0-dev",
+    "contract_version": "1.0.0"
+  },
+  "occurred_at": "2026-11-16T15:20:43Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "review",
+    "id": "3f2b8c1e-7d4a-4e9b-a6c5-1b2d3e4f5a6b",
+    "id_kind": "public"
+  },
+  "actor_user_id": 2,
+  "data": {
+    "kind": "review",
+    "platform": "local",
+    "origin": "local_submission",
+    "status": "approved",
+    "previous_status": "pending",
+    "verification": "purchase_verified",
+    "context_type": "product",
+    "context_id": "412",
+    "experience_source": "woo",
+    "rating_value": 2,
+    "rating_scale_min": 1,
+    "rating_scale_max": 5
+  },
+  "idempotency_key": "e3f3773ec3345cc8a6197d6c1dd26114783fd80ca947a0303433c8c0ddfa7bb7",
+  "correlation_id": "9e2f5a3b-4c6d-4e7f-8a81-b2c3d4e5f6a7",
+  "causation_id": null,
+  "chain_depth": 0
+}

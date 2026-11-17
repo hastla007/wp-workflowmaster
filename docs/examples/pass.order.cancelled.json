@@ -1,0 +1,30 @@
+{
+  "id": "e9dd329d-93bc-4ea0-b4fd-b3a279b3fa21",
+  "type": "pass.order.cancelled",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T08:07:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "2d387ab98437e5f528a87b031a086256",
+    "id_kind": "public"
+  },
+  "data": {
+    "status": "expired",
+    "previous_payment_status": "pending",
+    "reason_class": "expired",
+    "currency": "EUR",
+    "total_minor": 2400
+  },
+  "idempotency_key": "c66218e62f01253a3518faf73b9bd62a3acdc1c08b5451bc7fe0e0c9141b5dbe",
+  "correlation_id": "e9dd329d-93bc-4ea0-b4fd-b3a279b3fa21",
+  "causation_id": null,
+  "chain_depth": 0
+}

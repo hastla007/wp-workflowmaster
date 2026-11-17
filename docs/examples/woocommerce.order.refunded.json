@@ -1,0 +1,31 @@
+{
+  "id": "358c1f51-b677-4bec-a19a-ba7366775838",
+  "type": "woocommerce.order.refunded",
+  "spec_version": "1.0",
+  "source": {
+    "product": "woocommerce",
+    "core_version": "8.9.3",
+    "contract_version": "8.9.3"
+  },
+  "occurred_at": "2026-11-16T18:02:11Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "5123",
+    "id_kind": "record"
+  },
+  "actor_user_id": 3,
+  "data": {
+    "refund_id": 5140,
+    "amount_minor": 1990,
+    "currency": "EUR",
+    "refunded_total_minor": 1990,
+    "full_refund": false
+  },
+  "idempotency_key": "6fc236effa5f4b5e77224f015b67ca63796020b67ac016d5ba9b84c69162e83a",
+  "correlation_id": "358c1f51-b677-4bec-a19a-ba7366775838",
+  "causation_id": null,
+  "chain_depth": 0
+}

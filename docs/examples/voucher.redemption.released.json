@@ -1,0 +1,32 @@
+{
+  "id": "78a067d5-6ce3-4707-ab7f-6eaf006c9d6c",
+  "type": "voucher.redemption.released",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T10:59:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "voucher",
+    "id": "4825",
+    "id_kind": "record"
+  },
+  "actor_user_id": 640,
+  "data": {
+    "amount_minor": 2000,
+    "currency": "EUR",
+    "balance_after_minor": 5000,
+    "expires_at": "2026-11-16T10:30:00Z",
+    "state": "released",
+    "expired": true
+  },
+  "idempotency_key": "b1309a5cbae2baba9f5533b75dbfafd0500556a3a5c052123207170e5d8500cb",
+  "correlation_id": "78a067d5-6ce3-4707-ab7f-6eaf006c9d6c",
+  "causation_id": null,
+  "chain_depth": 0
+}

@@ -1,0 +1,28 @@
+{
+  "id": "02a98158-f09d-4eed-9f18-265028de204f",
+  "type": "pass.order.tickets_issued",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T08:21:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "f1584b995a4770986ad75bb8d29e9734",
+    "id_kind": "public"
+  },
+  "data": {
+    "issued_count": 2,
+    "currency": "EUR",
+    "total_minor": 4800
+  },
+  "idempotency_key": "0bbc89fd975e6d97f964ed636ff38eb1829e4fd57575cca97c1b22c35d51dc51",
+  "correlation_id": "02a98158-f09d-4eed-9f18-265028de204f",
+  "causation_id": null,
+  "chain_depth": 0
+}

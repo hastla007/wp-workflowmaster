@@ -1,0 +1,193 @@
+{
+  "name": "Workflow Captain: Gutschein eingelöst → Reporting",
+  "nodes": [
+    {
+      "id": "ebec2543-32d7-1a54-d2bd-409d77ddf9fb",
+      "name": "Workflow Captain",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "workflow-captain-voucher-redeemed",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "notes": "Header-Authentifizierung: Zugangsdaten in n8n anlegen und hier auswählen. Diese Vorlage enthält keine Zugangsdaten. Produktions-URL erst nach Aktivierung des Workflows in Workflow Captain eintragen."
+    },
+    {
+      "id": "e172d10c-cb86-cefd-db6e-73c00a488437",
+      "name": "Doppelte verwerfen (Ereignis-id)",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "removeItemsRepeatedInPreviousExecutions",
+        "dedupeValue": "={{ $json.body.id }}",
+        "options": {}
+      },
+      "notes": "Workflow Captain wiederholt mit derselben id. Dieser Schritt sorgt dafür, dass ein Ereignis nur einmal verarbeitet wird."
+    },
+    {
+      "id": "c023577e-da28-edb3-58af-bd401686eb3f",
+      "name": "Nur voucher.voucher.redeemed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cc7f4037-741a-8e9b-8f04-30764785e73c",
+              "leftValue": "={{ $json.body.type }}",
+              "rightValue": "voucher.voucher.redeemed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c2a3b6a3-4b39-1e3c-3a7b-7e8f3346fe4f",
+      "name": "Felder auswählen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        -100
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9e1dccd1-ee66-42d3-3ebf-6d0f26058e1b",
+              "name": "event_id",
+              "value": "={{ $json.body.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f799044d-97fc-e6a9-46b9-e4a0130c5c08",
+              "name": "voucher_id",
+              "value": "={{ $json.body.subject.id }}",
+              "type": "string"
+            },
+            {
+              "id": "6d714a03-d7f2-a143-7be0-30aacb314f1b",
+              "name": "amount_minor",
+              "value": "={{ $json.body.data.amount_minor }}",
+              "type": "number"
+            },
+            {
+              "id": "7c1802f2-8d2c-f734-59e6-334767e4f16a",
+              "name": "currency",
+              "value": "={{ $json.body.data.currency }}",
+              "type": "string"
+            },
+            {
+              "id": "72f4c86e-4cd0-3d9a-f880-968038df7157",
+              "name": "channel",
+              "value": "={{ $json.body.data.channel }}",
+              "type": "string"
+            },
+            {
+              "id": "86d719a7-1fbe-9fdb-a30f-abc7d9a333dd",
+              "name": "committed_at",
+              "value": "={{ $json.body.data.committed_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "notes": "Nur die Felder weitergeben, die der nächste Schritt braucht."
+    },
+    {
+      "id": "8fcc8ada-eec7-294d-ed1d-35791471fd74",
+      "name": "Ihr nächster Schritt",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {},
+      "notes": "Zum Beispiel Zeile in eine Tabelle oder ein Reporting-System schreiben. Es gibt keinen Gutscheincode: Er ist nie Teil des Ereignisses."
+    }
+  ],
+  "connections": {
+    "Workflow Captain": {
+      "main": [
+        [
+          {
+            "node": "Doppelte verwerfen (Ereignis-id)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doppelte verwerfen (Ereignis-id)": {
+      "main": [
+        [
+          {
+            "node": "Nur voucher.voucher.redeemed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nur voucher.voucher.redeemed": {
+      "main": [
+        [
+          {
+            "node": "Felder auswählen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Felder auswählen": {
+      "main": [
+        [
+          {
+            "node": "Ihr nächster Schritt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

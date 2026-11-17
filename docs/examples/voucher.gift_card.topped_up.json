@@ -1,0 +1,29 @@
+{
+  "id": "98481d2e-a1aa-4735-bd91-31b208adea54",
+  "type": "voucher.gift_card.topped_up",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T12:55:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "voucher",
+    "id": "4831",
+    "id_kind": "record"
+  },
+  "data": {
+    "amount_minor": 2500,
+    "currency": "EUR",
+    "order_id": 9060,
+    "balance_minor": 4000
+  },
+  "idempotency_key": "6ebc92a700f6a162076329f7f4261b3b1d0a021fb681c00109299fa838fb7326",
+  "correlation_id": "98481d2e-a1aa-4735-bd91-31b208adea54",
+  "causation_id": null,
+  "chain_depth": 0
+}

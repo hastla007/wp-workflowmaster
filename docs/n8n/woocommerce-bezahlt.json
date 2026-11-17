@@ -1,0 +1,199 @@
+{
+  "name": "Workflow Captain – WooCommerce: Bestellung bezahlt",
+  "nodes": [
+    {
+      "id": "efeaec21-d622-bda5-eb3f-3fe4933c0821",
+      "name": "Workflow Captain",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "workflow-captain-pass-checked-in",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "notes": "Header-Authentifizierung: Zugangsdaten in n8n anlegen und hier auswählen. Diese Vorlage enthält keine Zugangsdaten. Produktions-URL erst nach Aktivierung des Workflows in Workflow Captain eintragen."
+    },
+    {
+      "id": "74adac1b-395b-c34b-802f-34c2e6cefec5",
+      "name": "Doppelte verwerfen (Ereignis-id)",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "removeItemsRepeatedInPreviousExecutions",
+        "dedupeValue": "={{ $json.body.id }}",
+        "options": {}
+      },
+      "notes": "Workflow Captain wiederholt mit derselben id. Dieser Schritt sorgt dafür, dass ein Ereignis nur einmal verarbeitet wird."
+    },
+    {
+      "id": "eccca5e4-affd-84ab-50bb-dd387ac14278",
+      "name": "Nur woocommerce.order.paid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "8270d48c-434c-b334-2871-58c6ad4c4433",
+              "leftValue": "={{ $json.body.type }}",
+              "rightValue": "woocommerce.order.paid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d091d202-0a61-e587-5f96-57721f637c3e",
+      "name": "Felder auswählen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        -100
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f0c4c339-01c6-5b98-bb3a-a85e18dbf74e",
+              "name": "event_id",
+              "value": "={{ $json.body.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e0bd2a6e-fe1d-5a6a-9f3d-249bb5edf4a8",
+              "name": "order_id",
+              "value": "={{ $json.body.subject.id }}",
+              "type": "string"
+            },
+            {
+              "id": "9b4f8af3-f9a9-500d-a7f2-a57ff4f0e89a",
+              "name": "total_minor",
+              "value": "={{ $json.body.data.total_minor }}",
+              "type": "number"
+            },
+            {
+              "id": "4591d878-7e88-50b6-ab92-6ffb1dce49ef",
+              "name": "currency",
+              "value": "={{ $json.body.data.currency }}",
+              "type": "string"
+            },
+            {
+              "id": "500d350b-3ef6-5899-be8f-c23009ae4254",
+              "name": "payment_method",
+              "value": "={{ $json.body.data.payment_method }}",
+              "type": "string"
+            },
+            {
+              "id": "ec0d506a-a549-51c4-8bc6-3a6b60eb65ef",
+              "name": "item_count",
+              "value": "={{ $json.body.data.item_count }}",
+              "type": "number"
+            },
+            {
+              "id": "a37ed8d7-31dd-5079-8c22-5353b12a44ac",
+              "name": "occurred_at",
+              "value": "={{ $json.body.occurred_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "notes": "Nur die Felder weitergeben, die der nächste Schritt braucht."
+    },
+    {
+      "id": "5b41ea2d-40b4-925f-e530-3b23a31b2b22",
+      "name": "Ihr nächster Schritt",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {},
+      "notes": "Zum Beispiel Umsatz ins Reporting oder eine Aufgabe im Kundenservice. Name, Adresse und E-Mail sind nicht im Ereignis; wer sie braucht, holt sie mit eigener Rechtsgrundlage aus WooCommerce."
+    }
+  ],
+  "connections": {
+    "Workflow Captain": {
+      "main": [
+        [
+          {
+            "node": "Doppelte verwerfen (Ereignis-id)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doppelte verwerfen (Ereignis-id)": {
+      "main": [
+        [
+          {
+            "node": "Nur woocommerce.order.paid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nur woocommerce.order.paid": {
+      "main": [
+        [
+          {
+            "node": "Felder auswählen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Felder auswählen": {
+      "main": [
+        [
+          {
+            "node": "Ihr nächster Schritt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

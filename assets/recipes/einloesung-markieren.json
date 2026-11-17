@@ -1,0 +1,49 @@
+{
+  "format": "workflow-captain/workflow",
+  "format_version": 1,
+  "name": "Gutschein eingelöst: markieren und notieren",
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "trigger",
+        "event": "voucher.voucher.redeemed",
+        "serialize": "subject"
+      },
+      {
+        "id": "tag",
+        "type": "action",
+        "action": "workflow.tag.set",
+        "config": {
+          "tag": "eingeloest"
+        }
+      },
+      {
+        "id": "notiz",
+        "type": "action",
+        "action": "workflow.note.add",
+        "config": {
+          "text": "Eingelöst: {{data.amount_minor}} {{data.currency}} über {{data.channel}}"
+        }
+      },
+      {
+        "id": "ende",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "from": "start",
+        "to": "tag"
+      },
+      {
+        "from": "tag",
+        "to": "notiz"
+      },
+      {
+        "from": "notiz",
+        "to": "ende"
+      }
+    ]
+  }
+}

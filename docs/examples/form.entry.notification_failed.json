@@ -1,0 +1,28 @@
+{
+  "id": "0d8f3c7b-2e9a-4f5b-8c4d-8b9e0f1a2c3d",
+  "type": "form.entry.notification_failed",
+  "spec_version": "1.0",
+  "source": {
+    "product": "form-captain",
+    "core_version": "1.0.0-dev",
+    "contract_version": "1.0.0"
+  },
+  "occurred_at": "2026-11-16T10:31:18Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "entry",
+    "id": "124",
+    "id_kind": "record"
+  },
+  "data": {
+    "form_id": 7,
+    "notification_type": "confirmation",
+    "error_class": "mail_failed"
+  },
+  "idempotency_key": "eb7576f9e116af840c7c88a07b886c8b35833ba55e3dab24fe21ff2c2b765db5",
+  "correlation_id": "0d8f3c7b-2e9a-4f5b-8c4d-8b9e0f1a2c3d",
+  "causation_id": null,
+  "chain_depth": 0
+}

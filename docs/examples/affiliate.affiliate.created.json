@@ -1,0 +1,29 @@
+{
+  "id": "3f303a1b-ab4c-4f34-b9fd-f099bcc4d864",
+  "type": "affiliate.affiliate.created",
+  "spec_version": "1.0",
+  "source": {
+    "product": "affiliate-captain",
+    "core_version": "0.15.0",
+    "contract_version": "1.4.0"
+  },
+  "occurred_at": "2026-11-16T14:00:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "affiliate",
+    "id": "57",
+    "id_kind": "record"
+  },
+  "data": {
+    "status": "approved",
+    "group_id": 2,
+    "referred_by": 0,
+    "partner_user_id": 512
+  },
+  "idempotency_key": "2ce8b07e2c05389f6844519afa75e97a74652a69d20854e3f3a78c1a984735e7",
+  "correlation_id": "3f303a1b-ab4c-4f34-b9fd-f099bcc4d864",
+  "causation_id": null,
+  "chain_depth": 0
+}

@@ -1,0 +1,28 @@
+{
+  "id": "74902012-b536-4c8f-8283-90f0f7e43d3b",
+  "type": "voucher.voucher.delivered",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T10:31:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "voucher",
+    "id": "4822",
+    "id_kind": "record"
+  },
+  "data": {
+    "address_count": 1,
+    "roles": "recipient",
+    "bundled": false
+  },
+  "idempotency_key": "eeaebe3b3b54e8fd9bc223c6f0924aa52157f0af5372db43e249fd5db6a0358f",
+  "correlation_id": "74902012-b536-4c8f-8283-90f0f7e43d3b",
+  "causation_id": null,
+  "chain_depth": 0
+}

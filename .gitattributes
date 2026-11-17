@@ -1,0 +1,12 @@
+/tests export-ignore
+/examples export-ignore
+/bin export-ignore
+/docs export-ignore
+/.github export-ignore
+/konzept.md export-ignore
+/TODO.md export-ignore
+/README.md export-ignore
+/composer.json export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/.wordpress-org export-ignore

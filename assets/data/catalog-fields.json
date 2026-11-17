@@ -1,0 +1,467 @@
+{
+ "affiliate.affiliate.created": {
+  "status": "string",
+  "group_id": "integer",
+  "referred_by": "integer",
+  "partner_user_id": "integer"
+ },
+ "affiliate.affiliate.erased": {
+  "deferred": "boolean"
+ },
+ "affiliate.affiliate.recruited": {
+  "recruiter_id": "integer",
+  "status": "string"
+ },
+ "affiliate.affiliate.status_changed": {
+  "status": "string",
+  "previous_status": "string"
+ },
+ "affiliate.code_request.approved": {
+  "affiliate_id": "integer",
+  "partner_code": "string",
+  "main": "boolean",
+  "request_id": "integer"
+ },
+ "affiliate.code_request.created": {
+  "affiliate_id": "integer",
+  "request_id": "integer"
+ },
+ "affiliate.code_request.rejected": {
+  "affiliate_id": "integer",
+  "request_id": "integer"
+ },
+ "affiliate.commission.adjusted": {
+  "source": "string",
+  "refund_id": "integer",
+  "adjustment_type": "string",
+  "full": "boolean",
+  "deleted": "boolean",
+  "adjustment_count": "integer",
+  "affiliate_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.commission.approved": {
+  "affiliate_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency",
+  "kind": "string",
+  "previous_status": "string"
+ },
+ "affiliate.commission.created": {
+  "affiliate_id": "integer",
+  "kind": "string",
+  "status": "string",
+  "amount_minor": "integer",
+  "currency": "currency",
+  "parent_id": "integer",
+  "source": "string",
+  "order_id": "integer",
+  "payout_id": "integer"
+ },
+ "affiliate.commission.paid": {
+  "affiliate_id": "integer",
+  "payout_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.commission.pending": {
+  "affiliate_id": "integer",
+  "kind": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.commission.rejected": {
+  "affiliate_id": "integer",
+  "kind": "string",
+  "amount_minor": "integer",
+  "currency": "currency",
+  "previous_status": "string"
+ },
+ "affiliate.commission.review_reopened": {
+  "affiliate_id": "integer",
+  "kind": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.correction.generated": {},
+ "affiliate.creative.created": {
+  "family_id": "integer",
+  "version": "integer",
+  "status": "string",
+  "creative_type": "string",
+  "group_id": "integer"
+ },
+ "affiliate.creative.updated": {
+  "family_id": "integer",
+  "version": "integer",
+  "status": "string",
+  "creative_type": "string",
+  "group_id": "integer"
+ },
+ "affiliate.payout.cancelled": {
+  "affiliate_id": "integer",
+  "payout_number": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.payout.created": {
+  "affiliate_id": "integer",
+  "payout_number": "string",
+  "status": "string",
+  "method": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.payout.paid": {
+  "affiliate_id": "integer",
+  "payout_number": "string",
+  "method": "string",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "affiliate.sale.attributed": {
+  "affiliate_id": "integer",
+  "source": "string",
+  "attribution_method": "string"
+ },
+ "form.entry.consent_withdrawn": {
+  "form_id": "integer",
+  "withdrawal_source": "string",
+  "follow_up": "string",
+  "withdrawn_at": "datetime"
+ },
+ "form.entry.created": {
+  "form_id": "integer",
+  "form_public_id": "string",
+  "form_version": "integer",
+  "status": "string",
+  "context_purpose": "string",
+  "context_ref_type": "string",
+  "context_ref_id": "string",
+  "context_verified": "boolean"
+ },
+ "form.entry.deleted": {
+  "form_id": "integer",
+  "deletion_reason": "string"
+ },
+ "form.entry.notification_failed": {
+  "form_id": "integer",
+  "notification_type": "string",
+  "error_class": "string"
+ },
+ "form.entry.status_changed": {
+  "form_id": "integer",
+  "status": "string",
+  "previous_status": "string"
+ },
+ "form.form.created": {
+  "form_id": "integer",
+  "status": "string",
+  "form_version": "integer",
+  "field_count": "integer"
+ },
+ "form.form.entries_imported": {
+  "form_id": "integer",
+  "imported_count": "integer"
+ },
+ "form.form.updated": {
+  "form_id": "integer",
+  "status": "string",
+  "form_version": "integer",
+  "field_count": "integer",
+  "change": "string"
+ },
+ "license.license.issued": {
+  "product": "string",
+  "plan": "string",
+  "status": "string"
+ },
+ "license.license.plan_changed": {
+  "product": "string",
+  "plan": "string",
+  "status": "string"
+ },
+ "license.license.status_changed": {
+  "product": "string",
+  "plan": "string",
+  "status": "string",
+  "previous_status": "string",
+  "lifecycle_action": "string"
+ },
+ "pass.event.cancelled": {
+  "occurrence_count": "integer",
+  "revoked_tickets": "integer",
+  "cancelled_orders": "integer"
+ },
+ "pass.invoice.created": {
+  "document_type": "string",
+  "document_number": "string",
+  "order_id": "integer",
+  "invoice_id": "integer",
+  "refund_id": "integer",
+  "partner_id": "integer",
+  "period": "string",
+  "currency": "currency",
+  "total_minor": "integer",
+  "tax_minor": "integer"
+ },
+ "pass.occurrence.cancelled": {
+  "event_id": "integer",
+  "issued_tickets": "integer",
+  "starts_at": "datetime",
+  "scope": "string"
+ },
+ "pass.occurrence.rescheduled": {
+  "event_id": "integer",
+  "old_starts_at": "datetime",
+  "new_starts_at": "datetime",
+  "timezone": "string",
+  "issued_tickets": "integer"
+ },
+ "pass.order.cancelled": {
+  "status": "string",
+  "previous_payment_status": "string",
+  "reason_class": "string",
+  "currency": "currency",
+  "total_minor": "integer"
+ },
+ "pass.order.paid": {
+  "status": "string",
+  "payment_status": "string",
+  "payment_provider": "string",
+  "currency": "currency",
+  "total_minor": "integer",
+  "refunded_minor": "integer",
+  "ticket_count": "integer",
+  "customer_user_id": "integer"
+ },
+ "pass.order.refunded": {
+  "status": "string",
+  "payment_status": "string",
+  "currency": "currency",
+  "total_minor": "integer",
+  "refunded_minor": "integer",
+  "reason_class": "string",
+  "refund_id": "integer"
+ },
+ "pass.order.tickets_issued": {
+  "issued_count": "integer",
+  "currency": "currency",
+  "total_minor": "integer"
+ },
+ "pass.refund.completed": {
+  "order_id": "integer",
+  "amount_minor": "integer",
+  "tax_minor": "integer",
+  "deducted_minor": "integer",
+  "currency": "currency",
+  "ticket_count": "integer",
+  "refund_source": "string"
+ },
+ "pass.refund.rejected": {
+  "order_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "pass.ticket.checked_in": {
+  "checkin_source": "string",
+  "device_id": "integer",
+  "area_id": "integer",
+  "occurrence_id": "integer",
+  "event_id": "integer",
+  "ticket_type_id": "integer",
+  "reentry": "boolean"
+ },
+ "pass.ticket.checked_out": {
+  "checkin_source": "string",
+  "device_id": "integer",
+  "area_id": "integer",
+  "occurrence_id": "integer",
+  "event_id": "integer",
+  "ticket_type_id": "integer"
+ },
+ "pass.ticket.revoked": {
+  "order_id": "integer",
+  "ticket_type_id": "integer",
+  "occurrence_id": "integer",
+  "event_id": "integer",
+  "reason_class": "string"
+ },
+ "review.review.created": {
+  "kind": "string",
+  "platform": "string",
+  "origin": "string",
+  "status": "string",
+  "verification": "string",
+  "context_type": "string",
+  "context_id": "string",
+  "experience_source": "string",
+  "rating_value": "number",
+  "rating_scale_min": "number",
+  "rating_scale_max": "number"
+ },
+ "review.review.removed": {
+  "kind": "string",
+  "platform": "string",
+  "origin": "string",
+  "status": "string",
+  "context_type": "string",
+  "context_id": "string",
+  "experience_source": "string",
+  "removal": "string"
+ },
+ "review.review.status_changed": {
+  "kind": "string",
+  "platform": "string",
+  "origin": "string",
+  "status": "string",
+  "previous_status": "string",
+  "verification": "string",
+  "context_type": "string",
+  "context_id": "string",
+  "experience_source": "string",
+  "rating_value": "number",
+  "rating_scale_min": "number",
+  "rating_scale_max": "number"
+ },
+ "voucher.gift_card.topped_up": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "order_id": "integer",
+  "balance_minor": "integer"
+ },
+ "voucher.order.vouchers_issued": {
+  "order_id": "integer",
+  "voucher_count": "integer",
+  "background": "boolean"
+ },
+ "voucher.redemption.refunded": {
+  "refunded_minor": "integer",
+  "refunded_total_minor": "integer",
+  "currency": "currency"
+ },
+ "voucher.redemption.released": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "balance_after_minor": "integer",
+  "expires_at": "datetime",
+  "state": "string",
+  "expired": "boolean"
+ },
+ "voucher.redemption.reserved": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "balance_after_minor": "integer",
+  "expires_at": "datetime",
+  "state": "string"
+ },
+ "voucher.redemption.reversed": {
+  "reversed_event_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency"
+ },
+ "voucher.store_credit.changed": {
+  "amount_minor": "integer",
+  "balance_minor": "integer",
+  "currency": "currency",
+  "credit_event": "string",
+  "order_id": "integer"
+ },
+ "voucher.voucher.bounced": {
+  "role": "string"
+ },
+ "voucher.voucher.delivered": {
+  "address_count": "integer",
+  "roles": "string",
+  "bundled": "boolean"
+ },
+ "voucher.voucher.delivery_failed": {
+  "failures": "integer"
+ },
+ "voucher.voucher.expired": {
+  "balance_minor": "integer",
+  "currency": "currency",
+  "voucher_type": "string"
+ },
+ "voucher.voucher.issued_standalone": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "voucher_type": "string",
+  "usage_mode": "string",
+  "status": "string",
+  "paid": "boolean",
+  "issue_source": "string",
+  "send": "boolean"
+ },
+ "voucher.voucher.reactivated": {
+  "balance_minor": "integer",
+  "currency": "currency",
+  "order_id": "integer",
+  "change_source": "string"
+ },
+ "voucher.voucher.redeemed": {
+  "amount_minor": "integer",
+  "currency": "currency",
+  "order_id": "integer",
+  "channel": "string",
+  "redemption_source": "string",
+  "committed_at": "datetime",
+  "balance_after_minor": "integer"
+ },
+ "voucher.voucher.reissued": {
+  "status": "string"
+ },
+ "voucher.voucher.voided": {
+  "balance_minor": "integer",
+  "currency": "currency",
+  "order_id": "integer",
+  "change_source": "string",
+  "void_reason": "string"
+ },
+ "woocommerce.order.cancelled": {
+  "from_status": "string",
+  "currency": "currency",
+  "total_minor": "integer"
+ },
+ "woocommerce.order.created": {
+  "status": "string",
+  "currency": "currency",
+  "total_minor": "integer",
+  "item_count": "integer",
+  "created_via": "string",
+  "customer_user_id": "integer"
+ },
+ "woocommerce.order.paid": {
+  "currency": "currency",
+  "total_minor": "integer",
+  "item_count": "integer",
+  "payment_method": "string",
+  "customer_user_id": "integer"
+ },
+ "woocommerce.order.refunded": {
+  "refund_id": "integer",
+  "amount_minor": "integer",
+  "currency": "currency",
+  "refunded_total_minor": "integer",
+  "full_refund": "boolean"
+ },
+ "woocommerce.order.status_changed": {
+  "from_status": "string",
+  "to_status": "string",
+  "currency": "currency",
+  "total_minor": "integer"
+ },
+ "wordpress.post.published": {
+  "post_type": "string",
+  "author_user_id": "integer",
+  "previous_status": "string"
+ },
+ "wordpress.user.registered": {
+  "role": "string"
+ },
+ "workflow.schedule.due": {
+  "scheduled_for": "datetime",
+  "delay_seconds": "integer"
+ }
+}

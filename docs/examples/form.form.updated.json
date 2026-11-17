@@ -1,0 +1,31 @@
+{
+  "id": "4d2f7c1b-6e3a-4f9b-8c8d-2b3e4f5a6b7c",
+  "type": "form.form.updated",
+  "spec_version": "1.0",
+  "source": {
+    "product": "form-captain",
+    "core_version": "1.0.0-dev",
+    "contract_version": "1.0.0"
+  },
+  "occurred_at": "2026-11-16T09:40:31Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "form",
+    "id": "k3m9q2x7p4a8c1z6",
+    "id_kind": "public"
+  },
+  "actor_user_id": 2,
+  "data": {
+    "form_id": 7,
+    "status": "published",
+    "form_version": 3,
+    "field_count": 6,
+    "change": "published"
+  },
+  "idempotency_key": "690863152ebaa8484f1d08996b5fefc4ca999cf7b4c438b7656c8a4334916903",
+  "correlation_id": "4d2f7c1b-6e3a-4f9b-8c8d-2b3e4f5a6b7c",
+  "causation_id": null,
+  "chain_depth": 0
+}

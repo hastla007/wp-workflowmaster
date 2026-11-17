@@ -1,0 +1,29 @@
+{
+  "id": "3aae5159-99b2-4a1f-8017-4e0813a912c4",
+  "type": "voucher.redemption.refunded",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T11:06:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "voucher",
+    "id": "4826",
+    "id_kind": "record"
+  },
+  "actor_user_id": 640,
+  "data": {
+    "refunded_minor": 1000,
+    "refunded_total_minor": 1000,
+    "currency": "EUR"
+  },
+  "idempotency_key": "5f4f390153b8aa65757e9c3fd0e3da335a9b9e226b1c0dc49b7abeb9519e13ac",
+  "correlation_id": "3aae5159-99b2-4a1f-8017-4e0813a912c4",
+  "causation_id": null,
+  "chain_depth": 0
+}

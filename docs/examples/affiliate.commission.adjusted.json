@@ -1,0 +1,34 @@
+{
+  "id": "301e4cb5-aa37-4e50-a6cd-6691b63ca8d1",
+  "type": "affiliate.commission.adjusted",
+  "spec_version": "1.0",
+  "source": {
+    "product": "affiliate-captain",
+    "core_version": "0.15.0",
+    "contract_version": "1.4.0"
+  },
+  "occurred_at": "2026-11-16T14:06:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "9017",
+    "id_kind": "record"
+  },
+  "data": {
+    "source": "woocommerce",
+    "refund_id": 4411,
+    "adjustment_type": "refund",
+    "full": false,
+    "deleted": false,
+    "adjustment_count": 1,
+    "affiliate_id": 57,
+    "amount_minor": -990,
+    "currency": "EUR"
+  },
+  "idempotency_key": "c3fe269d2ad4927de3f0964bb1312821f7e056e16c36bee35f492bebb03044db",
+  "correlation_id": "301e4cb5-aa37-4e50-a6cd-6691b63ca8d1",
+  "causation_id": null,
+  "chain_depth": 0
+}

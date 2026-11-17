@@ -1,0 +1,187 @@
+{
+  "name": "Workflow Captain: Ticket eingecheckt → Teilnahmeprozess",
+  "nodes": [
+    {
+      "id": "efeaec21-d622-bda5-eb3f-3fe4933c0821",
+      "name": "Workflow Captain",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "workflow-captain-pass-checked-in",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "notes": "Header-Authentifizierung: Zugangsdaten in n8n anlegen und hier auswählen. Diese Vorlage enthält keine Zugangsdaten. Produktions-URL erst nach Aktivierung des Workflows in Workflow Captain eintragen."
+    },
+    {
+      "id": "74adac1b-395b-c34b-802f-34c2e6cefec5",
+      "name": "Doppelte verwerfen (Ereignis-id)",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "operation": "removeItemsRepeatedInPreviousExecutions",
+        "dedupeValue": "={{ $json.body.id }}",
+        "options": {}
+      },
+      "notes": "Workflow Captain wiederholt mit derselben id. Dieser Schritt sorgt dafür, dass ein Ereignis nur einmal verarbeitet wird."
+    },
+    {
+      "id": "eccca5e4-affd-84ab-50bb-dd387ac14278",
+      "name": "Nur pass.ticket.checked_in",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "8270d48c-434c-b334-2871-58c6ad4c4433",
+              "leftValue": "={{ $json.body.type }}",
+              "rightValue": "pass.ticket.checked_in",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "d091d202-0a61-e587-5f96-57721f637c3e",
+      "name": "Felder auswählen",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        -100
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ea87b4a5-5ba7-98f6-8ade-b4fef93804db",
+              "name": "event_id",
+              "value": "={{ $json.body.id }}",
+              "type": "string"
+            },
+            {
+              "id": "98a73c19-c5b1-cff7-c26b-18b0cf28ec6c",
+              "name": "ticket_public_id",
+              "value": "={{ $json.body.subject.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e12192c2-bee2-b790-8546-b24f5b9eb5d7",
+              "name": "event_id_pass",
+              "value": "={{ $json.body.data.event_id }}",
+              "type": "number"
+            },
+            {
+              "id": "65d508cd-d723-5d4f-1688-354fe8f3c3c6",
+              "name": "occurrence_id",
+              "value": "={{ $json.body.data.occurrence_id }}",
+              "type": "number"
+            },
+            {
+              "id": "9a44894d-ad3f-3d0d-001c-58f74eb83869",
+              "name": "checked_in_at",
+              "value": "={{ $json.body.occurred_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "notes": "Nur die Felder weitergeben, die der nächste Schritt braucht."
+    },
+    {
+      "id": "5b41ea2d-40b4-925f-e530-3b23a31b2b22",
+      "name": "Ihr nächster Schritt",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -100
+      ],
+      "parameters": {},
+      "notes": "Zum Beispiel Teilnahme im CRM vermerken. Kontaktdaten des Gastes sind nicht im Ereignis; wer sie braucht, holt sie mit eigener Rechtsgrundlage aus dem führenden System."
+    }
+  ],
+  "connections": {
+    "Workflow Captain": {
+      "main": [
+        [
+          {
+            "node": "Doppelte verwerfen (Ereignis-id)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Doppelte verwerfen (Ereignis-id)": {
+      "main": [
+        [
+          {
+            "node": "Nur pass.ticket.checked_in",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nur pass.ticket.checked_in": {
+      "main": [
+        [
+          {
+            "node": "Felder auswählen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Felder auswählen": {
+      "main": [
+        [
+          {
+            "node": "Ihr nächster Schritt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "4984a1a6-fff9-4f74-b73b-45bed234d4a8",
+  "type": "affiliate.sale.attributed",
+  "spec_version": "1.0",
+  "source": {
+    "product": "affiliate-captain",
+    "core_version": "0.15.0",
+    "contract_version": "1.4.0"
+  },
+  "occurred_at": "2026-11-16T14:04:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "9017",
+    "id_kind": "record"
+  },
+  "data": {
+    "affiliate_id": 57,
+    "source": "woocommerce",
+    "attribution_method": "code"
+  },
+  "idempotency_key": "0093957036e70379758e08a20bf750e257dbc6e1fd21a260d222c68820c860ed",
+  "correlation_id": "4984a1a6-fff9-4f74-b73b-45bed234d4a8",
+  "causation_id": null,
+  "chain_depth": 0
+}

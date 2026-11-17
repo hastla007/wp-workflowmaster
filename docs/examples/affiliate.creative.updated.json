@@ -1,0 +1,30 @@
+{
+  "id": "1bd05fe6-4dd8-4453-9d67-5f0cfc76f570",
+  "type": "affiliate.creative.updated",
+  "spec_version": "1.0",
+  "source": {
+    "product": "affiliate-captain",
+    "core_version": "0.15.0",
+    "contract_version": "1.4.0"
+  },
+  "occurred_at": "2026-11-16T14:17:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "creative",
+    "id": "88",
+    "id_kind": "record"
+  },
+  "data": {
+    "family_id": 8,
+    "version": 3,
+    "status": "approved",
+    "creative_type": "image",
+    "group_id": 2
+  },
+  "idempotency_key": "8e47b5cc82d9fd4787b991c47011e2c9074e27341ed27c659b49a2063656c1bf",
+  "correlation_id": "1bd05fe6-4dd8-4453-9d67-5f0cfc76f570",
+  "causation_id": null,
+  "chain_depth": 0
+}

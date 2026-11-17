@@ -1,0 +1,1936 @@
+# Copyright (C) Captain Suite
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Workflow Captain\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: workflow-captain\n"
+
+#. translators: 1: number of rejected events, 2: rule codes
+#: src/Admin/EventsPage.php:103
+msgid "%1$d Ereignisse wurden abgelehnt, weil sie das Schema verletzten. Zuletzt: %2$s"
+msgstr ""
+
+#. translators: 1: current page, 2: number of pages
+#: src/Admin/Pagination.php:58
+msgid "%1$s von %2$s"
+msgstr ""
+
+#. translators: 1: product and plugin version, 2: contract version
+#: src/Admin/Provenance.php:85
+msgid "%1$s, Vertrag %2$s"
+msgstr ""
+
+#. translators: %d: number of actions
+#: src/Admin/OverviewPage.php:95
+msgid "%d Aktion"
+msgid_plural "%d Aktionen"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of hidden data fields
+#: src/Admin/WorkflowsPage.php:731
+msgid "%d Datenfeld ist ausgeblendet."
+msgid_plural "%d Datenfelder sind ausgeblendet."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of events
+#: src/Admin/EventsPage.php:91
+msgid "%d Ereignisse wieder eingereiht."
+msgstr ""
+
+#. translators: %d: number of event types
+#: src/Admin/OverviewPage.php:93
+msgid "%d Ereignistyp"
+msgid_plural "%d Ereignistypen"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of runs
+#: src/Admin/WorkflowsPage.php:763
+msgid "%d Lauf mit Fehler oder offener Aktion, Läufe dieses Workflows ansehen"
+msgid_plural "%d Läufe mit Fehler oder offener Aktion, Läufe dieses Workflows ansehen"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: minutes
+#: src/Admin/SettingsPage.php:167
+msgid "%d Min."
+msgstr ""
+
+#. translators: %d: hours
+#: src/Admin/SettingsPage.php:167
+msgid "%d Std."
+msgstr ""
+
+#. translators: %s: name of the original workflow
+#: src/Engine/Workflows.php:154
+msgid "%s (Kopie)"
+msgstr ""
+
+#. translators: %s: number of entries
+#: src/Admin/Pagination.php:52
+msgid "%s Eintrag"
+msgid_plural "%s Einträge"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/WorkflowsPage.php:147
+msgid "(nicht im Katalog)"
+msgstr ""
+
+#: src/Admin/HelpPage.php:28
+msgid "1. Unter „Provider“ prüfen, welche Plugins Ereignisse liefern. WordPress und WooCommerce sind eingebaut; die Captain-Produkte kommen mit Workflow Captain Pro."
+msgstr ""
+
+#: src/Admin/HelpPage.php:29
+msgid "2. Unter „Vorlagen“ einen Ablauf als Entwurf übernehmen oder unter „Workflows“ einen neuen anlegen."
+msgstr ""
+
+#: src/Admin/HelpPage.php:30
+msgid "3. Im Editor einen Testlauf mit Beispieldaten starten. Er führt nichts aus."
+msgstr ""
+
+#: src/Admin/HelpPage.php:31
+msgid "4. Veröffentlichen. Ab dann startet jedes passende Ereignis einen Lauf; die Version bleibt für laufende Läufe unverändert."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:807 src/Admin/WorkflowsPage.php:831
+msgid "Abgebrochen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:328
+msgid "Abgebrochene Datenbank-Aktualisierung wiederholt"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:184
+msgid "Abgelehnte oder inkompatible Provider"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:438
+msgid "Ablauf (JSON)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:297
+msgid "Action Scheduler (von WooCommerce)"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:89 src/Admin/ProvidersPage.php:133
+msgid "Adapter"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:257
+msgid "Administratoren haben immer alle Rechte. Shop-Manager bekommen keine Rechte automatisch."
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:76 src/Admin/WorkflowsPage.php:111
+msgid "Aktion"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:805 src/Admin/WorkflowsPage.php:829
+msgid "Aktion erforderlich"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:154
+msgid "Aktion nicht verfügbar: Der Provider fehlt oder ist nicht aktiv."
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:103 src/Admin/EventsPage.php:137 src/Admin/WorkflowsPage.php:701
+msgid "Aktionen"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:77 src/Admin/WorkflowsPage.php:815
+msgid "Aktiv"
+msgstr ""
+
+#. translators: %s: time in UTC
+#: src/Admin/OverviewPage.php:127
+msgid "Aktiv seit %s (UTC). Kein Schritt wird ausgeführt; Ereignisse werden weiter gespeichert."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:183
+msgid "Aktive Notfallpause"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:42 src/Admin/ProvidersPage.php:133
+msgid "Aktive Workflows"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:295
+msgid "Aktualisierung der Datenbank"
+msgstr ""
+
+#: src/Admin/Pagination.php:56
+msgid "Aktuelle Seite"
+msgstr ""
+
+#: src/Admin/EventsPage.php:121 src/Admin/WorkflowsPage.php:568
+msgid "Alle"
+msgstr ""
+
+#: src/Admin/EventsPage.php:111
+msgid "Alle Anbieter"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:145
+msgid "Alle Angaben auf der Seite „Provider“"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:45
+msgid "Alle Felder dieses Tabs auf die Standardwerte setzen? Gespeichert wird erst mit „Änderungen speichern“."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:656
+msgid "Alle Läufe"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:223
+msgid "Alle Zeitpunkte werden in UTC gespeichert; Wartezeiten in Tagen richten sich nach der Zeitzone der Website."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:68
+msgid "Allgemein"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:420
+msgid "Als Entwurf importieren"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:384
+msgid "Als Entwurf importiert."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:464
+msgid "Als Entwurf speichern"
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:82
+msgid "Als Entwurf übernehmen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:144
+msgid "Anderes Feld …"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:690
+msgid "Angaben zum Lauf"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:698
+msgid "Angelegt (UTC)"
+msgstr ""
+
+#. translators: %s: comma separated product keys
+#: src/Admin/EventsPage.php:98
+msgid "Angemeldete Adapter: %s"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:478
+msgid "Archivieren"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:817
+msgid "Archiviert"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:191 src/Admin/SettingsPage.php:191
+msgid "Arten"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:69
+msgid "Ausführung"
+msgstr ""
+
+#: src/Admin/EventsPage.php:131
+msgid "Ausgewählte erneut einreihen"
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:76 src/Admin/WorkflowsPage.php:110 src/Admin/WorkflowsPage.php:404
+msgid "Auslöser"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:501
+msgid "Auslöser %1$s von %2$s"
+msgstr ""
+
+#. translators: 1: event type, 2: provider with plugin and contract version
+#: src/Admin/WorkflowsPage.php:501
+msgid "Auslöser %s: Provider nicht verfügbar"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:89
+msgid "Auslöser und Aktionen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:151
+msgid "Bausteine anklicken oder auf den Ablauf ziehen. Tastatur: Enter fügt den Baustein unter dem gewählten Knoten ein, die Pfeiltasten verschieben ihn."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:827
+msgid "Beendet (Bedingung)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:680 src/Admin/WorkflowsPage.php:698
+msgid "Beendet (UTC)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:679 src/Privacy/Privacy.php:102
+msgid "Begonnen (UTC)"
+msgstr ""
+
+#: src/Admin/HelpPage.php:33
+msgid "Begriffe"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:169
+msgid "Beim letzten Prüfen gemeldet:"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:148
+msgid "Beispiel:"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:445
+msgid "Beispielereignis (JSON, mindestens \"data\")"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:70
+msgid "Benachrichtigungen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:349
+msgid "Benutzer"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:58
+msgid "Benutzer aus (actor_user_id oder data.…_user_id)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:57 src/Admin/WorkflowsPage.php:58
+msgid "Betreff"
+msgstr ""
+
+#. translators: %s: e-mail address of the site
+#: src/Admin/SettingsPage.php:190
+msgid "Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website (%s). Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress."
+msgstr ""
+
+#: src/Admin/OverviewPage.php:44
+msgid "Brauchen eine Entscheidung"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:122
+msgid "Connector freigeben"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:207 src/Admin/SettingsPage.php:264 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:230 src/Admin/WorkflowsPage.php:241 src/Admin/WorkflowsPage.php:254 src/Admin/WorkflowsPage.php:260 src/Admin/WorkflowsPage.php:271 src/Admin/WorkflowsPage.php:287 src/Admin/WorkflowsPage.php:305 src/Admin/WorkflowsPage.php:334 src/Admin/WorkflowsPage.php:348 src/Plugin.php:403 src/Plugin.php:418
+msgid "Dafür fehlt die Berechtigung."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:108
+msgid "Danach beginnt der Worker keinen neuen Schritt mehr; ein begonnener Schritt läuft zu Ende. Hält Seitenaufrufe kurz, wenn WP-Cron über Besucher läuft."
+msgstr ""
+
+#: src/Admin/EventsPage.php:87
+msgid "Das Ereignis ist wieder eingereiht."
+msgstr ""
+
+#: src/Admin/EventsPage.php:87
+msgid "Das Ereignis ließ sich nicht wieder einreihen."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:527
+msgid "Das ging nicht. Ein Schritt mit begonnener Nachricht braucht die Bestätigung, dass sie erneut gesendet werden darf."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:146
+msgid "Daten des Ereignisses"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:294
+msgid "Datenbankschema"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:71
+msgid "Datenschutz & Aufbewahrung"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:222
+msgid "Datumsformat"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:164
+msgid "Dauer von 1 bis 1000 und eine Einheit angeben."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:165
+msgid "Der Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:149
+msgid "Der Dann-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:74
+msgid "Der Datenbankserver erfüllt die Mindestversion von Workflow Captain (MySQL 9.7 oder MariaDB 12.3)."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:76
+msgid "Der Datenbankserver ist älter als MySQL 9.7 bzw. MariaDB 12.3. Workflow Captain arbeitet weiter, ältere Server werden aber nicht mehr getestet. Empfohlen: beim Hoster ein Update anfragen."
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:81
+msgid "Der Entwurf weicht ab; es gilt die veröffentlichte Version."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:120
+msgid "Der Knoten aus dem Lauf ist im Entwurf nicht mehr vorhanden:"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:150
+msgid "Der Sonst-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen."
+msgstr ""
+
+#. translators: 1: entered value, 2: lowest value, 3: highest value, 4: stored value
+#: src/Settings.php:76
+msgid "Der Wert „%1$s“ liegt nicht zwischen %2$d und %3$d. Gespeichert wurde %4$d."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:170
+msgid "Der Worker läuft über Action Scheduler (von WooCommerce), jede Minute."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:170
+msgid "Der Worker läuft über WP-Cron, jede Minute. WP-Cron startet nur bei Seitenaufrufen; auf Websites mit wenig Besuch oder mit DISABLE_WP_CRON einen System-Cron einrichten: wp workflow-captain process (jede Minute)."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:63
+msgid "Der Worker von Workflow Captain ist geplant."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:64
+msgid "Der Worker von Workflow Captain ist nicht geplant. Plugin deaktivieren und wieder aktivieren oder wp workflow-captain process per System-Cron aufrufen."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:65
+msgid "Der Worker von Workflow Captain ist überfällig: WP-Cron läuft nicht zuverlässig. Einen System-Cron einrichten."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:388
+msgid "Der Workflow kann so nicht veröffentlicht werden:"
+msgstr ""
+
+#: src/Admin/EventsPage.php:107
+msgid "Diagnose herunterladen (ohne persönliche Daten)"
+msgstr ""
+
+#: src/Admin/SiteHealth.php:68
+msgid "Die Datenbank stammt von einer neueren Version von Workflow Captain; die Verarbeitung ist angehalten."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:714
+msgid "Die Nachricht wurde vielleicht schon gesendet. Erneut senden?"
+msgstr ""
+
+#: src/Admin/HelpPage.php:41
+msgid "Die Notfallpause auf der Übersicht hält sofort alle Schritte an; Ereignisse werden weiter gespeichert."
+msgstr ""
+
+#: src/Notifications.php:80
+msgid "Die Notfallpause ist aktiv."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:73
+msgid "Die Notfallpause von Workflow Captain ist aktiv: Kein Schritt wird ausgeführt."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:72
+msgid "Die Notfallpause von Workflow Captain ist nicht aktiv."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:67
+msgid "Die Tabellen von Workflow Captain sind aktuell."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:212
+msgid "Die Testnachricht konnte nicht übergeben werden. Prüfen Sie den Mailversand der Website."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:75
+msgid "Die Version des Datenbankservers ließ sich nicht lesen."
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:126
+msgid "Dienstag"
+msgstr ""
+
+#: src/Notifications.php:87
+msgid "Diese Nachricht kommt einmal täglich, solange etwas offen ist. Abschalten unter Einstellungen → Benachrichtigungen."
+msgstr ""
+
+#: src/Notifications.php:96
+msgid "Diese Testnachricht zeigt, dass Hinweise von Workflow Captain ankommen. Sie enthält keine Daten von Ereignissen oder Läufen."
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:96
+msgid "Dieser Connector ist nicht angemeldet."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:121
+msgid "Dieser Knoten ist der Schritt aus dem Lauf. Der Lauf nutzte die veröffentlichte Version; der Entwurf kann abweichen."
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:128
+msgid "Donnerstag"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:474
+msgid "Duplizieren"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:30 src/Admin/ConnectorsPage.php:30 src/Admin/ConnectorsPage.php:93
+msgid "Eigene Connectoren"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:240
+msgid "Eigene Connectoren freigeben"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:650
+msgid "Eigene Daten gehen vor; ein Tag zählt von 00:00 bis 23:59 UTC."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:299
+msgid "Eigener Schlüssel für Geheimnisse"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:98
+msgid "Ein Connector ist ein eigenes Plugin, das ein Projekt an Workflow Captain anbindet. Er bleibt aus, bis Sie ihn hier freigeben. Bis dahin werden seine Ereignisse nicht gespeichert und seine Aktionen nicht angeboten. Personenbezogene Felder bleiben auch nach der Freigabe aus, bis Sie sie einzeln einschalten."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:167
+msgid "Ein Ende hat keinen Ausgang."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:420
+msgid "Ein Import wird immer ein Entwurf. Veröffentlicht wird erst nach Prüfung und Testlauf."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:107
+msgid "Ein Schritt, der länger überfällig ist (zum Beispiel weil WP-Cron nicht lief), wird nicht von selbst ausgeführt, sondern zur Entscheidung angezeigt."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:202
+msgid "Ein Testereignis für einen Workflow gibt es im Editor als „Testlauf“."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:71
+msgid "Ein eigener Schlüssel für Geheimnisse ist gesetzt."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:177
+msgid "Eine Gruppe fasst Regeln mit eigener Verknüpfung zusammen, z. B. „A und (B oder C)“. Eine Gruppe kann keine weitere Gruppe enthalten."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:155
+msgid "Eine Gruppe ist leer oder hat keine Verknüpfung."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:163
+msgid "Eine Regel braucht einen einzelnen Wert."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:159
+msgid "Eine Regel hat kein gültiges Feld."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:160
+msgid "Eine Regel hat keinen gültigen Operator."
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:75
+msgid "Eine Vorlage wird als Entwurf übernommen. Prüfen, Testlauf starten, dann veröffentlichen. Vorlagen nutzen nur die Aktionen der Version 1 und ersetzen keine Mail eines Kern-Plugins."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:678
+msgid "Eingetreten"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:59 src/Admin/SettingsPage.php:59 src/Admin/SettingsPage.php:76
+msgid "Einstellungen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:315
+msgid "Einstellungen geändert"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:239
+msgid "Einstellungen, Notfallpause, Diagnose"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:349
+msgid "Einzelheiten"
+msgstr ""
+
+#: src/Admin/EventsPage.php:166
+msgid "Empfangen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:188
+msgid "Empfänger"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:57
+msgid "Empfänger (site_admin oder Berechtigung)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:186
+msgid "Empfänger und Arten"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:114
+msgid "Ende"
+msgstr ""
+
+#: src/Admin/HelpPage.php:36
+msgid "Entscheidung: ein Lauf hält an, wenn unklar ist, ob eine Nachricht schon hinausging, oder wenn ein Schritt zu lange überfällig ist. Ein Mensch setzt fort oder bricht ab."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:814
+msgid "Entwurf"
+msgstr ""
+
+#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:145 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:676 src/Privacy/Privacy.php:77 src/Privacy/Privacy.php:99
+msgid "Ereignis"
+msgstr ""
+
+#. translators: %d: event number
+#: src/Admin/EventsPage.php:143
+msgid "Ereignis %d auswählen"
+msgstr ""
+
+#: src/Admin/HelpPage.php:34
+msgid "Ereignis: etwas, das in einem Plugin passiert ist, zum Beispiel „Bestellung bezahlt“. Ereignisse enthalten keine Namen, E-Mail-Adressen oder Codes."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:727
+msgid "Ereignisdaten (redigiert)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:733
+msgid "Ereignisdaten (redigiert) als JSON"
+msgstr ""
+
+#: src/Admin/EventsPage.php:32 src/Admin/EventsPage.php:32 src/Admin/EventsPage.php:84
+msgid "Ereignisse"
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:128
+msgid "Ereignisse der Captain-Produkte kommen über Adapter aus den Pro-Add-ons. Die Adapter für WordPress und WooCommerce (ab Version 11.2.2) sind eingebaut und brauchen keine Lizenz. Ohne Adapter werden offene Ereignisse pausiert, nicht gelöscht."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:564 src/Admin/WorkflowsPage.php:685
+msgid "Ereignisse mit dieser Korrelation"
+msgstr ""
+
+#: src/Notifications.php:76
+msgid "Ereignisse sind fehlgeschlagen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:104
+msgid "Ereignisse und Schritte je Worker-Durchlauf"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:320
+msgid "Ereignisse wieder eingereiht"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:103 src/Admin/ProvidersPage.php:133
+msgid "Ereignistypen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:826
+msgid "Erfolgreich"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:698
+msgid "Ergebnis"
+msgstr ""
+
+#. translators: %s: outcome code
+#: src/Admin/WorkflowsPage.php:448
+msgid "Ergebnis: %s"
+msgstr ""
+
+#. translators: 1: lowest, 2: highest, 3: default value
+#: src/Admin/SettingsPage.php:132
+msgid "Erlaubt: %1$d bis %2$d. Standard: %3$d."
+msgstr ""
+
+#: src/Admin/EventsPage.php:168 src/Admin/WorkflowsPage.php:804
+msgid "Erledigt"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:527
+msgid "Erledigt."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:111
+msgid "Erledigte Ereignisse löschen nach (Tagen)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:112
+msgid "Erledigte Läufe mit Schrittprotokoll löschen nach (Tagen)"
+msgstr ""
+
+#: src/Admin/EventsPage.php:149
+msgid "Erneut einreihen"
+msgstr ""
+
+#: src/Admin/HelpPage.php:27
+msgid "Erste Schritte"
+msgstr ""
+
+#: src/Admin/Pagination.php:54
+msgid "Erste Seite"
+msgstr ""
+
+#. translators: 1: number, 2: option name
+#: src/Admin/SettingsPage.php:359
+msgid "Es bleiben die letzten %1$d Einträge in der Option %2$s."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:70
+msgid "Es gibt fehlgeschlagene Ereignisse, hängende Schritte oder Läufe, die eine Entscheidung brauchen (Workflow Captain → Ereignisse und Läufe)."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:44
+msgid "Es gibt ungespeicherte Änderungen. Seite trotzdem verlassen?"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:414
+msgid "Exportieren"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:698
+msgid "Fehler"
+msgstr ""
+
+#. translators: %d: number of days
+#: src/Admin/WorkflowsPage.php:404
+msgid "Fehler (%d Tage)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:828
+msgid "Fehlgeschlagen"
+msgstr ""
+
+#: src/Admin/EventsPage.php:170
+msgid "Fehlgeschlagen (dead_letter)"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:45
+msgid "Fehlgeschlagene Ereignisse"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:181
+msgid "Fehlgeschlagene Ereignisse (Queue-Ausfall)"
+msgstr ""
+
+#: src/Admin/HelpPage.php:40
+msgid "Fehlgeschlagene Ereignisse lassen sich unter „Ereignisse“ auswählen und erneut einreihen."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:113
+msgid "Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:142
+msgid "Feld"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:143
+msgid "Feld (eigener Pfad, z. B. data.feld)"
+msgstr ""
+
+#: src/Admin/EventsPage.php:118 src/Admin/WorkflowsPage.php:566
+msgid "Filter entfernen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:646
+msgid "Filtern"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:470 src/Admin/WorkflowsPage.php:717
+msgid "Fortsetzen"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:103
+msgid "Freigabe"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:319
+msgid "Freigabe eines eigenen Connectors geändert"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:96
+msgid "Freigabe gespeichert."
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:129
+msgid "Freitag"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:162
+msgid "Für >, ≥, < und ≤ eine Zahl angeben."
+msgstr ""
+
+#: src/Admin/HelpPage.php:42
+msgid "Für den Support: „Ereignisse → Diagnose herunterladen“. Die Datei enthält keine persönlichen Daten und keine Geheimnisse."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:161
+msgid "Für „in Liste“ Werte mit Komma getrennt angeben."
+msgstr ""
+
+#. translators: %s: option name
+#: src/Admin/SettingsPage.php:308
+msgid "Gespeichert in der Option %s."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:386
+msgid "Gespeichert."
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:133
+msgid "Gespeicherte Ereignisse"
+msgstr ""
+
+#: src/Admin/EventsPage.php:133
+msgid "Gespeicherte Ereignisse, neueste zuerst"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:103 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:682
+msgid "Grund"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:173 src/Admin/WorkflowsPage.php:174
+msgid "Gruppe"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:176
+msgid "Gruppe entfernen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:156
+msgid "Gruppen sind zu tief verschachtelt: Eine Gruppe darf keine weitere Gruppe enthalten."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:115
+msgid "Herkunft"
+msgstr ""
+
+#: src/Admin/HelpPage.php:21 src/Admin/HelpPage.php:21 src/Admin/HelpPage.php:54
+msgid "Hilfe"
+msgstr ""
+
+#. translators: %d: number of running runs
+#: src/Admin/OverviewPage.php:131
+msgid "Hält sofort alle Schritte an. Betroffen: %d laufende Läufe. Überfällige Schritte brauchen danach eine Entscheidung."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:300
+msgid "Hängende Schritte (Sperrfrist über einen Tag abgelaufen)"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:46 src/Admin/SettingsPage.php:182
+msgid "Hängende Schritte und Läufe"
+msgstr ""
+
+#. translators: %d: maximum number of rules
+#: src/Admin/WorkflowsPage.php:179
+msgid "Höchstens %d Regeln je Bedingung, Gruppen eingeschlossen."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:111
+msgid "Höchstens 30 Tage; nur kürzer möglich."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:112
+msgid "Höchstens 30 Tage; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:113
+msgid "Höchstens 90 Tage; nur kürzer möglich. Die Fristen sind ein Vorschlag bis zur Rechtsprüfung."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:105
+msgid "Höchstens gleichzeitig laufende Schritte auf dieser Website"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:106
+msgid "Höchstens gleichzeitig laufende Schritte je Workflow"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:117
+msgid "ID"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:688
+msgid "Idempotenzschlüssel"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:708
+msgid "Im Editor zeigen"
+msgstr ""
+
+#: src/Admin/EventsPage.php:167
+msgid "In Arbeit"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:133
+msgid "Ja, alle Abläufe anhalten"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:172
+msgid "Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows."
+msgstr ""
+
+#: src/Plugin.php:439
+msgid "Jede Minute (Workflow Captain)"
+msgstr ""
+
+#: src/Admin/EventsPage.php:96
+msgid "Kein Adapter angemeldet. Ereignisse der Captain-Produkte kommen erst an, wenn ein Add-on einen Adapter anmeldet."
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:102
+msgid "Kein aktiver Workflow hört auf dieses Ereignis."
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:106
+msgid "Kein aktiver oder pausierter Workflow startet nach Zeitplan. Ein Entwurf zählt erst nach dem Veröffentlichen."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:77
+msgid "Kein eigener Schlüssel gesetzt; Geheimnisse hängen an den WordPress-Salts. Empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php."
+msgstr ""
+
+#: src/Admin/EventsPage.php:140
+msgid "Keine Ereignisse."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:578
+msgid "Keine Läufe."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:140
+msgid "Keine Termine: Der Zeitplan ist unvollständig."
+msgstr ""
+
+#: src/Admin/SiteHealth.php:69
+msgid "Keine fehlgeschlagenen Ereignisse oder Läufe, die eine Entscheidung brauchen."
+msgstr ""
+
+#. translators: %s: node ID
+#: src/Admin/WorkflowsPage.php:708
+msgid "Knoten %s im Editor zeigen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:119
+msgid "Knoten aus dem Lauf markiert:"
+msgstr ""
+
+#. translators: %s: comma separated action keys
+#: src/Admin/WorkflowsPage.php:441
+msgid "Knoten: trigger, condition, action, delay, end. Verfügbare Aktionen: %s. Platzhalter in Texten: {{type}}, {{occurred_at}}, {{subject.id}}, {{data.feld}}."
+msgstr ""
+
+#: src/Admin/HelpPage.php:44
+msgid "Kommandozeile"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:100
+msgid "Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:685
+msgid "Korrelation"
+msgstr ""
+
+#. translators: %s: correlation ID
+#: src/Admin/WorkflowsPage.php:555
+msgid "Korrelation %s"
+msgstr ""
+
+#. translators: 1: run number, 2: reason code
+#: src/Admin/OverviewPage.php:150
+msgid "Lauf %1$d – %2$s"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:507
+msgid "Lauf %1$d, %2$s"
+msgstr ""
+
+#. translators: 1: run number, 2: state
+#: src/Admin/WorkflowsPage.php:659
+msgid "Lauf %1$d: %2$s"
+msgstr ""
+
+#. translators: %d: run number
+#: src/Admin/WorkflowsPage.php:586 src/Admin/WorkflowsPage.php:759
+msgid "Lauf %d ansehen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:738
+msgid "Lauf abbrechen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:321
+msgid "Lauf abgebrochen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:660
+msgid "Lauf exportieren (JSON, redigiert)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:329
+msgid "Lauf exportiert"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:310
+msgid "Lauf nicht gefunden."
+msgstr ""
+
+#: src/Admin/HelpPage.php:35
+msgid "Lauf: eine Ausführung eines Workflows für ein Ereignis, mit Schritten."
+msgstr ""
+
+#: src/Admin/OverviewPage.php:43
+msgid "Laufende Läufe"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:108
+msgid "Laufzeit je Worker-Durchlauf in Sekunden"
+msgstr ""
+
+#: src/Admin/Pagination.php:60
+msgid "Letzte Seite"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:343 src/Admin/SettingsPage.php:349
+msgid "Letzte sicherheitsrelevante Änderungen"
+msgstr ""
+
+#: src/Admin/EventsPage.php:134
+msgid "Letzter Fehler"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:404
+msgid "Letzter Lauf (UTC)"
+msgstr ""
+
+#. translators: 1: run number, 2: state
+#: src/Admin/WorkflowsPage.php:507
+msgid "Letzter Lauf:"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:86 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:524
+msgid "Läufe"
+msgstr ""
+
+#: src/Notifications.php:74
+msgid "Läufe brauchen eine Entscheidung"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:182
+msgid "Läufe dieses Workflows"
+msgstr ""
+
+#: src/Admin/EventsPage.php:117 src/Admin/WorkflowsPage.php:685
+msgid "Läufe mit dieser Korrelation"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:301
+msgid "Läufe ohne offenen Schritt"
+msgstr ""
+
+#: src/Notifications.php:75
+msgid "Läufe sind pausiert"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:235
+msgid "Läufe und Ereignisse ansehen"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:51
+msgid "Läufe · 30 Tage"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:148 src/Admin/SettingsPage.php:179
+msgid "Läufe, die eine Entscheidung brauchen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:575
+msgid "Läufe, neueste zuerst"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:802 src/Admin/WorkflowsPage.php:825
+msgid "Läuft"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:77
+msgid "Manifest ungültig"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:59 src/Admin/WorkflowsPage.php:60
+msgid "Markierung"
+msgstr ""
+
+#: src/Engine/Actions/Tag.php:27
+msgid "Markierung entfernen"
+msgstr ""
+
+#: src/Engine/Actions/Tag.php:27
+msgid "Markierung setzen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:166
+msgid "Mehr als ein Ausgang."
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:127
+msgid "Mittwoch"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:125
+msgid "Montag"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:107
+msgid "Nachholgrenze in Stunden"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:57 src/Admin/WorkflowsPage.php:58
+msgid "Nachricht"
+msgstr ""
+
+#: src/Engine/Actions/NotifyUser.php:30
+msgid "Nachricht an Benutzer"
+msgstr ""
+
+#: src/Engine/Actions/NotifyAdmin.php:32
+msgid "Nachricht an Betreiber"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:103 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:437
+msgid "Name"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:818
+msgid "Netzwerk"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:376
+msgid "Neu"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:491
+msgid "Neu, noch nicht gespeichert"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:496
+msgid "Neuer Workflow"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:168
+msgid "Nicht mit dem Auslöser verbunden."
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:130
+msgid "Noch kein Adapter angemeldet und keine Ereignisse gespeichert."
+msgstr ""
+
+#: src/Admin/OverviewPage.php:111
+msgid "Noch kein Adapter angemeldet. Workflows für die Captain-Produkte lassen sich veröffentlichen, sobald ein Pro-Add-on seinen Adapter anmeldet."
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:100
+msgid "Noch kein Connector angemeldet."
+msgstr ""
+
+#: src/Admin/OverviewPage.php:141
+msgid "Noch kein Provider bekannt."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:346
+msgid "Noch keine Einträge."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:704
+msgid "Noch keine Schritte."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:407
+msgid "Noch keine Workflows."
+msgstr ""
+
+#: src/Admin/OverviewPage.php:123
+msgid "Notfallpause"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:134
+msgid "Notfallpause aktivieren"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:318
+msgid "Notfallpause aufgehoben"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:128
+msgid "Notfallpause aufheben"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:317
+msgid "Notfallpause eingeschaltet"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:61
+msgid "Notiz"
+msgstr ""
+
+#: src/Engine/Actions/Note.php:28
+msgid "Notiz hinzufügen"
+msgstr ""
+
+#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:575
+msgid "Nr."
+msgstr ""
+
+#. translators: %s: correlation ID
+#: src/Admin/EventsPage.php:116
+msgid "Nur Ereignisse mit der Korrelation %s."
+msgstr ""
+
+#. translators: %s: product key of a provider
+#: src/Admin/EventsPage.php:111
+msgid "Nur Ereignisse von %s."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:728
+msgid "Nur Felder aus dem Ereigniskatalog, ohne Benutzer, Adressen und Geheimnisse."
+msgstr ""
+
+#. translators: %s: active filters
+#: src/Admin/WorkflowsPage.php:562
+msgid "Nur Läufe mit: %s."
+msgstr ""
+
+#: src/Admin/Pagination.php:59
+msgid "Nächste Seite"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:139
+msgid "Nächste Termine (Zeitzone der Website):"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:103
+msgid "Nächster Termin"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:138
+msgid "Nächster Termin:"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:296
+msgid "Nächster Worker-Lauf (UTC)"
+msgstr ""
+
+#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:677 src/Privacy/Privacy.php:78 src/Privacy/Privacy.php:100
+msgid "Objekt"
+msgstr ""
+
+#: src/Engine/Workflows.php:87
+msgid "Ohne Namen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:468
+msgid "Pausieren"
+msgstr ""
+
+#: src/Admin/EventsPage.php:173 src/Admin/SchedulesPage.php:77 src/Admin/WorkflowsPage.php:806 src/Admin/WorkflowsPage.php:816 src/Admin/WorkflowsPage.php:830
+msgid "Pausiert"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:180
+msgid "Pausierte Läufe"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:132
+msgid "Personenbezogene Felder weitergeben:"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:297
+msgid "Planung des Workers"
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:133
+msgid "Plugin / Vertrag"
+msgstr ""
+
+#: src/Security/SafeHttp.php:106
+msgid "Private Adresse oder interner Name: Die Verbindung braucht eine Ausnahme für genau diesen Host und Port. Der Test läuft vom WordPress-Server aus; Firewall, Docker-Netz oder Reverse Proxy müssen ihn durchlassen."
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:133
+msgid "Produkt"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:89 src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:29 src/Admin/ProvidersPage.php:123 src/Admin/TemplatesPage.php:76
+msgid "Provider"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:153
+msgid "Provider nicht verfügbar: kein angemeldeter Adapter liefert dieses Ereignis."
+msgstr ""
+
+#: src/Notifications.php:78
+msgid "Provider wurden abgelehnt (zum Beispiel unpassende Vertragsversion)"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:89 src/Admin/OverviewPage.php:139
+msgid "Providerstatus"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:466 src/Admin/WorkflowsPage.php:512
+msgid "Prüfen und veröffentlichen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:316
+msgid "Rechte der Rollen geändert"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:175
+msgid "Regel in Gruppe"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:135
+msgid "Regelgruppen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:244
+msgid "Rolle"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:72
+msgid "Rollen & Rechte"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:130
+msgid "Samstag"
+msgstr ""
+
+#: src/Admin/EventsPage.php:172
+msgid "Schleife gestoppt"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:103
+msgid "Schlüssel"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:81
+msgid "Schlüssel doppelt angemeldet"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:698
+msgid "Schritt"
+msgstr ""
+
+#. translators: %s: node ID of the step
+#: src/Admin/WorkflowsPage.php:717
+msgid "Schritt %s fortsetzen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:322
+msgid "Schritt fortgesetzt"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:697
+msgid "Schritte des Laufs in ihrer Reihenfolge, Zeiten in UTC"
+msgstr ""
+
+#: src/Notifications.php:77
+msgid "Schritte oder Läufe hängen"
+msgstr ""
+
+#: src/Admin/EventsPage.php:154
+msgid "Seiten der Ereignisliste"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:589
+msgid "Seiten der Laufliste"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:417
+msgid "Seiten der Workflow-Liste"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:169
+msgid "So läuft die Ausführung"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:131
+msgid "Sonntag"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:138
+msgid "Speichern"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:223
+msgid "Speicherung"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:153
+msgid "Standardwerte dieses Tabs"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:103 src/Admin/SettingsPage.php:73
+msgid "Status"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:356
+msgid "System/WP-CLI"
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:145
+msgid "Testereignis"
+msgstr ""
+
+#. translators: %s: event type
+#: src/Admin/ProvidersPage.php:100
+msgid "Testereignis %s mit Beispielwerten, als Testlauf ohne Seiteneffekte:"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:510
+msgid "Testlauf"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:444
+msgid "Testlauf mit Beispieldaten (ohne Seiteneffekte)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:446
+msgid "Testlauf starten"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:202
+msgid "Testnachricht senden"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:212
+msgid "Testnachricht übergeben. Kommt sie nicht an, prüfen Sie den Mailversand der Website."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:100
+msgid "Tägliche Hinweis-Mail an die Betreiber-Adresse"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:172
+msgid "Verknüpfung in der Gruppe"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:103 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:674
+msgid "Version"
+msgstr ""
+
+#. translators: %d: version number
+#: src/Admin/SchedulesPage.php:79
+msgid "Version %d"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:493
+msgid "Version %d veröffentlicht"
+msgstr ""
+
+#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:698
+msgid "Versuche"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:116
+msgid "Vertrag"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:103
+msgid "Vertragsversion"
+msgstr ""
+
+#: src/Admin/EventsPage.php:171
+msgid "Verworfen"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:383
+msgid "Veröffentlicht. Neue Läufe nutzen diese Version; laufende behalten ihre."
+msgstr ""
+
+#: src/Admin/EventsPage.php:131
+msgid "Vorher prüfen, ob die Ursache (Adapter, Lizenz, Provider) behoben ist."
+msgstr ""
+
+#: src/Admin/Pagination.php:55
+msgid "Vorherige Seite"
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:76
+msgid "Vorlage"
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:28 src/Admin/TemplatesPage.php:28 src/Admin/TemplatesPage.php:74
+msgid "Vorlagen"
+msgstr ""
+
+#. translators: %s: list of waiting times
+#: src/Admin/SettingsPage.php:171
+msgid "Vorübergehende Fehler werden nach festem Plan wiederholt: %s. Danach wird ein Ereignis als fehlgeschlagen angezeigt; ein Schritt braucht eine Entscheidung. Nachrichten werden nach einem unklaren Ausgang nie von selbst wiederholt."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:297
+msgid "WP-Cron"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:298
+msgid "WP-Cron abgeschaltet"
+msgstr ""
+
+#: src/Admin/SiteHealth.php:66
+msgid "WP-Cron ist abgeschaltet. Ein System-Cron muss wp-cron.php oder wp workflow-captain process jede Minute aufrufen."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:152
+msgid "Warnung"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:113
+msgid "Warten"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:738
+msgid "Wartende Schritte laufen nicht mehr; Erledigtes wird nicht rückgängig gemacht."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:801
+msgid "Wartet"
+msgstr ""
+
+#: src/Admin/EventsPage.php:169 src/Admin/WorkflowsPage.php:803
+msgid "Wartet auf Wiederholung"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:698
+msgid "Wartet bis (UTC)"
+msgstr ""
+
+#: src/Admin/HelpPage.php:38
+msgid "Wenn etwas hängt"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:112
+msgid "Wenn/Sonst"
+msgstr ""
+
+#: src/Admin/HelpPage.php:39
+msgid "Werkzeuge → Website-Zustand zeigt, ob der Worker läuft. Einstellungen → Status zeigt den nächsten Lauf und hängende Schritte."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:476
+msgid "Wiederherstellen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:238
+msgid "Wiederholen, fortsetzen, abbrechen"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:47
+msgid "Worker"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:672
+msgid "Workflow"
+msgstr ""
+
+#. translators: 1: workflow number, 2: outcome code, 3: number of steps
+#: src/Admin/ProvidersPage.php:108
+msgid "Workflow %1$d: %2$s nach %3$d Schritten"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:27 src/Admin/OverviewPage.php:109 src/Admin/SiteHealth.php:27 src/Admin/SiteHealth.php:82 src/Admin/SiteHealth.php:99 src/Requirements.php:128
+msgid "Workflow Captain"
+msgstr ""
+
+#. translators: 1: minimum PHP version, 2: minimum WordPress version, 3: PHP version of this site, 4: WordPress version of this site
+#: src/Requirements.php:103
+msgid "Workflow Captain braucht PHP %1$s und WordPress %2$s oder neuer; diese Website nutzt PHP %3$s und WordPress %4$s. Das Plugin bleibt inaktiv, gespeicherte Daten bleiben erhalten."
+msgstr ""
+
+#: src/Notifications.php:86
+msgid "Workflow Captain: Bitte prüfen"
+msgstr ""
+
+#: src/Plugin.php:67
+msgid "Workflow Captain: Die Datenbank stammt von einer neueren Version des Plugins. Ereignisse und Schritte werden nicht verarbeitet, bis die neuere Version wieder installiert ist. Es wurde nichts gelöscht."
+msgstr ""
+
+#: src/Plugin.php:57
+msgid "Workflow Captain: Die Notfallpause ist aktiv. Ereignisse werden gespeichert, aber kein Schritt wird ausgeführt."
+msgstr ""
+
+#: src/Privacy/Privacy.php:87
+msgid "Workflow Captain: Ereignisse"
+msgstr ""
+
+#: src/Privacy/Privacy.php:96
+msgid "Workflow Captain: Läufe"
+msgstr ""
+
+#. translators: %s: site name
+#: src/Notifications.php:95
+msgid "Workflow Captain: Testnachricht von %s"
+msgstr ""
+
+#: src/Privacy/Privacy.php:52 src/Privacy/Privacy.php:60
+msgid "Workflow Captain: gespeicherte Ereignisse"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:478
+msgid "Workflow archivieren? Er startet keine neuen Läufe mehr; Läufe und Protokolle bleiben erhalten."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:324
+msgid "Workflow archiviert"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:327
+msgid "Workflow fortgesetzt"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:418
+msgid "Workflow importieren"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:291
+msgid "Workflow nicht gefunden."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:326
+msgid "Workflow pausiert"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:323
+msgid "Workflow veröffentlicht"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:325
+msgid "Workflow wiederhergestellt"
+msgstr ""
+
+#. translators: %s: workflow name or number
+#: src/Admin/WorkflowsPage.php:559
+msgid "Workflow „%s“"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:420
+msgid "Workflow-Datei (JSON)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:44 src/Admin/WorkflowsPage.php:44 src/Admin/WorkflowsPage.php:375
+msgid "Workflows"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:236
+msgid "Workflows entwerfen"
+msgstr ""
+
+#. translators: %s: time zone of the site
+#: src/Admin/SchedulesPage.php:102
+msgid "Workflows mit dem Auslöser „Zeitplan“, nach Name. Alle Zeiten in der Zeitzone der Website (%s). Ein verpasster Termin wird höchstens einmal nachgeholt."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:237
+msgid "Workflows veröffentlichen und pausieren"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:404
+msgid "Workflows, neueste zuerst"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:349
+msgid "Zeit (UTC)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:696
+msgid "Zeitleiste der Schritte"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:103
+msgid "Zeitplan"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:141
+msgid "Zeitplan (Zeitzone der Website)"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:100
+msgid "Zeitpläne"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:103
+msgid "Zeitpläne der Workflows"
+msgstr ""
+
+#: src/Admin/EventsPage.php:134 src/Privacy/Privacy.php:79
+msgid "Zeitpunkt (UTC)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:637
+msgid "Zeitraum"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:648
+msgid "Zeitraum entfernen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:221
+msgid "Zeitzone"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:293
+msgid "Zeitzone der Website"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:229
+msgid "Zeitzone und Datumsformat in WordPress ändern"
+msgstr ""
+
+#. translators: %d: maximum number of rules
+#: src/Admin/WorkflowsPage.php:158
+msgid "Zu viele Regeln (höchstens %d)."
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:103
+msgid "Zuletzt ausgelöst"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:180
+msgid "Zuletzt ausgelöst:"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:181
+msgid "Zuletzt ausgelöst: noch nie."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:680
+msgid "Zuletzt geändert (UTC)"
+msgstr ""
+
+#: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:698 src/Privacy/Privacy.php:80 src/Privacy/Privacy.php:101
+msgid "Zustand"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:303
+msgid "Zustand der Installation"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:295
+msgid "abgebrochen – wird beim nächsten Aufruf im Admin, per Cron oder WP-CLI wiederholt"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:76 src/Admin/OverviewPage.php:68 src/Admin/ProvidersPage.php:120
+msgid "abgelehnt"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:671
+msgid "alle Läufe dieses Workflows"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:170
+msgid "alle Regeln (UND)"
+msgstr ""
+
+#. translators: %d: day of the month
+#: src/Admin/SchedulesPage.php:44
+msgid "am %d."
+msgstr ""
+
+#: src/Admin/OverviewPage.php:67 src/Admin/ProvidersPage.php:119
+msgid "angemeldet"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:221 src/Admin/SettingsPage.php:222
+msgid "aus Einstellungen → Allgemein von WordPress"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:118
+msgid "aus dem Lauf"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:645
+msgid "bis (UTC)"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:78
+msgid "braucht eine neuere Version von Workflow Captain"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:80
+msgid "die Laufzeit für eigene Connectoren ist auf dieser Website nicht freigeschaltet (Workflow Captain Pro)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:171
+msgid "eine Regel (ODER)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:137
+msgid "fehlt"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:74
+msgid "freigegeben"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:79
+msgid "für eine andere Hauptversion von Workflow Captain gebaut"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:637
+msgid "gesamt"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:299
+msgid "gesetzt"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:298
+msgid "ja – System-Cron nötig: wp workflow-captain process"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:134
+msgid "je Benutzer nacheinander"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:133
+msgid "je Objekt nacheinander"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:69
+msgid "kein Adapter"
+msgstr ""
+
+#: src/Admin/ProvidersPage.php:121
+msgid "kein Adapter (Add-on fehlt, inaktiv oder ohne Lizenz)"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:57 src/Admin/WorkflowsPage.php:794
+msgid "keine Angabe"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:295
+msgid "keine offen"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:83
+msgid "keiner (pausiert)"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:640
+msgid "letzte %d Tage"
+msgstr ""
+
+#. translators: %d: number of days
+#: src/Admin/WorkflowsPage.php:640
+msgid "letzte 24 Stunden"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:47
+msgid "läuft"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:295
+msgid "läuft gerade"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:35 src/Admin/WorkflowsPage.php:124
+msgid "monatlich"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:298
+msgid "nein"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:75
+msgid "nicht freigegeben"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:296
+msgid "nicht geplant"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:299
+msgid "nicht gesetzt – empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php"
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:79
+msgid "nicht verfügbar – Entwurf möglich, Veröffentlichen erst mit Provider"
+msgstr ""
+
+#. translators: %d: version number
+#: src/Admin/WorkflowsPage.php:493
+msgid "noch nicht veröffentlicht"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:644
+msgid "oder von (UTC)"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:47
+msgid "prüfen"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:33 src/Admin/WorkflowsPage.php:122
+msgid "täglich"
+msgstr ""
+
+#: src/Admin/TemplatesPage.php:79
+msgid "verfügbar"
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:136
+msgid "vorhanden"
+msgstr ""
+
+#: src/Admin/ConnectorsPage.php:82
+msgid "wartet auf Freigabe"
+msgstr ""
+
+#: src/Admin/SchedulesPage.php:34 src/Admin/WorkflowsPage.php:123
+msgid "wöchentlich"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:349
+msgid "Änderung"
+msgstr ""
+
+#: src/Admin/OverviewPage.php:28 src/Admin/OverviewPage.php:28
+msgid "Übersicht"
+msgstr ""
+
+#: src/Security/SafeHttp.php:102
+msgid "„localhost“ ist der WordPress-Server selbst, nicht Ihr Rechner. Läuft n8n in einem anderen Container oder auf einem anderen Gerät, dessen Namen oder Adresse im Netz eintragen (zum Beispiel den Docker-Dienstnamen)."
+msgstr ""
+
+#: src/Admin/WorkflowsPage.php:132
+msgctxt "monthly schedule: on day N"
+msgid "am"
+msgstr ""

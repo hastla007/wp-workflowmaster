@@ -1,0 +1,33 @@
+{
+  "id": "3531996c-61d8-48bc-a213-f9062029a0b4",
+  "type": "pass.order.paid",
+  "spec_version": "1.0",
+  "source": {
+    "product": "pass-captain",
+    "core_version": "1.5.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T08:00:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "f1584b995a4770986ad75bb8d29e9734",
+    "id_kind": "public"
+  },
+  "data": {
+    "status": "paid",
+    "payment_status": "paid",
+    "payment_provider": "stripe",
+    "currency": "EUR",
+    "total_minor": 4800,
+    "refunded_minor": 0,
+    "ticket_count": 2,
+    "customer_user_id": 512
+  },
+  "idempotency_key": "35773f3ee5f5f41e2ce78be08878aa5d46a3eab0b06f2937000fdacd8d91015a",
+  "correlation_id": "3531996c-61d8-48bc-a213-f9062029a0b4",
+  "causation_id": null,
+  "chain_depth": 0
+}

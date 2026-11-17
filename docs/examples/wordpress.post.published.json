@@ -1,0 +1,29 @@
+{
+  "id": "f8e5bf13-b10f-4f06-aadc-f6070a420f4d",
+  "type": "wordpress.post.published",
+  "spec_version": "1.0",
+  "source": {
+    "product": "wordpress",
+    "core_version": "6.6.2",
+    "contract_version": "6.6.2"
+  },
+  "occurred_at": "2026-11-16T18:02:11Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "post",
+    "id": "1201",
+    "id_kind": "record"
+  },
+  "actor_user_id": 3,
+  "data": {
+    "post_type": "post",
+    "author_user_id": 3,
+    "previous_status": "draft"
+  },
+  "idempotency_key": "f681b3431e2c5f18b27992702c61e7c224beeaf4fa3f62614ada1225f956b4ce",
+  "correlation_id": "f8e5bf13-b10f-4f06-aadc-f6070a420f4d",
+  "causation_id": null,
+  "chain_depth": 0
+}

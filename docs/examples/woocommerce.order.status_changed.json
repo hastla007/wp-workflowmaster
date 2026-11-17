@@ -1,0 +1,30 @@
+{
+  "id": "d71d9b26-cf35-4a96-ab6f-1044421528c2",
+  "type": "woocommerce.order.status_changed",
+  "spec_version": "1.0",
+  "source": {
+    "product": "woocommerce",
+    "core_version": "8.9.3",
+    "contract_version": "8.9.3"
+  },
+  "occurred_at": "2026-11-16T18:02:11Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "order",
+    "id": "5123",
+    "id_kind": "record"
+  },
+  "actor_user_id": 3,
+  "data": {
+    "from_status": "processing",
+    "to_status": "completed",
+    "currency": "EUR",
+    "total_minor": 4990
+  },
+  "idempotency_key": "555b600850948ebbd57303316ed21b4b250240124901298b4290c22787eb3a16",
+  "correlation_id": "d71d9b26-cf35-4a96-ab6f-1044421528c2",
+  "causation_id": null,
+  "chain_depth": 0
+}

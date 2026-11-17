@@ -1,0 +1,77 @@
+{
+  "format": "workflow-captain/workflow",
+  "format_version": 1,
+  "name": "Provision freigegeben: nach einem Tag Hinweis an Partnerverwaltung",
+  "graph": {
+    "nodes": [
+      {
+        "id": "start",
+        "type": "trigger",
+        "event": "affiliate.commission.approved"
+      },
+      {
+        "id": "betrag",
+        "type": "condition",
+        "rules": {
+          "op": "and",
+          "items": [
+            {
+              "field": "data.amount_minor",
+              "operator": "gte",
+              "value": 10000
+            }
+          ]
+        },
+        "missing": "false"
+      },
+      {
+        "id": "warten",
+        "type": "delay",
+        "unit": "days",
+        "amount": 1
+      },
+      {
+        "id": "mail",
+        "type": "action",
+        "action": "notify.admin",
+        "config": {
+          "subject": "Große Provision freigegeben",
+          "message": "Provision {{subject.id}} über {{data.amount_minor}} {{data.currency}} ist seit einem Tag freigegeben.",
+          "to": "manage_options"
+        }
+      },
+      {
+        "id": "ende",
+        "type": "end"
+      },
+      {
+        "id": "ende_klein",
+        "type": "end"
+      }
+    ],
+    "edges": [
+      {
+        "from": "start",
+        "to": "betrag"
+      },
+      {
+        "from": "betrag",
+        "to": "warten",
+        "branch": "then"
+      },
+      {
+        "from": "betrag",
+        "to": "ende_klein",
+        "branch": "else"
+      },
+      {
+        "from": "warten",
+        "to": "mail"
+      },
+      {
+        "from": "mail",
+        "to": "ende"
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "id": "5c684f69-bdf1-4b6e-be83-8e660763b7f7",
+  "type": "affiliate.code_request.rejected",
+  "spec_version": "1.0",
+  "source": {
+    "product": "affiliate-captain",
+    "core_version": "0.15.0",
+    "contract_version": "1.4.0"
+  },
+  "occurred_at": "2026-11-16T14:20:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "code_request",
+    "id": "61",
+    "id_kind": "record"
+  },
+  "data": {
+    "affiliate_id": 57,
+    "request_id": 61
+  },
+  "idempotency_key": "5d11c88a8dd8a9d61e5da5a83e5f99edd563110f9a90c23a702330ab6fb181dc",
+  "correlation_id": "5c684f69-bdf1-4b6e-be83-8e660763b7f7",
+  "causation_id": null,
+  "chain_depth": 0
+}

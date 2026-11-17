@@ -1,0 +1,26 @@
+{
+  "id": "4428c954-5618-4c71-bd69-f8665b0f35e3",
+  "type": "voucher.voucher.bounced",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.2.0",
+    "contract_version": "1.1.0"
+  },
+  "occurred_at": "2026-11-16T10:45:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "voucher",
+    "id": "4824",
+    "id_kind": "record"
+  },
+  "data": {
+    "role": "recipient"
+  },
+  "idempotency_key": "40ffde334f173b36c15d556113f8ffdac2971cc905b568af2a4f9c1a11db1e38",
+  "correlation_id": "4428c954-5618-4c71-bd69-f8665b0f35e3",
+  "causation_id": null,
+  "chain_depth": 0
+}

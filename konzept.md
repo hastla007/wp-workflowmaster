@@ -15,6 +15,8 @@
 
 > Dieses Dokument ist die Produkt- und Umsetzungsgrundlage. Es beschreibt geplante Verträge und Funktionen, keine bereits vorhandenen Hooks, API-Rechte oder getestete Kompatibilität. Vor Releases sind Plattform-, Datenschutz-, Sicherheits- und Lizenzbedingungen erneut zu prüfen.
 
+
+> **Stand der Umsetzung (16.11.2026):** Abweichend von D12 wird seit dem 16.11.2026 gebaut. Plugin `workflow-captain` 0.2.x enthält den Consumer nach `docs/SPEC-suite-events.md` und die Workflow-Engine: Workflows mit unveränderlichen Versionen, Bedingungen, Wartezeiten, Läufe und Schritte mit sicherer Wiederholung, die Aktionen der Version 1 (Nachrichten, Markierungen, Notizen), einen visuellen Builder (erste Fassung), Testlauf, Datenschutz, Einstellungen, Diagnose, WP-CLI und Website-Zustand. Seit den Entscheidungen F-07, F-20 und F-22 außerdem: Auslöser aus WordPress und WooCommerce im kostenlosen Kern, eigene Connectoren mit Manifest und Freigabe, wiederkehrende Zeitpläne, Vertragsversion je Provider im Lauf, Bausteine für ausgehende und eingehende Anfragen (`SafeHttp`, `InboundGuard`). In Arbeit in `captain-pro` (Branch `claude/plugin-todo-liste-2a83v4`): Add-on `workflow-captain-pro` mit den Suite-Adaptern; danach Webhooks, n8n und netzwerkweite Abläufe. Gutschein-Befehle warten auf VC-1. Wo der Code eine Festlegung dieses Konzepts anders löst, steht es unten mit „Umsetzung“ vermerkt. Tests und offene Fälle: `docs/TESTMATRIX.md`.
 ## Lizenzmodell und Produktabgrenzung
 
 WP License Captain (License Captain Server) ist ein eigenständiges, separat verkauftes Server-Plugin und kein Bestandteil von Workflow Captain Pro. Workflow Captain Pro enthält nur die Client-Komponente, die wir zur Prüfung der eigenen PRO-Lizenzen an unserem Lizenzserver verwenden. Diese interne Lizenzierungsinfrastruktur hat für den Kunden keinen eigenständigen Produktnutzen und wird vor dem Kauf nicht als PRO-Leistung kommuniziert. Käufer benötigen keinen eigenen License Captain Server, um Workflow Captain Pro zu nutzen.
@@ -164,12 +166,12 @@ V1 enthält damit ein SDK/Provider-Contract, Beispiel-Connector, lokale Projekta
 
 1. Der Fachplugin-Hook erzeugt ein kompaktes Event und übergibt es an die Registry.
 2. Workflow Captain findet aktive Rezeptversionen, prüft Trigger, Bedingungen und Berechtigungen.
-3. Sofortige Läufe werden synchron nur für kurze, risikoarme Aktionen ausgeführt; E-Mail, HTTP, Verzögerung und längere Folgeketten gehen in eine Queue.
+3. Sofortige Läufe werden synchron nur für kurze, risikoarme Aktionen ausgeführt; E-Mail, HTTP, Verzögerung und längere Folgeketten gehen in eine Queue. *[Umsetzung 0.2: Alles läuft über die Warteschlange, auch kurze Aktionen; der Adapter-Callback schreibt nur (Spezifikation R-7.6).]*
 4. Queue-Einträge werden atomar beansprucht, mit Lock/Lease und Idempotency-Key ausgeführt.
 5. Jede Aktion schreibt Status und Ergebnis-Metadaten; sensible Antworten/Token werden redigiert.
 6. Fehlerklassen bestimmen Retry: vorübergehend mit Backoff; endgültig sofort als fehlgeschlagen. Keine Endlosschleifen; maximale Versuche konfigurierbar.
 7. Manuelles Replay erzeugt eine neue Run-Instanz, behält aber ursprüngliches Event und Idempotenzkontrolle. „Aktion erneut ausführen“ zeigt mögliche externe Seiteneffekte.
-8. Action Scheduler wird verwendet, wenn WooCommerce verfügbar ist; sonst eigener WP-Cron-/Queue-Fallback mit dokumentierter System-Cron-Empfehlung.
+8. Action Scheduler wird verwendet, wenn WooCommerce verfügbar ist; sonst eigener WP-Cron-/Queue-Fallback mit dokumentierter System-Cron-Empfehlung. *[Umsetzung 0.2: eigene Warteschlange in den Tabellen von Workflow Captain; der Worker läuft jede Minute über Action Scheduler, wenn vorhanden, sonst über WP-Cron; `wp workflow-captain process` für System-Cron.]*
 9. Rezeptänderungen betreffen neue Läufe. Ein bereits gestarteter Run nutzt einen unveränderlichen Rezept-Snapshot.
 10. Rekursive Triggerketten werden über Korrelations-ID, Run-Ursprung und Loop-Grenze erkannt.
 
@@ -181,8 +183,9 @@ V1 enthält damit ein SDK/Provider-Contract, Beispiel-Connector, lokale Projekta
 - `wp_workflow_runs`: Status, Rezeptversions-ID, Event-Referenz, Start-/Endzeit, Korrelations-/Idempotency-Key.
 - `wp_workflow_steps`: Schrittstatus, Retry-Zähler, Fehlerklasse, redigierte Ausgabe.
 - `wp_workflow_queue`: fällige Arbeit, Lease, Versuche, nächste Ausführung.
+- *[Umsetzung 0.2: Die Tabellen heißen `{prefix}workflow_captain_events`, `_causes`, `_workflows`, `_versions`, `_runs`, `_steps`, `_tags`, `_notes`; die Warteschlange sind die Schritte selbst (Zustand, Fälligkeit, Sperrfrist). Schema: `src/Install.php`.]*
 - Tabellen haben eindeutige Schlüssel gegen Doppelausführung. Site-lokale Tabellen bleiben pro Blog getrennt. Netzwerkweite Flows nutzen getrennte Tabellen unter dem Netzwerk-Präfix: Registry/Versionen, opt-in Sites und Scopes, minimale Network-Inbox, Parent-Runs/Steps, Dispatch-Queue und Auditverweise. Netzwerktabellen speichern nur nötige Eventfelder, keine doppelten Vollobjekte; die Site-ID gehört in jeden Scope- und Idempotenzschlüssel.
-- Datenbank-Updates laufen kontrolliert im Admin, über WP-Cron oder WP-CLI und nicht bei jedem Frontend-Aufruf. Schemaänderungen werden versioniert.
+- Datenbank-Updates laufen kontrolliert im Admin, über WP-Cron oder WP-CLI und nicht bei jedem Frontend-Aufruf. Schemaänderungen werden versioniert. *[Umsetzung 0.2: so gebaut; bei einem neueren Schema (Downgrade) ändert das Plugin nichts und der Worker pausiert.]*
 
 ## 6. Integrationskatalog und priorisierte Ereignisse
 
@@ -220,13 +223,13 @@ Eigene Connector-Plugins können projektbezogene Trigger und Aktionen bereitstel
 ### Affiliate Captain
 
 **Mögliche Trigger:** Partnerbewerbung eingegangen, Partner freigegeben/abgelehnt/pausiert, Provision erstellt/freigegeben/abgelehnt, Auszahlung abgeschlossen (wenn offizieller Hook verfügbar).  
-**Mögliche Aktionen:** Admin-/Partnerbenachrichtigung; erlaubte Partnerstatusaktion nur über vorhandene Kern-API und eigene Capability. Keine eigene Provisionsberechnung, Auszahlung, Bankdatenbearbeitung oder Kopie von Partner-/Kundendaten.  
+**Mögliche Aktionen:** Admin-/Partnerbenachrichtigung; erlaubte Partnerstatusaktion nur über vorhandene Kern-API und eigene Capability. Keine eigene Provisionsberechnung, Auszahlung, Bankdatenbearbeitung oder Kopie von Partner-/Kundendaten. *[Überholt durch D11 (Spezifikation 8.1, 8.2): Ein Workflow ändert keinen Partnerstatus und bucht oder korrigiert keine Provision; erlaubt sind nur Benachrichtigungen, Markierungen und Notizen im Consumer und die vier Gutschein-Befehle.]*
 **Sicherheit:** Steuer-, IBAN-, Bewerbungs- und Kundendaten sind keine Workflow-Tokens. Provisionsereignisse bleiben idempotent und werden nicht durch parallele WooCommerce-/Voucher-Verkäufe doppelt erzeugt.
 
 ### Form Captain
 
 **Mögliche Trigger:** Formular abgeschickt, bestimmtes Formular/Antwort-/Feldbedingung erfüllt, Spam erkannt, Einreichung freigegeben/abgelehnt.  
-**Mögliche Aktionen:** Admin-Mail, interner Follow-up, Felder an erlaubte Suite-API übergeben, Einreichung markieren/archivieren. Formular besitzt Einsendungen; Workflow bekommt nur explizit freigegebene, datenschutzmarkierte Felder. Datenweitergabe an Dritte erfordert klare Betreiberkonfiguration und Einwilligungsprüfung.
+**Mögliche Aktionen:** Admin-Mail, interner Follow-up, Felder an erlaubte Suite-API übergeben, Einreichung markieren/archivieren. Formular besitzt Einsendungen; Workflow bekommt nur explizit freigegebene, datenschutzmarkierte Felder. Datenweitergabe an Dritte erfordert klare Betreiberkonfiguration und Einwilligungsprüfung. *[Überholt durch D11 (Spezifikation 8.1): Version 1 kennt keinen Befehl, der Formularwerte an einen Captain-Dienst übergibt oder einen Partner- bzw. Review-Eintrag anlegt; ein Gutschein entsteht nur über `voucher.issue` mit den Grenzen aus 8.3. Der Katalog `form.*` folgt in einer MINOR-Version (4.6).]*
 
 ### Review Captain (Folgephase)
 
@@ -248,7 +251,7 @@ Jede Vorlage muss Voraussetzungen, beteiligte Plugins, ausgelöste E-Mails/Daten
 
 ## 8. Admin-Navigation und Seiteninhalte
 
-Hauptmenü: **Workflow Captain**. Navigation wird nach verfügbaren Kernfunktionen aufgebaut. Lizenzseite kommt nur vom Pro-Add-on und wird analog zu bestehenden Add-ons unter das Kernmenü gehängt.
+Hauptmenü: **Workflow Captain**. Navigation wird nach verfügbaren Kernfunktionen aufgebaut. Lizenzseite kommt nur vom Pro-Add-on und wird analog zu bestehenden Add-ons unter das Kernmenü gehängt. *[Umsetzung 0.2: Übersicht, Workflows (mit Builder und Testlauf), Läufe, Ereignisse, Provider, Einstellungen. Vorlagen und Integrationen fehlen noch; Beispiel-Workflows liegen in `docs/recipes/`. Capabilities wie in Abschnitt 9: `manage_workflow_captain`, `edit_workflows`, `activate_workflows`, `view_workflow_logs`, `retry_workflow_runs`; `manage_workflow_integrations` kommt mit den Integrationen.]*
 
 ### 8.1 Übersicht / Dashboard
 
@@ -332,6 +335,18 @@ Setup, Beispiele, Tokenreferenz, Providerverfügbarkeit, Queue/Retry-Erklärung,
 - WooCommerce-Gastbestellungen werden als Auftragskontext behandelt, nicht in WP-Accounts umgewandelt. Marketing-E-Mails erfordern passenden Einwilligungs-/Kommunikationsstatus.
 - Kein Versand auf Basis positiver Reviews; kein Umgehen von Gutschein-/Affiliate-/Review-Richtlinien.
 - Admin kann eine Aktivierung jederzeit pausieren; Provider-/Lizenzfehler dürfen keinen fatalen Frontend-Fehler verursachen.
+
+### 9.1 Geheimnisse und Schlüsselverwaltung (WF-SEC-02, festgelegt am 16.11.2026)
+
+Workflow Captain speichert Geheimnisse (Webhook-Secrets, Tokens eingehender Verbindungen, Zugangsdaten für n8n und eigene Connectoren) nach demselben Muster wie Pass Captain (`wp-passmaster` `src/Security/Vault.php`, Branch `claude/sharp-mendel-xiiwf3`), damit die Suite ein Verfahren hat:
+
+- **Verfahren:** libsodium `secretbox` (authentifizierte Verschlüsselung). Jeder Eintrag wird für einen eigenen Kontext verschlüsselt (`connection:{blog_id}:{connection_id}:{feld}`); ein in eine andere Verbindung oder Website kopierter Geheimtext lässt sich nicht entschlüsseln.
+- **Schlüsselquelle:** Konstante `WORKFLOW_CAPTAIN_SECRET_KEY` in `wp-config.php` (empfohlen und im Admin als Empfehlung angezeigt), sonst die gleichnamige Umgebungsvariable; fehlt beides, ein aus den WordPress-Salts `AUTH_KEY` und `SECURE_AUTH_KEY` abgeleiteter Schlüssel. Ist weder libsodium noch ein Schlüssel verfügbar, speichert Workflow Captain keine Geheimnisse; Verbindungen, die eines brauchen, lassen sich dann nicht aktivieren.
+- **Rotation:** Neuer Wert in `WORKFLOW_CAPTAIN_SECRET_KEY`, alter in `WORKFLOW_CAPTAIN_SECRET_KEY_PREVIOUS`. Einträge, die nur mit dem alten Schlüssel lesbar sind, werden beim Lesen und per WP-CLI-Befehl neu verschlüsselt; der Admin zeigt, wie viele noch offen sind. Danach kann die alte Konstante entfernt werden.
+- **Schlüssel verloren oder Salts gewechselt ohne eigene Konstante:** Betroffene Einträge sind nicht mehr lesbar. Die Verbindung pausiert mit „Gespeicherter Wert kann nicht entschlüsselt werden“, der Wert muss neu eingegeben oder rotiert werden. Nichts wird still gelöscht; ein Lauf, der das Geheimnis braucht, pausiert mit Grund.
+- **Multisite:** Ein Schlüssel für das Netzwerk (Konstante gilt für alle Websites); die Trennung leistet der Kontext mit `blog_id`. Netzwerkweite Verbindungen (falls sie kommen, WF-MS) verwenden den Kontext `network:{connection_id}:{feld}`.
+- **Backup und Wiederherstellung:** Der Geheimtext liegt in der Datenbank, der Schlüssel in `wp-config.php`. Eine Wiederherstellung auf einem anderen Server braucht dieselbe Konstante (oder dieselben Salts); sonst gilt der Fall „Schlüssel verloren“. Das steht in der Hilfe zur Wiederherstellung.
+- **Klartext:** nur im Speicher des laufenden Requests, beim Aufruf der Aktion. Werte werden für den Rest des Requests im Redaktionsfilter registriert und nie in Logs, Laufprotokollen, Exporten, Fehlermeldungen, Diagnose oder Workflow-Snapshots ausgegeben (Snapshots verweisen nur auf die Verbindung, 15.3). Im Admin werden sie nach dem Speichern maskiert; neu sehen lässt sich ein Wert nur bei der Erzeugung (WF-CONNECTOR-08).
 
 ## 10. Qualität, Leistung und Kompatibilität
 
@@ -467,7 +482,7 @@ Mit Version 1 können Betreiber typische Geschäftsabläufe innerhalb von WordPr
 
 #### Workflow Captain Free 1.0
 
-- Coreplugin: WordPress 6.8+, PHP 8.3+; WooCommerce-Adapter optional ab WooCommerce 8.0. HPOS sowie Classic- und Blocks-Bestellungen werden unterstützt, sobald die Adapterversion dies deklariert.
+- Coreplugin: WordPress 7.0+, PHP 8.5+; WooCommerce-Adapter optional ab WooCommerce 11.2; MySQL 9.7+ oder MariaDB 12.3+ empfohlen (älterer Server nur Warnung). Entscheidung des Inhabers MINVER-1 vom 17.11.2026; vorher WordPress 6.8+, PHP 8.3+, WooCommerce 8.0. HPOS sowie Classic- und Blocks-Bestellungen werden unterstützt, sobald die Adapterversion dies deklariert.
 - Unbegrenzte Workflows und Ausführungen, ohne Task-Credits oder externen Account.
 - Mehrere alternative Start-Trigger, mehrere geordnete Actions pro Lauf, einfache AND/OR-Filter und Tokens aus dem jeweiligen Event-Schema.
 - Grundlegende Zeitplanung: „sofort“, „nach Dauer“ und „zu Zeitpunkt“ für Aktionen. Trigger sind vor allem WordPress-Core und WooCommerce.
@@ -530,10 +545,46 @@ Ein Workflow besteht aus einem Einstieg (ein Event oder alternative Events), Bed
 - Action Scheduler bei WooCommerce, ansonsten kompatible interne Queue mit WP-Cron-Fallback und klarer System-Cron-Diagnose.
 - Verzögerungen werden mit UTC-Zielzeit und Website-Zeitzone gespeichert. Sommerzeitumstellung und Änderung der Site-Zeitzone sind definiert: bestehende Jobs behalten den absoluten UTC-Zeitpunkt; Oberfläche zeigt den neu umgerechneten lokalen Wert.
 - Jeder Aktionstyp deklariert idempotent/nicht idempotent, retry-fähig/nicht retry-fähig und mögliche Seiteneffekte.
-- Standard: bis zu drei automatische Versuche mit exponentiellem Backoff bei temporären Fehlern; Validierungs-/Berechtigungsfehler werden nicht wiederholt.
+- Standard: bis zu drei automatische Versuche mit exponentiellem Backoff bei temporären Fehlern; Validierungs-/Berechtigungsfehler werden nicht wiederholt. *[Überholt durch die Spezifikation (D1): höchstens 8 Versuche mit den Abständen aus `docs/SPEC-suite-events.md` 7.4, für Schritte R-8.11.]*
 - Fehlgeschlagene Läufe landen in „Aktion erforderlich“. Betreiber können nach Einsicht in Step-Status, Event, Seiteneffektwarnung und Idempotency-Key wiederholen.
 - Abbrechen stoppt noch wartende Schritte. Bereits erfolgreich ausgeführte Aktionen werden nicht automatisch rückgängig gemacht.
 - Die Änderung oder Deaktivierung eines Workflows löscht keine laufenden Run-Datensätze. Der Betreiber entscheidet bei ausstehender Arbeit zwischen fortsetzen, abbrechen oder kontrolliert migrieren.
+
+**Ausführungsgarantie (WF-CORE-03, festgelegt am 16.11.2026)**
+- Workflow Captain garantiert „mindestens einmal“, nicht „genau einmal“. Ein gespeichertes Ereignis wird verarbeitet, bis es `done`, `dead_letter`, `discarded`, `loop_blocked` oder `paused` ist; ein Schritt kann nach einem Abbruch erneut anlaufen. Was vor dem Speichern verloren geht, ist nicht garantiert (Spezifikation R-7.2, F-14).
+- Jeder Schritt hat einen dauerhaften Idempotenzschlüssel aus Workflow, Version, Ereignis und Schritt (R-8.4) und eine Ergebnisbuchung im Lauf. Ein erneut anlaufender Schritt mit gebuchtem Ergebnis führt nichts aus und übernimmt das Ergebnis.
+- Drei Ausgänge werden unterschieden: **erfolgreich** (Ergebnis gebucht), **sicher fehlgeschlagen** (die Aktion hat nachweislich nichts bewirkt; Wiederholung nach R-8.11 erlaubt) und **unklar** (Abbruch oder Zeitüberschreitung nach Übergabe an die Aktion). Ein unklarer Ausgang wird bei idempotenten Aktionen mit demselben Schlüssel wiederholt; bei nicht idempotenten Aktionen (Mail, ausgehender Webhook ohne Deduplizierung beim Empfänger) nie automatisch, sondern als „Aktion erforderlich“ mit Seiteneffektwarnung angezeigt (R-8.12).
+- Jeder Aktionstyp deklariert in der Providerregistry, ob er idempotent ist (WF-INT-01). Fehlt die Angabe, gilt er als nicht idempotent.
+- Manuelles Replay nutzt denselben Idempotenzschlüssel. Ein Replay, das bewusst erneut wirken soll, ist ein neuer Lauf mit neuem Schlüssel und braucht eine eigene Bestätigung.
+
+**Zeitplansemantik (WF-CORE-04, festgelegt am 16.11.2026)**
+- **Speicherung:** Jede Wartezeit speichert die Zielzeit in UTC und zusätzlich, wie sie entstanden ist (Dauer oder lokaler Zeitpunkt mit Zeitzone der Website zum Planungszeitpunkt), damit die Oberfläche beides zeigen kann.
+- **„Nach Dauer“:** Minuten und Stunden sind absolute Dauern (UTC plus Dauer; eine Sommerzeitumstellung verlängert oder verkürzt nichts). Tage und Wochen sind Kalendertage in der Zeitzone der Website und behalten die lokale Uhrzeit (eine Erinnerung „1 Tag später“ um 10:00 bleibt 10:00).
+- **„Zu Zeitpunkt“ (lokal):** Fällt der Zeitpunkt in die Sommerzeitlücke, wird er um die Länge der Lücke nach hinten verschoben (02:30 wird 03:30, wenn die Uhr von 02:00 auf 03:00 springt; so rechnet auch PHP `DateTime`). Kommt er in der doppelten Stunde zweimal vor, gilt das erste Vorkommen.
+- **Zeitzonenwechsel der Website:** Bereits geplante Schritte behalten ihre UTC-Zielzeit; die Oberfläche rechnet die lokale Anzeige um (wie oben unter „Queue, Verzögerung und Wiederholung“).
+- **Nie zu früh:** Ein Schritt läuft nie vor seiner Zielzeit. Die Verspätung (Ist minus Ziel) wird je Schritt gespeichert und im Lauf angezeigt.
+- **Verpasste Zeitpunkte:** Fällt der Worker aus (WP-Cron ohne Besucher, Queue gestört), holt er überfällige Schritte nach Zielzeit geordnet und in Batches nach (Batchgröße aus den Einstellungen „Ausführung“). Ist ein Schritt mehr als die Nachholgrenze verspätet (Voreinstellung 24 Stunden, im Tab „Ausführung“ einstellbar), wird er nicht von selbst ausgeführt, sondern als „überfällig“ zur Entscheidung angezeigt: ausführen, überspringen oder Lauf abbrechen. Das Dashboard zeigt überfällige Schritte und den Cron-Zustand.
+- **Duplikate:** Feuert der Zeitgeber doppelt oder laufen zwei Worker, verhindert der Idempotenzschlüssel des Schritts zusammen mit der Sperre der Warteschlange eine doppelte Ausführung (WF-CORE-06).
+- **Terminänderung:** Eine Wartezeit, die sich auf ein Datum eines Objekts bezieht (zum Beispiel „1 Tag vor dem Termin“), wird beim Planen in eine feste Zielzeit umgerechnet und verschiebt sich nicht von selbst. Vor der Ausführung liest der Schritt das Objekt gegen (R-7.4); hat sich das Datum geändert oder ist der Termin abgesagt, wird der Schritt mit Grund übersprungen. Den neuen Zeitpunkt plant ein Workflow, der auf das Ereignis der Verschiebung reagiert (zum Beispiel `pass.occurrence.rescheduled`).
+- Ob Version 1 wiederkehrende Zeitplan-Auslöser (zum Beispiel „jeden Montag 8:00“) anbietet, ist nicht festgelegt; falls ja, gelten dieselben Regeln, und ein verpasster Termin wird höchstens einmal nachgeholt. *[Umsetzung 16.11.2026: gebaut als Auslöser `workflow.schedule.due` im kostenlosen Kern, Spezifikation 4.9.]*
+
+**Laufzeit-Snapshot (WF-CORE-02, festgelegt am 16.11.2026)**
+- Jeder Lauf speichert beim Start die Kennung der veröffentlichten Workflow-Version (unveränderlicher Graph mit Konfiguration), je verwendetem Provider die Vertragsversion, die beim Veröffentlichen geprüft wurde, und `authorized_by_user_id` (Spezifikation R-8.7). Spätere Änderungen am Workflow gelten nur für neue Läufe.
+- Der Snapshot enthält Verweise auf Zugangsdaten (Kennung der Verbindung), nie deren Wert. Wird eine Verbindung rotiert, nutzt ein laufender Lauf ab dem nächsten Schritt den neuen Wert; wird sie widerrufen, pausiert der Schritt mit Grund.
+- Vor jedem Schritt prüft die Engine, ob Provider und Aktion noch angemeldet sind und die MAJOR-Version des Vertrags passt. Wenn nicht, pausiert der Lauf mit Zustand „Provider fehlt“ oder „Vertrag inkompatibel“; er wird weder still übersprungen noch auf eine andere Aktion umgebogen. Der Betreiber entscheidet nach einer Vorschau: fortsetzen (wenn der Provider zurück ist), abbrechen oder auf eine neue Version migrieren (neuer Lauf ab dem betroffenen Schritt, mit neuem Idempotenzschlüssel und eigener Bestätigung).
+
+**Parallelität und Reihenfolge (WF-CORE-05, festgelegt am 16.11.2026)**
+- Grenzen mit Voreinstellung, im Tab „Ausführung“ einstellbar: höchstens 5 gleichzeitig laufende Schritte je Website, höchstens 2 je Workflow, Batchgröße 25 Schritte je Worker-Durchlauf und ein Zeitbudget von 20 Sekunden je Durchlauf. Die Zahlen sind Startwerte und werden mit den Messungen der Batchlimits (Abnahme) angepasst.
+- Fairness: Der Worker nimmt fällige Schritte nach Zielzeit, aber höchstens die Hälfte eines Batchs aus demselben Workflow, solange andere Workflows wartende Schritte haben.
+- Reihenfolge: Es gibt keine Reihenfolgegarantie über Objekte hinweg (Spezifikation 7.5). Ein Workflow kann die Serialisierung nach einem Schlüssel einschalten (Objekt, Bestellung oder Benutzer aus dem auslösenden Ereignis): Dann läuft je Schlüssel höchstens ein Lauf dieses Workflows gleichzeitig, die übrigen warten in Startreihenfolge. Ohne diese Einstellung zeigt der Editor keinen Hinweis, der eine Reihenfolge nahelegt.
+- Konflikte: Zwei Läufe, die denselben Gutschein-Befehl auf dasselbe Objekt geben, schützt die Idempotenz und Atomarität des Voucher-Kerns (R-8.3a, R-8.3b). Für Markierungen gilt „letzter Schreiber gewinnt“; Notizen werden nur angehängt.
+
+**Warteschlange: Beanspruchen, Sperrfrist und Abbruch (WF-CORE-06, festgelegt am 16.11.2026)**
+- Ein Worker beansprucht einen Schritt atomar (ein `UPDATE … WHERE state = 'queued' AND lease_until < now`, dessen Trefferzahl entscheidet) und setzt eine Sperrfrist von 5 Minuten mit eigener Worker-Kennung. Nur der Inhaber der Sperre darf das Ergebnis buchen.
+- Dauert ein Schritt länger, verlängert der Worker die Sperrfrist vor ihrem Ablauf (Heartbeat). Eine Aktion hat ein Zeitlimit (Voreinstellung 30 Sekunden für HTTP, sonst das der Aktion); danach gilt der Ausgang als „unklar“ (Ausführungsgarantie oben).
+- Läuft eine Sperrfrist ab, ohne dass ein Ergebnis gebucht ist (Prozessabbruch, Deployment, Speicherende), nimmt der nächste Worker den Schritt wieder auf. Vorher prüft er die Ergebnisbuchung des Idempotenzschlüssels: gebucht → übernehmen; „wird ausgeführt“ bei einer nicht idempotenten Aktion → „Aktion erforderlich“; sonst erneut ausführen.
+- Abbruch vor dem Seiteneffekt ist harmlos (Wiederholung). Abbruch nach dem Seiteneffekt und vor der Buchung ist der unklare Fall; ihn fangen der Idempotenzschlüssel beim Provider (Gutschein-Befehle) oder die Buchung „wird gesendet“ (Nachrichten, R-8.12) ab.
+- Eine Wartung erkennt Läufe, deren Schritte seit mehr als 24 Stunden in einer abgelaufenen Sperrfrist hängen, und zeigt sie im Dashboard als „hängt“. Sie setzt nichts von selbst zurück, was einen nicht idempotenten Seiteneffekt wiederholen könnte.
 
 **Rezeptversionierung**
 - Aktivieren veröffentlicht eine unveränderliche Version. Bearbeiten erzeugt Entwurf; „Änderungen veröffentlichen“ ist eigener Schritt.
@@ -584,7 +635,7 @@ Die folgende Liste ist verbindlicher Zielumfang. Die PHP-Eventnamen sind nicht a
 #### Form Captain
 
 **Trigger:** Formular eingereicht; bestimmte freigegebene Felder erfüllen Bedingung; Spam erkannt; Einsendung markiert/archiviert.  
-**Aktionen:** Admin-Benachrichtigung; Submission-Status markieren; Formularwerte an einen erlaubten Captain-Service übergeben; bei klarer Bestätigung einen Voucher- oder Partnerantrag über dessen Service erstellen.  
+**Aktionen:** Admin-Benachrichtigung; Submission-Status markieren; Formularwerte an einen erlaubten Captain-Service übergeben; bei klarer Bestätigung einen Voucher- oder Partnerantrag über dessen Service erstellen. *[Überholt durch D11 (Spezifikation 8.1): Version 1 kennt keinen Befehl, der Formularwerte an einen Captain-Dienst übergibt oder einen Partner- bzw. Review-Eintrag anlegt; ein Gutschein entsteht nur über `voucher.issue` mit den Grenzen aus 8.3. Der Katalog `form.*` folgt in einer MINOR-Version (4.6).]*
 **Schutz:** Auswahl konkreter Felder im Editor, Datenschutzkennzeichnung und Consent-Check. Keine komplette Einsendung ungeprüft per E-Mail/HTTP kopieren. Keine Zahlung oder Vertragsannahme ohne ausdrückliche Bestätigung im Formularflow.
 
 #### Review Captain
@@ -680,9 +731,9 @@ Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punk
 | Nutzungslimits | Keine Task-Credits oder monatlichen Run-Limits. Nur Lizenz-Site-Limits und technische Queue-Schutzgrenzen. |
 | Integrationsemantik | Mehrere Einstiegsereignisse starten grundsätzlich je einen eigenen Lauf; Warten auf zusammengehörige Ereignisse erfolgt nur über einen expliziten Pro-Korrelationsknoten. |
 | Ausführungsbasis | Lokal auf der WordPress-Seite; Action Scheduler bei WooCommerce, WP-Cron-Fallback mit System-Cron-Empfehlung |
-| Multisite | Site-lokale Flows bleiben getrennt; netzwerkweite Cross-Site-Flows sind Pro v1, nur innerhalb derselben WP-Multisite und mit expliziter Teilnahme-/Ziel-Site-Freigabe |
+| Multisite | Site-lokale Flows bleiben getrennt; netzwerkweite Cross-Site-Flows sind Pro v1, nur innerhalb derselben WP-Multisite und mit expliziter Teilnahme-/Ziel-Site-Freigabe *[Offen (F-07): Die Spezifikation nimmt bis zur Antwort des Inhabers an, dass Ereignisse ihre Website nicht verlassen und netzwerkweite Abläufe nicht Teil von Version 1 sind (Spezifikation Abschnitt 1, R-12.6).]* |
 | Multisite-Sitelimit | Jede eindeutige beteiligte Blog-ID (Quell- oder Ziel-Site) zählt gegen den Plan-Sitelimit; Netzwerkmodus braucht mindestens zwei lizenzierte Sites; Fan-out bleibt auf lizenzierte und freigegebene Sites begrenzt |
-| Kompatibilität | WordPress 6.8+, PHP 8.3+; WooCommerce 8.0+ optional für Shop-Provider. Jeder Suite-Adapter verlangt zusätzlich die im Providervertrag definierte Kernplugin-Mindestversion. |
+| Kompatibilität | WordPress 7.0+, PHP 8.5+ (MINVER-1, 17.11.2026); WooCommerce 11.2+ optional für Shop-Provider; MySQL 9.7+/MariaDB 12.3+ empfohlen. Jeder Suite-Adapter verlangt zusätzlich die im Providervertrag definierte Kernplugin-Mindestversion. |
 | Externe Systeme | v1 enthält versionierte Connector-SDK/Providerverträge für kundenspezifische WordPress-Projekte sowie Pro-Webhooks für externe Systeme. Keine breite Bibliothek fertiger Drittanbieter-Apps. |
 | KI | Nicht in Version 1; keine automatische Veränderung oder Aktivierung ohne Betreiberfreigabe |
 | Supportzeit | Support-Level folgen dem Captain-Plan. Keine Antwortzeitgarantie, bevor Supportbetrieb dafür ausgestattet ist. |
@@ -709,7 +760,7 @@ Diese Festlegung konkretisiert die Rollen von Workflow Captain und den Fachplugi
 ### 16.1 Produktrollen und Abhängigkeiten
 
 - Workflow Captain Core enthält Engine, Builder, Queue, WP-/WooCommerce-Provider, Laufprotokoll und Developer-Registry.
-- Workflow Captain Pro enthält Suite-Provider, kundenspezifische Connectoren, geschützte Webhooks und Pro-Steuerung. Der öffentliche Connector-Vertrag ist im Core dokumentiert; eigene Connector-Ausführung und externe Webhook-Verbindungen erfordern workflow.custom_connectors bzw. workflow.webhooks. Ein Adapter wird nur geladen, wenn sein Fachplugin aktiv ist und den erforderlichen Vertrag meldet. V1-Netzwerkflüsse verlangen zusätzlich die explizite Network-Site-Freigabe des jeweiligen Providers.
+- Workflow Captain Pro enthält Suite-Provider, kundenspezifische Connectoren, geschützte Webhooks und Pro-Steuerung. *[Berichtigt nach Entscheidung 17 vom 16.11.2026: Workflow Captain Pro enthält die Laufzeit für kundenspezifische Connectoren (öffentlicher Connector-Vertrag, SDK), aber keine Connectoren für BoatingSchool oder LearnBoating. Jeder dieser Connectoren ist ein eigenes, nicht verkauftes Projektprodukt im jeweiligen Projekt-Repository, mit eigenem Produktschlüssel, eigenem Präfix und eigener Lizenz; die Pro-Lizenz eines Captain-Produkts deckt ihn nicht ab (Abschnitte 17.10 und 17.11).]* Der öffentliche Connector-Vertrag ist im Core dokumentiert; eigene Connector-Ausführung und externe Webhook-Verbindungen erfordern workflow.custom_connectors bzw. workflow.webhooks. Ein Adapter wird nur geladen, wenn sein Fachplugin aktiv ist und den erforderlichen Vertrag meldet. V1-Netzwerkflüsse verlangen zusätzlich die explizite Network-Site-Freigabe des jeweiligen Providers.
 - Im Multisite-Netzwerkmodus ist Workflow Captain Core und Pro netzwerkaktiviert. Network-Control-Plane und Cross-Site-Koordination nutzen eigene Tabellen mit dem Netzwerk-Präfix; normale Site-Flows und deren Queue bleiben unter dem jeweiligen Site-Präfix getrennt. Site-lokale Suite-Plugins müssen nicht netzwerkaktiviert sein: Ziel-Actions werden als interne, persistente Site-Command-Aufgaben für die konkrete Ziel-Site eingeplant und dort durch den Site-Worker ausgeführt, sodass die dort aktiven Plugins tatsächlich geladen sind.
 - Jedes Fachplugin bleibt eigenständig lauffähig. Es darf Workflow Captain oder dessen Pro-Lizenz nicht benötigen, um Bestellungen, Gutscheine, Tickets, Provisionen, Formularantworten oder Reviews zu speichern und zu verwalten.
 - Fachplugins besitzen ihre Geschäftsobjekte und unverzichtbaren Zustandsübergänge. Workflow Captain koordiniert Abläufe, ersetzt aber kein System of Record.
@@ -769,6 +820,8 @@ Workflow-Aktionen laufen als typisierte Commands im Plugin, das die Daten besitz
 | Contract-Major ist inkompatibel | Provider schließt sicher; nur betroffene Runs pausieren mit Migrationshinweis. Andere Provider laufen weiter. |
 
 ### 16.5 Netzwerkweite Workflows in WordPress Multisite
+
+> **Offen (F-07):** Die Spezifikation (`docs/SPEC-suite-events.md`, Abschnitt 1, R-12.6) nimmt bis zur Antwort des Inhabers an, dass Ereignisse ihre Website nicht verlassen und netzwerkweite Abläufe nicht Teil von Version 1 sind; die Empfehlung ist, sie in eine spätere MINOR-Version zu verschieben. Dieser Abschnitt beschreibt den Plan für den Fall, dass sie kommen.
 
 **Geltungsbereich und Lizenz**
 
@@ -869,7 +922,7 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 
 **Auslöser:** validierte Einsendung gespeichert; Spamentscheidung; Eintrag geprüft, freigegeben, abgelehnt oder archiviert. Tokens stammen nur aus ausgewählten Feld-IDs und enthalten Consent-/Feldstatus.
 
-**Aktionen:** interne E-Mail/Folgeaufgabe; Submission markieren; nach menschlicher Freigabe Voucher, Affiliate-Pending oder Review-Entwurf über Zielservice anlegen. Keine Zahlung, Partnerfreigabe oder öffentliche Reviewveröffentlichung.
+**Aktionen:** interne E-Mail/Folgeaufgabe; Submission markieren; nach menschlicher Freigabe Voucher, Affiliate-Pending oder Review-Entwurf über Zielservice anlegen. Keine Zahlung, Partnerfreigabe oder öffentliche Reviewveröffentlichung. *[Überholt durch D11 (Spezifikation 8.1): Version 1 kennt keinen Befehl, der Formularwerte an einen Captain-Dienst übergibt oder einen Partner- bzw. Review-Eintrag anlegt; ein Gutschein entsteht nur über `voucher.issue` mit den Grenzen aus 8.3. Der Katalog `form.*` folgt in einer MINOR-Version (4.6).]*
 
 **Szenarien:** Firmenanfrage → Form speichert, Workflow informiert Vertrieb, nach Freigabe erstellt Voucher Service den Gutschein. Partnerformular → Affiliate-Pending. Feedbackformular → Review erhält ausdrücklich gemappte Felder zur Moderation, standardmäßig unverifiziert.
 
@@ -888,11 +941,13 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 | Kauf → Voucher → Einlösung → Review | Order paid beobachten; Voucher-Einlösung abwarten; Anfrage planen, bei Refund/Opt-out stoppen | Woo: Order; Voucher: Code/Saldo; Review: Anfrage |
 | Ticket → Einlass → Eventfeedback | Pass-Check-in; Verzögerung; Teilnehmerresolver; Review-Schedule; Absage/Refund unterdrücken | Pass: Ticket/Einlass; Review: Anfrage |
 | Event abgesagt | Teilnehmer informieren; offene Review-Anfrage stornieren; Refundstatus beobachten | Pass: Absage; Woo: Refund |
-| Formular → Freigabe → Gutschein/Partner | Interne Freigabe; Voucher ausstellen oder Affiliate-Pending erstellen | Form, Voucher bzw. Affiliate bleiben Besitzer |
+| Formular → Freigabe → Gutschein/Partner | Interne Freigabe; Voucher ausstellen oder Affiliate-Pending erstellen | Form, Voucher bzw. Affiliate bleiben Besitzer. *[Überholt durch D11: nur der Gutschein über `voucher.issue`; kein Affiliate-Pending.]* |
 | Refund → Affiliatekorrektur | Dedupe nach Refund-ID; Affiliate-Ergebnis verknüpfen; Hinweis senden | Affiliate: Verkaufs-/Refundquelle und Ledger |
 | License/payment status | Admin-/Kundenhinweis; keine Lizenzstatusänderung | WP License: Vertrag, Lizenz und Zahlung |
 
 ### 17.10 Kundenconnector 1: BoatingSchool B2B-Lernplattform (Laravel)
+
+> **Entscheidung 17 (16.11.2026):** Dieser Connector ist ein eigenes, nicht verkauftes Projektprodukt im Repository `hastla007/boatingschool`, nicht Teil von Workflow Captain oder Workflow Captain Pro. Er hat einen eigenen Produktschlüssel, ein eigenes Präfix und eine eigene Lizenz auf dem Lizenzserver des Inhabers, wird als eigenes Plugin installiert und prüft seine Lizenz selbst; die Pro-Lizenz eines Captain-Produkts deckt ihn nicht ab. Paket und Updates erhält nur dieser Kunde. Die folgende Beschreibung bleibt als Befund und Empfehlung für das Projekt stehen; Workflow Captain stellt dafür nur den öffentlichen Connector-Vertrag bereit (Abschnitt 16.1, `TODO.md` WF-CONNECTOR-01 bis -14). Ob die Connector-Laufzeit zusätzlich Workflow Captain Pro voraussetzt, ist offen (`docs/SPEC-open-questions.md`, F-01 und F-18).
 
 **Repository-Befund:** [BoatingSchool](https://github.com/hastla007/boatingschool) ist eine mandantenfähige Laravel-/PostgreSQL-Plattform. Jede Bootsschule ist ein Tenant; tenantgebundene Daten sind mit PostgreSQL Row-Level Security geschützt. Die Shop-Anbindung läuft bereits über einen eigenen [WooCommerce-Connector](https://github.com/hastla007/boatingschool/tree/main/integrations/woocommerce-connector) und die [Commerce-API v1](https://github.com/hastla007/boatingschool/blob/main/docs/commerce/README.md).
 
@@ -904,7 +959,7 @@ Auf jeder Site zeigt der lokale Workflow-Captain-Menüpunkt eine Netzwerk-Karte:
 | Gutscheincodes bleiben im Codebestand der Schule auf der Plattform. Antwort, E-Mail, Commerce-Log und Event dürfen keine Codewerte enthalten. | Connector-Payloads enthalten nur IDs/Status/Mengen, keine Couponwerte oder Zugangscodes. |
 | Die App hat eine App→Shop-Outbox für `tenant.provision`; Commerce-Vorgänge werden außerdem als `CommerceEvent` protokolliert. | Die bestehende Outbox ist auf Shopkonto-Provisionierung ausgerichtet und nicht der allgemeine Workflow-Eventversand. Dafür einen getrennten, dauerhaften Workflow-Outbox-Dispatcher nach erfolgreichem Commit ergänzen. |
 
-**Empfohlener Connector-Aufbau:** ein BoatingSchool-Workflow-Adapter auf der WordPress-/WooCommerce-Shopseite plus ein kleiner Publisher/Command-Adapter in der Laravel-App. Die Shopseite nutzt die vorhandene Workflow-Captain-Pro-Webhook-Verbindung; die App veröffentlicht nur freigegebene Events mit stabiler Event-ID. Der Adapter prüft Contract-Version und verbindet jeden Aufruf mit einer zugelassenen Tenant- oder Plattform-Scope. Zuerst bestehende, nach Commit protokollierte Ereignisse als Events verfügbar machen; neue Domainereignisse erst über dokumentierte Laravel-Services publizieren, nicht aus beliebigen Model-Hooks ableiten.
+**Empfohlener Connector-Aufbau:** ein BoatingSchool-Workflow-Adapter auf der WordPress-/WooCommerce-Shopseite plus ein kleiner Publisher/Command-Adapter in der Laravel-App. Die Shopseite nutzt die vorhandene Workflow-Captain-Pro-Webhook-Verbindung *[nach Entscheidung 17: als technischer Transport; lizenziert wird der Connector selbst]*; die App veröffentlicht nur freigegebene Events mit stabiler Event-ID. Der Adapter prüft Contract-Version und verbindet jeden Aufruf mit einer zugelassenen Tenant- oder Plattform-Scope. Zuerst bestehende, nach Commit protokollierte Ereignisse als Events verfügbar machen; neue Domainereignisse erst über dokumentierte Laravel-Services publizieren, nicht aus beliebigen Model-Hooks ableiten.
 
 **Sinnvolle Trigger und Aktionen**
 
@@ -930,6 +985,8 @@ flowchart TD
 ~~~
 
 ### 17.11 Kundenconnector 2: LearnBoating B2C-WP-Lernplattform
+
+> **Entscheidung 17 (16.11.2026):** Dieser Connector ist ein eigenes, nicht verkauftes Projektprodukt im Repository `hastla007/learnboating`, nicht Teil von Workflow Captain oder Workflow Captain Pro. Er hat einen eigenen Produktschlüssel, ein eigenes Präfix und eine eigene Lizenz auf dem Lizenzserver des Inhabers, wird als eigenes Plugin installiert und prüft seine Lizenz selbst; die Pro-Lizenz eines Captain-Produkts deckt ihn nicht ab. Paket und Updates erhält nur dieser Kunde. Die folgende Beschreibung bleibt als Befund und Empfehlung für das Projekt stehen; Workflow Captain stellt dafür nur den öffentlichen Connector-Vertrag bereit (Abschnitt 16.1, `TODO.md` WF-CONNECTOR-01 bis -14). Ob die Connector-Laufzeit zusätzlich Workflow Captain Pro voraussetzt, ist offen (`docs/SPEC-open-questions.md`, F-01 und F-18).
 
 **Repository-Befund:** [LearnBoating](https://github.com/hastla007/learnboating) ist ein WordPress-/WooCommerce-Plugin für Lernzugänge zu Bootsführerscheinkursen. Die Woo-Integration gleicht den vollständigen Bestellzustand idempotent ab; ein stündlicher Auto-Reconcile holt verpasste Bestell-Hooks nach. Digitale Zustimmung, Zahlung, Dispute, Teil-/Vollerstattung, Storno und manuelle Entscheidung beeinflussen den Zugang. Workflow Captain darf diese Logik nicht ersetzen.
 
@@ -966,7 +1023,7 @@ flowchart TD
 
 ### 17.12 Externer Connector: n8n
 
-**Produktentscheidung:** n8n wird in Version 1 über offene, dokumentierte HTTP-Webhooks angebunden. Der Connector benötigt keinen eigenen n8n-Node und keine n8n-API-Schlüssel für den Regelbetrieb. Nutzer können die Standardknoten **Webhook** und **HTTP Request** einsetzen. Unterstützt werden n8n Cloud, selbst gehostete öffentliche Instanzen sowie lokal oder im privaten Netzwerk laufendes n8n. Basisadresse und vollständige Webhook-URL sind editierbar; der Verbindungstest prüft die Erreichbarkeit aus Sicht des WordPress-Servers. Die n8n-Webhook-Dokumentation unterscheidet Test- und Produktions-URLs und unterstützt Header-, Basic- und JWT-Authentifizierung. Produktions-URLs werden erst mit veröffentlichten/aktiven n8n-Workflows registriert. citeturn671857936view0
+**Produktentscheidung:** n8n wird in Version 1 über offene, dokumentierte HTTP-Webhooks angebunden. Der Connector benötigt keinen eigenen n8n-Node und keine n8n-API-Schlüssel für den Regelbetrieb. Nutzer können die Standardknoten **Webhook** und **HTTP Request** einsetzen. Unterstützt werden n8n Cloud, selbst gehostete öffentliche Instanzen sowie lokal oder im privaten Netzwerk laufendes n8n. Basisadresse und vollständige Webhook-URL sind editierbar; der Verbindungstest prüft die Erreichbarkeit aus Sicht des WordPress-Servers. Die n8n-Webhook-Dokumentation unterscheidet Test- und Produktions-URLs und unterstützt Header-, Basic- und JWT-Authentifizierung. Produktions-URLs werden erst mit veröffentlichten/aktiven n8n-Workflows registriert.
 
 **Datenfluss A – Workflow Captain → n8n:** Pro-Connection wird eine n8n-Produktions-Webhook-URL mit optionaler Header-Authentifizierung konfiguriert. Ausgewählte Ereignisse aus WordPress, WooCommerce und Captain-Providern werden nach Commit über die dauerhafte Workflow-Outbox zugestellt. Die Verbindung sendet nur ausgewählte, schema-validierte Felder samt Event-ID, Eventtyp, Schema-Version und Zeitpunkt. Keine Secrets, Gutschein-/Ticketcodes, Zahlungsdaten oder unnötigen personenbezogenen Daten. n8n muss die Event-ID zum Deduplizieren verwenden; Wiederholungen bekommen dieselbe Event-ID. Test-URLs sind nur für den Verbindungstest erlaubt und werden nicht für aktive Workflows genutzt.
 
@@ -982,15 +1039,25 @@ flowchart LR
 
 **Einrichtung und Status:** Unter „Integrationen → n8n“ Verbindung anlegen, Richtung auswählen, n8n-Basis-URL (Protokoll, Host, Port und optional Basis-Pfad) und vollständige Webhook-URL editieren, Authentifizierung konfigurieren, erlaubte Eventtypen/Trigger und Datenfelder wählen, Verbindung testen und anschließend aktivieren. Für n8n lokal sind z. B. `http://localhost:5678`, `http://127.0.0.1:5678`, eine LAN-Adresse wie `http://192.168.1.20:5678` oder ein internes Docker-/VPN-Hostname zulässig, wenn der WordPress-Host diesen Endpunkt tatsächlich erreichen kann. `localhost` bezeichnet immer den Host bzw. Netzwerk-Namespace, in dem WordPress läuft, nicht automatisch den Rechner des Admins. Status zeigt Verbindungstyp, letzten erfolgreichen Versand, letzte Fehlermeldung in redigierter Form, Warteschlange und Credential-Rotation. Secrets sind nach dem Speichern maskiert und nur durch Rotation ersetzbar. Änderungen am Endpoint oder Scope erfordern erneuten Test.
 
-**Betriebs- und Sicherheitsregeln:** Für öffentliche/produtive Endpunkte HTTPS verpflichtend. Lokales HTTP und private/LAN-Adressen sind nur nach expliziter Administratorfreigabe für diese konkrete Verbindung zulässig. Egress-/SSRF-Schutz blockiert standardmäßig private, Loopback-, Link-Local- und Metadaten-IP-Ziele; bei freigegebenen lokalen Verbindungen werden erlaubter Host/IP bzw. CIDR, Port und Redirect-Ziele eng gebunden und erneut geprüft. Cloud-Metadatenziele und nicht freigegebene private Ziele bleiben immer gesperrt. DNS-Auflösung, DNS-Rebinding, Zeit- und Antwortgröße werden validiert/begrenzt. Eingehend schützt HTTPS plus ein je Verbindung erzeugter, scope-begrenzter Token; Requests bekommen Zeitstempel, Nonce/Request-ID, Deduplizierung, Rate-Limit, Body-Limit und Auditspur. Keine n8n-Kontodaten oder pauschalen Admin/API-Keys verwenden. Schlüssel nie in Logs, Exporten, Run-Payloads oder Screenshots ausgeben. Fehler werden begrenzt mit Backoff wiederholt; nicht wiederholbare 4xx-Fehler gehen in die Fehlerwarteschlange. n8n bleibt Eigentümer seiner Workflows und Credentials; Workflow Captain bleibt Eigentümer seiner Trigger, Actions und Business-Regeln.
+**Betriebs- und Sicherheitsregeln:** Für öffentliche/produktive Endpunkte HTTPS verpflichtend. Lokales HTTP und private/LAN-Adressen sind nur nach expliziter Administratorfreigabe für diese konkrete Verbindung zulässig. Egress-/SSRF-Schutz blockiert standardmäßig private, Loopback-, Link-Local- und Metadaten-IP-Ziele; bei freigegebenen lokalen Verbindungen werden erlaubter Host/IP bzw. CIDR, Port und Redirect-Ziele eng gebunden und erneut geprüft. Cloud-Metadatenziele und nicht freigegebene private Ziele bleiben immer gesperrt. DNS-Auflösung, DNS-Rebinding, Zeit- und Antwortgröße werden validiert/begrenzt. Eingehend schützt HTTPS plus ein je Verbindung erzeugter, scope-begrenzter Token; Requests bekommen Zeitstempel, Nonce/Request-ID, Deduplizierung, Rate-Limit, Body-Limit und Auditspur. Keine n8n-Kontodaten oder pauschalen Admin/API-Keys verwenden. Schlüssel nie in Logs, Exporten, Run-Payloads oder Screenshots ausgeben. Fehler werden begrenzt mit Backoff wiederholt; nicht wiederholbare 4xx-Fehler gehen in die Fehlerwarteschlange. n8n bleibt Eigentümer seiner Workflows und Credentials; Workflow Captain bleibt Eigentümer seiner Trigger, Actions und Business-Regeln.
 
-**Abgrenzung zur n8n Management API:** V1 synchronisiert oder verwaltet keine n8n-Workflows über dessen öffentliche Management-API. Diese API wird mit eigenem API-Key authentifiziert; Verfügbarkeit und Scopes sind von n8n-Version und Plan abhängig. Der Webhook-Datenfluss vermeidet diese Zusatzabhängigkeit und verhindert, dass ein weitreichender n8n-Schlüssel in WordPress gespeichert werden muss. Eine spätere optionale Verwaltungsintegration benötigt eine eigene explizite Freigabe, minimale Scopes und Versionstest. citeturn671857936view1
+**Abgrenzung zur n8n Management API:** V1 synchronisiert oder verwaltet keine n8n-Workflows über dessen öffentliche Management-API. Diese API wird mit eigenem API-Key authentifiziert; Verfügbarkeit und Scopes sind von n8n-Version und Plan abhängig. Der Webhook-Datenfluss vermeidet diese Zusatzabhängigkeit und verhindert, dass ein weitreichender n8n-Schlüssel in WordPress gespeichert werden muss. Eine spätere optionale Verwaltungsintegration benötigt eine eigene explizite Freigabe, minimale Scopes und Versionstest.
 
 **V1-Szenarien:** WooCommerce-Bestellung bezahlt → n8n CRM/ERP/Support-Ablauf; Voucher Captain Gutschein ausgestellt/eingelöst → n8n Kundenservice oder Reporting (ohne Codewert); Pass Captain Ticket ausgegeben/eingecheckt → n8n Termin-/Teilnahmeprozess (ohne Einlasstoken); Form Captain Entry eingegangen → n8n genehmigte CRM-/Helpdesk-Übergabe mit Consent- und Feldfilter; n8n externe Freigabe abgeschlossen → freigegebener Workflow-Captain-Trigger startet eine interne, typisierte Folgeaktion. Bestehende native Suite-Flows bleiben maßgeblich für Zahlung, Voucher, Zutritt, Berechtigungen, Provisionen und Einwilligung.
 
 **Free/Pro:** Die Basisversion kann Installationsstatus und Dokumentation anzeigen. Ausgehende/inbound n8n-Verbindungen, Credentials, dauerhafte Zustellung, Retry/Replay und produktive Trigger sind Pro-Connector-Funktionen und folgen demselben Lizenz-/Site-Modell wie andere externe Connectoren.
 
+**Vertrag der Version 1 (WF-N8N-01, -13 und -14, festgeschrieben am 16.11.2026):**
+
+1. Der n8n-Connector ist ein offener HTTP-Webhook-Connector. Auf n8n-Seite genügen die Standardknoten **Webhook** und **HTTP Request**. Eine Community Node ist weder nötig noch Teil von Version 1.
+2. Version 1 braucht die n8n Management API nicht: kein API-Key, keine Scopes, kein Import oder Abgleich von n8n-Workflows, keine automatische Aktivierung. Eine spätere Verwaltungsintegration ist ein eigenes Vorhaben mit eigener Freigabe, minimalen Scopes und Prüfung je n8n-Version und Plan.
+3. Ausgehend sendet Workflow Captain für ein Ereignis der Suite den Umschlag der Spezifikation (`docs/SPEC-suite-events.md`, Abschnitt 6) mit derselben Ereigniskennung, gefiltert auf die für die Verbindung freigegebenen Felder. Die Regeln für verbotene Werte (Abschnitt 5) gelten unverändert; die Feldfreigabe einer Verbindung kann Felder nur weglassen, nie hinzufügen.
+4. Eingehend startet ein n8n-Aufruf nur einen ausdrücklich freigegebenen Auslöser. Was der gestartete Workflow danach tun darf, regelt Abschnitt 8 der Spezifikation: nur die erlaubten Befehle, die vier Gutschein-Befehle nur innerhalb der Grenzen des Voucher-Kerns, nichts aus der Verbotsliste 8.2.
+5. Zuständigkeit (WF-N8N-14): n8n darf Benachrichtigungen, CRM-, ERP-, Helpdesk- und Reporting-Abläufe koordinieren. n8n darf keine parallele Fachlogik für Zahlung, Gutschein, Ticket, Einlass, Berechtigung, Provision oder Einwilligung führen; die Fachplugins bleiben System of Record, und ein n8n-Ablauf kann sie nur über die Befehle aus Punkt 4 erreichen.
+
 ### 17.13 Multisite-Netzwerkabläufe: Site A → Site B
+
+> **Offen (F-07):** Die Spezifikation (`docs/SPEC-suite-events.md`, Abschnitt 1, R-12.6) nimmt bis zur Antwort des Inhabers an, dass Ereignisse ihre Website nicht verlassen und netzwerkweite Abläufe nicht Teil von Version 1 sind; die Empfehlung ist, sie in eine spätere MINOR-Version zu verschieben. Dieser Abschnitt beschreibt den Plan für den Fall, dass sie kommen.
 
 Diese V1-Szenarien laufen nur innerhalb derselben Multisite und setzen lizenzierte, freigegebene Quell-/Ziel-Sites voraus.
 
@@ -1082,6 +1149,8 @@ Alle Suite-Plugins bekommen einen gemeinsamen, versionierten Vertrag für native
 
 Die detaillierten Arbeitspakete für Providerverträge, Lizenz-/Shoppläne, UI, Migration, Kompatibilität und Releaseprüfung stehen in [TODO.md](TODO.md), Abschnitt Suite-Provider. Abschnitt 18 beschreibt weiterhin die verbindliche Architektur und Ownership-Grenzen.
 ### 18.8 Multisite-Netzwerkmodus und Site-Ownership
+
+> **Offen (F-07):** Die Spezifikation (`docs/SPEC-suite-events.md`, Abschnitt 1, R-12.6) nimmt bis zur Antwort des Inhabers an, dass Ereignisse ihre Website nicht verlassen und netzwerkweite Abläufe nicht Teil von Version 1 sind; die Empfehlung ist, sie in eine spätere MINOR-Version zu verschieben. Dieser Abschnitt beschreibt den Plan für den Fall, dass sie kommen.
 
 Site-lokale Workflows bleiben unabhängig. Netzwerkweite Flows sind eine zusätzliche, bewusst aktivierte Pro-Ebene mit Network-Admin als Orchestrator und expliziten Quell-/Ziel-Site-Freigaben. Netzwerk-Admin darf nicht automatisch alle lokalen Datenfelder oder Aktionen jeder Site erhalten. Quell- und Ziel-Site können ihre Teilnahme und Scopes widerrufen; laufende Netzwerk-Runs stoppen nur die noch nicht ausgeführten betroffenen Steps. Erfolgreiche Side Effects bleiben als Child-Steps sichtbar.
 
@@ -1221,7 +1290,7 @@ Die Seite zeigt erkannte lokale Connector-Plugins und angelegte externe Webhook-
 
 ### 19.13 Die zwei Kundenconnectoren
 
-Das Mockup zeigt die zwei unterschiedlichen Installationsarten: BoatingSchool als externe, tenant-scoped Laravel-Verbindung mit getrenntem Commerce- und Workflow-Vertrag; LearnBoating als lokaler WordPress-Provider. Die Statusangaben markieren die noch erforderliche Workflow-Adapterarbeit und behaupten keine bereits installierte Integration.
+Das Mockup zeigt die zwei unterschiedlichen Installationsarten: BoatingSchool als externe, tenant-scoped Laravel-Verbindung mit getrenntem Commerce- und Workflow-Vertrag; LearnBoating als lokaler WordPress-Provider. Die Statusangaben markieren die noch erforderliche Workflow-Adapterarbeit und behaupten keine bereits installierte Integration. *[Nach Entscheidung 17 vom 16.11.2026 sind beide Connectoren eigene Projektprodukte mit eigener Lizenz; die Seite zeigt sie wie jedes andere lokal erkannte Connector-Plugin (Abschnitt 19.12), nicht als Bestandteil von Workflow Captain Pro.]*
 
 ![BoatingSchool-B2B- und LearnBoating-B2C-Connectoren im Workflow-Captain-WordPress-Admin – Konzeptentwurf](docs/assets/workflow-captain/customer-connectors.svg)
 

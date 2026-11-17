@@ -13,14 +13,18 @@
   },
   "subject": {
     "type": "ticket",
-    "id": "tkt_8f3a1c0d9e7b",
+    "id": "8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d",
     "id_kind": "public"
   },
   "actor_user_id": 17,
   "data": {
     "checkin_source": "web",
     "device_id": 4,
-    "area_id": 0
+    "area_id": 0,
+    "occurrence_id": 311,
+    "event_id": 42,
+    "ticket_type_id": 7,
+    "reentry": false
   },
   "idempotency_key": "7d1f0f4f2a2c1e0b6f3a9d8c7b6a59483726150493827160a5b4c3d2e1f00112",
   "correlation_id": "5f0c2a1e-7b3d-4c8a-9e21-3d4f5a6b7c8d",

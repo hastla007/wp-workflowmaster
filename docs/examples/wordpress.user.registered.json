@@ -1,0 +1,26 @@
+{
+  "id": "bd72fc60-86eb-420a-ae3e-e13a4eb56eac",
+  "type": "wordpress.user.registered",
+  "spec_version": "1.0",
+  "source": {
+    "product": "wordpress",
+    "core_version": "6.6.2",
+    "contract_version": "6.6.2"
+  },
+  "occurred_at": "2026-11-16T18:02:11Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "user",
+    "id": "88",
+    "id_kind": "record"
+  },
+  "data": {
+    "role": "customer"
+  },
+  "idempotency_key": "52660fe8524b66c440d5804e26763dd0a9c58048fab2bf6b17f23c068bc34dea",
+  "correlation_id": "bd72fc60-86eb-420a-ae3e-e13a4eb56eac",
+  "causation_id": null,
+  "chain_depth": 0
+}

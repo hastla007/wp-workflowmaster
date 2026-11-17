@@ -1,0 +1,1664 @@
+{
+  "$comment": "Machine-readable part of docs/SPEC-suite-events.md (sections 4.2 to 4.10, 6, 11). The spec text is normative; this file must match it. Checked by bin/validate-spec-examples.py.",
+  "spec_version": "1.0.0-draft.8",
+  "catalog_version": "1.0",
+  "products": {
+    "pass-captain": {
+      "contract_constant": "WPCAP_CONTRACT_VERSION",
+      "min_contract": "1.1.0",
+      "example_required": true,
+      "events": [
+        {
+          "type": "pass.order.paid",
+          "hook": "wpcap_order_paid",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "order",
+          "id_kind": "public",
+          "data_fields": [
+            "status",
+            "payment_status",
+            "payment_provider",
+            "currency",
+            "total_minor",
+            "refunded_minor",
+            "ticket_count",
+            "customer_user_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "payment_status": "string",
+            "payment_provider": "string",
+            "currency": "currency",
+            "total_minor": "integer",
+            "refunded_minor": "integer",
+            "ticket_count": "integer",
+            "customer_user_id": "integer"
+          }
+        },
+        {
+          "type": "pass.order.cancelled",
+          "hook": "wpcap_order_cancelled",
+          "since": "0.9.0/1.0.0; 3 args since 1.5.0/1.1.0",
+          "subject_type": "order",
+          "id_kind": "public",
+          "data_fields": [
+            "status",
+            "previous_payment_status",
+            "reason_class",
+            "currency",
+            "total_minor"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "previous_payment_status": "string",
+            "reason_class": "string",
+            "currency": "currency",
+            "total_minor": "integer"
+          }
+        },
+        {
+          "type": "pass.order.refunded",
+          "hook": "wpcap_order_refunded",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "order",
+          "id_kind": "public",
+          "data_fields": [
+            "status",
+            "payment_status",
+            "currency",
+            "total_minor",
+            "refunded_minor",
+            "reason_class",
+            "refund_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "payment_status": "string",
+            "currency": "currency",
+            "total_minor": "integer",
+            "refunded_minor": "integer",
+            "reason_class": "string",
+            "refund_id": "integer"
+          }
+        },
+        {
+          "type": "pass.order.tickets_issued",
+          "hook": "wpcap_tickets_issued",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "order",
+          "id_kind": "public",
+          "data_fields": [
+            "issued_count",
+            "currency",
+            "total_minor"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "issued_count": "integer",
+            "currency": "currency",
+            "total_minor": "integer"
+          }
+        },
+        {
+          "type": "pass.refund.completed",
+          "hook": "wpcap_refund_completed",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "refund",
+          "id_kind": "record",
+          "data_fields": [
+            "order_id",
+            "amount_minor",
+            "tax_minor",
+            "deducted_minor",
+            "currency",
+            "ticket_count",
+            "refund_source"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "order_id": "integer",
+            "amount_minor": "integer",
+            "tax_minor": "integer",
+            "deducted_minor": "integer",
+            "currency": "currency",
+            "ticket_count": "integer",
+            "refund_source": "string"
+          }
+        },
+        {
+          "type": "pass.refund.rejected",
+          "hook": "wpcap_refund_rejected",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "refund",
+          "id_kind": "record",
+          "data_fields": [
+            "order_id",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes",
+          "data_types": {
+            "order_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "pass.ticket.revoked",
+          "hook": "wpcap_ticket_revoked",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "ticket",
+          "id_kind": "public",
+          "data_fields": [
+            "order_id",
+            "ticket_type_id",
+            "occurrence_id",
+            "event_id",
+            "reason_class"
+          ],
+          "actor_user_id": "staff_on_admin_path_else_none",
+          "after_commit": "yes",
+          "data_types": {
+            "order_id": "integer",
+            "ticket_type_id": "integer",
+            "occurrence_id": "integer",
+            "event_id": "integer",
+            "reason_class": "string"
+          }
+        },
+        {
+          "type": "pass.ticket.checked_in",
+          "hook": "wpcap_ticket_checked_in",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "ticket",
+          "id_kind": "public",
+          "data_fields": [
+            "checkin_source",
+            "device_id",
+            "area_id",
+            "occurrence_id",
+            "event_id",
+            "ticket_type_id",
+            "reentry"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes",
+          "data_types": {
+            "checkin_source": "string",
+            "device_id": "integer",
+            "area_id": "integer",
+            "occurrence_id": "integer",
+            "event_id": "integer",
+            "ticket_type_id": "integer",
+            "reentry": "boolean"
+          }
+        },
+        {
+          "type": "pass.ticket.checked_out",
+          "hook": "wpcap_ticket_checked_out",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "ticket",
+          "id_kind": "public",
+          "data_fields": [
+            "checkin_source",
+            "device_id",
+            "area_id",
+            "occurrence_id",
+            "event_id",
+            "ticket_type_id"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes",
+          "data_types": {
+            "checkin_source": "string",
+            "device_id": "integer",
+            "area_id": "integer",
+            "occurrence_id": "integer",
+            "event_id": "integer",
+            "ticket_type_id": "integer"
+          }
+        },
+        {
+          "type": "pass.occurrence.rescheduled",
+          "hook": "wpcap_occurrence_rescheduled",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "occurrence",
+          "id_kind": "record",
+          "data_fields": [
+            "event_id",
+            "old_starts_at",
+            "new_starts_at",
+            "timezone",
+            "issued_tickets"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "autocommit_unchecked",
+          "data_types": {
+            "event_id": "integer",
+            "old_starts_at": "datetime",
+            "new_starts_at": "datetime",
+            "timezone": "string",
+            "issued_tickets": "integer"
+          }
+        },
+        {
+          "type": "pass.occurrence.cancelled",
+          "hook": "wpcap_occurrence_cancelled",
+          "since": "0.9.0/1.0.0",
+          "subject_type": "occurrence",
+          "id_kind": "record",
+          "data_fields": [
+            "event_id",
+            "issued_tickets",
+            "starts_at",
+            "scope"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes_or_autocommit_unchecked",
+          "data_types": {
+            "event_id": "integer",
+            "issued_tickets": "integer",
+            "starts_at": "datetime",
+            "scope": "string"
+          }
+        },
+        {
+          "type": "pass.event.cancelled",
+          "hook": "wpcap_event_cancelled",
+          "since": "1.5.0/1.1.0",
+          "subject_type": "event",
+          "id_kind": "record",
+          "data_fields": [
+            "occurrence_count",
+            "revoked_tickets",
+            "cancelled_orders"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "yes",
+          "data_types": {
+            "occurrence_count": "integer",
+            "revoked_tickets": "integer",
+            "cancelled_orders": "integer"
+          }
+        },
+        {
+          "type": "pass.invoice.created",
+          "hook": "wp_pass_captain_invoice_created_v1",
+          "since": "1.5.0/1.1.0",
+          "subject_type": "invoice|credit_note|settlement",
+          "id_kind": "record",
+          "data_fields": [
+            "document_type",
+            "document_number",
+            "order_id",
+            "invoice_id",
+            "refund_id",
+            "partner_id",
+            "period",
+            "currency",
+            "total_minor",
+            "tax_minor"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "document_type": "string",
+            "document_number": "string",
+            "order_id": "integer",
+            "invoice_id": "integer",
+            "refund_id": "integer",
+            "partner_id": "integer",
+            "period": "string",
+            "currency": "currency",
+            "total_minor": "integer",
+            "tax_minor": "integer"
+          }
+        }
+      ]
+    },
+    "voucher-captain": {
+      "contract_constant": "VCAP_CONTRACT_VERSION",
+      "min_contract": "1.1.0",
+      "example_required": true,
+      "events": [
+        {
+          "type": "voucher.order.vouchers_issued",
+          "hook": "vcap_vouchers_issued",
+          "since": "1.0.0",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "order_id",
+            "voucher_count",
+            "background"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "autocommit",
+          "data_types": {
+            "order_id": "integer",
+            "voucher_count": "integer",
+            "background": "boolean"
+          }
+        },
+        {
+          "type": "voucher.voucher.issued_standalone",
+          "hook": "vcap_voucher_issued_standalone",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "voucher_type",
+            "usage_mode",
+            "status",
+            "paid",
+            "issue_source",
+            "send"
+          ],
+          "actor_user_id": "staff_if_logged_in",
+          "after_commit": "autocommit",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "voucher_type": "string",
+            "usage_mode": "string",
+            "status": "string",
+            "paid": "boolean",
+            "issue_source": "string",
+            "send": "boolean"
+          }
+        },
+        {
+          "type": "voucher.voucher.delivered",
+          "hook": "vcap_voucher_delivered",
+          "since": "1.0.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "address_count",
+            "roles",
+            "bundled"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "autocommit",
+          "data_types": {
+            "address_count": "integer",
+            "roles": "string",
+            "bundled": "boolean"
+          }
+        },
+        {
+          "type": "voucher.voucher.delivery_failed",
+          "hook": "vcap_voucher_delivery_given_up",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "failures"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "autocommit",
+          "data_types": {
+            "failures": "integer"
+          }
+        },
+        {
+          "type": "voucher.voucher.bounced",
+          "hook": "vcap_voucher_bounced",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "role"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "autocommit",
+          "data_types": {
+            "role": "string"
+          }
+        },
+        {
+          "type": "voucher.voucher.redeemed",
+          "hook": "vcap_voucher_redeemed",
+          "since": "1.1.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "order_id",
+            "channel",
+            "redemption_source",
+            "committed_at",
+            "balance_after_minor"
+          ],
+          "actor_user_id": "user_id_from_args_if_positive",
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "order_id": "integer",
+            "channel": "string",
+            "redemption_source": "string",
+            "committed_at": "datetime",
+            "balance_after_minor": "integer"
+          }
+        },
+        {
+          "type": "voucher.redemption.reserved",
+          "hook": "vcap_redemption_reserved",
+          "since": "1.1.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "balance_after_minor",
+            "expires_at",
+            "state"
+          ],
+          "actor_user_id": "user_id_from_args_if_positive",
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "balance_after_minor": "integer",
+            "expires_at": "datetime",
+            "state": "string"
+          }
+        },
+        {
+          "type": "voucher.redemption.released",
+          "hook": "vcap_redemption_released",
+          "since": "1.1.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "balance_after_minor",
+            "expires_at",
+            "state",
+            "expired"
+          ],
+          "actor_user_id": "user_id_from_args_if_positive",
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "balance_after_minor": "integer",
+            "expires_at": "datetime",
+            "state": "string",
+            "expired": "boolean"
+          }
+        },
+        {
+          "type": "voucher.redemption.refunded",
+          "hook": "vcap_redemption_refunded",
+          "since": "1.1.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "refunded_minor",
+            "refunded_total_minor",
+            "currency"
+          ],
+          "actor_user_id": "user_id_from_args_if_positive",
+          "after_commit": "yes",
+          "data_types": {
+            "refunded_minor": "integer",
+            "refunded_total_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "voucher.redemption.reversed",
+          "hook": "vcap_redemption_reversed",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "reversed_event_id",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "staff_if_logged_in",
+          "after_commit": "yes",
+          "data_types": {
+            "reversed_event_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "voucher.voucher.expired",
+          "hook": "vcap_voucher_expired",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "balance_minor",
+            "currency",
+            "voucher_type"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "balance_minor": "integer",
+            "currency": "currency",
+            "voucher_type": "string"
+          }
+        },
+        {
+          "type": "voucher.voucher.reissued",
+          "hook": "vcap_voucher_reissued",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "status"
+          ],
+          "actor_user_id": "staff",
+          "after_commit": "autocommit",
+          "data_types": {
+            "status": "string"
+          }
+        },
+        {
+          "type": "voucher.voucher.voided",
+          "hook": "vcap_voucher_event:voided",
+          "since": "1.0.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "balance_minor",
+            "currency",
+            "order_id",
+            "change_source",
+            "void_reason"
+          ],
+          "actor_user_id": "user_id_arg_if_positive",
+          "after_commit": "yes",
+          "data_types": {
+            "balance_minor": "integer",
+            "currency": "currency",
+            "order_id": "integer",
+            "change_source": "string",
+            "void_reason": "string"
+          }
+        },
+        {
+          "type": "voucher.voucher.reactivated",
+          "hook": "vcap_voucher_event:reactivated",
+          "since": "1.0.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "balance_minor",
+            "currency",
+            "order_id",
+            "change_source"
+          ],
+          "actor_user_id": "user_id_arg_if_positive",
+          "after_commit": "yes",
+          "data_types": {
+            "balance_minor": "integer",
+            "currency": "currency",
+            "order_id": "integer",
+            "change_source": "string"
+          }
+        },
+        {
+          "type": "voucher.store_credit.changed",
+          "hook": "vcap_store_credit_changed",
+          "since": "1.1.0",
+          "subject_type": "store_credit",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "balance_minor",
+            "currency",
+            "credit_event",
+            "order_id"
+          ],
+          "actor_user_id": "customer",
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "balance_minor": "integer",
+            "currency": "currency",
+            "credit_event": "string",
+            "order_id": "integer"
+          }
+        },
+        {
+          "type": "voucher.gift_card.topped_up",
+          "hook": "vcap_gift_card_topped_up",
+          "since": "1.2.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "amount_minor",
+            "currency",
+            "order_id",
+            "balance_minor"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "amount_minor": "integer",
+            "currency": "currency",
+            "order_id": "integer",
+            "balance_minor": "integer"
+          }
+        }
+      ]
+    },
+    "affiliate-captain": {
+      "contract_constant": "WPAC_CONTRACT_VERSION",
+      "min_contract": "1.4.0",
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "affiliate.affiliate.created",
+          "hook": "wpac_affiliate_created",
+          "since": "1.2.0/0.11.0",
+          "subject_type": "affiliate",
+          "id_kind": "record",
+          "data_fields": [
+            "status",
+            "group_id",
+            "referred_by",
+            "partner_user_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "group_id": "integer",
+            "referred_by": "integer",
+            "partner_user_id": "integer"
+          }
+        },
+        {
+          "type": "affiliate.affiliate.status_changed",
+          "hook": "wpac_affiliate_status_changed",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "affiliate",
+          "id_kind": "record",
+          "data_fields": [
+            "status",
+            "previous_status"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "status": "string",
+            "previous_status": "string"
+          }
+        },
+        {
+          "type": "affiliate.affiliate.recruited",
+          "hook": "wpac_affiliate_recruited",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "affiliate",
+          "id_kind": "record",
+          "data_fields": [
+            "recruiter_id",
+            "status"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "recruiter_id": "integer",
+            "status": "string"
+          }
+        },
+        {
+          "type": "affiliate.affiliate.erased",
+          "hook": "wpac_affiliate_erased",
+          "since": "1.3.0/0.13.0",
+          "subject_type": "affiliate",
+          "id_kind": "record",
+          "data_fields": [
+            "deferred"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "deferred": "boolean"
+          }
+        },
+        {
+          "type": "affiliate.sale.attributed",
+          "hook": "wpac_affiliate_attributed",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "source",
+            "attribution_method"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "source": "string",
+            "attribution_method": "string"
+          }
+        },
+        {
+          "type": "affiliate.commission.created",
+          "hook": "wpac_commission_created",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "kind",
+            "status",
+            "amount_minor",
+            "currency",
+            "parent_id",
+            "source",
+            "order_id",
+            "payout_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "kind": "string",
+            "status": "string",
+            "amount_minor": "integer",
+            "currency": "currency",
+            "parent_id": "integer",
+            "source": "string",
+            "order_id": "integer",
+            "payout_id": "integer"
+          }
+        },
+        {
+          "type": "affiliate.commission.adjusted",
+          "hook": "wpac_commission_adjusted",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "source",
+            "refund_id",
+            "adjustment_type",
+            "full",
+            "deleted",
+            "adjustment_count",
+            "affiliate_id",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "source": "string",
+            "refund_id": "integer",
+            "adjustment_type": "string",
+            "full": "boolean",
+            "deleted": "boolean",
+            "adjustment_count": "integer",
+            "affiliate_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "affiliate.commission.approved",
+          "hook": "wpac_commission_approved",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "amount_minor",
+            "currency",
+            "kind",
+            "previous_status"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency",
+            "kind": "string",
+            "previous_status": "string"
+          }
+        },
+        {
+          "type": "affiliate.commission.rejected",
+          "hook": "wpac_commission_rejected",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "kind",
+            "amount_minor",
+            "currency",
+            "previous_status"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "kind": "string",
+            "amount_minor": "integer",
+            "currency": "currency",
+            "previous_status": "string"
+          }
+        },
+        {
+          "type": "affiliate.commission.paid",
+          "hook": "wpac_commission_paid",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "payout_id",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "payout_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "affiliate.commission.pending",
+          "hook": "wpac_commission_pending",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "kind",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "kind": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "affiliate.commission.review_reopened",
+          "hook": "wpac_commission_review",
+          "since": "1.3.0/0.13.0",
+          "subject_type": "commission",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "kind",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "kind": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "affiliate.payout.created",
+          "hook": "wpac_payout_created",
+          "since": "1.2.0",
+          "subject_type": "payout",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "payout_number",
+            "status",
+            "method",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "payout_number": "string",
+            "status": "string",
+            "method": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "affiliate.payout.paid",
+          "hook": "wpac_payout_paid",
+          "since": "1.0.0/0.1.0",
+          "subject_type": "payout",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "payout_number",
+            "method",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "payout_number": "string",
+            "method": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "affiliate.payout.cancelled",
+          "hook": "wpac_payout_cancelled",
+          "since": "1.3.0",
+          "subject_type": "payout",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "payout_number",
+            "amount_minor",
+            "currency"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "payout_number": "string",
+            "amount_minor": "integer",
+            "currency": "currency"
+          }
+        },
+        {
+          "type": "affiliate.correction.generated",
+          "hook": "wpac_correction_generated",
+          "since": "1.3.0/0.12.0",
+          "subject_type": "correction",
+          "id_kind": "record",
+          "data_fields": [],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {}
+        },
+        {
+          "type": "affiliate.creative.created",
+          "hook": "wpac_creative_created",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "creative",
+          "id_kind": "record",
+          "data_fields": [
+            "family_id",
+            "version",
+            "status",
+            "creative_type",
+            "group_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "family_id": "integer",
+            "version": "integer",
+            "status": "string",
+            "creative_type": "string",
+            "group_id": "integer"
+          }
+        },
+        {
+          "type": "affiliate.creative.updated",
+          "hook": "wpac_creative_updated",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "creative",
+          "id_kind": "record",
+          "data_fields": [
+            "family_id",
+            "version",
+            "status",
+            "creative_type",
+            "group_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "family_id": "integer",
+            "version": "integer",
+            "status": "string",
+            "creative_type": "string",
+            "group_id": "integer"
+          }
+        },
+        {
+          "type": "affiliate.code_request.created",
+          "hook": "wpac_code_requested",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "code_request",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "request_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "request_id": "integer"
+          }
+        },
+        {
+          "type": "affiliate.code_request.approved",
+          "hook": "wpac_code_request_approved",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "code_request",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "partner_code",
+            "main",
+            "request_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "partner_code": "string",
+            "main": "boolean",
+            "request_id": "integer"
+          }
+        },
+        {
+          "type": "affiliate.code_request.rejected",
+          "hook": "wpac_code_request_rejected",
+          "since": "1.4.0/0.15.0",
+          "subject_type": "code_request",
+          "id_kind": "record",
+          "data_fields": [
+            "affiliate_id",
+            "request_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "affiliate_id": "integer",
+            "request_id": "integer"
+          }
+        }
+      ]
+    },
+    "wp-license": {
+      "contract_constant": null,
+      "min_contract": null,
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "license.license.status_changed",
+          "hook": "wplc/license_status_changed",
+          "since": "0.1.0",
+          "subject_type": "license",
+          "id_kind": "record",
+          "data_fields": [
+            "product",
+            "plan",
+            "status",
+            "previous_status",
+            "lifecycle_action"
+          ],
+          "actor_user_id": "customer",
+          "after_commit": "autocommit_no_guarantee",
+          "data_types": {
+            "product": "string",
+            "plan": "string",
+            "status": "string",
+            "previous_status": "string",
+            "lifecycle_action": "string"
+          }
+        },
+        {
+          "type": "license.license.issued",
+          "hook": "wplc/license_issued_followup",
+          "since": "0.1.0",
+          "subject_type": "license",
+          "id_kind": "record",
+          "data_fields": [
+            "product",
+            "plan",
+            "status"
+          ],
+          "actor_user_id": "customer",
+          "after_commit": "autocommit_no_guarantee",
+          "data_types": {
+            "product": "string",
+            "plan": "string",
+            "status": "string"
+          }
+        },
+        {
+          "type": "license.license.plan_changed",
+          "hook": "wplc/license_plan_changed",
+          "since": "0.2.0",
+          "subject_type": "license",
+          "id_kind": "record",
+          "data_fields": [
+            "product",
+            "plan",
+            "status"
+          ],
+          "actor_user_id": "customer",
+          "after_commit": "autocommit_no_guarantee",
+          "data_types": {
+            "product": "string",
+            "plan": "string",
+            "status": "string"
+          }
+        }
+      ]
+    },
+    "form-captain": {
+      "contract_constant": "FORM_CAPTAIN_CONTRACT_VERSION",
+      "min_contract": "1.0.0",
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "form.form.created",
+          "hook": "form_captain_form_created_v1",
+          "since": "1.0.0",
+          "subject_type": "form",
+          "id_kind": "public",
+          "data_fields": [
+            "form_id",
+            "status",
+            "form_version",
+            "field_count"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "status": "string",
+            "form_version": "integer",
+            "field_count": "integer"
+          }
+        },
+        {
+          "type": "form.form.updated",
+          "hook": "form_captain_form_updated_v1",
+          "since": "1.0.0",
+          "subject_type": "form",
+          "id_kind": "public",
+          "data_fields": [
+            "form_id",
+            "status",
+            "form_version",
+            "field_count",
+            "change"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "status": "string",
+            "form_version": "integer",
+            "field_count": "integer",
+            "change": "string"
+          }
+        },
+        {
+          "type": "form.entry.created",
+          "hook": "form_captain_entry_created_v1",
+          "since": "1.0.0",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "form_public_id",
+            "form_version",
+            "status",
+            "context_purpose",
+            "context_ref_type",
+            "context_ref_id",
+            "context_verified"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes_savepoint_before_caller_commit",
+          "data_types": {
+            "form_id": "integer",
+            "form_public_id": "string",
+            "form_version": "integer",
+            "status": "string",
+            "context_purpose": "string",
+            "context_ref_type": "string",
+            "context_ref_id": "string",
+            "context_verified": "boolean"
+          },
+          "data_field_prefix": "answer_",
+          "data_field_prefix_types": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        },
+        {
+          "type": "form.entry.status_changed",
+          "hook": "form_captain_entry_status_changed_v1",
+          "since": "1.0.0",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "status",
+            "previous_status"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "status": "string",
+            "previous_status": "string"
+          }
+        },
+        {
+          "type": "form.entry.deleted",
+          "hook": "form_captain_entry_deleted_v1",
+          "since": "1.0.0",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "deletion_reason"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "deletion_reason": "string"
+          }
+        },
+        {
+          "type": "form.form.entries_imported",
+          "hook": "form_captain_entries_imported_v1",
+          "since": "1.0.0 (added without MINOR bump, FC-2)",
+          "subject_type": "form",
+          "id_kind": "public",
+          "data_fields": [
+            "form_id",
+            "imported_count"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "imported_count": "integer"
+          }
+        },
+        {
+          "type": "form.entry.consent_withdrawn",
+          "hook": "form_captain_consent_withdrawn_v1",
+          "since": "1.0.0 (added without MINOR bump, FC-2)",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "withdrawal_source",
+            "follow_up",
+            "withdrawn_at"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "withdrawal_source": "string",
+            "follow_up": "string",
+            "withdrawn_at": "datetime"
+          }
+        },
+        {
+          "type": "form.entry.notification_failed",
+          "hook": "form_captain_notification_failed_v1",
+          "since": "1.0.0",
+          "subject_type": "entry",
+          "id_kind": "record",
+          "data_fields": [
+            "form_id",
+            "notification_type",
+            "error_class"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "form_id": "integer",
+            "notification_type": "string",
+            "error_class": "string"
+          }
+        }
+      ]
+    },
+    "review-captain": {
+      "contract_constant": "REVIEW_CAPTAIN_CONTRACT_VERSION",
+      "min_contract": "1.0.0",
+      "contract_fallback": "REVIEW_CAPTAIN_VERSION 0.1.0-dev with ReviewCaptain\\Events\\Events::SCHEMA = review_captain.review.v1 (R-3.3, while main has no contract constant)",
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "review.review.created",
+          "hook": "review_captain_review_created_v1",
+          "since": "1.0.0",
+          "subject_type": "review",
+          "id_kind": "public",
+          "data_fields": [
+            "kind",
+            "platform",
+            "origin",
+            "status",
+            "verification",
+            "context_type",
+            "context_id",
+            "experience_source",
+            "rating_value",
+            "rating_scale_min",
+            "rating_scale_max"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "kind": "string",
+            "platform": "string",
+            "origin": "string",
+            "status": "string",
+            "verification": "string",
+            "context_type": "string",
+            "context_id": "string",
+            "experience_source": "string",
+            "rating_value": "number",
+            "rating_scale_min": "number",
+            "rating_scale_max": "number"
+          }
+        },
+        {
+          "type": "review.review.status_changed",
+          "hook": "review_captain_review_status_changed_v1",
+          "since": "1.0.0",
+          "subject_type": "review",
+          "id_kind": "public",
+          "data_fields": [
+            "kind",
+            "platform",
+            "origin",
+            "status",
+            "previous_status",
+            "verification",
+            "context_type",
+            "context_id",
+            "experience_source",
+            "rating_value",
+            "rating_scale_min",
+            "rating_scale_max"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "kind": "string",
+            "platform": "string",
+            "origin": "string",
+            "status": "string",
+            "previous_status": "string",
+            "verification": "string",
+            "context_type": "string",
+            "context_id": "string",
+            "experience_source": "string",
+            "rating_value": "number",
+            "rating_scale_min": "number",
+            "rating_scale_max": "number"
+          }
+        },
+        {
+          "type": "review.review.removed",
+          "hook": "review_captain_review_removed_v1",
+          "since": "1.0.0",
+          "subject_type": "review",
+          "id_kind": "public",
+          "data_fields": [
+            "kind",
+            "platform",
+            "origin",
+            "status",
+            "context_type",
+            "context_id",
+            "experience_source",
+            "removal"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "yes",
+          "data_types": {
+            "kind": "string",
+            "platform": "string",
+            "origin": "string",
+            "status": "string",
+            "context_type": "string",
+            "context_id": "string",
+            "experience_source": "string",
+            "removal": "string"
+          }
+        }
+      ]
+    },
+    "woocommerce": {
+      "contract_constant": null,
+      "contract_version_source": "WC_VERSION",
+      "min_contract": null,
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "woocommerce.order.created",
+          "hook": "woocommerce_new_order",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "status",
+            "currency",
+            "total_minor",
+            "item_count",
+            "created_via",
+            "customer_user_id"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "status": "string",
+            "currency": "currency",
+            "total_minor": "integer",
+            "item_count": "integer",
+            "created_via": "string",
+            "customer_user_id": "integer"
+          }
+        },
+        {
+          "type": "woocommerce.order.paid",
+          "hook": "woocommerce_payment_complete",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "currency",
+            "total_minor",
+            "item_count",
+            "payment_method",
+            "customer_user_id"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "after_save",
+          "data_types": {
+            "currency": "currency",
+            "total_minor": "integer",
+            "item_count": "integer",
+            "payment_method": "string",
+            "customer_user_id": "integer"
+          }
+        },
+        {
+          "type": "woocommerce.order.status_changed",
+          "hook": "woocommerce_order_status_changed",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "from_status",
+            "to_status",
+            "currency",
+            "total_minor"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "from_status": "string",
+            "to_status": "string",
+            "currency": "currency",
+            "total_minor": "integer"
+          }
+        },
+        {
+          "type": "woocommerce.order.refunded",
+          "hook": "woocommerce_order_refunded",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "refund_id",
+            "amount_minor",
+            "currency",
+            "refunded_total_minor",
+            "full_refund"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "refund_id": "integer",
+            "amount_minor": "integer",
+            "currency": "currency",
+            "refunded_total_minor": "integer",
+            "full_refund": "boolean"
+          }
+        },
+        {
+          "type": "woocommerce.order.cancelled",
+          "hook": "woocommerce_order_status_cancelled",
+          "since": "WC 8.2",
+          "subject_type": "order",
+          "id_kind": "record",
+          "data_fields": [
+            "from_status",
+            "currency",
+            "total_minor"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "from_status": "string",
+            "currency": "currency",
+            "total_minor": "integer"
+          }
+        }
+      ]
+    },
+    "wordpress": {
+      "contract_constant": null,
+      "contract_version_source": "$wp_version (X.Y.Z)",
+      "min_contract": null,
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "wordpress.user.registered",
+          "hook": "user_register",
+          "since": "WP 6.4",
+          "subject_type": "user",
+          "id_kind": "record",
+          "data_fields": [
+            "role"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "role": "string"
+          }
+        },
+        {
+          "type": "wordpress.post.published",
+          "hook": "transition_post_status",
+          "since": "WP 6.4",
+          "subject_type": "post",
+          "id_kind": "record",
+          "data_fields": [
+            "post_type",
+            "author_user_id",
+            "previous_status"
+          ],
+          "actor_user_id": "current_user",
+          "after_commit": "after_save",
+          "data_types": {
+            "post_type": "string",
+            "author_user_id": "integer",
+            "previous_status": "string"
+          }
+        }
+      ]
+    },
+    "workflow-captain": {
+      "contract_constant": "WORKFLOW_CAPTAIN_CONTRACT_VERSION",
+      "min_contract": null,
+      "example_required": true,
+      "fields_complete": true,
+      "events": [
+        {
+          "type": "workflow.schedule.due",
+          "hook": "(intern: Worker von Workflow Captain)",
+          "since": "0.2.0",
+          "subject_type": "workflow",
+          "id_kind": "record",
+          "data_fields": [
+            "scheduled_for",
+            "delay_seconds"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "scheduled_for": "datetime",
+            "delay_seconds": "integer"
+          }
+        }
+      ]
+    }
+  }
+}

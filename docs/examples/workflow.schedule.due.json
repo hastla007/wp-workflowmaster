@@ -1,0 +1,27 @@
+{
+  "id": "3c1e8f20-5a7b-4d2c-9e41-7b6a5d4c3b2a",
+  "type": "workflow.schedule.due",
+  "spec_version": "1.0",
+  "source": {
+    "product": "workflow-captain",
+    "core_version": "0.2.0",
+    "contract_version": "0.1.0"
+  },
+  "occurred_at": "2026-11-23T07:00:04Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "workflow",
+    "id": "12",
+    "id_kind": "record"
+  },
+  "data": {
+    "scheduled_for": "2026-11-23T07:00:00Z",
+    "delay_seconds": 4
+  },
+  "idempotency_key": "aed3d770ca1929e9848c2e7b7ece8fe8df14b6331655226994d9de259bdd1ef4",
+  "correlation_id": "3c1e8f20-5a7b-4d2c-9e41-7b6a5d4c3b2a",
+  "causation_id": null,
+  "chain_depth": 0
+}
