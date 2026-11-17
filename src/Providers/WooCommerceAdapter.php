@@ -1,7 +1,7 @@
 <?php
 /**
  * Adapter for WooCommerce orders (source.product "woocommerce", F-20, SPEC-suite-events 4.7). Lives in the free core
- * and needs no license; registers only while WooCommerce 11.2 or newer is active
+ * and needs no license; registers only while WooCommerce 11.2.2 or newer is active
  * (MINVER-1; with an older WooCommerce it stays unregistered and the adapters page names the reason).
  *
  * Orders are read only through wc_get_order() and the getters of WC_Order, never from wp_posts or wc_orders, so HPOS

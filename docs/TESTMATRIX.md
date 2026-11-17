@@ -108,7 +108,7 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 
 ## Laufzeitumgebung (WF-INT-16)
 
-Mindestversionen seit 17.11.2026 (MINVER-1): PHP 8.5, WordPress 7.0, WooCommerce 11.2 (Adapter), MySQL 9.7 oder MariaDB 12.3 (älterer Server nur Warnung). Einzelheiten in [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md).
+Mindestversionen seit 17.11.2026 (MINVER-1): PHP 8.5, WordPress 7.0, WooCommerce 11.2.2 (Adapter), MySQL 9.7 oder MariaDB 12.3 (älterer Server nur Warnung). Einzelheiten in [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md).
 
 | Umgebung | Stand |
 |---|---|

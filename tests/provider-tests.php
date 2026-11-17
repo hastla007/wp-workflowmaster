@@ -405,7 +405,7 @@ $noop = static function () {};
 check( 'version normalised to X.Y.Z', '6.6.0' === CoreAdapter::normalize_version( '6.6' ) && '8.9.3' === CoreAdapter::normalize_version( '8.9.3-beta.1' ) && '6.7.0' === CoreAdapter::normalize_version( '6.7-RC1-59000' ) && '' === CoreAdapter::normalize_version( 'trunk' ) );
 check( 'WooCommerce adapter not available without WooCommerce', false === ( new WooCommerceAdapter( $noop ) )->available() );
 check( 'MINVER-1 WooCommerce adapter not available with WooCommerce 11.1 (and not with the former minimum 8.2)', false === ( new WooCommerceAdapter( $noop, '11.1.9' ) )->available() && false === ( new WooCommerceAdapter( $noop, '8.2' ) )->available() );
-check( 'MINVER-1 WooCommerce adapter available with WooCommerce 11.2', true === ( new WooCommerceAdapter( $noop, '11.2' ) )->available() );
+check( 'MINVER-1 WooCommerce adapter available with WooCommerce 11.2.2, not with 11.2.0/11.2.1 (Store API checkout data leak)', true === ( new WooCommerceAdapter( $noop, '11.2.2' ) )->available() && false === ( new WooCommerceAdapter( $noop, '11.2.0' ) )->available() && false === ( new WooCommerceAdapter( $noop, '11.2.1' ) )->available() );
 check( 'MINVER-1 WordPress adapter not available with WordPress 6.9', false === ( new WordPressAdapter( $noop, '6.9.1' ) )->available() );
 check( 'MINVER-1 WordPress adapter available with WordPress 7.0 and its release candidate', true === ( new WordPressAdapter( $noop, '7.0' ) )->available() && true === ( new WordPressAdapter( $noop, '7.0-RC1-61000' ) )->available() );
 

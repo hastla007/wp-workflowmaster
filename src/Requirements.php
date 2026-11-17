@@ -1,7 +1,7 @@
 <?php
 /**
  * Minimum platform of the Captain Suite (owner decision MINVER-1, 17.11.2026): PHP 8.5, WordPress 7.0, WooCommerce
- * 11.2 where used, MySQL 9.7 or MariaDB 12.3.
+ * 11.2.2 where used, MySQL 9.7 or MariaDB 12.3.
  *
  * PHP and WordPress are hard limits: below them workflow-captain.php loads nothing but an admin notice and refuses
  * activation. An older database server is not blocked; Site Health shows a recommendation.
@@ -26,7 +26,7 @@ final class Requirements {
 	const WORDPRESS = '7.0';
 
 	/** Lowest WooCommerce version the built-in WooCommerce adapter registers with. */
-	const WOOCOMMERCE = '11.2.0';
+	const WOOCOMMERCE = '11.2.2'; // 11.2.0/11.2.1 leak data of an earlier Store API checkout in the same PHP process (fixed in 11.2.2).
 
 	/** Oldest database servers without a warning (LTS releases). */
 	const MYSQL   = '9.7';
