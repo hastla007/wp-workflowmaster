@@ -4,13 +4,14 @@
 #
 #   . bin/e2e/staging/env-staging.sh && bin/e2e/run-checks.sh
 #
+# E2E_WWW and E2E_MSDIR may also name the site directories directly (bin/e2e/ci-db.sh does that in CI).
 # E2E_PLUGIN_MODE=link: the plugin directory is a symlink to the checkout ($PLUGIN).
 # E2E_PLUGIN_MODE=zip:  the plugin is installed from the release ZIP ($E2E_ZIP) with "wp plugin install".
 ROOT=${E2E_ROOT:-/home/user/wp-e2e}
 PLUGIN=${E2E_PLUGIN:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
 export E2E_ROOT="$ROOT"
 export E2E_SITE=${E2E_SITE:-www} E2E_MS_SITE=${E2E_MS_SITE:-ms}
-export E2E_WWW="$ROOT/$E2E_SITE" E2E_MSDIR="$ROOT/$E2E_MS_SITE"
+export E2E_WWW=${E2E_WWW:-$ROOT/$E2E_SITE} E2E_MSDIR=${E2E_MSDIR:-$ROOT/$E2E_MS_SITE}
 export E2E_MAIN_DB=${E2E_MAIN_DB:-wp_e2e} E2E_MS_DB=${E2E_MS_DB:-wp_e2e_ms}
 export E2E_URL=${E2E_URL:-http://127.0.0.1:8080} E2E_MS_HOST=${E2E_MS_HOST:-127.0.0.1:8081}
 export E2E_MS_URL="http://$E2E_MS_HOST"
@@ -19,6 +20,12 @@ export E2E_LOG=${E2E_LOG:-$E2E_LOGS/debug.log} E2E_MS_LOG=${E2E_MS_LOG:-$E2E_LOG
 export E2E_MAIL_FILE=${E2E_MAIL_FILE:-$E2E_LOGS/mail.jsonl}
 export E2E_PLUGIN_MODE=${E2E_PLUGIN_MODE:-link} E2E_ZIP=${E2E_ZIP:-$ROOT/workflow-captain.zip}
 export E2E_HPOS=${E2E_HPOS:-yes}
+# Database server of the single site (bin/e2e/ci-db.sh: a service container in CI, the local MariaDB over TCP here).
+export E2E_DB_HOST=${E2E_DB_HOST:-localhost} E2E_DB_USER=${E2E_DB_USER:-wp} E2E_DB_PASS=${E2E_DB_PASS:-wp}
+# E2E_WP_CLI: WP-CLI command without --path (for example "php wp-cli.phar"); "wp" then runs it on $E2E_WWW.
+if [ -n "${E2E_WP_CLI:-}" ]; then
+	wp() { $E2E_WP_CLI --path="$E2E_WWW" "$@"; }
+fi
 mkdir -p "$E2E_LOGS" "$E2E_BACKUPS"
 
 # Puts the code under test in place on the single site (or with "ms" on the multisite): symlink or release ZIP.

@@ -7,8 +7,8 @@
  *     wp eval-file bin/e2e/checks.php order off   (classic posts storage)
  *
  * Sections: activation, providers, order, wc_more, wp_events, schedule, pause, deadletter_make, deadletter_requeue,
- * deactivate, uninstall. Each check appends one JSON line to $E2E_RESULTS (default /home/user/wp-e2e/logs/results.jsonl)
- * and prints PASS/FAIL. Runs as part of bin/e2e/run-checks.sh.
+ * deactivate, uninstall, counts (paging and counts on the real database). Each check appends one JSON line to
+ * $E2E_RESULTS (default /home/user/wp-e2e/logs/results.jsonl) and prints PASS/FAIL. Runs as part of bin/e2e/run-checks.sh.
  *
  * @package WorkflowCaptain
  */
@@ -483,6 +483,66 @@ switch ( $e2e_section ) {
 		( new \WorkflowCaptain\Admin\ConnectorsPage( Plugin::instance() ) )->render();
 		$html = (string) ob_get_clean();
 		e2e_check( 't8', 'Connectors page shows the connector refused for its contract (needs newer core)', str_contains( $html, 'e2e-newer' ), substr( (string) strstr( $html, 'e2e-newer' ), 0, 300 ) );
+		break;
+
+	case 'counts':
+		// Paging and counts of the admin lists (EventStore::count/find, EngineStore::count_runs/find_runs) against
+		// plain SQL on the real database; 23 more published posts make sure several pages exist.
+		global $wpdb;
+		$wf = e2e_publish( 'E2E Zaehlung', array( 'event' => 'wordpress.post.published' ), array( array( 'workflow.tag.set', array( 'tag' => 'e2e-count' ) ) ) );
+		for ( $i = 0; $i < 23; $i++ ) {
+			wp_insert_post( array( 'post_title' => 'E2E Zaehlung ' . $i, 'post_status' => 'publish' ) );
+		}
+		e2e_work();
+		Plugin::instance()->workflows()->pause( $wf );
+		$events = Plugin::instance()->store();
+		$et     = $wpdb->prefix . 'workflow_captain_events';
+		$sql_n  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$et}" ); // phpcs:ignore
+		$by     = $events->count_by_state();
+		$sum    = 0;
+		foreach ( array_keys( $by ) as $state ) {
+			$sum += $events->count( array( 'state' => $state ) );
+		}
+		e2e_check( 'n1', 'EventStore::count() equals SQL COUNT(*); the state filters add up; count_by_state() agrees', $sql_n === $events->count( array() ) && $sql_n === $sum && $sql_n === array_sum( $by ), array( 'sql' => $sql_n, 'count' => $events->count( array() ), 'by_state' => $by ) );
+		$wc_n = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$et} WHERE product = %s", 'woocommerce' ) ); // phpcs:ignore
+		e2e_check( 'n2', 'EventStore::count( product ) equals SQL', $wc_n === $events->count( array( 'product' => 'woocommerce' ) ) && $wc_n > 0, $wc_n . ' woocommerce events' );
+		$ids = array();
+		$pg  = \WorkflowCaptain\Admin\Pagination::state( $events->count( array() ), 7, 1 );
+		for ( $p = 1; $p <= $pg['pages']; $p++ ) {
+			$st  = \WorkflowCaptain\Admin\Pagination::state( $pg['total'], 7, $p );
+			$ids = array_merge( $ids, array_map( static fn( $r ) => (int) $r['id'], $events->find( array(), $st['per_page'], $st['offset'] ) ) );
+		}
+		$sorted = $ids;
+		rsort( $sorted );
+		e2e_check( 'n3', 'paging through EventStore::find() (7 per page) returns every row once, newest first', count( $ids ) === $sql_n && count( array_unique( $ids ) ) === $sql_n && $sorted === $ids && $pg['pages'] > 1, $pg['pages'] . ' pages, ' . count( $ids ) . ' rows' );
+		$env  = json_decode( (string) $wpdb->get_var( "SELECT envelope FROM {$et} ORDER BY id DESC LIMIT 1" ), true ); // phpcs:ignore
+		$corr = (string) ( $env['correlation_id'] ?? '' );
+		$c_n  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$et} WHERE envelope LIKE %s", '%' . $wpdb->esc_like( '"correlation_id":"' . $corr . '"' ) . '%' ) ); // phpcs:ignore
+		e2e_check( 'n4', 'EventStore::count( correlation_id ) equals SQL; a value that is no UUID matches nothing', '' !== $corr && $c_n >= 1 && $c_n === $events->count( array( 'correlation_id' => $corr ) ) && 0 === $events->count( array( 'correlation_id' => '%' ) ), $corr . ': ' . $c_n );
+		$engine = Plugin::instance()->engine_store();
+		$rt     = $wpdb->prefix . 'workflow_captain_runs';
+		$runs_n = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$rt}" ); // phpcs:ignore
+		$states = (array) $wpdb->get_col( "SELECT DISTINCT state FROM {$rt}" ); // phpcs:ignore
+		$sum    = 0;
+		foreach ( $states as $state ) {
+			$sum += $engine->count_runs( array( 'state' => $state ) );
+		}
+		e2e_check( 'n5', 'EngineStore::count_runs() equals SQL COUNT(*); the state filters add up', $runs_n === $engine->count_runs( array() ) && $runs_n === $sum && $runs_n > 0, array( 'sql' => $runs_n, 'states' => $states ) );
+		$wf_n = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$rt} WHERE workflow_id = %d", $wf ) ); // phpcs:ignore
+		e2e_check( 'n6', 'EngineStore::count_runs( workflow_id ) equals SQL (23 runs of "E2E Zaehlung")', 23 === $wf_n && $wf_n === $engine->count_runs( array( 'workflow_id' => $wf ) ), $wf_n . ' runs' );
+		$since = gmdate( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS );
+		$until = gmdate( 'Y-m-d H:i:s', time() + HOUR_IN_SECONDS );
+		$t_n   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$rt} WHERE created_at >= %s AND created_at <= %s", $since, $until ) ); // phpcs:ignore
+		e2e_check( 'n7', 'EngineStore::count_runs( since, until ) equals SQL; a malformed bound is ignored', $t_n === $engine->count_runs( array( 'since' => $since, 'until' => $until ) ) && $runs_n === $engine->count_runs( array( 'since' => 'yesterday' ) ) && 0 === $engine->count_runs( array( 'since' => $until ) ), $t_n . ' runs in the last hour' );
+		$ids = array();
+		$pg  = \WorkflowCaptain\Admin\Pagination::state( $engine->count_runs( array() ), 10, 1 );
+		for ( $p = 1; $p <= $pg['pages']; $p++ ) {
+			$st  = \WorkflowCaptain\Admin\Pagination::state( $pg['total'], 10, $p );
+			$ids = array_merge( $ids, array_map( static fn( $r ) => (int) $r['id'], $engine->find_runs( array(), $st['per_page'], $st['offset'] ) ) );
+		}
+		$sorted = $ids;
+		rsort( $sorted );
+		e2e_check( 'n8', 'paging through EngineStore::find_runs() (10 per page) returns every run once, newest first; a page past the end is clamped', count( $ids ) === $runs_n && count( array_unique( $ids ) ) === $runs_n && $sorted === $ids && $pg['pages'] > 1 && \WorkflowCaptain\Admin\Pagination::state( $runs_n, 10, 999 )['paged'] === $pg['pages'], $pg['pages'] . ' pages, ' . count( $ids ) . ' runs' );
 		break;
 
 	case 'ms_network':

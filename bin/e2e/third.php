@@ -76,7 +76,7 @@ function e3_paid( float $price, string $method = 'bacs' ): int {
 	return (int) $order->get_id();
 }
 
-function e3_state( array $s = null ): array {
+function e3_state( ?array $s = null ): array {
 	$file = E3_LOGS . '/third-state.json';
 	if ( null !== $s ) {
 		file_put_contents( $file, wp_json_encode( $s ) );

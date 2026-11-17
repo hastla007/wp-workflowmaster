@@ -75,6 +75,26 @@ Geprüft auf echten Installationen (WF-INT-16; Einzelheiten in [`E2E-RESULTS.md`
 | 6.9.11 | 9.9.5 | 28.7 (ohne JS-Build) | 8.3.6 | MariaDB 10.11 | HPOS und klassisch | nur CRUD-API (kein JS-Build) | wie oben | Git-Quellen | bestanden (erster bis dritter Lauf) |
 | 6.4.5 | 8.9.0 | – | 8.3.6 | MariaDB 10.11 | HPOS und klassisch | nur CRUD-API | – | wordpress.org, Release-ZIP | Aktivierung, Provider, Bestellabläufe, Admin-Seiten bestanden (Mindestversionen) |
 
-Action Scheduler (aus WooCommerce) und System-Cron (`wp workflow-captain process`, `DISABLE_WP_CRON`) sind auf allen drei Ständen geprüft. Nicht geprüft: PHP 8.1/8.2/8.4/8.5 (nur 8.3 im Prüfcontainer; die Workflows der Schwester-Plugins nutzen 8.1–8.5), MySQL, Subdomain-Multisite.
+Action Scheduler (aus WooCommerce) und System-Cron (`wp workflow-captain process`, `DISABLE_WP_CRON`) sind auf allen drei Ständen geprüft. Nicht geprüft: Subdomain-Multisite.
+
+### PHP und Datenbankserver
+
+Im Prüfcontainer gibt es nur PHP 8.3 und MariaDB 10.11. Alles andere läuft nur in der CI auf GitHub. Die Spalte „in CI“ nennt, was der Workflow prüft; ob der Lauf grün war, steht in der letzten Zeile.
+
+| Umgebung | in CI | lokal geprüft |
+|---|---|---|
+| PHP 8.1, 8.2, 8.3, 8.4, 8.5 ohne WordPress | `php.yml`: Syntax, Lizenzwächter, `tests/run.php` (SQLite), POT; Deprecations, Warnungen und Notices gelten als Fehler | nur 8.3.6 |
+| PHP 8.4 und 8.5 mit WordPress 7.1.4, WooCommerce 11.3.0 (HPOS) | `e2e-db.yml`, je gegen MySQL 9.7 und MariaDB 12.3 | – |
+| PHP 8.3 mit WordPress | – | alle Läufe der Tabelle oben; `bin/e2e/ci-db.sh` (siehe unten) |
+| MySQL 9.7 | `e2e-db.yml` (Service-Container `mysql:9.7`) | – |
+| MySQL 8.4 | – | – (nicht geprüft) |
+| MariaDB 12.3 | `e2e-db.yml` (Service-Container `mariadb:12.3`) | – |
+| MariaDB 10.11 | – | alle Läufe der Tabelle oben; `bin/e2e/ci-db.sh` 96 von 96 |
+
+`e2e-db.yml` ruft `bin/e2e/ci-db.sh` auf: WordPress 7.1.4 und WooCommerce 11.3.0 von wordpress.org, Workflow Captain als Release-ZIP aus `git archive`, `php -S` als Webserver, kein Browser. Geprüft werden Aktivierung, Tabellen und Schema (ci1–ci4, a1–a12, b1–b5), der Bestellablauf mit HPOS (c0–c11), weitere Ereignisse (d0–d10), Zeitplan (f0–f3), Betrieb (g0–g11), Migrationen mit `migrate` und `verify` (m1–m9, auch ein abgebrochenes Upgrade, das eine wp-admin-Anfrage zu Ende führt), Blättern und Zählungen gegen SQL (`EventStore::count`/`find`, `EngineStore::count_runs`/`find_runs`, n1–n8), das PHP-Fehlerprotokoll (h20) sowie Deaktivieren und Löschen (j1–j9). Ergebnisse als Artefakt `results-ci.jsonl`; eine fehlgeschlagene Prüfung lässt den Job scheitern. Nicht in dieser CI: klassische Bestellablage, Multisite, Admin-Seiten im Browser, Checkout-Block, Yoast SEO und das Upgrade von einer älteren Plugin-Version (diese nur lokal, siehe Tabelle oben).
+
+Lokal am 16.11.2026 mit denselben Schritten gegen MariaDB 10.11 und PHP 8.3.6 (frische Datenbank, `http://127.0.0.1:8095`): 96 von 96 bestanden.
+
+**Stand der CI:** `e2e-db.yml` und PHP 8.5 in `php.yml` sind neu; das Ergebnis des ersten Laufs auf GitHub steht noch aus und wird hier eingetragen.
 
 Hinweise aus dem Checkout-Test: `woocommerce.order.paid` hängt an `woocommerce_payment_complete`; Überweisung und Nachnahme lösen es in WooCommerce nie aus (auch nicht beim manuellen Wechsel auf „In Bearbeitung“), Workflows für diese Zahlarten nutzen den Statuswechsel. Der Block-Checkout erzeugt zusätzlich einen Statuswechsel `checkout-draft` → `pending`, der beim Gegenlesen verworfen wird (R-7.4).

@@ -1,0 +1,100 @@
+name: E2E database
+
+# End-to-end checks of Workflow Captain on a real WordPress 7.1.4 + WooCommerce 11.3.0 site against MySQL 9.7 and
+# MariaDB 12.3 (service containers) on PHP 8.4 and 8.5. The plugin is installed from the release ZIP (git archive).
+# Steps and checks: bin/e2e/ci-db.sh (the same script runs locally against MariaDB 10.11). No browser.
+on:
+  push:
+    paths:
+      - "**.php"
+      - "bin/e2e/**"
+      - ".gitattributes"
+      - ".github/workflows/e2e-db.yml"
+  pull_request:
+    paths:
+      - "**.php"
+      - "bin/e2e/**"
+      - ".github/workflows/e2e-db.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: ${{ matrix.database.name }} / PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        database:
+          - name: MySQL 9.7
+            image: mysql:9.7
+            expect: "9.7"
+            health_cmd: mysqladmin ping --host=127.0.0.1 --user=root --password=root
+          - name: MariaDB 12.3
+            image: mariadb:12.3
+            expect: "12.3"
+            health_cmd: healthcheck.sh --connect --innodb_initialized
+        php: ["8.4", "8.5"]
+    services:
+      db:
+        image: ${{ matrix.database.image }}
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: wordpress
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: wordpress
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="${{ matrix.database.health_cmd }}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      E2E_WWW: ${{ github.workspace }}/../wp-ci
+      E2E_URL: http://127.0.0.1:8095
+      E2E_LOGS: ${{ github.workspace }}/../e2e-logs
+      E2E_MAIN_DB: wordpress
+      E2E_DB_HOST: 127.0.0.1:3306
+      E2E_DB_USER: root
+      E2E_DB_PASS: root
+      E2E_HPOS: "yes"
+      E2E_WP_CLI: php -d memory_limit=1024M ${{ github.workspace }}/../wp-cli.phar
+      CI_WP_VERSION: 7.1.4
+      CI_WC_VERSION: 11.3.0
+      CI_DB_EXPECT: ${{ matrix.database.expect }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, gd, mbstring, mysqli, xml, zip, intl
+          coverage: none
+      - name: Download WP-CLI
+        run: curl --fail --silent --show-error https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar --output "$GITHUB_WORKSPACE/../wp-cli.phar"
+      - name: Install WordPress, WooCommerce and the release ZIP
+        run: bin/e2e/ci-db.sh install
+      - name: E2E checks against the database server
+        run: bin/e2e/ci-db.sh checks
+      - name: Results
+        if: always()
+        run: |
+          f="$E2E_LOGS/results-ci.jsonl"
+          [ -f "$f" ] || exit 0
+          echo "$(grep -c '"result":"PASS"' "$f") passed, $(grep -c '"result":"FAIL"' "$f") failed"
+          grep '"result":"FAIL"' "$f" || true
+          cp "$f" "$GITHUB_WORKSPACE/results-ci.jsonl"
+          cp "$E2E_LOGS/debug.log" "$GITHUB_WORKSPACE/debug.log" 2>/dev/null || true
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-db-${{ matrix.database.expect }}-php${{ matrix.php }}
+          path: |
+            results-ci.jsonl
+            debug.log
+          if-no-files-found: warn

@@ -110,6 +110,9 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 
 | Umgebung | Stand |
 |---|---|
-| PHP 8.1 bis 8.4 | automatisch (CI-Matrix `php.yml`) |
-| WordPress 6.4 bis aktuell, MySQL/MariaDB | offen |
-| Action Scheduler statt WP-Cron | offen (heute WP-Cron mit Minutentakt) |
+| PHP 8.1 bis 8.5 ohne WordPress (Syntax, `tests/run.php`; Deprecations gelten als Fehler) | automatisch (CI-Matrix `php.yml`; lokal nur 8.3) |
+| PHP 8.4 und 8.5 mit WordPress 7.1.4 und WooCommerce 11.3.0 gegen MySQL 9.7 und MariaDB 12.3 | automatisch (`e2e-db.yml` mit `bin/e2e/ci-db.sh`; erster grüner Lauf steht aus) |
+| Dieselben Prüfungen gegen MariaDB 10.11 mit PHP 8.3 | lokal geprüft (96 von 96, siehe [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md)) |
+| WordPress 6.4.5, 6.9.11, 7.1.4 auf echter Installation | lokal geprüft ([`E2E-RESULTS.md`](E2E-RESULTS.md)) |
+| MySQL 8.4 | offen |
+| Action Scheduler statt WP-Cron | automatisch in `e2e-db.yml` (a6, a10–a12, j5); lokal geprüft |
