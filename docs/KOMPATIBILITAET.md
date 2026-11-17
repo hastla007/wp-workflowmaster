@@ -84,7 +84,7 @@ Im Prüfcontainer gibt es nur PHP 8.3 und MariaDB 10.11. Alles andere läuft nur
 | Umgebung | in CI | lokal geprüft |
 |---|---|---|
 | PHP 8.1, 8.2, 8.3, 8.4, 8.5 ohne WordPress | `php.yml`: Syntax, Lizenzwächter, `tests/run.php` (SQLite), POT; Deprecations, Warnungen und Notices gelten als Fehler | nur 8.3.6 |
-| PHP 8.4 und 8.5 mit WordPress 7.1.4, WooCommerce 11.3.0 (HPOS) | `e2e-db.yml`, je gegen MySQL 9.7 und MariaDB 12.3 | – |
+| PHP 8.4 und 8.5 mit WordPress 7.1.4, WooCommerce 11.3.0 (HPOS) | `e2e-db.yml`, je gegen MySQL 8.4, MySQL 9.7 und MariaDB 12.3 | – |
 | PHP 8.3 mit WordPress | – | alle Läufe der Tabelle oben; `bin/e2e/ci-db.sh` (siehe unten) |
 | MySQL 9.7 | `e2e-db.yml` (Service-Container `mysql:9.7`) | – |
 | MySQL 8.4 | – | – (nicht geprüft) |
