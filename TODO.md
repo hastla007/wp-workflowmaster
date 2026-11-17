@@ -269,6 +269,7 @@ Diese Aufgaben verlangt `docs/SPEC-suite-events.md` von diesem Repository. Gebau
 ### Entscheidung 17 (16.11.2026): Connectoren von BoatingSchool und LearnBoating sind eigene Projektprodukte
 
 > **Bestätigt am 16.11.2026 auf Rückfrage:** Diese Fassung gilt. Die Fassung „Connectoren in Workflow Captain Pro“ auf dem Branch `claude/sleepy-ptolemy-n32guj` und in `captain-pro` (`claude/youthful-bardeen-7ejd7a`) gilt nicht (`docs/SPEC-open-questions.md`, F-18, W-14).
+> **Endgültig bestätigt vom Inhaber (16.11.2026, nach der zwischenzeitlichen Fassung „in Pro enthalten“):** jeder Connector ein eigenes Produkt mit eigenem Präfix, nicht Teil von Workflow Captain Pro oder Form Captain Pro. Gleich vermerkt in `wp-formmaster` `docs/ENTSCHEIDUNGEN.md` Nr. 17 (P8-88/P8-89 gelten, P8-90 überholt), boatingschool BS-11 und learnboating LBF-03.
 
 Der Inhaber hat am 16.11.2026 entschieden (Entscheidung 17; `wp-formmaster` `docs/ENTSCHEIDUNGEN.md:23`, Commits `1832ceb`, `1e8acd4`, `0e6aea1`; gegenüber der Koordination bestätigt): Jeder Connector für BoatingSchool oder LearnBoating ist ein eigenes, nicht verkauftes Projektprodukt mit eigenem Produktschlüssel, eigenem Präfix und eigener Lizenz auf dem Lizenzserver des Inhabers. Er wird als eigenes Plugin installiert; die Pro-Lizenz eines Captain-Produkts deckt ihn nicht ab. Das gilt für alle Connectoren beider Kunden (Form, Voucher, künftige); Paket und Updates bekommt nur der jeweilige Kunde. Die zwischenzeitliche Fassung „Teil von Form Captain Pro“ ist am selben Tag verworfen worden.
 
