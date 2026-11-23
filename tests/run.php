@@ -180,7 +180,7 @@ file_put_contents(
 define( "ABSPATH", "/" );
 define( "WP_UNINSTALL_PLUGIN", "workflow-captain/workflow-captain.php" );
 $GLOBALS["log"] = array();
-final class Stub_Db { public $prefix = "wp_"; public function query( $q ) { $GLOBALS["log"][] = $q; return true; } }
+final class Stub_Db { public $prefix = "wp_"; public $options = "wp_options"; public function query( $q ) { $GLOBALS["log"][] = $q; return true; } }
 final class Stub_Role { public function remove_cap( $c ) { $GLOBALS["log"][] = "cap:" . $c; } }
 $wpdb = new Stub_Db();
 function is_multisite() { return false; }
@@ -195,6 +195,7 @@ echo json_encode( $GLOBALS["log"] );
 exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $wfc_stub ) . ' 2>&1', $wfc_out, $wfc_code );
 unlink( $wfc_stub );
 $wfc_log = json_decode( (string) end( $wfc_out ), true );
+check( 'P4 uninstall removes the settings backup (addresses) and the plugin transients (import preview per user)', is_array( $wfc_log ) && in_array( 'option:workflow_captain_settings_backup', $wfc_log, true ) && array() !== array_filter( $wfc_log, static fn( $q ): bool => str_starts_with( $q, 'DELETE FROM wp_options' ) && str_contains( $q, '\\_transient\\_workflow\\_captain\\_%' ) && str_contains( $q, '\\_transient\\_timeout\\_workflow\\_captain\\_%' ) ) );
 check( 'uninstall.php runs without the plugin autoloader (drops tables, options, caps, clears both worker plans)', 0 === $wfc_code && is_array( $wfc_log ) && in_array( 'DROP TABLE IF EXISTS wp_workflow_captain_events', $wfc_log, true ) && in_array( 'option:workflow_captain_settings', $wfc_log, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log, true ) && in_array( 'as:workflow_captain_process_events:workflow-captain', $wfc_log, true ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
 
 // ---------------------------------------------------------------------------------------------------------------

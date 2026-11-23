@@ -355,6 +355,8 @@ final class Install {
 		foreach ( array( self::DB_OPTION, Migrator::LOCK_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at', 'workflow_captain_settings_backup' ) as $option ) {
 			delete_option( $option );
 		}
+		// Short-lived transients per user (import preview, notices, dry run); fixed names, no input.
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '\\_transient\\_workflow\\_captain\\_%' OR option_name LIKE '\\_transient\\_timeout\\_workflow\\_captain\\_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fixed query on the plugin's own transients.
 		foreach ( wp_roles()->role_objects as $role ) {
 			foreach ( self::CAPS as $cap ) {
 				$role->remove_cap( $cap );

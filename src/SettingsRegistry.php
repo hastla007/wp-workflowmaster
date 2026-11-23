@@ -105,7 +105,7 @@ final class SettingsRegistry {
 				}
 				return implode( ', ', array_slice( $list, 0, $f['max'] ) );
 			case self::TYPE_KINDS:
-				return is_array( $value ) ? array_values( array_intersect( $f['default'], array_map( 'strval', $value ) ) ) : $f['default'];
+				return is_array( $value ) ? array_values( array_intersect( $f['default'], array_map( 'strval', array_filter( $value, 'is_scalar' ) ) ) ) : $f['default'];
 		}
 		return $f['default'];
 	}

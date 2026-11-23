@@ -90,6 +90,10 @@ final class SettingsTransfer {
 				if ( ! is_array( $value ) ) {
 					return array( false, null, 'not_a_list' );
 				}
+				if ( count( array_filter( $value, 'is_scalar' ) ) !== count( $value ) ) {
+					// Nested lists or objects from a manipulated file are no kind (no "Array to string" warning).
+					return array( false, null, 'unknown_kind' );
+				}
 				$clean = SettingsRegistry::clean( $key, $value );
 				return count( $clean ) === count( array_unique( array_map( 'strval', $value ) ) ) ? array( true, $clean, '' ) : array( false, null, 'unknown_kind' );
 		}
@@ -220,7 +224,19 @@ final class SettingsTransfer {
 		if ( ! is_array( $b ) || ! isset( $b['at'], $b['values'] ) || ! is_array( $b['values'] ) ) {
 			return null;
 		}
-		return (int) $b['at'] >= time() - self::BACKUP_DAYS * 86400 ? $b : null;
+		if ( (int) $b['at'] >= time() - self::BACKUP_DAYS * 86400 ) {
+			return $b;
+		}
+		// The backup holds the recipient addresses: after the undo period it is removed, not only hidden.
+		if ( function_exists( 'delete_option' ) ) {
+			delete_option( self::BACKUP_OPTION );
+		}
+		return null;
+	}
+
+	/** Daily maintenance: removes a backup whose undo period is over (it holds the recipient addresses). */
+	public static function purge_expired_backup(): void {
+		self::backup();
 	}
 
 	/** Restores the backup once. Returns the changed keys, or null when there is nothing to undo. */
