@@ -76,7 +76,7 @@ final class WooCommerceAdapter extends CoreAdapter {
 					'data'          => array(
 						'status'           => self::status( $order->get_status() ),
 						'currency'         => self::currency( $order ),
-						'total_minor'      => self::minor( $order->get_total() ),
+						'total_minor'      => self::minor( $order->get_total(), $order ),
 						'item_count'       => (int) $order->get_item_count(),
 						'created_via'      => self::key( $order->get_created_via() ),
 						'customer_user_id' => self::customer( $order ),
@@ -107,7 +107,7 @@ final class WooCommerceAdapter extends CoreAdapter {
 					'subject'       => self::subject( $order ),
 					'data'          => array(
 						'currency'         => self::currency( $order ),
-						'total_minor'      => self::minor( $order->get_total() ),
+						'total_minor'      => self::minor( $order->get_total(), $order ),
 						'item_count'       => (int) $order->get_item_count(),
 						'payment_method'   => self::key( $order->get_payment_method() ),
 						'customer_user_id' => self::customer( $order ),
@@ -143,7 +143,7 @@ final class WooCommerceAdapter extends CoreAdapter {
 						'from_status' => self::status( $from ),
 						'to_status'   => $to,
 						'currency'    => self::currency( $order ),
-						'total_minor' => self::minor( $order->get_total() ),
+						'total_minor' => self::minor( $order->get_total(), $order ),
 					),
 					'actor_user_id' => self::current_actor(),
 					'discriminator' => $to,
@@ -168,15 +168,15 @@ final class WooCommerceAdapter extends CoreAdapter {
 			if ( null === $order || ! is_object( $refund ) || (int) $refund->get_parent_id() !== (int) $order->get_id() ) {
 				return;
 			}
-			$total    = self::minor( $order->get_total() );
-			$refunded = self::minor( $order->get_total_refunded() );
+			$total    = self::minor( $order->get_total(), $order );
+			$refunded = self::minor( $order->get_total_refunded(), $order );
 			$this->emit(
 				array(
 					'type'          => self::ORDER_REFUNDED,
 					'subject'       => self::subject( $order ),
 					'data'          => array(
 						'refund_id'            => $refund_id,
-						'amount_minor'         => abs( self::minor( $refund->get_amount() ) ),
+						'amount_minor'         => abs( self::minor( $refund->get_amount(), $order ) ),
 						'currency'             => self::currency( $order ),
 						'refunded_total_minor' => $refunded,
 						'full_refund'          => $total > 0 && $refunded >= $total,
@@ -211,7 +211,7 @@ final class WooCommerceAdapter extends CoreAdapter {
 					'data'          => array(
 						'from_status' => self::status( is_array( $transition ) ? ( $transition['from'] ?? '' ) : '' ),
 						'currency'    => self::currency( $order ),
-						'total_minor' => self::minor( $order->get_total() ),
+						'total_minor' => self::minor( $order->get_total(), $order ),
 					),
 					'actor_user_id' => self::current_actor(),
 					'discriminator' => 'once',
@@ -300,10 +300,16 @@ final class WooCommerceAdapter extends CoreAdapter {
 		return $currency;
 	}
 
-	/** An amount in minor units with the shop's price decimals (wc_get_price_decimals()). */
-	private static function minor( $amount ): int {
-		$decimals = function_exists( 'wc_get_price_decimals' ) ? max( 0, min( 8, (int) wc_get_price_decimals() ) ) : 2;
-		return (int) round( (float) $amount * ( 10 ** $decimals ) );
+	/**
+	 * An amount in the minor unit of the order's currency (ISO 4217, \WorkflowCaptain\Money), not with the shop's price
+	 * decimals: those are a display setting (WooCommerce keeps 2 for JPY unless changed) and belong to the shop's
+	 * currency, not to an order in another one.
+	 *
+	 * @param string|int|float $amount
+	 * @param \WC_Order        $order
+	 */
+	private static function minor( $amount, $order ): int {
+		return \WorkflowCaptain\Money::to_minor( $amount, self::currency( $order ) );
 	}
 
 	/**
