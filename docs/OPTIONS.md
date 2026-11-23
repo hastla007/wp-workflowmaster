@@ -43,6 +43,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `daily_limit_action` | `workflow_captain_settings` | Auswahl | 0 = am nächsten Tag senden (1 = überspringen) | 0–1 | Nachrichten | ja |
 | `log_level` | `workflow_captain_settings` | Auswahl | 0 = normal (1 = ausführlich) | 0–1; ausführlich fällt nach 7 Tagen von selbst zurück (Beginn in `workflow_captain_log_detailed_since`) | Ausführung | nein (vorübergehend, an die Installation gebunden) |
 | `notify_daily` | `workflow_captain_settings` | ja/nein | ja | – | Benachrichtigungen | ja |
+| `show_pro_hints` | `workflow_captain_settings` | ja/nein | ja | – | Allgemein | ja (graue Pro-Hinweiszeilen am Ende eines Reiters, nur Text; die Liste im Kern bleibt leer, bis eine Funktion verkauft wird, S5, SET-WC-02) |
 | `sender_name` | `workflow_captain_messages` | Text | leer | bis 100 Zeichen | Nachrichten | ja |
 | `sender_email` | `workflow_captain_messages` | Adresse | leer = Absender von WordPress bzw. des Mail-Plugins | eine Adresse | Nachrichten | nein (an die Installation gebunden) |
 | `reply_to` | `workflow_captain_messages` | Adresse | leer = an den Absender | eine Adresse | Nachrichten | nein (an die Installation gebunden) |

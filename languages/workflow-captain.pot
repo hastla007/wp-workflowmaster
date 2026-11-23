@@ -162,7 +162,7 @@ msgstr ""
 msgid "A rule needs a single value."
 msgstr ""
 
-#: src/SettingsRegistry.php:293
+#: src/SettingsRegistry.php:294
 msgid "A step that is overdue for longer (for example because WP-Cron did not run) is not executed automatically but shown for a decision."
 msgstr ""
 
@@ -227,7 +227,7 @@ msgstr ""
 msgid "Add note"
 msgstr ""
 
-#: src/SettingsRegistry.php:313
+#: src/SettingsRegistry.php:314
 msgid "Added below every “Message to user”, for example your contact details and links to your legal notice and privacy policy. Placeholders: {site_name}, {site_url}, {privacy_policy_url}. Empty: no footer. Check the wording with your legal advisor."
 msgstr ""
 
@@ -235,7 +235,7 @@ msgstr ""
 msgid "Administrators always have all capabilities. Shop managers do not get any capabilities automatically."
 msgstr ""
 
-#: src/SettingsRegistry.php:294
+#: src/SettingsRegistry.php:295
 msgid "After this, the worker does not start any new step; a step already started runs to completion. Keeps page loads short when WP-Cron runs on visitor traffic."
 msgstr ""
 
@@ -272,7 +272,7 @@ msgid "All times are stored in UTC; delays in days follow the site's time zone."
 msgstr ""
 
 #. translators: 1: lowest, 2: highest, 3: default value
-#: src/Admin/SettingsPage.php:136
+#: src/Admin/SettingsPage.php:134
 msgid "Allowed: %1$d to %2$d. Default: %3$d."
 msgstr ""
 
@@ -333,7 +333,7 @@ msgstr ""
 msgid "At most %d rules per condition, including groups."
 msgstr ""
 
-#: src/SettingsRegistry.php:308
+#: src/SettingsRegistry.php:309
 msgid "At most this many messages from all workflows together to one customer per calendar day of the site. 0: no limit."
 msgstr ""
 
@@ -365,7 +365,7 @@ msgstr ""
 msgid "Capabilities saved."
 msgstr ""
 
-#: src/SettingsRegistry.php:293
+#: src/SettingsRegistry.php:294
 msgid "Catch-up limit in hours"
 msgstr ""
 
@@ -373,7 +373,7 @@ msgstr ""
 msgid "Change"
 msgstr ""
 
-#: src/SettingsRegistry.php:303
+#: src/SettingsRegistry.php:304
 msgid "Change log entries"
 msgstr ""
 
@@ -496,7 +496,7 @@ msgstr ""
 msgid "Customer"
 msgstr ""
 
-#: src/SettingsRegistry.php:315
+#: src/SettingsRegistry.php:316
 msgid "Daily notice email to the site operator address"
 msgstr ""
 
@@ -532,19 +532,19 @@ msgstr ""
 msgid "Decision: a run stops when it is unclear whether a message has already gone out, or when a step is overdue for too long. A person continues or cancels it."
 msgstr ""
 
-#: src/SettingsRegistry.php:299
+#: src/SettingsRegistry.php:300
 msgid "Default 30 days, at most 180. Check with your legal advisor which retention period applies to your business."
 msgstr ""
 
-#: src/SettingsRegistry.php:300
+#: src/SettingsRegistry.php:301
 msgid "Default 30 days, at most 180; applies to completed, failed and canceled runs, open ones are kept. Logs contain no message content or event data except the copy in the run."
 msgstr ""
 
-#: src/SettingsRegistry.php:301
+#: src/SettingsRegistry.php:302
 msgid "Default 90 days, at most 180. The defaults are a suggestion pending legal review."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:184
+#: src/Admin/SettingsPage.php:182
 msgid "Defaults of this tab"
 msgstr ""
 
@@ -556,19 +556,19 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: src/SettingsRegistry.php:304
+#: src/SettingsRegistry.php:305
 msgid "Delete all data when the plugin is deleted"
 msgstr ""
 
-#: src/SettingsRegistry.php:299
+#: src/SettingsRegistry.php:300
 msgid "Delete completed events after (days)"
 msgstr ""
 
-#: src/SettingsRegistry.php:300
+#: src/SettingsRegistry.php:301
 msgid "Delete completed runs with step log after (days)"
 msgstr ""
 
-#: src/SettingsRegistry.php:301
+#: src/SettingsRegistry.php:302
 msgid "Delete failed and paused events after (days)"
 msgstr ""
 
@@ -576,7 +576,7 @@ msgstr ""
 msgid "Design workflows"
 msgstr ""
 
-#: src/SettingsRegistry.php:179
+#: src/SettingsRegistry.php:180
 msgid "Detailed (for 7 days)"
 msgstr ""
 
@@ -596,7 +596,7 @@ msgstr ""
 msgid "Discarded"
 msgstr ""
 
-#: src/SettingsRegistry.php:192
+#: src/SettingsRegistry.php:193
 msgid "Do not execute anything, only log"
 msgstr ""
 
@@ -648,7 +648,7 @@ msgstr ""
 msgid "Emergency pause turned on"
 msgstr ""
 
-#: src/SettingsRegistry.php:311
+#: src/SettingsRegistry.php:312
 msgid "Empty: the sender WordPress or your mail plugin sets (today’s behaviour). Use an address of your own domain, otherwise messages may land in spam."
 msgstr ""
 
@@ -722,7 +722,7 @@ msgstr ""
 msgid "Events"
 msgstr ""
 
-#: src/SettingsRegistry.php:290
+#: src/SettingsRegistry.php:291
 msgid "Events and steps per worker pass"
 msgstr ""
 
@@ -814,11 +814,11 @@ msgstr ""
 msgid "Flow (JSON)"
 msgstr ""
 
-#: src/SettingsRegistry.php:313
+#: src/SettingsRegistry.php:314
 msgid "Footer of messages to customers"
 msgstr ""
 
-#: src/SettingsRegistry.php:314
+#: src/SettingsRegistry.php:315
 msgid "For schedules, delays in days, the quiet time, the calendar day of the daily limit and the times shown in these pages. Empty: the time zone of WordPress (Settings → General). Stored times stay in UTC; a change applies from the next step on."
 msgstr ""
 
@@ -826,7 +826,7 @@ msgstr ""
 msgid "For support: “Events → Download diagnostics”. The file contains no personal data and no secrets."
 msgstr ""
 
-#: src/SettingsRegistry.php:295
+#: src/SettingsRegistry.php:296
 msgid "For test environments and trying things out. “Redirect messages”: every message from a workflow goes to the first recipient of the notice email (otherwise to the site’s address), with “[Test]” in the subject. “Do not execute anything”: workflows run, but no step takes effect; each step is only logged as skipped. The constant WORKFLOW_CAPTAIN_TEST_MODE in wp-config.php takes precedence."
 msgstr ""
 
@@ -846,7 +846,7 @@ msgstr ""
 msgid "Format number missing"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:128 src/SettingsRegistry.php:209
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:128 src/SettingsRegistry.php:210
 msgid "Friday"
 msgstr ""
 
@@ -886,7 +886,7 @@ msgstr ""
 msgid "How execution works"
 msgstr ""
 
-#: src/SettingsRegistry.php:296
+#: src/SettingsRegistry.php:297
 msgid "How often an event or step is retried after a temporary error, with growing intervals (1 min to 24 hrs). After that, an event is shown as failed and a step needs a decision. Messages with an unclear outcome are never retried automatically."
 msgstr ""
 
@@ -930,7 +930,7 @@ msgstr ""
 msgid "In the editor, only serialization (one run per object at a time) can be set per workflow; the limits above apply to all workflows."
 msgstr ""
 
-#: src/SettingsRegistry.php:318
+#: src/SettingsRegistry.php:320
 msgid "In the workflow editor you can then also choose all users with these roles as recipients (at most 50 addresses per message). With nothing selected: the site’s address or the holders of the fixed capabilities."
 msgstr ""
 
@@ -1013,15 +1013,15 @@ msgstr ""
 msgid "Loop stopped"
 msgstr ""
 
-#: src/SettingsRegistry.php:291
+#: src/SettingsRegistry.php:292
 msgid "Maximum concurrent steps on this site"
 msgstr ""
 
-#: src/SettingsRegistry.php:292
+#: src/SettingsRegistry.php:293
 msgid "Maximum concurrent steps per workflow"
 msgstr ""
 
-#: src/SettingsRegistry.php:298
+#: src/SettingsRegistry.php:299
 msgid "Maximum depth of a chain of workflows"
 msgstr ""
 
@@ -1041,11 +1041,11 @@ msgstr ""
 msgid "Messages"
 msgstr ""
 
-#: src/SettingsRegistry.php:305
+#: src/SettingsRegistry.php:306
 msgid "Messages from workflows to customers (“Message to user”) are not sent during the quiet time; they wait until it ends. Off, or the same hour as “until”: no quiet time. Times in the site’s time zone. Messages to the site operator are not held back."
 msgstr ""
 
-#: src/SettingsRegistry.php:308
+#: src/SettingsRegistry.php:309
 msgid "Messages per customer and day"
 msgstr ""
 
@@ -1053,11 +1053,11 @@ msgstr ""
 msgid "Minutes"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:124 src/SettingsRegistry.php:205
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:124 src/SettingsRegistry.php:206
 msgid "Monday"
 msgstr ""
 
-#: src/SettingsRegistry.php:290
+#: src/SettingsRegistry.php:291
 msgid "More per pass works through a backlog faster but makes each pass longer. Choose a smaller value if memory is low or your host allows only short run times."
 msgstr ""
 
@@ -1069,7 +1069,7 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: src/SettingsRegistry.php:310
+#: src/SettingsRegistry.php:311
 msgid "Name shown as sender of messages from workflows. Used together with the sender address."
 msgstr ""
 
@@ -1198,7 +1198,7 @@ msgstr ""
 msgid "Nodes: trigger, condition, action, delay, end. Available actions: %s. Placeholders in texts: {{type}}, {{occurred_at}}, {{subject.id}}, {{data.feld}}."
 msgstr ""
 
-#: src/SettingsRegistry.php:178
+#: src/SettingsRegistry.php:179
 msgid "Normal"
 msgstr ""
 
@@ -1224,7 +1224,7 @@ msgstr ""
 msgid "Note"
 msgstr ""
 
-#: src/SettingsRegistry.php:317
+#: src/SettingsRegistry.php:319
 msgid "Notice types"
 msgstr ""
 
@@ -1240,19 +1240,19 @@ msgstr ""
 msgid "Occurred"
 msgstr ""
 
-#: src/SettingsRegistry.php:170 src/SettingsRegistry.php:190
+#: src/SettingsRegistry.php:171 src/SettingsRegistry.php:191
 msgid "Off"
 msgstr ""
 
-#: src/SettingsRegistry.php:304
+#: src/SettingsRegistry.php:305
 msgid "Off (default): When the plugin is deleted, events, runs, workflows and settings are kept so that a reinstall can pick up where it left off. On: When the plugin is deleted, all Workflow Captain tables, settings and capabilities on this site are permanently removed. Type DELETE to switch it on."
 msgstr ""
 
-#: src/SettingsRegistry.php:307
+#: src/SettingsRegistry.php:308
 msgid "On other days, messages to customers wait for the next sending day. At least one day."
 msgstr ""
 
-#: src/SettingsRegistry.php:302
+#: src/SettingsRegistry.php:303
 msgid "On: Credentials (for example from an add-on's connections) are only stored if WORKFLOW_CAPTAIN_SECRET_KEY is set in wp-config.php. Without your own key, encryption depends on the WordPress salts; if they change, stored secrets are lost. Stored values remain readable."
 msgstr ""
 
@@ -1275,7 +1275,7 @@ msgstr ""
 msgid "Only runs with: %s."
 msgstr ""
 
-#: src/SettingsRegistry.php:315
+#: src/SettingsRegistry.php:316
 msgid "Only sent when decisions are waiting, events have failed, work is stuck or the emergency pause is on. Without event contents."
 msgstr ""
 
@@ -1331,7 +1331,7 @@ msgstr ""
 msgid "Possibly a duplicate: these recipients already get an email from the core plugin for the same occasion."
 msgstr ""
 
-#: src/SettingsRegistry.php:292
+#: src/SettingsRegistry.php:293
 msgid "Prevents a single workflow from taking all slots; the others still get their turn."
 msgstr ""
 
@@ -1380,7 +1380,7 @@ msgstr ""
 msgid "Proposed changes of the country profile"
 msgstr ""
 
-#: src/SettingsRegistry.php:291
+#: src/SettingsRegistry.php:292
 msgid "Protects the server when many events arrive at once. Further steps wait until a slot is free."
 msgstr ""
 
@@ -1412,11 +1412,11 @@ msgstr ""
 msgid "Queue selected again"
 msgstr ""
 
-#: src/SettingsRegistry.php:305
+#: src/SettingsRegistry.php:306
 msgid "Quiet time from"
 msgstr ""
 
-#: src/SettingsRegistry.php:306
+#: src/SettingsRegistry.php:307
 msgid "Quiet time until"
 msgstr ""
 
@@ -1440,7 +1440,7 @@ msgstr ""
 msgid "Recipient or buyer"
 msgstr ""
 
-#: src/Engine/Actions/NotifyAdmin.php:73 src/SettingsRegistry.php:316
+#: src/Engine/Actions/NotifyAdmin.php:73 src/SettingsRegistry.php:318
 msgid "Recipients"
 msgstr ""
 
@@ -1456,7 +1456,7 @@ msgstr ""
 msgid "Redeemed: {{data.amount_minor}} {{data.currency}} via {{data.channel}}"
 msgstr ""
 
-#: src/SettingsRegistry.php:191
+#: src/SettingsRegistry.php:192
 msgid "Redirect messages"
 msgstr ""
 
@@ -1497,11 +1497,11 @@ msgstr ""
 msgid "Repeat"
 msgstr ""
 
-#: src/SettingsRegistry.php:312
+#: src/SettingsRegistry.php:313
 msgid "Replies to messages from workflows go here. Empty: to the sender."
 msgstr ""
 
-#: src/SettingsRegistry.php:312
+#: src/SettingsRegistry.php:313
 msgid "Reply address"
 msgstr ""
 
@@ -1544,7 +1544,7 @@ msgstr ""
 msgid "Retried interrupted database update"
 msgstr ""
 
-#: src/SettingsRegistry.php:296
+#: src/SettingsRegistry.php:297
 msgid "Retries after a temporary error"
 msgstr ""
 
@@ -1573,7 +1573,7 @@ msgstr ""
 msgid "Roles & capabilities"
 msgstr ""
 
-#: src/SettingsRegistry.php:318
+#: src/SettingsRegistry.php:320
 msgid "Roles as recipients of “Message to site operator”"
 msgstr ""
 
@@ -1627,7 +1627,7 @@ msgstr ""
 msgid "Run not found."
 msgstr ""
 
-#: src/SettingsRegistry.php:294
+#: src/SettingsRegistry.php:295
 msgid "Run time per worker pass in seconds"
 msgstr ""
 
@@ -1687,7 +1687,7 @@ msgstr ""
 msgid "Sample event (JSON, at least \"data\")"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:129 src/SettingsRegistry.php:210
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:129 src/SettingsRegistry.php:211
 msgid "Saturday"
 msgstr ""
 
@@ -1728,7 +1728,7 @@ msgstr ""
 msgid "Select event %d"
 msgstr ""
 
-#: src/SettingsRegistry.php:184
+#: src/SettingsRegistry.php:185
 msgid "Send on the next day"
 msgstr ""
 
@@ -1736,11 +1736,11 @@ msgstr ""
 msgid "Send test message"
 msgstr ""
 
-#: src/SettingsRegistry.php:311
+#: src/SettingsRegistry.php:312
 msgid "Sender address"
 msgstr ""
 
-#: src/SettingsRegistry.php:310
+#: src/SettingsRegistry.php:311
 msgid "Sender name"
 msgstr ""
 
@@ -1748,7 +1748,7 @@ msgstr ""
 msgid "Sender, footer and time zone"
 msgstr ""
 
-#: src/SettingsRegistry.php:307
+#: src/SettingsRegistry.php:308
 msgid "Sending days"
 msgstr ""
 
@@ -1756,7 +1756,7 @@ msgstr ""
 msgid "Set all fields in this tab to their default values? Nothing is saved until you click “Save changes”."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:152
+#: src/Admin/SettingsPage.php:150
 msgid "Set by WORKFLOW_CAPTAIN_TEST_MODE in wp-config.php."
 msgstr ""
 
@@ -1796,6 +1796,10 @@ msgstr ""
 msgid "Settings imported"
 msgstr ""
 
+#: src/Admin/SettingsExtras.php:133
+msgid "Settings of add-ons"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:750
 msgid "Settings reset to defaults"
 msgstr ""
@@ -1806,6 +1810,10 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:390
 msgid "Settings, emergency pause, diagnostics"
+msgstr ""
+
+#: src/SettingsRegistry.php:317
+msgid "Show Pro hints"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:766
@@ -1825,6 +1833,10 @@ msgstr ""
 msgid "Show proposal"
 msgstr ""
 
+#: src/SettingsRegistry.php:317
+msgid "Shows a grey line of text at the end of a tab when a paid add-on offers more for that tab. Text only, no ads, no data is sent. Off: no hints at all."
+msgstr ""
+
 #: src/Engine/Actions/NotifyAdmin.php:60
 msgid "Site address"
 msgstr ""
@@ -1837,7 +1849,7 @@ msgstr ""
 msgid "Site time zone"
 msgstr ""
 
-#: src/SettingsRegistry.php:185
+#: src/SettingsRegistry.php:186
 msgid "Skip the message"
 msgstr ""
 
@@ -1870,7 +1882,7 @@ msgstr ""
 msgid "Step"
 msgstr ""
 
-#: src/SettingsRegistry.php:297
+#: src/SettingsRegistry.php:298
 msgid "Step log"
 msgstr ""
 
@@ -1900,7 +1912,7 @@ msgstr ""
 msgid "Storage"
 msgstr ""
 
-#: src/SettingsRegistry.php:302
+#: src/SettingsRegistry.php:303
 msgid "Store secrets only with your own key"
 msgstr ""
 
@@ -1933,7 +1945,7 @@ msgstr ""
 msgid "Succeeded"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:130 src/SettingsRegistry.php:211
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:130 src/SettingsRegistry.php:212
 msgid "Sunday"
 msgstr ""
 
@@ -1979,7 +1991,7 @@ msgstr ""
 msgid "Test message handed over. If it does not arrive, check the site's mail delivery."
 msgstr ""
 
-#: src/SettingsRegistry.php:295
+#: src/SettingsRegistry.php:296
 msgid "Test mode"
 msgstr ""
 
@@ -2101,7 +2113,7 @@ msgstr ""
 msgid "The profile was not applied:"
 msgstr ""
 
-#: src/SettingsRegistry.php:306
+#: src/SettingsRegistry.php:307
 msgid "The quiet time may span midnight, for example 22:00 to 07:00."
 msgstr ""
 
@@ -2155,7 +2167,7 @@ msgstr ""
 msgid "This connector is not registered."
 msgstr ""
 
-#: src/SettingsRegistry.php:303
+#: src/SettingsRegistry.php:304
 msgid "This many of the latest changes (settings, capabilities, emergency pause, approvals) stay visible in the Status tab. Older ones are dropped. The log contains user IDs but no event content."
 msgstr ""
 
@@ -2175,7 +2187,7 @@ msgstr ""
 msgid "This unsubscribe link is not valid (anymore)."
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:127 src/SettingsRegistry.php:208
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:127 src/SettingsRegistry.php:209
 msgid "Thursday"
 msgstr ""
 
@@ -2204,7 +2216,7 @@ msgstr ""
 msgid "Time zone"
 msgstr ""
 
-#: src/SettingsRegistry.php:314
+#: src/SettingsRegistry.php:315
 msgid "Time zone of Workflow Captain"
 msgstr ""
 
@@ -2260,7 +2272,7 @@ msgstr ""
 msgid "Triggers and actions"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:125 src/SettingsRegistry.php:206
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:125 src/SettingsRegistry.php:207
 msgid "Tuesday"
 msgstr ""
 
@@ -2268,7 +2280,7 @@ msgstr ""
 msgid "Turn on emergency pause"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:166
+#: src/Admin/SettingsPage.php:164
 msgid "Type DELETE to switch it on:"
 msgstr ""
 
@@ -2293,7 +2305,7 @@ msgstr ""
 msgid "Untitled"
 msgstr ""
 
-#: src/SettingsRegistry.php:316
+#: src/SettingsRegistry.php:318
 msgid "Up to ten addresses, separated by commas. Empty: the site's address."
 msgstr ""
 
@@ -2372,7 +2384,7 @@ msgstr ""
 msgid "Warning"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:126 src/SettingsRegistry.php:207
+#: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:126 src/SettingsRegistry.php:208
 msgid "Wednesday"
 msgstr ""
 
@@ -2384,7 +2396,7 @@ msgstr ""
 msgid "Weeks"
 msgstr ""
 
-#: src/SettingsRegistry.php:298
+#: src/SettingsRegistry.php:299
 msgid "When a workflow triggers an event that starts another workflow, a chain is created. More deeply nested events are stored but start nothing (loop protection)."
 msgstr ""
 
@@ -2392,7 +2404,7 @@ msgstr ""
 msgid "When something is stuck"
 msgstr ""
 
-#: src/SettingsRegistry.php:309
+#: src/SettingsRegistry.php:310
 msgid "When the limit is reached"
 msgstr ""
 
@@ -2949,11 +2961,11 @@ msgstr ""
 msgid "“Delete all data when the plugin is deleted” was not switched on: Type DELETE to confirm."
 msgstr ""
 
-#: src/SettingsRegistry.php:297
+#: src/SettingsRegistry.php:298
 msgid "“Detailed” additionally notes which rule of a condition held (field and operator, never the value) and how long each action took. For finding a problem; it switches back to “Normal” by itself after 7 days."
 msgstr ""
 
-#: src/SettingsRegistry.php:309
+#: src/SettingsRegistry.php:310
 msgid "“Send on the next day” keeps every message; “Skip” drops the surplus and notes it in the run."
 msgstr ""
 

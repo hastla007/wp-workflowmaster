@@ -2892,3 +2892,12 @@ msgstr "%d Einstellungen des Länderprofils übernommen. Rückgängig ist 30 Tag
 
 msgid "A country profile only proposes values. You see the current and the proposed value and choose which to take over; nothing is changed without your selection. Values marked “unchecked” have not been legally reviewed yet: check them with your legal advisor before you use them."
 msgstr "Ein Länderprofil schlägt Werte nur vor. Sie sehen den aktuellen und den vorgeschlagenen Wert und wählen aus, was Sie übernehmen; ohne Ihre Auswahl wird nichts geändert. Mit „ungeprüft“ markierte Werte sind noch nicht rechtlich geprüft: Klären Sie sie mit Ihrer Rechtsberatung, bevor Sie sie verwenden."
+
+msgid "Settings of add-ons"
+msgstr "Einstellungen von Add-ons"
+
+msgid "Show Pro hints"
+msgstr "Pro-Hinweise zeigen"
+
+msgid "Shows a grey line of text at the end of a tab when a paid add-on offers more for that tab. Text only, no ads, no data is sent. Off: no hints at all."
+msgstr "Zeigt am Ende eines Reiters eine graue Textzeile, wenn ein kostenpflichtiges Add-on für diesen Reiter mehr bietet. Nur Text, keine Werbung, es werden keine Daten gesendet. Aus: gar keine Hinweise."

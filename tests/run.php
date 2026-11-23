@@ -647,6 +647,7 @@ require __DIR__ . '/settings-transfer-tests.php';
 require __DIR__ . '/i18n-tests.php';
 require __DIR__ . '/pacing-tests.php';
 require __DIR__ . '/country-profile-tests.php';
+require __DIR__ . '/settings-hints-tests.php';
 
 echo "\n{$passed} passed, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );

@@ -131,6 +131,7 @@ Workflows entstehen im visuellen Editor (Admin „Workflows“); darunter steht 
 | `workflow_captain_has_consent_v1` | Filter | Einwilligung eines Benutzers in Werbenachrichten (`bool $consent = false, int $user_id, array $context` mit `workflow_id` und `event`); nur ein striktes `true` zählt. Workflow Captain speichert keine Einwilligung (SET-WC-03, E-S2, S11) |
 | `workflow_captain_retention_max_days` | Filter | Obergrenze der Aufbewahrung (180 im kostenlosen Kern; ein Add-on darf sie anheben) |
 | `workflow_captain_setting_<feld>` | Filter | Wert einer Einstellung des Registers (`docs/OPTIONS.md`); gewinnt, wird aber gegen Typ und Bereich geprüft |
+| `workflow_captain_settings_fields_v1` | Filter | Felder eines Add-ons in einem Reiter der Einstellungen (Abschnitt 5d); der Kern zeichnet sie, speichert sie aber nicht |
 
 ## 5a. Bausteine für Webhooks und n8n (für Add-ons)
 
@@ -161,6 +162,31 @@ add_action( 'workflow_captain_foreign_runs_v1', function ( \WorkflowCaptain\Engi
 ## 5c. Status für die Admin-Seiten der Kerne
 
 `workflow_captain_status_for( 'pass-captain' )` liefert einem Kern-Plugin für seine eigene Admin-Seite: Adapter angemeldet/abgelehnt/fehlt mit Grund, Vertragsversion, Zahl aktiver Workflows für seine Ereignisse, Ereignisse je Zustand, die letzte Korrelations-ID und Links zu Workflows, Läufen, Ereignissen und Providern. Nur Zahlen und Links, keine Ereignisdaten. Vor dem Start von Workflow Captain gibt die Funktion `null` zurück.
+
+## 5d. Felder eines Add-ons in den Einstellungen (SET-WC-02)
+
+Ein Add-on hängt eigene Felder an einen Reiter der Einstellungen (`general`, `execution`, `messages`, `notify`, `privacy`). Der Filter `workflow_captain_settings_fields_v1` bekommt eine leere Liste und den Reiter und gibt eine Liste von Feldern zurück. Der Kern zeichnet sie im Abschnitt „Einstellungen von Add-ons“ unter den eigenen Feldern, ein Formular je Einstellungsgruppe, das an `options.php` geht. **Gespeichert wird nichts vom Kern:** Das Add-on meldet seine Option mit `register_setting( $group, $option, … )` an und prüft die Werte selbst. Optionen und Gruppen des Kerns werden abgelehnt.
+
+| Schlüssel | Pflicht | Inhalt |
+|---|---|---|
+| `key` | ja | `[a-z0-9_]`, Name im Array der Option |
+| `label` | ja | Beschriftung (übersetzt) |
+| `help` | nein | Hilfetext unter dem Feld |
+| `option` | ja | eigene Option des Add-ons, das Feld heißt `option[key]` |
+| `group` | nein | Einstellungsgruppe für `settings_fields()`, Standard: die Option |
+| `render` | nein | `callable( $field, $value, $name, $id )`, gibt das Bedienelement aus |
+| `type` | ohne `render` | `text`, `number`, `checkbox` oder `textarea` (Standard `text`) |
+
+```php
+add_filter( 'workflow_captain_settings_fields_v1', function ( array $fields, string $tab ) {
+	if ( 'messages' === $tab ) {
+		$fields[] = array( 'key' => 'brand_color', 'label' => __( 'Brand color', 'my-addon' ), 'option' => 'my_addon_settings', 'type' => 'text' );
+	}
+	return $fields;
+}, 10, 2 );
+```
+
+Am Ende eines Reiters steht danach eine graue Hinweiszeile, wenn die statische Liste des Kerns für den Reiter Text enthält (`Admin\SettingsExtras::hint_lines()`) und der Schalter `show_pro_hints` an ist. Die Zeilen sind nur Text, ohne Feld und ohne Rechteprüfung; ein Add-on kann sie nicht ergänzen. Bis eine Funktion verkauft wird, ist die Liste leer (S5).
 
 ## 6. Datenfluss und Datenschutz
 
