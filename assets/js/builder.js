@@ -16,7 +16,7 @@
 	const NS = 'http://www.w3.org/2000/svg';
 	const W = 180;
 	const H = 64;
-	const WEEKDAYS = [ 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag' ];
+	const WEEKDAYS = [ 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday' ];
 	const ENVELOPE_FIELDS = [ 'type', 'subject.type', 'subject.id', 'subject.id_kind', 'source.product', 'actor_user_id' ];
 	const OPERATORS = [ 'eq', 'neq', 'gt', 'gte', 'lt', 'lte', 'in', 'not_in', 'contains', 'exists', 'not_exists' ];
 	const DRAG_TYPE = 'application/x-wfc-node';
@@ -193,14 +193,14 @@
 				return;
 			}
 			if ( ! this.node( this.focusNode ) ) {
-				this.announce( this.t( 'focusMissing', 'Der Knoten aus dem Lauf ist im Entwurf nicht mehr vorhanden:' ) + ' ' + this.focusNode );
+				this.announce( this.t( 'focusMissing', 'The node from the run no longer exists in the draft:' ) + ' ' + this.focusNode );
 				return;
 			}
 			const g = this.root.querySelector( '.wfc-node[data-id="' + this.focusNode + '"]' );
 			if ( g && g.scrollIntoView ) {
 				g.scrollIntoView( { block: 'center', inline: 'center' } );
 			}
-			this.announce( this.t( 'focusShown', 'Knoten aus dem Lauf markiert:' ) + ' ' + this.label( this.node( this.focusNode ) ) );
+			this.announce( this.t( 'focusShown', 'Node from the run highlighted:' ) + ' ' + this.label( this.node( this.focusNode ) ) );
 		}
 
 		/** Product of an event type or action key and its label, plugin and contract version (from PHP). */
@@ -221,7 +221,7 @@
 
 		/** Small heading of a node: origin and kind, e.g. "WOOCOMMERCE · AUSLÖSER". */
 		kicker( n ) {
-			const kinds = { trigger: this.t( 'trigger', 'Auslöser' ), action: this.t( 'action', 'Aktion' ), condition: this.t( 'condition', 'Wenn/Sonst' ), delay: this.t( 'delay', 'Warten' ), end: this.t( 'end', 'Ende' ) };
+			const kinds = { trigger: this.t( 'trigger', 'Trigger' ), action: this.t( 'action', 'Action' ), condition: this.t( 'condition', 'If/else' ), delay: this.t( 'delay', 'Delay' ), end: this.t( 'end', 'End' ) };
 			const o = this.origin( n );
 			return ( ( o ? o.label + ' · ' : '' ) + ( kinds[ n.type ] || n.type ) ).toLocaleUpperCase();
 		}
@@ -230,7 +230,7 @@
 		ariaLabel( n ) {
 			const summary = this.summary( n );
 			const o = this.origin( n );
-			return this.label( n ) + ( summary ? ', ' + summary : '' ) + ( o ? ' (' + o.label + ')' : '' ) + ( this.focusNode === n.id ? ', ' + this.t( 'fromRun', 'aus dem Lauf' ) : '' );
+			return this.label( n ) + ( summary ? ', ' + summary : '' ) + ( o ? ' (' + o.label + ')' : '' ) + ( this.focusNode === n.id ? ', ' + this.t( 'fromRun', 'from the run' ) : '' );
 		}
 
 		/** Readable short description of a node instead of its ID (docs/UI-ENTWUERFE.md, section 2). */
@@ -238,11 +238,11 @@
 			if ( 'trigger' === n.type ) {
 				if ( 'workflow.schedule.due' === n.event && n.schedule ) {
 					const s = n.schedule;
-					const freq = { daily: this.t( 'daily', 'täglich' ), weekly: this.t( 'weekly', 'wöchentlich' ), monthly: this.t( 'monthly', 'monatlich' ) }[ s.frequency ] || '';
-					const when = 'weekly' === s.frequency ? ' ' + this.t( 'weekday' + s.weekday, WEEKDAYS[ ( s.weekday || 1 ) - 1 ] ) : ( 'monthly' === s.frequency ? ' ' + this.t( 'dayShort', 'am' ) + ' ' + s.day + '.' : '' );
+					const freq = { daily: this.t( 'daily', 'daily' ), weekly: this.t( 'weekly', 'weekly' ), monthly: this.t( 'monthly', 'monthly' ) }[ s.frequency ] || '';
+					const when = 'weekly' === s.frequency ? ' ' + this.t( 'weekday' + s.weekday, WEEKDAYS[ ( s.weekday || 1 ) - 1 ] ) : ( 'monthly' === s.frequency ? ' ' + this.t( 'dayShort', 'on day' ) + ' ' + s.day + '.' : '' );
 					return freq + when + ' ' + ( s.time || '' );
 				}
-				const serial = { subject: this.t( 'serialSubject', 'je Objekt nacheinander' ), actor: this.t( 'serialActor', 'je Benutzer nacheinander' ) };
+				const serial = { subject: this.t( 'serialSubject', 'one at a time per object' ), actor: this.t( 'serialActor', 'one at a time per user' ) };
 				return serial[ n.serialize ] || '';
 			}
 			if ( 'action' === n.type ) {
@@ -257,9 +257,9 @@
 					return '';
 				}
 				if ( r.op ) {
-					return this.t( 'ruleGroups', 'Regelgruppen' );
+					return this.t( 'ruleGroups', 'Rule groups' );
 				}
-				const op = { eq: '=', neq: '≠', gt: '>', gte: '≥', lt: '<', lte: '≤', in: '∈', not_in: '∉', contains: '∋', exists: this.t( 'opExists', 'vorhanden' ), not_exists: this.t( 'opMissing', 'fehlt' ) }[ r.operator ] || r.operator;
+				const op = { eq: '=', neq: '≠', gt: '>', gte: '≥', lt: '<', lte: '≤', in: '∈', not_in: '∉', contains: '∋', exists: this.t( 'opExists', 'exists' ), not_exists: this.t( 'opMissing', 'is missing' ) }[ r.operator ] || r.operator;
 				const value = [ 'exists', 'not_exists' ].includes( r.operator ) ? '' : ' ' + ( Array.isArray( r.value ) ? r.value.join( ', ' ) : String( undefined === r.value ? '' : r.value ) );
 				return String( r.field || '' ).replace( /^data\./, '' ) + ' ' + op + value + ( items.length > 1 ? ' (+' + ( items.length - 1 ) + ')' : '' );
 			}
@@ -272,7 +272,7 @@
 				this.graph = { nodes: Array.isArray( g.nodes ) ? g.nodes : [], edges: Array.isArray( g.edges ) ? g.edges : [] };
 			} catch ( e ) {
 				this.graph = { nodes: [], edges: [] };
-				this.error = this.t( 'invalidJson', 'Das JSON ist ungültig; der Editor zeigt einen leeren Ablauf.' );
+				this.error = this.t( 'invalidJson', 'Invalid JSON.' );
 			}
 			this.layoutMissing();
 		}
@@ -355,20 +355,20 @@
 
 		label( n ) {
 			if ( 'trigger' === n.type ) {
-				return this.t( 'trigger', 'Auslöser' ) + ': ' + ( n.event || '?' );
+				return this.t( 'trigger', 'Trigger' ) + ': ' + ( n.event || '?' );
 			}
 			if ( 'action' === n.type ) {
 				const a = this.config.actions.find( ( x ) => x.key === n.action );
-				return a ? a.label : ( n.action || this.t( 'action', 'Aktion' ) );
+				return a ? a.label : ( n.action || this.t( 'action', 'Action' ) );
 			}
 			if ( 'condition' === n.type ) {
-				return this.t( 'condition', 'Wenn/Sonst' );
+				return this.t( 'condition', 'If/else' );
 			}
 			if ( 'delay' === n.type ) {
-				const units = { minutes: this.t( 'minutes', 'Min.' ), hours: this.t( 'hours', 'Std.' ), days: this.t( 'days', 'Tag(e)' ), weeks: this.t( 'weeks', 'Woche(n)' ) };
-				return this.t( 'delay', 'Warten' ) + ': ' + ( n.amount || '?' ) + ' ' + ( units[ n.unit ] || n.unit || '' );
+				const units = { minutes: this.t( 'minutes', 'min' ), hours: this.t( 'hours', 'h' ), days: this.t( 'days', 'day(s)' ), weeks: this.t( 'weeks', 'week(s)' ) };
+				return this.t( 'delay', 'Delay' ) + ': ' + ( n.amount || '?' ) + ' ' + ( units[ n.unit ] || n.unit || '' );
 			}
-			return this.t( 'end', 'Ende' );
+			return this.t( 'end', 'End' );
 		}
 
 		/** First position from (x, y) to the right that overlaps no node, so a new node never hides another. */
@@ -391,7 +391,7 @@
 		/** Adds a node from the palette; at = [x, y] when it was dropped on the canvas, else below the selected node. */
 		add( type, at ) {
 			if ( 'trigger' === type && this.graph.nodes.some( ( n ) => 'trigger' === n.type ) ) {
-				this.announce( this.t( 'oneTrigger', 'Ein Workflow hat genau einen Auslöser.' ) );
+				this.announce( this.t( 'oneTrigger', 'A workflow has exactly one trigger.' ) );
 				return;
 			}
 			const n = { id: this.newId( type ), type };
@@ -415,7 +415,7 @@
 			this.selected = n.id;
 			this.focusTarget = n.id;
 			this.commit();
-			this.announce( this.t( 'added', 'Knoten hinzugefügt:' ) + ' ' + this.label( n ) );
+			this.announce( this.t( 'added', 'Node added:' ) + ' ' + this.label( n ) );
 		}
 
 		remove( id ) {
@@ -478,51 +478,51 @@
 			const outs = this.graph.edges.filter( ( e ) => e.from === n.id );
 			if ( 'trigger' === n.type ) {
 				if ( this.config.events.length && ! this.config.events.includes( n.event ) ) {
-					add( 'provider', this.t( 'problemProvider', 'Provider nicht verfügbar: kein angemeldeter Adapter liefert dieses Ereignis.' ) );
+					add( 'provider', this.t( 'problemProvider', 'Provider not available: no registered adapter delivers this event.' ) );
 				}
 				if ( 'workflow.schedule.due' === n.event && ! upcoming( n.schedule, Date.now(), this.config.timezone || 'UTC', 1 ).length ) {
-					add( 'schedule', this.t( 'nextNone', 'Keine Termine: Der Zeitplan ist unvollständig.' ) );
+					add( 'schedule', this.t( 'nextNone', 'No dates: the schedule is incomplete.' ) );
 				}
 			} else if ( 'action' === n.type && ! this.config.actions.some( ( x ) => x.key === n.action ) ) {
-				add( 'action', this.t( 'problemAction', 'Aktion nicht verfügbar: Der Provider fehlt oder ist nicht aktiv.' ) );
+				add( 'action', this.t( 'problemAction', 'Action not available: the provider is missing or not active.' ) );
 			} else if ( 'condition' === n.type ) {
 				const texts = {
-					'condition:invalid_group': this.t( 'problemGroup', 'Eine Gruppe ist leer oder hat keine Verknüpfung.' ),
-					'condition:too_deep': this.t( 'problemDeep', 'Gruppen sind zu tief verschachtelt: Eine Gruppe darf keine weitere Gruppe enthalten.' ),
-					'condition:too_many_rules': this.t( 'problemRules', 'Zu viele Regeln (höchstens %d).' ).replace( '%d', this.limits().rules ),
-					'condition:invalid_field': this.t( 'problemField', 'Eine Regel hat kein gültiges Feld.' ),
-					'condition:invalid_operator': this.t( 'problemOperator', 'Eine Regel hat keinen gültigen Operator.' ),
-					'condition:list_expected': this.t( 'problemList', 'Für „in Liste“ Werte mit Komma getrennt angeben.' ),
-					'condition:number_expected': this.t( 'problemNumber', 'Für >, ≥, < und ≤ eine Zahl angeben.' ),
-					'condition:scalar_expected': this.t( 'problemScalar', 'Eine Regel braucht einen einzelnen Wert.' ),
+					'condition:invalid_group': this.t( 'problemGroup', 'A group is empty or has no operator.' ),
+					'condition:too_deep': this.t( 'problemDeep', 'Groups are nested too deeply: a group must not contain another group.' ),
+					'condition:too_many_rules': this.t( 'problemRules', 'Too many rules (at most %d).' ).replace( '%d', this.limits().rules ),
+					'condition:invalid_field': this.t( 'problemField', 'A rule has no valid field.' ),
+					'condition:invalid_operator': this.t( 'problemOperator', 'A rule has no valid operator.' ),
+					'condition:list_expected': this.t( 'problemList', 'For “in list”, enter values separated by commas.' ),
+					'condition:number_expected': this.t( 'problemNumber', 'Enter a number for >, ≥, < and ≤.' ),
+					'condition:scalar_expected': this.t( 'problemScalar', 'A rule needs a single value.' ),
 				};
 				const limits = this.limits();
 				conditionViolations( n.rules, limits.depth, limits.rules ).forEach( ( code ) => add( code, texts[ code ] || code ) );
 				if ( ! outs.some( ( e ) => 'then' === e.branch ) ) {
-					add( 'then', this.t( 'thenOpen', 'Der Dann-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) );
+					add( 'then', this.t( 'thenOpen', 'The Then output is not connected. Connect it or close it with “End”.' ) );
 				}
 				if ( ! outs.some( ( e ) => 'else' === e.branch ) ) {
-					add( 'else', this.t( 'elseOpen', 'Der Sonst-Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) );
+					add( 'else', this.t( 'elseOpen', 'The Else output is not connected. Connect it or close it with “End”.' ) );
 				}
 			} else if ( 'delay' === n.type && ( ! [ 'minutes', 'hours', 'days', 'weeks' ].includes( n.unit ) || ! Number.isInteger( n.amount ) || n.amount < 1 || n.amount > 1000 ) ) {
-				add( 'delay', this.t( 'problemDelay', 'Dauer von 1 bis 1000 und eine Einheit angeben.' ) );
+				add( 'delay', this.t( 'problemDelay', 'Enter a duration from 1 to 1000 and a unit.' ) );
 			}
 			if ( [ 'trigger', 'action', 'delay' ].includes( n.type ) && 1 !== outs.length ) {
-				add( 'out', outs.length ? this.t( 'problemOutMany', 'Mehr als ein Ausgang.' ) : this.t( 'problemOut', 'Der Ausgang ist nicht verbunden. Verbinden oder mit „Ende“ abschließen.' ) );
+				add( 'out', outs.length ? this.t( 'problemOutMany', 'More than one output.' ) : this.t( 'problemOut', 'The output is not connected. Connect it or close it with “End”.' ) );
 			}
 			if ( 'end' === n.type && outs.length ) {
-				add( 'endOut', this.t( 'problemEnd', 'Ein Ende hat keinen Ausgang.' ) );
+				add( 'endOut', this.t( 'problemEnd', 'An end has no output.' ) );
 			}
 			if ( 'trigger' !== n.type && reach && ! reach.has( n.id ) ) {
-				add( 'unreachable', this.t( 'problemUnreachable', 'Nicht mit dem Auslöser verbunden.' ) );
+				add( 'unreachable', this.t( 'problemUnreachable', 'Not connected to the trigger.' ) );
 			}
-			( this.serverViolations[ n.id ] || [] ).filter( ( code ) => ! COVERED.test( code ) ).forEach( ( code ) => add( 'server', this.t( 'problemServer', 'Beim letzten Prüfen gemeldet:' ) + ' ' + code ) );
+			( this.serverViolations[ n.id ] || [] ).filter( ( code ) => ! COVERED.test( code ) ).forEach( ( code ) => add( 'server', this.t( 'problemServer', 'Reported at the last check:' ) + ' ' + code ) );
 			return out;
 		}
 
 		/** Spoken and written form of a node's problems, e.g. "Warnung: Der Ausgang ist nicht verbunden." */
 		problemText( list ) {
-			return list.length ? this.t( 'warning', 'Warnung' ) + ': ' + list.map( ( p ) => p.text ).join( ' ' ) : '';
+			return list.length ? this.t( 'warning', 'Warning' ) + ': ' + list.map( ( p ) => p.text ).join( ' ' ) : '';
 		}
 
 		announce( text ) {
@@ -622,9 +622,9 @@
 		}
 
 		toolbar() {
-			const bar = el( 'div', { class: 'wfc-toolbar', role: 'toolbar', 'aria-label': this.t( 'palette', 'Bausteine' ) } );
+			const bar = el( 'div', { class: 'wfc-toolbar', role: 'toolbar', 'aria-label': this.t( 'palette', 'Building blocks' ) } );
 			// Click or Enter adds below the selected node; dragging onto the canvas places it there (workflow-builder.svg).
-			[ [ 'trigger', 'Auslöser' ], [ 'condition', 'Wenn/Sonst' ], [ 'action', 'Aktion' ], [ 'delay', 'Warten' ], [ 'end', 'Ende' ] ].forEach( ( [ type, label ] ) => {
+			[ [ 'trigger', this.t( 'trigger', 'Trigger' ) ], [ 'condition', this.t( 'condition', 'If/else' ) ], [ 'action', this.t( 'action', 'Action' ) ], [ 'delay', this.t( 'delay', 'Delay' ) ], [ 'end', this.t( 'end', 'End' ) ] ].forEach( ( [ type, label ] ) => {
 				bar.appendChild( el( 'button', {
 					type: 'button',
 					class: 'button wfc-add',
@@ -641,25 +641,25 @@
 				} ) );
 			} );
 			bar.appendChild( el( 'span', { class: 'wfc-sep' } ) );
-			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'undo', 'Rückgängig' ), onclick: () => this.undo(), disabled: ! this.history.length } ) );
-			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'redo', 'Wiederholen' ), onclick: () => this.redo(), disabled: ! this.future.length } ) );
-			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'arrange', 'Anordnen' ), onclick: () => { this.layoutMissing( true ); this.commit(); } } ) );
+			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'undo', 'Undo' ), onclick: () => this.undo(), disabled: ! this.history.length } ) );
+			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'redo', 'Redo' ), onclick: () => this.redo(), disabled: ! this.future.length } ) );
+			bar.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'arrange', 'Arrange' ), onclick: () => { this.layoutMissing( true ); this.commit(); } } ) );
 			bar.appendChild( el( 'span', { class: 'wfc-sep' } ) );
 			const zoomTo = ( z ) => {
 				this.zoom = Math.min( 2, Math.max( 0.4, Math.round( z * 10 ) / 10 ) );
 				this.render();
 			};
-			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-out', 'aria-label': this.t( 'zoomOut', 'Verkleinern' ), text: '−', onclick: () => zoomTo( this.zoom - 0.2 ) } ) );
+			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-out', 'aria-label': this.t( 'zoomOut', 'Zoom out' ), text: '−', onclick: () => zoomTo( this.zoom - 0.2 ) } ) );
 			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-reset', text: Math.round( this.zoom * 100 ) + ' %', onclick: () => zoomTo( 1 ) } ) );
-			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-in', 'aria-label': this.t( 'zoomIn', 'Vergrößern' ), text: '+', onclick: () => zoomTo( this.zoom + 0.2 ) } ) );
-			bar.appendChild( el( 'p', { id: 'wfc-palette-hint', class: 'description wfc-palette-hint', text: this.t( 'paletteHint', 'Bausteine anklicken oder auf den Ablauf ziehen. Tastatur: Enter fügt den Baustein unter dem gewählten Knoten ein, die Pfeiltasten verschieben ihn.' ) } ) );
+			bar.appendChild( el( 'button', { type: 'button', class: 'button wfc-zoom-in', 'aria-label': this.t( 'zoomIn', 'Zoom in' ), text: '+', onclick: () => zoomTo( this.zoom + 0.2 ) } ) );
+			bar.appendChild( el( 'p', { id: 'wfc-palette-hint', class: 'description wfc-palette-hint', text: this.t( 'paletteHint', 'Click building blocks or drag them onto the flow. Keyboard: Enter inserts the block below the selected node, the arrow keys move it.' ) } ) );
 			return bar;
 		}
 
 		canvas() {
 			const maxX = Math.max( 600, ...this.graph.nodes.map( ( n ) => n.x + W + 40 ) );
 			const maxY = Math.max( 300, ...this.graph.nodes.map( ( n ) => n.y + H + 40 ) );
-			const s = svg( 'svg', { class: 'wfc-canvas', width: Math.round( maxX * this.zoom ), height: Math.round( maxY * this.zoom ), viewBox: `0 0 ${ maxX } ${ maxY }`, role: 'group', 'aria-label': this.t( 'canvas', 'Ablauf' ) } );
+			const s = svg( 'svg', { class: 'wfc-canvas', width: Math.round( maxX * this.zoom ), height: Math.round( maxY * this.zoom ), viewBox: `0 0 ${ maxX } ${ maxY }`, role: 'group', 'aria-label': this.t( 'canvas', 'Flow' ) } );
 			const defs = svg( 'defs' );
 			const marker = svg( 'marker', { id: 'wfc-arrow', viewBox: '0 0 10 10', refX: '10', refY: '5', markerWidth: '8', markerHeight: '8', orient: 'auto-start-reverse' } );
 			marker.appendChild( svg( 'path', { d: 'M 0 0 L 10 5 L 0 10 z', class: 'wfc-arrowhead' } ) );
@@ -681,7 +681,7 @@
 				s.appendChild( path );
 				if ( e.branch ) {
 					const t = svg( 'text', { x: 'else' === e.branch ? ax + 8 : ax - 8, y: ay + 14, class: 'wfc-edge-label', 'text-anchor': 'else' === e.branch ? 'start' : 'end' } );
-					t.textContent = 'then' === e.branch ? this.t( 'then', 'Dann' ) : this.t( 'else', 'Sonst' );
+					t.textContent = 'then' === e.branch ? this.t( 'then', 'Then' ) : this.t( 'else', 'Else' );
 					s.appendChild( t );
 				}
 			} );
@@ -713,7 +713,7 @@
 				const summary = this.summary( n );
 				const o = this.origin( n );
 				const tip = svg( 'title' );
-				tip.textContent = [ this.kicker( n ), this.label( n ), summary, o && o.contract ? this.t( 'contract', 'Vertrag' ) + ' ' + o.contract : '', 'ID: ' + n.id ].concat( issues.map( ( p ) => '⚠ ' + p.text ) ).filter( ( x ) => x ).join( '\n' );
+				tip.textContent = [ this.kicker( n ), this.label( n ), summary, o && o.contract ? this.t( 'contract', 'Contract' ) + ' ' + o.contract : '', 'ID: ' + n.id ].concat( issues.map( ( p ) => '⚠ ' + p.text ) ).filter( ( x ) => x ).join( '\n' );
 				g.appendChild( tip );
 				if ( summary ) {
 					const sub = svg( 'text', { x: 12, y: 54, class: 'wfc-node-sub' } );
@@ -761,7 +761,7 @@
 				this.connectFrom = null;
 				this.connectBranch = null;
 				this.connect( from, id, branch );
-				this.announce( this.t( 'connected', 'Verbunden.' ) );
+				this.announce( this.t( 'connected', 'Connected.' ) );
 				return;
 			}
 			this.selected = id;
@@ -790,7 +790,7 @@
 				this.clickNode( n.id );
 			} else if ( 'c' === ev.key.toLowerCase() ) {
 				this.connectFrom = n.id;
-				this.announce( this.t( 'connectHint', 'Ziel wählen: einen anderen Knoten auswählen.' ) );
+				this.announce( this.t( 'connectHint', 'Choose a target.' ) );
 			}
 		}
 
@@ -842,7 +842,7 @@
 			const tokens = [ 'type', 'occurred_at', 'subject.type', 'subject.id', 'source.product' ].concat( this.dataFields().map( ( f ) => 'data.' + f ) );
 			return el( 'select', {
 				class: 'wfc-token',
-				'aria-label': this.t( 'insertToken', 'Platzhalter einfügen' ),
+				'aria-label': this.t( 'insertToken', 'Insert placeholder …' ),
 				onchange: ( ev ) => {
 					if ( ! ev.target.value ) {
 						return;
@@ -853,7 +853,7 @@
 					ev.target.value = '';
 					onChange( input.value );
 				},
-			}, [ el( 'option', { value: '', text: this.t( 'insertToken', 'Platzhalter einfügen …' ) } ) ].concat( tokens.map( ( tk ) => el( 'option', { value: tk, text: '{{' + tk + '}}' } ) ) ) );
+			}, [ el( 'option', { value: '', text: this.t( 'insertToken', 'Insert placeholder …' ) } ) ].concat( tokens.map( ( tk ) => el( 'option', { value: tk, text: '{{' + tk + '}}' } ) ) ) );
 		}
 
 		/**
@@ -863,24 +863,24 @@
 		fieldPicker( key, r, fields, envelopeFields, types, save ) {
 			const current = r.field || '';
 			if ( this.customFields[ key ] ) {
-				return el( 'input', { type: 'text', class: 'wfc-rule-field', value: current, 'aria-label': this.t( 'fieldCustom', 'Feld (eigener Pfad, z. B. data.feld)' ), onchange: ( ev ) => { r.field = ev.target.value.trim(); delete this.customFields[ key ]; save(); } } );
+				return el( 'input', { type: 'text', class: 'wfc-rule-field', value: current, 'aria-label': this.t( 'fieldCustom', 'Field (custom path, e.g. data.field)' ), onchange: ( ev ) => { r.field = ev.target.value.trim(); delete this.customFields[ key ]; save(); } } );
 			}
 			const option = ( f ) => el( 'option', { value: f, text: f.startsWith( 'data.' ) && types[ f.slice( 5 ) ] ? f.slice( 5 ) + ' · ' + types[ f.slice( 5 ) ] : f, selected: f === current } );
 			const options = [];
 			if ( ! current ) {
 				options.push( el( 'option', { value: '', text: '—', selected: true } ) );
 			} else if ( ! fields.includes( current ) ) {
-				options.push( el( 'option', { value: current, text: current + ' ' + this.t( 'notInCatalog', '(nicht im Katalog)' ), selected: true } ) );
+				options.push( el( 'option', { value: current, text: current + ' ' + this.t( 'notInCatalog', '(not in catalog)' ), selected: true } ) );
 			}
-			options.push( el( 'optgroup', { label: this.t( 'fieldsEnvelope', 'Ereignis' ) }, envelopeFields.map( option ) ) );
+			options.push( el( 'optgroup', { label: this.t( 'fieldsEnvelope', 'Event' ) }, envelopeFields.map( option ) ) );
 			const data = fields.filter( ( f ) => f.startsWith( 'data.' ) );
 			if ( data.length ) {
-				options.push( el( 'optgroup', { label: this.t( 'fieldsData', 'Daten des Ereignisses' ) }, data.map( option ) ) );
+				options.push( el( 'optgroup', { label: this.t( 'fieldsData', 'Event data' ) }, data.map( option ) ) );
 			}
-			options.push( el( 'option', { value: '__custom', text: this.t( 'fieldOther', 'Anderes Feld …' ) } ) );
+			options.push( el( 'option', { value: '__custom', text: this.t( 'fieldOther', 'Other field …' ) } ) );
 			return el( 'select', {
 				class: 'wfc-rule-field',
-				'aria-label': this.t( 'field', 'Feld' ),
+				'aria-label': this.t( 'field', 'Field' ),
 				onchange: ( ev ) => {
 					if ( '__custom' === ev.target.value ) {
 						this.customFields[ key ] = true;
@@ -935,9 +935,9 @@
 			const newRule = () => ( { field: fields[ 0 ] || 'type', operator: 'eq', value: '' } );
 			const keyOf = ( path ) => n.id + ':' + path;
 			this.customFields = this.customFields || {};
-			const combine = ( group, label, cls ) => labelled( label, el( 'select', { class: cls, onchange: ( ev ) => { group.op = ev.target.value; save(); } }, [ [ 'and', this.t( 'combineAnd', 'alle Regeln (UND)' ) ], [ 'or', this.t( 'combineOr', 'eine Regel (ODER)' ) ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: group.op === v } ) ) ) );
-			box.appendChild( combine( rules, this.t( 'combine', 'Verknüpfung' ), 'wfc-op' ) );
-			const ops = [ [ 'eq', '=' ], [ 'neq', '≠' ], [ 'gt', '>' ], [ 'gte', '≥' ], [ 'lt', '<' ], [ 'lte', '≤' ], [ 'in', 'in Liste' ], [ 'not_in', 'nicht in Liste' ], [ 'contains', 'enthält' ], [ 'exists', 'vorhanden' ], [ 'not_exists', 'fehlt' ] ];
+			const combine = ( group, label, cls ) => labelled( label, el( 'select', { class: cls, onchange: ( ev ) => { group.op = ev.target.value; save(); } }, [ [ 'and', this.t( 'combineAnd', 'all rules (AND)' ) ], [ 'or', this.t( 'combineOr', 'any rule (OR)' ) ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: group.op === v } ) ) ) );
+			box.appendChild( combine( rules, this.t( 'combine', 'Combination' ), 'wfc-op' ) );
+			const ops = [ [ 'eq', '=' ], [ 'neq', '≠' ], [ 'gt', '>' ], [ 'gte', '≥' ], [ 'lt', '<' ], [ 'lte', '≤' ], [ 'in', this.t( 'opIn', 'in list' ) ], [ 'not_in', this.t( 'opNotIn', 'not in list' ) ], [ 'contains', this.t( 'opContains', 'contains' ) ], [ 'exists', this.t( 'opExists', 'exists' ) ], [ 'not_exists', this.t( 'opMissing', 'is missing' ) ] ];
 			const parse = ( op, raw ) => {
 				if ( [ 'in', 'not_in' ].includes( op ) ) {
 					return raw.split( ',' ).map( ( x ) => x.trim() ).filter( ( x ) => x !== '' ).map( ( x ) => ( /^-?\d+(\.\d+)?$/.test( x ) ? Number( x ) : x ) );
@@ -961,17 +961,17 @@
 				}
 				const example = this.sampleValue( r.field );
 				if ( undefined !== example ) {
-					row.appendChild( el( 'span', { class: 'wfc-rule-example description', text: this.t( 'example', 'Beispiel:' ) + ' ' + ( 'object' === typeof example ? JSON.stringify( example ) : String( example ) ) } ) );
+					row.appendChild( el( 'span', { class: 'wfc-rule-example description', text: this.t( 'example', 'Example:' ) + ' ' + ( 'object' === typeof example ? JSON.stringify( example ) : String( example ) ) } ) );
 				}
 				row.appendChild( el( 'select', { class: 'wfc-rule-op', 'aria-label': this.t( 'operator', 'Operator' ), onchange: ( ev ) => { r.operator = ev.target.value; r.value = parse( r.operator, show( r.value ) ); save(); } }, ops.map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: r.operator === v } ) ) ) );
 				if ( ! [ 'exists', 'not_exists' ].includes( r.operator ) ) {
-					row.appendChild( el( 'input', { type: 'text', class: 'wfc-rule-value', value: show( r.value ), 'aria-label': this.t( 'value', 'Wert' ), onchange: ( ev ) => { r.value = parse( r.operator, ev.target.value ); save(); } } ) );
+					row.appendChild( el( 'input', { type: 'text', class: 'wfc-rule-value', value: show( r.value ), 'aria-label': this.t( 'value', 'Value' ), onchange: ( ev ) => { r.value = parse( r.operator, ev.target.value ); save(); } } ) );
 				}
 				row.appendChild( el( 'button', {
 					type: 'button',
 					class: 'button-link wfc-rule-remove',
 					text: '×',
-					'aria-label': this.t( 'removeRule', 'Regel entfernen' ),
+					'aria-label': this.t( 'removeRule', 'Remove rule' ),
 					onclick: () => {
 						group.items.splice( i, 1 );
 						if ( parent && ! group.items.length ) {
@@ -990,23 +990,23 @@
 					return;
 				}
 				groupNo++;
-				const set = el( 'fieldset', { class: 'wfc-rule-group', 'data-key': keyOf( String( i ) ) }, [ el( 'legend', { text: this.t( 'group', 'Gruppe' ) + ' ' + groupNo } ) ] );
-				set.appendChild( combine( item, this.t( 'combineGroup', 'Verknüpfung in der Gruppe' ), 'wfc-group-op' ) );
+				const set = el( 'fieldset', { class: 'wfc-rule-group', 'data-key': keyOf( String( i ) ) }, [ el( 'legend', { text: this.t( 'group', 'Group' ) + ' ' + groupNo } ) ] );
+				set.appendChild( combine( item, this.t( 'combineGroup', 'Combination within the group' ), 'wfc-group-op' ) );
 				item.items.forEach( ( r, j ) => set.appendChild( ruleRow( r, i + '.' + j, item, j, rules, i ) ) );
 				set.appendChild( el( 'p', {}, [
-					el( 'button', { type: 'button', class: 'button wfc-group-rule-add', text: '+ ' + this.t( 'addRuleGroup', 'Regel in Gruppe' ) + ' ' + groupNo, disabled: full, onclick: () => { item.items.push( newRule() ); this.focusSelector = `.wfc-rule[data-key="${ keyOf( i + '.' + ( item.items.length - 1 ) ) }"] .wfc-rule-field`; save(); } } ),
-					el( 'button', { type: 'button', class: 'button-link wfc-group-remove', text: this.t( 'removeGroup', 'Gruppe entfernen' ) + ' ' + groupNo, onclick: () => { rules.items.splice( i, 1 ); this.focusSelector = '.wfc-group-add'; save(); } } ),
+					el( 'button', { type: 'button', class: 'button wfc-group-rule-add', text: '+ ' + this.t( 'addRuleGroup', 'Rule in group' ) + ' ' + groupNo, disabled: full, onclick: () => { item.items.push( newRule() ); this.focusSelector = `.wfc-rule[data-key="${ keyOf( i + '.' + ( item.items.length - 1 ) ) }"] .wfc-rule-field`; save(); } } ),
+					el( 'button', { type: 'button', class: 'button-link wfc-group-remove', text: this.t( 'removeGroup', 'Remove group' ) + ' ' + groupNo, onclick: () => { rules.items.splice( i, 1 ); this.focusSelector = '.wfc-group-add'; save(); } } ),
 				] ) );
 				box.appendChild( set );
 			} );
 			const buttons = el( 'p', { class: 'wfc-rule-buttons' } );
-			buttons.appendChild( el( 'button', { type: 'button', class: 'button wfc-rule-add', text: '+ ' + this.t( 'addRule', 'Regel' ), disabled: full, onclick: () => { rules.items.push( newRule() ); this.focusSelector = `.wfc-rule[data-key="${ keyOf( rules.items.length - 1 ) }"] .wfc-rule-field`; save(); } } ) );
+			buttons.appendChild( el( 'button', { type: 'button', class: 'button wfc-rule-add', text: '+ ' + this.t( 'addRule', 'Rule' ), disabled: full, onclick: () => { rules.items.push( newRule() ); this.focusSelector = `.wfc-rule[data-key="${ keyOf( rules.items.length - 1 ) }"] .wfc-rule-field`; save(); } } ) );
 			if ( limits.depth > 1 ) {
 				buttons.appendChild( document.createTextNode( ' ' ) );
-				buttons.appendChild( el( 'button', { type: 'button', class: 'button wfc-group-add', text: '+ ' + this.t( 'addGroup', 'Gruppe' ), disabled: full, 'aria-describedby': 'wfc-group-hint', onclick: () => { rules.items.push( { op: 'or', items: [ newRule() ] } ); this.focusSelector = `.wfc-rule[data-key="${ keyOf( ( rules.items.length - 1 ) + '.0' ) }"] .wfc-rule-field`; save(); } } ) );
+				buttons.appendChild( el( 'button', { type: 'button', class: 'button wfc-group-add', text: '+ ' + this.t( 'addGroup', 'Group' ), disabled: full, 'aria-describedby': 'wfc-group-hint', onclick: () => { rules.items.push( { op: 'or', items: [ newRule() ] } ); this.focusSelector = `.wfc-rule[data-key="${ keyOf( ( rules.items.length - 1 ) + '.0' ) }"] .wfc-rule-field`; save(); } } ) );
 			}
 			box.appendChild( buttons );
-			const hint = full ? this.t( 'rulesFull', 'Höchstens %d Regeln je Bedingung, Gruppen eingeschlossen.' ).replace( '%d', limits.rules ) : this.t( 'groupHint', 'Eine Gruppe fasst Regeln mit eigener Verknüpfung zusammen, z. B. „A und (B oder C)“. Eine Gruppe kann keine weitere Gruppe enthalten.' );
+			const hint = full ? this.t( 'rulesFull', 'At most %d rules per condition, including groups.' ).replace( '%d', limits.rules ) : this.t( 'groupHint', 'A group combines rules with its own operator, e.g. “A and (B or C)”. A group cannot contain another group.' );
 			box.appendChild( el( 'p', { id: 'wfc-group-hint', class: 'description', text: hint } ) );
 			return box;
 		}
@@ -1023,15 +1023,15 @@
 				return box;
 			}
 			if ( ! mails.length ) {
-				box.appendChild( el( 'p', { text: this.t( 'coreMailsNone', 'Das Kern-Plugin verschickt zu diesem Ereignis keine eigene Mail.' ) } ) );
+				box.appendChild( el( 'p', { text: this.t( 'coreMailsNone', 'The core plugin sends no email of its own for this event.' ) } ) );
 				return box;
 			}
-			box.appendChild( el( 'p', { text: this.t( 'coreMailsIntro', 'Das Kern-Plugin verschickt zu diesem Ereignis bereits:' ) } ) );
+			box.appendChild( el( 'p', { text: this.t( 'coreMailsIntro', 'For this event the core plugin already sends:' ) } ) );
 			box.appendChild( el( 'ul', {}, mails.map( ( m ) => el( 'li', { text: m.to + ': ' + m.mail + ' (' + m.off + ( m.note ? '; ' + m.note : '' ) + ')' } ) ) ) );
 			if ( duplicate ) {
-				box.appendChild( el( 'p', { role: 'status', text: this.t( 'coreMailsDuplicate', 'Möglicherweise doppelt: Dieser Empfängerkreis bekommt zum selben Anlass schon eine Mail des Kern-Plugins.' ) } ) );
+				box.appendChild( el( 'p', { role: 'status', text: this.t( 'coreMailsDuplicate', 'Possibly a duplicate: these recipients already get an email from the core plugin for the same occasion.' ) } ) );
 			}
-			box.appendChild( el( 'p', { text: this.t( 'coreMailsAdvice', 'Senden Sie dieselbe Information nicht ein zweites Mal. Workflow Captain schaltet keine Mail der Kerne ab.' ) } ) );
+			box.appendChild( el( 'p', { text: this.t( 'coreMailsAdvice', 'Do not send the same information a second time. Workflow Captain does not turn off any email of the core plugins.' ) } ) );
 			return box;
 		}
 
@@ -1039,7 +1039,7 @@
 		scheduleForm( n ) {
 			n.schedule = n.schedule || { frequency: 'daily', time: '08:00' };
 			const s = n.schedule;
-			const box = el( 'fieldset', { class: 'wfc-schedule' }, [ el( 'legend', { text: this.t( 'schedule', 'Zeitplan (Zeitzone der Website)' ) + ( this.config.timezone ? ': ' + this.config.timezone : '' ) } ) ] );
+			const box = el( 'fieldset', { class: 'wfc-schedule' }, [ el( 'legend', { text: this.t( 'schedule', 'Schedule (site time zone)' ) + ( this.config.timezone ? ': ' + this.config.timezone : '' ) } ) ] );
 			const update = ( key, value ) => {
 				s[ key ] = value;
 				if ( 'weekly' !== s.frequency ) {
@@ -1055,20 +1055,20 @@
 				this.commit();
 				const next = upcoming( s, Date.now(), this.config.timezone || 'UTC', 1 );
 				if ( next.length ) {
-					this.announce( this.t( 'nextDue', 'Nächster Termin:' ) + ' ' + this.formatTime( next[ 0 ] ) );
+					this.announce( this.t( 'nextDue', 'Next date:' ) + ' ' + this.formatTime( next[ 0 ] ) );
 				}
 			};
 			const label = labelled;
-			box.appendChild( label( this.t( 'frequency', 'Wiederholung' ), el( 'select', { class: 'wfc-schedule-frequency', onchange: ( ev ) => update( 'frequency', ev.target.value ) }, [ [ 'daily', 'täglich' ], [ 'weekly', 'wöchentlich' ], [ 'monthly', 'monatlich' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: s.frequency === v } ) ) ) ) );
-			box.appendChild( label( this.t( 'time', 'Uhrzeit' ), el( 'input', { type: 'time', class: 'wfc-schedule-time', value: s.time || '08:00', onchange: ( ev ) => update( 'time', ev.target.value ) } ) ) );
+			box.appendChild( label( this.t( 'frequency', 'Repeat' ), el( 'select', { class: 'wfc-schedule-frequency', onchange: ( ev ) => update( 'frequency', ev.target.value ) }, [ [ 'daily', this.t( 'daily', 'daily' ) ], [ 'weekly', this.t( 'weekly', 'weekly' ) ], [ 'monthly', this.t( 'monthly', 'monthly' ) ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: s.frequency === v } ) ) ) ) );
+			box.appendChild( label( this.t( 'time', 'Time' ), el( 'input', { type: 'time', class: 'wfc-schedule-time', value: s.time || '08:00', onchange: ( ev ) => update( 'time', ev.target.value ) } ) ) );
 			if ( 'weekly' === s.frequency ) {
-				box.appendChild( label( this.t( 'weekday', 'Wochentag' ), el( 'select', { class: 'wfc-schedule-weekday', onchange: ( ev ) => update( 'weekday', parseInt( ev.target.value, 10 ) ) }, WEEKDAYS.map( ( d, i ) => el( 'option', { value: i + 1, text: this.t( 'weekday' + ( i + 1 ), d ), selected: s.weekday === i + 1 } ) ) ) ) );
+				box.appendChild( label( this.t( 'weekday', 'Weekday' ), el( 'select', { class: 'wfc-schedule-weekday', onchange: ( ev ) => update( 'weekday', parseInt( ev.target.value, 10 ) ) }, WEEKDAYS.map( ( d, i ) => el( 'option', { value: i + 1, text: this.t( 'weekday' + ( i + 1 ), d ), selected: s.weekday === i + 1 } ) ) ) ) );
 			}
 			if ( 'monthly' === s.frequency ) {
-				box.appendChild( label( this.t( 'day', 'Tag im Monat (1 bis 28)' ), el( 'input', { type: 'number', min: 1, max: 28, class: 'wfc-schedule-day', value: s.day || 1, onchange: ( ev ) => update( 'day', Math.min( 28, Math.max( 1, parseInt( ev.target.value, 10 ) || 1 ) ) ) } ) ) );
+				box.appendChild( label( this.t( 'day', 'Day of the month (1 to 28)' ), el( 'input', { type: 'number', min: 1, max: 28, class: 'wfc-schedule-day', value: s.day || 1, onchange: ( ev ) => update( 'day', Math.min( 28, Math.max( 1, parseInt( ev.target.value, 10 ) || 1 ) ) ) } ) ) );
 			}
 			box.appendChild( this.schedulePreview( s ) );
-			box.appendChild( el( 'p', { class: 'description', text: this.t( 'scheduleHint', 'Ein verpasster Termin wird höchstens einmal nachgeholt. In der Sommerzeitlücke verschiebt sich die Uhrzeit nach hinten.' ) } ) );
+			box.appendChild( el( 'p', { class: 'description', text: this.t( 'scheduleHint', 'A missed date is made up for at most once. In the daylight saving gap the time moves later.' ) } ) );
 			return box;
 		}
 
@@ -1089,9 +1089,9 @@
 		schedulePreview( s ) {
 			const times = upcoming( s, Date.now(), this.config.timezone || 'UTC', 3 );
 			const box = el( 'div', { class: 'wfc-schedule-preview' } );
-			box.appendChild( el( 'p', { id: 'wfc-next-label', text: this.t( 'nextDues', 'Nächste Termine (Zeitzone der Website):' ) } ) );
+			box.appendChild( el( 'p', { id: 'wfc-next-label', text: this.t( 'nextDues', 'Next dates (site time zone):' ) } ) );
 			if ( ! times.length ) {
-				box.appendChild( el( 'p', { class: 'description', text: this.t( 'nextNone', 'Keine Termine: Der Zeitplan ist unvollständig.' ) } ) );
+				box.appendChild( el( 'p', { class: 'description', text: this.t( 'nextNone', 'No dates: the schedule is incomplete.' ) } ) );
 				return box;
 			}
 			box.appendChild( el( 'ul', { class: 'wfc-next', 'aria-labelledby': 'wfc-next-label' }, times.map( ( t ) => el( 'li', {}, [ el( 'time', { datetime: new Date( t ).toISOString().replace( '.000Z', 'Z' ), text: this.formatTime( t ) } ) ] ) ) ) );
@@ -1103,13 +1103,13 @@
 		lastFired() {
 			const last = this.config.lastFired;
 			if ( ! last || ! last.at ) {
-				return el( 'p', { class: 'description wfc-last-fired', text: this.t( 'lastFiredNever', 'Zuletzt ausgelöst: noch nie.' ) } );
+				return el( 'p', { class: 'description wfc-last-fired', text: this.t( 'lastFiredNever', 'Last triggered: never.' ) } );
 			}
 			return el( 'p', { class: 'wfc-last-fired' }, [
-				document.createTextNode( this.t( 'lastFired', 'Zuletzt ausgelöst:' ) + ' ' ),
+				document.createTextNode( this.t( 'lastFired', 'Last triggered:' ) + ' ' ),
 				el( 'time', { datetime: new Date( last.at ).toISOString().replace( '.000Z', 'Z' ), text: this.formatTime( last.at ) } ),
 				document.createTextNode( ' (' ),
-				el( 'a', { href: last.runs, text: this.t( 'runsOfWorkflow', 'Läufe dieses Workflows' ) } ),
+				el( 'a', { href: last.runs, text: this.t( 'runsOfWorkflow', 'Runs of this workflow' ) } ),
 				document.createTextNode( ')' ),
 			] );
 		}
@@ -1119,7 +1119,7 @@
 		 * editor says nothing that suggests an order; with it the hint names the only order there is.
 		 */
 		serializeForm( n ) {
-			const options = [ [ '', 'nein (Läufe können gleichzeitig laufen)' ], [ 'subject', 'je Objekt nacheinander (z. B. je Bestellung)' ], [ 'actor', 'je Benutzer nacheinander' ] ];
+			const options = [ [ '', this.t( 'serialNone', 'no (runs may run at the same time)' ) ], [ 'subject', this.t( 'serialSubject', 'one at a time per object' ) ], [ 'actor', this.t( 'serialActor', 'one at a time per user' ) ] ];
 			const select = el( 'select', {
 				class: 'wfc-serialize',
 				onchange: ( ev ) => {
@@ -1131,9 +1131,9 @@
 					this.commit();
 				},
 			}, options.map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: ( n.serialize || '' ) === v } ) ) );
-			const box = labelled( this.t( 'serialize', 'Läufe nacheinander' ), select );
+			const box = labelled( this.t( 'serialize', 'Runs one after another' ), select );
 			if ( n.serialize ) {
-				box.appendChild( el( 'span', { class: 'description wfc-serialize-hint', text: ' ' + this.t( 'serializeHint', 'Für denselben Schlüssel wartet ein neuer Lauf, bis der ältere fertig ist. Über verschiedene Objekte oder Benutzer hinweg gibt es keine Reihenfolge.' ) } ) );
+				box.appendChild( el( 'span', { class: 'description wfc-serialize-hint', text: ' ' + this.t( 'serializeHint', 'For the same key a new run waits until the older one has finished. Across different objects or users there is no order.' ) } ) );
 			}
 			return box;
 		}
@@ -1143,14 +1143,14 @@
 			const box = el( 'div', { class: 'wfc-inspector' } );
 			const n = this.selected ? this.node( this.selected ) : null;
 			if ( ! n ) {
-				box.appendChild( el( 'p', { class: 'description', text: this.t( 'selectHint', 'Einen Knoten auswählen, um ihn zu bearbeiten. Tastatur: Pfeile verschieben, C verbindet, Entf löscht.' ) } ) );
+				box.appendChild( el( 'p', { class: 'description', text: this.t( 'selectHint', 'Select a node to edit it. Keyboard: arrows move, C connects, Del deletes.' ) } ) );
 				return box;
 			}
 			box.appendChild( el( 'h3', { text: this.label( n ), tabindex: '-1' } ) );
 			const o = this.origin( n );
 			const facts = [ this.t( 'nodeId', 'ID' ) + ': ' + n.id ];
 			if ( o ) {
-				facts.unshift( this.t( 'origin', 'Herkunft' ) + ': ' + o.label + ( o.version ? ' ' + o.version : '' ) + ( o.contract ? ', ' + this.t( 'contract', 'Vertrag' ) + ' ' + o.contract : '' ) );
+				facts.unshift( this.t( 'origin', 'Origin' ) + ': ' + o.label + ( o.version ? ' ' + o.version : '' ) + ( o.contract ? ', ' + this.t( 'contract', 'Contract' ) + ' ' + o.contract : '' ) );
 			}
 			box.appendChild( el( 'p', { class: 'description wfc-origin', text: facts.join( ' · ' ) } ) );
 			// Problems of the node; the open branches of a condition are shown at their buttons further down.
@@ -1159,7 +1159,7 @@
 				box.appendChild( el( 'div', { class: 'notice notice-warning inline wfc-problems' }, [ el( 'ul', {}, issues.map( ( p ) => el( 'li', { text: p.text } ) ) ) ] ) );
 			}
 			if ( this.focusNode === n.id ) {
-				box.appendChild( el( 'p', { class: 'notice notice-info inline wfc-focus-note', text: this.t( 'focusNote', 'Dieser Knoten ist der Schritt aus dem Lauf. Der Lauf nutzte die veröffentlichte Version; der Entwurf kann abweichen.' ) } ) );
+				box.appendChild( el( 'p', { class: 'notice notice-info inline wfc-focus-note', text: this.t( 'focusNote', 'This node is the step from the run. The run used the published version; the draft may differ.' ) } ) );
 			}
 			const field = labelled;
 			const set = ( key, value, target ) => {
@@ -1169,7 +1169,7 @@
 			if ( 'trigger' === n.type ) {
 				const list = el( 'datalist', { id: 'wfc-events' }, this.config.events.map( ( e ) => el( 'option', { value: e } ) ) );
 				box.appendChild( list );
-				box.appendChild( field( this.t( 'event', 'Ereignis' ), el( 'input', { type: 'text', class: 'regular-text', list: 'wfc-events', value: n.event || '', onchange: ( ev ) => set( 'event', ev.target.value.trim() ) } ) ) );
+				box.appendChild( field( this.t( 'event', 'Event' ), el( 'input', { type: 'text', class: 'regular-text', list: 'wfc-events', value: n.event || '', onchange: ( ev ) => set( 'event', ev.target.value.trim() ) } ) ) );
 				if ( 'workflow.schedule.due' === n.event ) {
 					box.appendChild( this.scheduleForm( n ) );
 				} else {
@@ -1177,7 +1177,7 @@
 				}
 			} else if ( 'action' === n.type ) {
 				const select = el( 'select', { onchange: ( ev ) => { n.action = ev.target.value; n.config = {}; this.commit(); } }, this.config.actions.map( ( a ) => el( 'option', { value: a.key, text: a.label, selected: a.key === n.action } ) ) );
-				box.appendChild( field( this.t( 'action', 'Aktion' ), select ) );
+				box.appendChild( field( this.t( 'action', 'Action' ), select ) );
 				n.config = n.config || {};
 				const def = this.config.actions.find( ( a ) => a.key === n.action );
 				( def ? def.fields : [] ).forEach( ( f ) => {
@@ -1219,26 +1219,26 @@
 				if ( form ) {
 					box.appendChild( form );
 				} else {
-					const rules = el( 'textarea', { rows: 8, class: 'large-text code', onchange: ( ev ) => { try { n.rules = JSON.parse( ev.target.value ); this.commit(); } catch ( e ) { this.announce( this.t( 'invalidJson', 'Ungültiges JSON.' ) ); } } } );
+					const rules = el( 'textarea', { rows: 8, class: 'large-text code', onchange: ( ev ) => { try { n.rules = JSON.parse( ev.target.value ); this.commit(); } catch ( e ) { this.announce( this.t( 'invalidJson', 'Invalid JSON.' ) ); } } } );
 					rules.value = JSON.stringify( n.rules || {}, null, 2 );
-					box.appendChild( field( this.t( 'rules', 'Regeln (JSON, mit Gruppen)' ), rules ) );
+					box.appendChild( field( this.t( 'rules', 'Rules (JSON, with groups)' ), rules ) );
 				}
-				box.appendChild( field( this.t( 'missing', 'Wenn ein Feld fehlt' ), el( 'select', { onchange: ( ev ) => set( 'missing', ev.target.value ) }, [ [ 'false', 'gilt als nicht erfüllt' ], [ 'stop', 'Lauf beenden' ], [ 'error', 'Fehler' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: ( n.missing || 'false' ) === v } ) ) ) ) );
+				box.appendChild( field( this.t( 'missing', 'If a field is missing' ), el( 'select', { onchange: ( ev ) => set( 'missing', ev.target.value ) }, [ [ 'false', this.t( 'missingFalse', 'counts as not met' ) ], [ 'stop', this.t( 'missingStop', 'end the run' ) ], [ 'error', this.t( 'missingError', 'error' ) ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: ( n.missing || 'false' ) === v } ) ) ) ) );
 				box.appendChild( el( 'p', {}, [
-					el( 'button', { type: 'button', class: 'button', text: this.t( 'connectThen', 'Dann verbinden …' ), onclick: () => { this.connectFrom = n.id; this.connectBranch = 'then'; this.announce( this.t( 'connectHint', 'Ziel wählen.' ) ); } } ),
-					el( 'button', { type: 'button', class: 'button', text: this.t( 'connectElse', 'Sonst verbinden …' ), onclick: () => { this.connectFrom = n.id; this.connectBranch = 'else'; this.announce( this.t( 'connectHint', 'Ziel wählen.' ) ); } } ),
+					el( 'button', { type: 'button', class: 'button', text: this.t( 'connectThen', 'Connect “then” …' ), onclick: () => { this.connectFrom = n.id; this.connectBranch = 'then'; this.announce( this.t( 'connectHint', 'Choose a target.' ) ); } } ),
+					el( 'button', { type: 'button', class: 'button', text: this.t( 'connectElse', 'Connect “else” …' ), onclick: () => { this.connectFrom = n.id; this.connectBranch = 'else'; this.announce( this.t( 'connectHint', 'Choose a target.' ) ); } } ),
 				] ) );
 				( this.issues[ n.id ] || [] ).filter( ( p ) => [ 'then', 'else' ].includes( p.code ) ).forEach( ( p ) => {
 					box.appendChild( el( 'p', { class: 'notice notice-warning inline wfc-branch-open', text: p.text } ) );
 				} );
 			} else if ( 'delay' === n.type ) {
-				box.appendChild( field( this.t( 'amount', 'Dauer' ), el( 'input', { type: 'number', min: 1, max: 1000, value: n.amount || 1, onchange: ( ev ) => set( 'amount', parseInt( ev.target.value, 10 ) || 1 ) } ) ) );
-				box.appendChild( field( this.t( 'unit', 'Einheit' ), el( 'select', { onchange: ( ev ) => set( 'unit', ev.target.value ) }, [ [ 'minutes', 'Minuten' ], [ 'hours', 'Stunden' ], [ 'days', 'Tage (Kalendertage)' ], [ 'weeks', 'Wochen' ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: n.unit === v } ) ) ) ) );
+				box.appendChild( field( this.t( 'amount', 'Duration' ), el( 'input', { type: 'number', min: 1, max: 1000, value: n.amount || 1, onchange: ( ev ) => set( 'amount', parseInt( ev.target.value, 10 ) || 1 ) } ) ) );
+				box.appendChild( field( this.t( 'unit', 'Unit' ), el( 'select', { onchange: ( ev ) => set( 'unit', ev.target.value ) }, [ [ 'minutes', this.t( 'unitMinutes', 'Minutes' ) ], [ 'hours', this.t( 'unitHours', 'Hours' ) ], [ 'days', this.t( 'unitDays', 'Days (calendar days)' ) ], [ 'weeks', this.t( 'unitWeeks', 'Weeks' ) ] ].map( ( [ v, l ] ) => el( 'option', { value: v, text: l, selected: n.unit === v } ) ) ) ) );
 			}
 			if ( 'end' !== n.type && 'condition' !== n.type ) {
-				box.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'connect', 'Verbinden mit …' ), onclick: () => { this.connectFrom = n.id; this.announce( this.t( 'connectHint', 'Ziel wählen.' ) ); } } ) );
+				box.appendChild( el( 'button', { type: 'button', class: 'button', text: this.t( 'connect', 'Connect to …' ), onclick: () => { this.connectFrom = n.id; this.announce( this.t( 'connectHint', 'Choose a target.' ) ); } } ) );
 			}
-			box.appendChild( el( 'button', { type: 'button', class: 'button button-link-delete', text: this.t( 'delete', 'Löschen' ), onclick: () => this.remove( n.id ) } ) );
+			box.appendChild( el( 'button', { type: 'button', class: 'button button-link-delete', text: this.t( 'delete', 'Delete' ), onclick: () => this.remove( n.id ) } ) );
 			return box;
 		}
 
@@ -1250,7 +1250,7 @@
 
 		/** Linear step view for small screens and screen readers (WF-BUILDER-09). */
 		list() {
-			const ol = el( 'ol', { class: 'wfc-linear', 'aria-label': this.t( 'linear', 'Schritte der Reihe nach' ) } );
+			const ol = el( 'ol', { class: 'wfc-linear', 'aria-label': this.t( 'linear', 'Steps in order' ) } );
 			const seen = new Set();
 			const walk = ( id, prefix ) => {
 				if ( ! id || seen.has( id ) ) {
@@ -1262,15 +1262,15 @@
 					return;
 				}
 				const focus = this.focusNode === id;
-				ol.appendChild( el( 'li', { class: focus ? 'is-focus' : null, 'aria-current': focus ? 'step' : null }, [ el( 'button', { type: 'button', class: 'button-link', 'data-id': id, text: prefix + this.label( n ) + ( focus ? ' (' + this.t( 'fromRun', 'aus dem Lauf' ) + ')' : '' ), onclick: () => this.clickNode( id ) } ) ].concat( this.warnSpan( n ) ) ) );
-				this.graph.edges.filter( ( e ) => e.from === id ).forEach( ( e ) => walk( e.to, e.branch ? ( 'then' === e.branch ? this.t( 'then', 'Dann' ) : this.t( 'else', 'Sonst' ) ) + ': ' : '' ) );
+				ol.appendChild( el( 'li', { class: focus ? 'is-focus' : null, 'aria-current': focus ? 'step' : null }, [ el( 'button', { type: 'button', class: 'button-link', 'data-id': id, text: prefix + this.label( n ) + ( focus ? ' (' + this.t( 'fromRun', 'from the run' ) + ')' : '' ), onclick: () => this.clickNode( id ) } ) ].concat( this.warnSpan( n ) ) ) );
+				this.graph.edges.filter( ( e ) => e.from === id ).forEach( ( e ) => walk( e.to, e.branch ? ( 'then' === e.branch ? this.t( 'then', 'Then' ) : this.t( 'else', 'Else' ) ) + ': ' : '' ) );
 			};
 			const trigger = this.graph.nodes.find( ( n ) => 'trigger' === n.type );
 			walk( trigger && trigger.id, '' );
-			this.graph.nodes.filter( ( n ) => ! seen.has( n.id ) ).forEach( ( n ) => ol.appendChild( el( 'li', { class: 'wfc-unconnected' }, [ el( 'button', { type: 'button', class: 'button-link', text: this.t( 'unconnected', 'Nicht verbunden' ) + ': ' + this.label( n ), onclick: () => this.clickNode( n.id ) } ) ].concat( this.warnSpan( n, [ 'unreachable' ] ) ) ) ) );
+			this.graph.nodes.filter( ( n ) => ! seen.has( n.id ) ).forEach( ( n ) => ol.appendChild( el( 'li', { class: 'wfc-unconnected' }, [ el( 'button', { type: 'button', class: 'button-link', text: this.t( 'unconnected', 'Not connected' ) + ': ' + this.label( n ), onclick: () => this.clickNode( n.id ) } ) ].concat( this.warnSpan( n, [ 'unreachable' ] ) ) ) ) );
 			// Stays open across rebuilds, so choosing a step on a small screen does not close the list.
 			const narrow = window.matchMedia && window.matchMedia( '(max-width: 782px)' ).matches;
-			return el( 'details', { class: 'wfc-linear-wrap', open: !! this.linearOpen || !! ( this.focusNode && this.node( this.focusNode ) && narrow ) }, [ el( 'summary', { text: this.t( 'linear', 'Schritte der Reihe nach' ) } ), ol ] );
+			return el( 'details', { class: 'wfc-linear-wrap', open: !! this.linearOpen || !! ( this.focusNode && this.node( this.focusNode ) && narrow ) }, [ el( 'summary', { text: this.t( 'linear', 'Steps in order' ) } ), ol ] );
 		}
 	}
 

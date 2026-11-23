@@ -2270,3 +2270,231 @@ msgstr "„localhost“ ist der WordPress-Server selbst, nicht dein Rechner. Lä
 msgctxt "monthly schedule: on day N"
 msgid "on day"
 msgstr "am"
+
+#: src/Admin/WorkflowsPage.php:215
+msgid "A missed date is made up for at most once. In the daylight saving gap the time moves later."
+msgstr "Ein verpasster Termin wird höchstens einmal nachgeholt. In der Sommerzeitlücke verschiebt sich die Uhrzeit nach hinten."
+
+#: src/Admin/WorkflowsPage.php:188
+msgid "A workflow has exactly one trigger."
+msgstr "Ein Workflow hat genau einen Auslöser."
+
+#: src/Admin/WorkflowsPage.php:193
+msgid "Arrange"
+msgstr "Anordnen"
+
+#: src/Admin/WorkflowsPage.php:190
+msgid "Building blocks"
+msgstr "Bausteine"
+
+#: src/Admin/WorkflowsPage.php:200
+msgid "Choose a target."
+msgstr "Ziel wählen."
+
+#: src/Admin/WorkflowsPage.php:202
+msgid "Combination"
+msgstr "Verknüpfung"
+
+#: src/Admin/WorkflowsPage.php:226
+msgid "Connect to …"
+msgstr "Verbinden mit …"
+
+#: src/Admin/WorkflowsPage.php:223
+msgid "Connect “else” …"
+msgstr "Sonst verbinden …"
+
+#: src/Admin/WorkflowsPage.php:222
+msgid "Connect “then” …"
+msgstr "Dann verbinden …"
+
+#: src/Admin/WorkflowsPage.php:199
+msgid "Connected."
+msgstr "Verbunden."
+
+#: src/Admin/WorkflowsPage.php:214
+msgid "Day of the month (1 to 28)"
+msgstr "Tag im Monat (1 bis 28)"
+
+#: src/Admin/WorkflowsPage.php:239
+msgid "Days (calendar days)"
+msgstr "Tage (Kalendertage)"
+
+#: src/Admin/WorkflowsPage.php:227
+msgid "Delete"
+msgstr "Löschen"
+
+#: src/Admin/WorkflowsPage.php:210
+msgid "Do not send the same information a second time. Workflow Captain does not turn off any email of the core plugins."
+msgstr "Sende dieselbe Information nicht ein zweites Mal. Workflow Captain schaltet keine Mail der Kerne ab."
+
+#: src/Admin/WorkflowsPage.php:224
+msgid "Duration"
+msgstr "Dauer"
+
+#: src/Admin/WorkflowsPage.php:198
+msgid "Else"
+msgstr "Sonst"
+
+#: src/Admin/WorkflowsPage.php:196
+msgid "Flow"
+msgstr "Ablauf"
+
+#: src/Admin/WorkflowsPage.php:217
+msgid "For the same key a new run waits until the older one has finished. Across different objects or users there is no order."
+msgstr "Für denselben Schlüssel wartet ein neuer Lauf, bis der ältere fertig ist. Über verschiedene Objekte oder Benutzer hinweg gibt es keine Reihenfolge."
+
+#: src/Admin/WorkflowsPage.php:208
+msgid "For this event the core plugin already sends:"
+msgstr "Das Kern-Plugin verschickt zu diesem Ereignis bereits:"
+
+#: src/Admin/WorkflowsPage.php:238
+msgid "Hours"
+msgstr "Stunden"
+
+#: src/Admin/WorkflowsPage.php:221
+msgid "If a field is missing"
+msgstr "Wenn ein Feld fehlt"
+
+#: src/Admin/WorkflowsPage.php:201
+msgid "Insert placeholder …"
+msgstr "Platzhalter einfügen …"
+
+#: src/Admin/WorkflowsPage.php:183
+msgid "Invalid JSON."
+msgstr "Ungültiges JSON."
+
+#: src/Admin/WorkflowsPage.php:237
+msgid "Minutes"
+msgstr "Minuten"
+
+#: src/Admin/WorkflowsPage.php:189
+msgid "Node added:"
+msgstr "Knoten hinzugefügt:"
+
+#: src/Admin/WorkflowsPage.php:229
+msgid "Not connected"
+msgstr "Nicht verbunden"
+
+#: src/Admin/WorkflowsPage.php:203
+msgid "Operator"
+msgstr "Operator"
+
+#: src/Admin/WorkflowsPage.php:209
+msgid "Possibly a duplicate: these recipients already get an email from the core plugin for the same occasion."
+msgstr "Möglicherweise doppelt: Dieser Empfängerkreis bekommt zum selben Anlass schon eine Mail des Kern-Plugins."
+
+#: src/Admin/WorkflowsPage.php:192
+msgid "Redo"
+msgstr "Wiederholen"
+
+#: src/Admin/WorkflowsPage.php:205
+msgid "Remove rule"
+msgstr "Regel entfernen"
+
+#: src/Admin/WorkflowsPage.php:211
+msgid "Repeat"
+msgstr "Wiederholung"
+
+#: src/Admin/WorkflowsPage.php:206
+msgid "Rule"
+msgstr "Regel"
+
+#: src/Admin/WorkflowsPage.php:220
+msgid "Rules (JSON, with groups)"
+msgstr "Regeln (JSON, mit Gruppen)"
+
+#: src/Admin/WorkflowsPage.php:216
+msgid "Runs one after another"
+msgstr "Läufe nacheinander"
+
+#: src/Admin/WorkflowsPage.php:218
+msgid "Select a node to edit it. Keyboard: arrows move, C connects, Del deletes."
+msgstr "Einen Knoten auswählen, um ihn zu bearbeiten. Tastatur: Pfeile verschieben, C verbindet, Entf löscht."
+
+#: src/Admin/WorkflowsPage.php:228
+msgid "Steps in order"
+msgstr "Schritte der Reihe nach"
+
+#: src/Admin/WorkflowsPage.php:207
+msgid "The core plugin sends no email of its own for this event."
+msgstr "Das Kern-Plugin verschickt zu diesem Ereignis keine eigene Mail."
+
+#: src/Admin/WorkflowsPage.php:197
+msgid "Then"
+msgstr "Dann"
+
+#: src/Admin/WorkflowsPage.php:212
+msgid "Time"
+msgstr "Uhrzeit"
+
+#: src/Admin/WorkflowsPage.php:191
+msgid "Undo"
+msgstr "Rückgängig"
+
+#: src/Admin/WorkflowsPage.php:225
+msgid "Unit"
+msgstr "Einheit"
+
+#: src/Admin/WorkflowsPage.php:204
+msgid "Value"
+msgstr "Wert"
+
+#: src/Admin/WorkflowsPage.php:213
+msgid "Weekday"
+msgstr "Wochentag"
+
+#: src/Admin/WorkflowsPage.php:240
+msgid "Weeks"
+msgstr "Wochen"
+
+#: src/Admin/WorkflowsPage.php:195
+msgid "Zoom in"
+msgstr "Vergrößern"
+
+#: src/Admin/WorkflowsPage.php:194
+msgid "Zoom out"
+msgstr "Verkleinern"
+
+#: src/Admin/WorkflowsPage.php:232
+msgid "contains"
+msgstr "enthält"
+
+#: src/Admin/WorkflowsPage.php:234
+msgid "counts as not met"
+msgstr "gilt als nicht erfüllt"
+
+#: src/Admin/WorkflowsPage.php:186
+msgid "day(s)"
+msgstr "Tag(e)"
+
+#: src/Admin/WorkflowsPage.php:235
+msgid "end the run"
+msgstr "Lauf beenden"
+
+#: src/Admin/WorkflowsPage.php:236
+msgid "error"
+msgstr "Fehler"
+
+#: src/Admin/WorkflowsPage.php:185
+msgid "h"
+msgstr "Std."
+
+#: src/Admin/WorkflowsPage.php:230
+msgid "in list"
+msgstr "in Liste"
+
+#: src/Admin/WorkflowsPage.php:184
+msgid "min"
+msgstr "Min."
+
+#: src/Admin/WorkflowsPage.php:233
+msgid "no (runs may run at the same time)"
+msgstr "nein (Läufe können gleichzeitig laufen)"
+
+#: src/Admin/WorkflowsPage.php:231
+msgid "not in list"
+msgstr "nicht in Liste"
+
+#: src/Admin/WorkflowsPage.php:187
+msgid "week(s)"
+msgstr "Woche(n)"
