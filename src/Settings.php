@@ -71,6 +71,13 @@ final class Settings {
 	/** sanitize_callback of the settings form: clamps and reports each changed field at the field (WF-SET-13). */
 	public static function sanitize_and_report( $input ): array {
 		$clean = self::sanitize( $input );
+		// Switching on "delete data on uninstall" needs the typed word, as in every Captain plugin (S10).
+		if ( 1 === $clean['delete_data_on_uninstall'] && 1 !== self::stored()['delete_data_on_uninstall'] && ! self::deletion_confirmed( $input ) ) {
+			$clean['delete_data_on_uninstall'] = 0;
+			if ( function_exists( 'add_settings_error' ) ) {
+				add_settings_error( self::OPTION, 'wfc-delete_data_on_uninstall', __( '„Beim Löschen des Plugins alle Daten entfernen“ wurde nicht eingeschaltet: Bitte zur Bestätigung LÖSCHEN eintragen.', 'workflow-captain' ), 'error' );
+			}
+		}
 		if ( function_exists( 'add_settings_error' ) ) {
 			foreach ( self::problems( $input ) as $key => list( $raw, $stored, $min, $max ) ) {
 				/* translators: 1: entered value, 2: lowest value, 3: highest value, 4: stored value */
@@ -80,9 +87,23 @@ final class Settings {
 		return $clean;
 	}
 
-	/** @return array<string,int> */
+	/** Words that confirm "delete data on uninstall" (the same in every Captain plugin), case-insensitive. */
+	const CONFIRM_WORDS = array( 'LÖSCHEN', 'LOESCHEN', 'DELETE' );
+
+	/** Whether the settings form carried the typed confirmation for "delete data on uninstall". */
+	public static function deletion_confirmed( $input ): bool {
+		$typed = is_array( $input ) && is_scalar( $input['delete_data_on_uninstall_confirm'] ?? null ) ? trim( (string) $input['delete_data_on_uninstall_confirm'] ) : '';
+		return in_array( function_exists( 'mb_strtoupper' ) ? mb_strtoupper( $typed, 'UTF-8' ) : strtoupper( $typed ), self::CONFIRM_WORDS, true );
+	}
+
+	/** @return array<string,int> What the operator stored, without filters: the values the settings form shows and saves. */
+	public static function stored(): array {
+		return self::sanitize( function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array() );
+	}
+
+	/** @return array<string,int> The values in effect: stored values with the filter of each field applied. */
 	public static function get(): array {
-		$values = self::sanitize( function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array() );
+		$values = self::stored();
 		foreach ( $values as $key => $value ) {
 			$values[ $key ] = SettingsRegistry::filtered( $key, $value );
 		}
@@ -99,10 +120,9 @@ final class Settings {
 		);
 	}
 
-	/** Filter callback for workflow_captain_retention_days: the setting can only shorten the period. */
+	/** Filter callback for workflow_captain_retention_days: the setting of the group (1 to 180 days, E-S7 = F-04). */
 	public static function retention( $days, $group ): int {
 		$settings = self::get();
-		$own      = array( 'finished' => $settings['retention_finished'], 'stuck' => $settings['retention_stuck'], 'runs' => $settings['retention_runs'] )[ $group ] ?? (int) $days;
-		return min( (int) $days, $own );
+		return array( 'finished' => $settings['retention_finished'], 'stuck' => $settings['retention_stuck'], 'runs' => $settings['retention_runs'] )[ $group ] ?? (int) $days;
 	}
 }

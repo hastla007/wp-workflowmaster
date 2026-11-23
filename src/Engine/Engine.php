@@ -433,7 +433,9 @@ final class Engine implements Dispatcher {
 			if ( ! $action->idempotent() ) {
 				$this->store->set_effect( (int) $step['id'], $owner, EngineStore::EFFECT_STARTED, $this->clock->mysql() );
 			}
-			$execute = static fn() => $action->execute( $context );
+			$execute = \WorkflowCaptain\TestMode::DRY === \WorkflowCaptain\TestMode::mode()
+				? static fn(): array => array( 'skipped' => 'test_mode' ) // SET-WC-14: nothing takes effect, the step is logged.
+				: static fn() => $action->execute( $context );
 			$result  = null === $this->consumer ? $execute() : $this->consumer->run_command( Consumer::cause_for( $envelope, (int) $run['workflow_id'] ), $execute );
 			$this->store->set_effect( (int) $step['id'], $owner, EngineStore::EFFECT_DONE, $this->clock->mysql() );
 		} else {

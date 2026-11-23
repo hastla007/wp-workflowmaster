@@ -59,6 +59,16 @@ final class Plugin {
 				}
 			);
 		}
+		if ( TestMode::OFF !== TestMode::mode() ) {
+			add_action(
+				'admin_notices',
+				static function (): void {
+					if ( current_user_can( 'view_workflow_logs' ) ) {
+						echo '<div class="notice notice-warning"><p><strong>' . esc_html( TestMode::DRY === TestMode::mode() ? __( 'Workflow Captain: Testmodus „Nichts ausführen“ ist aktiv. Workflows laufen, aber kein Schritt wirkt.', 'workflow-captain' ) : __( 'Workflow Captain: Testmodus „Nachrichten umleiten“ ist aktiv. Nachrichten aus Workflows gehen an die Testadresse.', 'workflow-captain' ) ) . '</strong></p></div>';
+					}
+				}
+			);
+		}
 		if ( Install::SCHEMA_NEWER === $this->schema ) {
 			add_action(
 				'admin_notices',
@@ -354,10 +364,10 @@ final class Plugin {
 			}
 		}
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->apply_retention();
+		SettingsTransfer::purge_expired_backup();
 		$this->consumer()->store()->purge_causes( ( new Clock() )->mysql() );
 	}
 
-	/** Stores how many envelopes were rejected and the last violation codes; never a value (R-5.5). */
 	/** Version string of the database server, e.g. "9.7.1" or "12.3.2-MariaDB"; "" when unknown. */
 	private static function database_server(): string {
 		global $wpdb;

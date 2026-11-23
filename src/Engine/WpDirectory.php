@@ -30,6 +30,16 @@ final class WpDirectory implements Directory, SiteMembers {
 		return array_values( array_unique( $emails ) );
 	}
 
+	public function emails_with_role( string $role ): array {
+		$emails = array();
+		foreach ( get_users( array( 'role' => $role, 'fields' => array( 'user_email' ), 'number' => 50 ) ) as $user ) {
+			if ( is_email( $user->user_email ) ) {
+				$emails[] = (string) $user->user_email;
+			}
+		}
+		return array_values( array_unique( $emails ) );
+	}
+
 	public function is_member( int $user_id ): bool {
 		return $user_id > 0 && ( ! is_multisite() || is_user_member_of_blog( $user_id, get_current_blog_id() ) );
 	}
@@ -39,6 +49,11 @@ final class WpDirectory implements Directory, SiteMembers {
 	}
 
 	public function mail( string $to, string $subject, string $message ): bool {
+		if ( \WorkflowCaptain\TestMode::REDIRECT === \WorkflowCaptain\TestMode::mode() ) {
+			// SET-WC-14: the message goes to the catch address; the original recipient is not named anywhere.
+			$to      = \WorkflowCaptain\TestMode::catch_address();
+			$subject = '[Test] ' . $subject;
+		}
 		return (bool) wp_mail( $to, $subject, $message );
 	}
 }

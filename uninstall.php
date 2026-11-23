@@ -1,6 +1,7 @@
 <?php
 /**
- * Removes tables, options and capabilities of Workflow Captain on every site.
+ * Removes tables, options and capabilities of Workflow Captain on every site whose operator switched on
+ * „Daten beim Löschen entfernen“ (SET-WC-05, E-S6); on all other sites only the worker plan is cleared.
  *
  * @package WorkflowCaptain
  */

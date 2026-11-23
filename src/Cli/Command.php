@@ -10,6 +10,7 @@
  *     wp workflow-captain verify
  *     wp workflow-captain pause <on|off>
  *     wp workflow-captain export <id> | import <file>
+ *     wp workflow-captain settings <list|get|set|export|import|reset|undo> (SET-WC-12)
  *
  * Read-only except process, requeue and migrate; requeue is the same human decision as in the admin (7.4).
  *
@@ -216,4 +217,143 @@ final class Command {
 	public function diagnostics(): void {
 		\WP_CLI::line( (string) wp_json_encode( Plugin::instance()->diagnostics(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
 	}
+
+	/**
+	 * Reads and changes the settings with the same checks as the settings page (SET-WC-12). Every change is recorded
+	 * in the audit log as System/WP-CLI and can be undone once with `undo`.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <command>
+	 * : list | get <key> | set <key> <value> | export [<file>] | import <file> [--dry-run] | reset [--tab=<tab>] | undo
+	 *
+	 * [<key>]
+	 * : Field of the register (see `list`); for export and import the file.
+	 *
+	 * [<value>]
+	 * : New value. Lists (kinds) comma separated.
+	 *
+	 * [--tab=<tab>]
+	 * : For reset: execution, notify or privacy. Without: all fields.
+	 *
+	 * [--dry-run]
+	 * : For import: show the changes, write nothing.
+	 *
+	 * [--yes]
+	 * : For reset: no confirmation.
+	 *
+	 * [--confirm=<word>]
+	 * : For set delete_data_on_uninstall 1: the word LÖSCHEN (or DELETE), as in the settings form.
+	 */
+	public function settings( array $args, array $assoc ): void {
+		$command = (string) ( $args[0] ?? 'list' );
+		$current = \WorkflowCaptain\SettingsTransfer::current();
+		$show    = static fn( $v ): string => is_array( $v ) ? implode( ',', $v ) : (string) $v;
+		switch ( $command ) {
+			case 'list':
+				$rows = array();
+				foreach ( array_keys( \WorkflowCaptain\SettingsRegistry::SPEC ) as $key ) {
+					$f      = \WorkflowCaptain\SettingsRegistry::field( $key );
+					$eff    = $show( \WorkflowCaptain\SettingsRegistry::filtered( $key, $current[ $key ] ) );
+					$rows[] = array(
+						'key'     => $key,
+						'value'   => $show( $current[ $key ] ),
+						'filter'  => $eff === $show( $current[ $key ] ) ? '' : $eff, // Value in effect when a filter overrides the stored one.
+						'default' => $show( $f['default'] ),
+						'range'   => in_array( $f['type'], array( 'int' ), true ) ? $f['min'] . '-' . $f['max'] : $f['type'],
+						'tab'     => $f['tab'],
+						'export'  => $f['export'] ? 'yes' : 'no',
+					);
+				}
+				\WP_CLI\Utils\format_items( 'table', $rows, array( 'key', 'value', 'filter', 'default', 'range', 'tab', 'export' ) );
+				return;
+			case 'get':
+				$key = (string) ( $args[1] ?? '' );
+				if ( ! array_key_exists( $key, $current ) ) {
+					\WP_CLI::error( 'Unknown setting. See: wp workflow-captain settings list' );
+				}
+				\WP_CLI::line( $show( $current[ $key ] ) );
+				$effective = \WorkflowCaptain\SettingsRegistry::filtered( $key, $current[ $key ] );
+				if ( $effective !== $current[ $key ] ) {
+					// The stored value is shown; a filter overrides it (SET-WC-01), say so instead of hiding it.
+					\WP_CLI::warning( sprintf( 'In effect: %s (set by the filter workflow_captain_setting_%s).', $show( $effective ), $key ) );
+				}
+				return;
+			case 'set':
+				$key   = (string) ( $args[1] ?? '' );
+				$value = $args[2] ?? null;
+				$f     = \WorkflowCaptain\SettingsRegistry::field( $key );
+				if ( null === $f || null === $value ) {
+					\WP_CLI::error( 'Usage: wp workflow-captain settings set <key> <value>' );
+				}
+				if ( in_array( $f['type'], array( \WorkflowCaptain\SettingsRegistry::TYPE_KINDS, \WorkflowCaptain\SettingsRegistry::TYPE_ROLES ), true ) ) {
+					$value = '' === $value ? array() : array_map( 'trim', explode( ',', (string) $value ) );
+				}
+				list( $ok, $clean, $code ) = \WorkflowCaptain\SettingsTransfer::check( $key, $value );
+				if ( ! $ok ) {
+					\WP_CLI::error( sprintf( '%s: %s (allowed: %s). Nothing was changed.', $key, $code, 'int' === $f['type'] ? $f['min'] . '-' . $f['max'] : $f['type'] ) );
+				}
+				if ( 'delete_data_on_uninstall' === $key && 1 === $clean && 1 !== \WorkflowCaptain\Settings::stored()['delete_data_on_uninstall'] && ! \WorkflowCaptain\Settings::deletion_confirmed( array( 'delete_data_on_uninstall_confirm' => $assoc['confirm'] ?? '' ) ) ) {
+					\WP_CLI::error( 'Switching on delete_data_on_uninstall needs --confirm=LÖSCHEN (or DELETE). Nothing was changed.' );
+				}
+				$changed = \WorkflowCaptain\SettingsTransfer::apply( array( $key => $clean ), 'cli' );
+				\WP_CLI::success( array() === $changed ? 'Unchanged.' : sprintf( '%s = %s', $key, $show( $clean ) ) );
+				return;
+			case 'export':
+				$json = (string) wp_json_encode( \WorkflowCaptain\SettingsTransfer::export( $current, WORKFLOW_CAPTAIN_VERSION ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+				if ( isset( $args[1] ) ) {
+					if ( false === file_put_contents( (string) $args[1], $json . "\n" ) ) { // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents -- WP-CLI writes the file the operator named.
+						\WP_CLI::error( 'Could not write the file.' );
+					}
+					\WP_CLI::success( 'Settings exported (without addresses and secrets).' );
+					return;
+				}
+				\WP_CLI::line( $json );
+				return;
+			case 'import':
+				$file = (string) ( $args[1] ?? '' );
+				if ( '' === $file || ! is_readable( $file ) ) {
+					\WP_CLI::error( 'Usage: wp workflow-captain settings import <file> [--dry-run]' );
+				}
+				$parsed = \WorkflowCaptain\SettingsTransfer::parse( (string) file_get_contents( $file ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- local file named by the operator.
+				foreach ( $parsed['errors'] as $key => $code ) {
+					\WP_CLI::warning( $key . ': ' . $code );
+				}
+				if ( array() !== $parsed['errors'] ) {
+					\WP_CLI::error( 'The file has errors. Nothing was changed.' );
+				}
+				foreach ( $parsed['ignored'] as $key ) {
+					\WP_CLI::line( 'Ignored: ' . $key );
+				}
+				$diff = \WorkflowCaptain\SettingsTransfer::diff( $current, $parsed['values'] );
+				foreach ( $diff as $key => $pair ) {
+					\WP_CLI::line( sprintf( '%s: %s -> %s', $key, $show( $pair[0] ), $show( $pair[1] ) ) );
+				}
+				if ( isset( $assoc['dry-run'] ) ) {
+					\WP_CLI::success( sprintf( '%d changes (dry run, nothing written).', count( $diff ) ) );
+					return;
+				}
+				\WorkflowCaptain\SettingsTransfer::apply( $parsed['values'], 'import' );
+				\WP_CLI::success( sprintf( '%d changes imported. Undo: wp workflow-captain settings undo', count( $diff ) ) );
+				return;
+			case 'reset':
+				$tab = isset( $assoc['tab'] ) ? (string) $assoc['tab'] : null;
+				if ( null !== $tab && array() === \WorkflowCaptain\SettingsRegistry::tab( $tab ) ) {
+					\WP_CLI::error( 'Unknown tab. Use execution, notify or privacy.' );
+				}
+				\WP_CLI::confirm( null === $tab ? 'Reset all settings to their defaults?' : sprintf( 'Reset the settings of tab %s?', $tab ), $assoc );
+				$changed = \WorkflowCaptain\SettingsTransfer::apply( \WorkflowCaptain\SettingsTransfer::reset_values( $tab ), 'reset' );
+				\WP_CLI::success( sprintf( '%d settings reset. Undo: wp workflow-captain settings undo', count( $changed ) ) );
+				return;
+			case 'undo':
+				$changed = \WorkflowCaptain\SettingsTransfer::undo();
+				if ( null === $changed ) {
+					\WP_CLI::error( 'Nothing to undo (no backup of the last 30 days).' );
+				}
+				\WP_CLI::success( sprintf( '%d settings restored.', count( $changed ) ) );
+				return;
+		}
+		\WP_CLI::error( 'Unknown command. Use list, get, set, export, import, reset or undo.' );
+	}
+
 }

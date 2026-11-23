@@ -2,6 +2,8 @@
 /**
  * Retry plan of docs/SPEC-suite-events.md, 7.4: after a temporary failure at most 8 more attempts, with the delays
  * 1 min, 5 min, 15 min, 1 h, 3 h, 6 h, 12 h, 24 h; when the eighth retry fails, the event goes to dead_letter (C-5).
+ * The operator can lower the number of retries to 1 to 8 (setting `retry_attempts`, SET-WC-09, F-15); the delays are
+ * always the first n steps of the plan.
  *
  * @package WorkflowCaptain
  */
@@ -18,7 +20,18 @@ final class RetryPlan {
 	 * @param int $failed_attempts Number of processing attempts that failed so far (1 after the first failure).
 	 * @return int|null Seconds until the next attempt, or null when the event goes to dead_letter.
 	 */
-	public static function delay( int $failed_attempts ): ?int {
-		return self::DELAYS[ $failed_attempts - 1 ] ?? null;
+	public static function delay( int $failed_attempts, ?int $attempts = null ): ?int {
+		$attempts = max( 1, min( count( self::DELAYS ), $attempts ?? self::attempts() ) );
+		return $failed_attempts <= $attempts ? ( self::DELAYS[ $failed_attempts - 1 ] ?? null ) : null;
+	}
+
+	/** Number of retries the operator set (default 8). */
+	public static function attempts(): int {
+		return (int) \WorkflowCaptain\Settings::get()['retry_attempts'];
+	}
+
+	/** @return int[] The delays in use, in seconds. */
+	public static function delays(): array {
+		return array_slice( self::DELAYS, 0, self::attempts() );
 	}
 }

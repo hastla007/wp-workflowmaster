@@ -94,7 +94,7 @@ Use the button "Diagnose herunterladen" (download diagnostics) under **Workflow 
 
 == Privacy ==
 
-Stored events and runs contain IDs, status, amounts and times, no codes, email addresses, names or free text. The user ID of whoever triggered an event is cleared once no run waits for it. Workflow Captain registers with the WordPress personal data export and erasure tools. Finished events and runs are deleted after 30 days, failed ones after 90 days; both can be shortened.
+Stored events and runs contain IDs, status, amounts and times, no codes, email addresses, names or free text. The user ID of whoever triggered an event is cleared once no run waits for it. Workflow Captain registers with the WordPress personal data export and erasure tools. Finished events are deleted after 30 days, failed and paused events after 90 days. Finished, failed and cancelled runs with their step log are deleted 30 days after they end; runs that still wait, are paused or need an action are kept until they end. The site owner can set each period between 1 and 180 days. Tags and notes that workflows set on an object are not removed by these periods; the change log keeps the last 50 changes (adjustable from 10 to 500) with the user ID.
 
 How the data flows:
 
@@ -137,6 +137,7 @@ None. Workflow Captain does not call any external service.
 * Export a run as redacted JSON (without users and secrets); "Im Editor zeigen" (show in editor) jumps from the step to the marked node; workflow list with the last run and the errors of the last 30 days.
 * Schedule: a time in the repeated hour at the end of daylight saving time now also applies at its first occurrence east of UTC (before: one hour later).
 * Filter runs by period (last 24 hours to 90 days or custom dates); overview with the tile "runs · 30 days" and provider status; new page "Zeitpläne" (schedules) with the next time and the last firing in the site's time zone.
+* Settings: one register of all settings with a filter per field (workflow_captain_setting_<key>); export and import of the settings as a file with a preview, reset per tab, undo for 30 days, and "wp workflow-captain settings"; retries and chain depth adjustable (1 to 8), retention up to 180 days, roles as recipients of operator messages, test mode for the whole site, change log length, "keep data when the plugin is deleted" (now the default), "store secrets only with an own key".
 * Editor: drag building blocks onto the flow; "+ Gruppe" (add group) in the condition form (one group level, at most 20 rules); warning sign at the node when a provider is missing, an output is open or rules are invalid; "last fired" in the schedule.
 
 = 0.1.0 =

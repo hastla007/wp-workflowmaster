@@ -47,16 +47,31 @@ final class SchedulesPage {
 		return implode( ', ', $parts );
 	}
 
+	/** Format without WordPress options (tests, empty options): weekday, day, month, year, 24-hour time. */
+	const FALLBACK_FORMAT = 'D, d.m.Y H:i';
+
 	/**
-	 * A UTC timestamp as a time element: machine-readable in UTC, shown in the site time zone, e.g. "Mo., 23.11.2026 07:30".
-	 *
-	 * @param callable(string,int):string $format Formats in the site time zone (wp_date() in WordPress).
+	 * Date and time format of the site: weekday plus "Datumsformat" and "Zeitformat" from Settings → General, so a
+	 * site in en_US, de_CH or ja shows its own order and 12/24-hour clock (P3); the weekday helps with weekly rules.
 	 */
-	public static function time_cell( ?int $ts, callable $format ): string {
+	public static function site_format( string $date_format, string $time_format ): string {
+		$date_format = trim( $date_format );
+		$time_format = trim( $time_format );
+		return '' === $date_format || '' === $time_format ? self::FALLBACK_FORMAT : 'D, ' . $date_format . ' ' . $time_format;
+	}
+
+	/**
+	 * A UTC timestamp as a time element: machine-readable in UTC, shown in the site time zone and format, e.g.
+	 * "Mo., 23.11.2026 07:30" or "Mon, November 23, 2026 7:30 am".
+	 *
+	 * @param callable(string,int):string $format  Formats in the site time zone (wp_date() in WordPress).
+	 * @param string                      $pattern PHP date format, see site_format().
+	 */
+	public static function time_cell( ?int $ts, callable $format, string $pattern = self::FALLBACK_FORMAT ): string {
 		if ( null === $ts ) {
 			return '<span aria-hidden="true">–</span><span class="screen-reader-text">' . esc_html__( 'keine Angabe', 'workflow-captain' ) . '</span>';
 		}
-		return '<time datetime="' . esc_attr( gmdate( 'Y-m-d\TH:i:s\Z', $ts ) ) . '">' . esc_html( $format( 'D, d.m.Y H:i', $ts ) ) . '</time>';
+		return '<time datetime="' . esc_attr( gmdate( 'Y-m-d\TH:i:s\Z', $ts ) ) . '">' . esc_html( $format( $pattern, $ts ) ) . '</time>';
 	}
 
 	/**
@@ -65,9 +80,10 @@ final class SchedulesPage {
 	 * @param array<int,array<string,mixed>> $rows Engine::schedules().
 	 * @param callable(string,int):string    $format
 	 * @param bool                           $editor Whether the viewer may open the editor.
+	 * @param string                         $pattern PHP date format, see site_format().
 	 * @return string[]
 	 */
-	public static function table_rows( array $rows, callable $format, bool $editor ): array {
+	public static function table_rows( array $rows, callable $format, bool $editor, string $pattern = self::FALLBACK_FORMAT ): array {
 		$out = array();
 		foreach ( $rows as $r ) {
 			$name = esc_html( $r['name'] );
@@ -80,8 +96,8 @@ final class SchedulesPage {
 			if ( $r['draft_differs'] ) {
 				$state .= '<br><span class="description">' . esc_html__( 'Der Entwurf weicht ab; es gilt die veröffentlichte Version.', 'workflow-captain' ) . '</span>';
 			}
-			$next = null === $r['next'] && EngineStore::WF_ACTIVE !== $r['status'] ? esc_html__( 'keiner (pausiert)', 'workflow-captain' ) : self::time_cell( $r['next'], $format );
-			$last = self::time_cell( $r['last_fired'], $format );
+			$next = null === $r['next'] && EngineStore::WF_ACTIVE !== $r['status'] ? esc_html__( 'keiner (pausiert)', 'workflow-captain' ) : self::time_cell( $r['next'], $format, $pattern );
+			$last = self::time_cell( $r['last_fired'], $format, $pattern );
 			if ( null !== $r['last_fired'] ) {
 				$last .= ' (<a class="wfc-text-link" href="' . esc_url( WorkflowsPage::url( WorkflowsPage::SLUG_RUNS, array( 'workflow' => $r['workflow_id'] ) ) ) . '">' . esc_html__( 'Läufe', 'workflow-captain' ) . '</a>)';
 			}
@@ -101,7 +117,7 @@ final class SchedulesPage {
 		/* translators: %s: time zone of the site */
 		echo '<p class="description">' . esc_html( sprintf( __( 'Workflows mit dem Auslöser „Zeitplan“, nach Name. Alle Zeiten in der Zeitzone der Website (%s). Ein verpasster Termin wird höchstens einmal nachgeholt.', 'workflow-captain' ), $tz ) ) . '</p>';
 		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Zeitpläne der Workflows', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Workflow', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Zustand', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Zeitplan', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Nächster Termin', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Zuletzt ausgelöst', 'workflow-captain' ) . '</th></tr></thead><tbody>';
-		$lines = self::table_rows( $rows, static fn( string $f, int $ts ): string => (string) wp_date( $f, $ts ), current_user_can( 'edit_workflows' ) );
+		$lines = self::table_rows( $rows, static fn( string $f, int $ts ): string => (string) wp_date( $f, $ts ), current_user_can( 'edit_workflows' ), self::site_format( (string) get_option( 'date_format' ), (string) get_option( 'time_format' ) ) );
 		if ( array() === $lines ) {
 			echo '<tr><td colspan="5">' . esc_html__( 'Kein aktiver oder pausierter Workflow startet nach Zeitplan. Ein Entwurf zählt erst nach dem Veröffentlichen.', 'workflow-captain' ) . '</td></tr>';
 		}

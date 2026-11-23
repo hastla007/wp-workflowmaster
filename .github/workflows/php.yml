@@ -13,6 +13,7 @@ on:
       - "docs/**"
       - "languages/**"
       - ".github/workflows/php.yml"
+  # Same paths as push: tests read docs/OPTIONS.md and docs/SDK.md (register and hooks), the POT check languages/.
   pull_request:
     paths:
       - "**.php"

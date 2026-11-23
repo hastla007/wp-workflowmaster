@@ -159,6 +159,9 @@ foreach ( array(
 	"\$k = 'voucher-captain-pro';"               => 'product key',
 	"wp_set_current_user( 1 );"                  => 'wp_set_current_user',
 	"add_filter( 'pre_wp_mail', '__return_true' );" => 'mail filter',
+	"\$r = 'workflow.advanced_logic';"          => 'Pro right in a hint (E-S8: grey line without function code)',
+	"\$r = 'workflow.branding';"                => 'reserved Pro right workflow.branding (E-S8)',
+	"\$r = 'workflow.webhooks';"                => 'Pro right workflow.webhooks',
 ) as $line => $what ) {
 	file_put_contents( $tmp . '/src/Planted.php', "<?php\n{$line}\n" );
 	exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __DIR__ . '/license-guard.php' ) . ' ' . escapeshellarg( $tmp ) . ' 2>&1', $o, $c );
@@ -173,17 +176,19 @@ rmdir( $tmp );
 // Uninstall runs without the plugin's autoloader (WordPress includes only uninstall.php). Found in the E2E run
 // (docs/E2E-RESULTS.md): Install::deactivate() needed the Scheduler class, which uninstall.php did not load.
 
-$wfc_stub = sys_get_temp_dir() . '/wfc-uninstall-' . bin2hex( random_bytes( 4 ) ) . '.php';
-file_put_contents(
-	$wfc_stub,
-	'<?php
+$wfc_uninstall = static function ( string $settings ): array {
+	$stub = sys_get_temp_dir() . '/wfc-uninstall-' . bin2hex( random_bytes( 4 ) ) . '.php';
+	file_put_contents(
+		$stub,
+		'<?php
 define( "ABSPATH", "/" );
 define( "WP_UNINSTALL_PLUGIN", "workflow-captain/workflow-captain.php" );
 $GLOBALS["log"] = array();
-final class Stub_Db { public $prefix = "wp_"; public function query( $q ) { $GLOBALS["log"][] = $q; return true; } }
+final class Stub_Db { public $prefix = "wp_"; public $options = "wp_options"; public function query( $q ) { $GLOBALS["log"][] = $q; return true; } }
 final class Stub_Role { public function remove_cap( $c ) { $GLOBALS["log"][] = "cap:" . $c; } }
 $wpdb = new Stub_Db();
 function is_multisite() { return false; }
+function get_option( $o, $d = false ) { return "workflow_captain_settings" === $o ? ' . $settings . ' : $d; }
 function delete_option( $o ) { $GLOBALS["log"][] = "option:" . $o; return true; }
 function wp_roles() { return (object) array( "role_objects" => array( "administrator" => new Stub_Role() ) ); }
 function wp_clear_scheduled_hook( $h ) { $GLOBALS["log"][] = "cron:" . $h; return 0; }
@@ -191,11 +196,18 @@ function as_unschedule_all_actions( $h, $a = array(), $g = "" ) { $GLOBALS["log"
 require ' . var_export( dirname( __DIR__ ) . '/uninstall.php', true ) . ';
 echo json_encode( $GLOBALS["log"] );
 '
-);
-exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $wfc_stub ) . ' 2>&1', $wfc_out, $wfc_code );
-unlink( $wfc_stub );
-$wfc_log = json_decode( (string) end( $wfc_out ), true );
-check( 'uninstall.php runs without the plugin autoloader (drops tables, options, caps, clears both worker plans)', 0 === $wfc_code && is_array( $wfc_log ) && in_array( 'DROP TABLE IF EXISTS wp_workflow_captain_events', $wfc_log, true ) && in_array( 'option:workflow_captain_settings', $wfc_log, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log, true ) && in_array( 'as:workflow_captain_process_events:workflow-captain', $wfc_log, true ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
+	);
+	exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $stub ) . ' 2>&1', $out, $code );
+	unlink( $stub );
+	return array( $code, json_decode( (string) end( $out ), true ) );
+};
+list( $wfc_code, $wfc_log ) = $wfc_uninstall( 'array( "delete_data_on_uninstall" => 1 )' );
+check( 'uninstall.php runs without the plugin autoloader (drops tables, options, caps, clears both worker plans when chosen)', 0 === $wfc_code && is_array( $wfc_log ) && in_array( 'DROP TABLE IF EXISTS wp_workflow_captain_events', $wfc_log, true ) && in_array( 'option:workflow_captain_settings', $wfc_log, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log, true ) && in_array( 'as:workflow_captain_process_events:workflow-captain', $wfc_log, true ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
+check( 'P4 uninstall removes the settings backup (addresses) and the plugin transients (import preview per user)', is_array( $wfc_log ) && in_array( 'option:workflow_captain_settings_backup', $wfc_log, true ) && array() !== array_filter( $wfc_log, static fn( $q ): bool => str_starts_with( $q, 'DELETE FROM wp_options' ) && str_contains( $q, '\\_transient\\_workflow\\_captain\\_%' ) && str_contains( $q, '\\_transient\\_timeout\\_workflow\\_captain\\_%' ) ) );
+list( $wfc_code, $wfc_log ) = $wfc_uninstall( 'array( "batch" => 25 )' );
+check( 'SET-WC-05 uninstall keeps tables, options and caps by default (E-S6), clears only the worker plan', 0 === $wfc_code && is_array( $wfc_log ) && array() === array_filter( $wfc_log, static fn( $l ) => str_starts_with( $l, 'DROP' ) || str_starts_with( $l, 'option:' ) || str_starts_with( $l, 'cap:' ) ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
+list( $wfc_code, $wfc_log ) = $wfc_uninstall( 'false' );
+check( 'SET-WC-05 uninstall without any stored settings keeps the data too', 0 === $wfc_code && array() === array_filter( (array) $wfc_log, static fn( $l ) => str_starts_with( $l, 'DROP' ) ) );
 
 // ---------------------------------------------------------------------------------------------------------------
 // Multisite: a site created while the plugin is network-active gets its tables at once (wp_initialize_site). Found in
@@ -303,6 +315,21 @@ foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
 	}
 }
 check( 'WF-BUILDER-09 admin form controls have a label (wrapped, for=id or aria-label)' . ( $wfc_unlabelled ? ': ' . implode( '; ', $wfc_unlabelled ) : '' ), array() === $wfc_unlabelled );
+
+// P5 (settings transfer review, browser run at 1280 and 375 px):
+$wfc_sp = (string) file_get_contents( __DIR__ . '/../src/Admin/SettingsPage.php' );
+// - a capability key is no accessible name: the role checkboxes said "view_workflow_logs" and not which role.
+check( 'P5 role checkboxes are named by right and role, not by the capability key', ! str_contains( $wfc_sp, "aria-label=\"' . esc_attr( \$cap ) . '\"" ) && str_contains( $wfc_sp, "sprintf( __( '%1\$s – %2\$s', 'workflow-captain' ), \$label, \$name )" ) );
+// - a save through options.php reports as setting "general"; only the plugin's own setting was printed (no feedback).
+check( 'P5 settings page prints the "saved" message of options.php', str_contains( $wfc_sp, "settings_errors( 'general' );" ) );
+// - every button printed with submit_button() on one tab had id="submit" (status tab: four times).
+preg_match_all( "/submit_button\(([^;]*)\);/", $wfc_sp, $wfc_sb );
+$wfc_noid = array_filter( $wfc_sb[1], static fn( $b ) => ! str_contains( $b, "'id'" ) );
+check( 'P5 submit buttons of the settings page carry their own id (no duplicate id="submit")' . ( $wfc_noid ? ': ' . count( $wfc_noid ) . ' without' : '' ), array() === $wfc_noid );
+// - the irreversible undo had no confirmation, the reset had one.
+check( 'P5 undo of the settings asks for confirmation like the reset', 1 === preg_match( "/'id'\s*=>\s*'wfc-undo-submit'.*?'onclick'\s*=>\s*'return confirm\(/s", $wfc_sp ) );
+// - the error of a field is read before its help text, and the recipients field shows its own error.
+check( 'P5 a field error comes first in aria-describedby and the recipients field can show one', str_contains( $wfc_sp, "\$id . '-error ' : '' ) . ( '' !== \$help" ) && str_contains( $wfc_sp, 'id="wfc-recipients-error"' ) && str_contains( (string) file_get_contents( __DIR__ . '/../src/Admin/SettingsPage.php' ), "array( Notifications::class, 'sanitize_and_report' )" ) );
 
 // Found in the E2E third run with the wp-admin styles (docs/E2E-RESULTS.md, "Dritter Lauf"):
 // - WF-SET-13: every audit entry the core writes has a readable label on the status tab ("run_export" showed its key).
@@ -597,7 +624,11 @@ $s->consumer->capture( $s->adapter, checkin() );
 $s->consumer->process();
 $s->clock->advance( 31 * DAY_IN_SECONDS );
 ( new Privacy( fn() => $s->store, $s->clock ) )->apply_retention();
-check( 'C-14 retention cannot be extended by filter', array() === $s->store->find( array(), 10, 0 ) );
+check( 'C-14 retention can be lengthened (E-S7 = F-04): kept after 31 days with 1000 asked', 1 === count( $s->store->find( array(), 10, 0 ) ) );
+$s->clock->advance( 150 * DAY_IN_SECONDS );
+( new Privacy( fn() => $s->store, $s->clock ) )->apply_retention();
+check( 'C-14 retention cannot be extended beyond 180 days by filter', array() === $s->store->find( array(), 10, 0 ) );
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_retention_days'] );
 
 // C-16: sites are separate
 $pdo = FakeWpdb::memory();
@@ -612,6 +643,7 @@ require __DIR__ . '/security-tests.php';
 require __DIR__ . '/provider-tests.php';
 require __DIR__ . '/connector-tests.php';
 require __DIR__ . '/admin-list-tests.php';
+require __DIR__ . '/settings-transfer-tests.php';
 
 echo "\n{$passed} passed, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );

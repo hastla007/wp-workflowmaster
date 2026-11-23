@@ -17,10 +17,15 @@ final class Notifications {
 	/** Kinds of notices the operator can choose (WF-SET-06). */
 	const KINDS = array( 'decisions', 'paused', 'failed', 'stuck', 'pause', 'providers' );
 
-	/** @return array{recipients:string,kinds:string[]} */
+	/** @return array{recipients:string,kinds:string[],notify_admin_roles:string[]} What the operator stored, without filters (shown and saved by the form). */
+	public static function stored(): array {
+		$c = function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array();
+		return self::sanitize( is_array( $c ) ? $c : array() );
+	}
+
+	/** @return array{recipients:string,kinds:string[],notify_admin_roles:string[]} The values in effect, with the filter of each field applied. */
 	public static function config(): array {
-		$c      = function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array();
-		$config = self::sanitize( is_array( $c ) ? $c : array() );
+		$config = self::stored();
 		foreach ( $config as $key => $value ) {
 			$config[ $key ] = SettingsRegistry::filtered( $key, $value );
 		}
@@ -31,9 +36,43 @@ final class Notifications {
 	public static function sanitize( $input ): array {
 		$input = is_array( $input ) ? $input : array();
 		return array(
-			'recipients' => SettingsRegistry::clean( 'recipients', $input['recipients'] ?? '' ),
-			'kinds'      => SettingsRegistry::clean( 'kinds', $input['kinds'] ?? null ),
+			'recipients'         => SettingsRegistry::clean( 'recipients', $input['recipients'] ?? '' ),
+			'kinds'              => SettingsRegistry::clean( 'kinds', $input['kinds'] ?? null ),
+			'notify_admin_roles' => SettingsRegistry::clean( 'notify_admin_roles', $input['notify_admin_roles'] ?? null ),
 		);
+	}
+
+	/**
+	 * Addresses of the input that are not kept: invalid ones and those after the tenth.
+	 *
+	 * @return string[]
+	 */
+	public static function dropped_addresses( $input ): array {
+		$raw  = is_array( $input ) && is_scalar( $input['recipients'] ?? null ) ? (string) $input['recipients'] : '';
+		$kept = array_filter( explode( ', ', SettingsRegistry::clean( 'recipients', $raw ) ) );
+		$out  = array();
+		foreach ( preg_split( '/[\s,;]+/', $raw ) ?: array() as $address ) {
+			$address = trim( $address );
+			if ( '' !== $address && ! in_array( strtolower( $address ), $kept, true ) && ! in_array( $address, $out, true ) ) {
+				$out[] = $address;
+			}
+		}
+		return $out;
+	}
+
+	/** Sanitize callback of the settings page: like sanitize(), and says which addresses were not kept (P5). */
+	public static function sanitize_and_report( $input ): array {
+		$clean   = self::sanitize( $input );
+		$dropped = self::dropped_addresses( $input );
+		if ( array() !== $dropped && function_exists( 'add_settings_error' ) ) {
+			// WordPress may run the callback twice (add_option after update_option); report once.
+			$codes = function_exists( 'get_settings_errors' ) ? array_column( get_settings_errors( Settings::OPTION ), 'code' ) : array();
+			if ( ! in_array( 'wfc-recipients', $codes, true ) ) {
+				/* translators: %s: list of addresses */
+				add_settings_error( Settings::OPTION, 'wfc-recipients', sprintf( __( 'Nicht gespeichert (ungültig oder mehr als zehn Adressen): %s. Die übrigen Adressen wurden gespeichert.', 'workflow-captain' ), implode( ', ', $dropped ) ), 'error' );
+			}
+		}
+		return $clean;
 	}
 
 	/** @return string[] The chosen addresses, else the address of the site administrator. */

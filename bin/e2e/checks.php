@@ -404,6 +404,12 @@ switch ( $e2e_section ) {
 		e2e_check( 'j4', 'after deactivation no worker scheduled (AS and WP-Cron)', array() === $as && false === wp_next_scheduled( 'workflow_captain_process_events' ) && false === wp_next_scheduled( 'workflow_captain_daily_maintenance' ), count( $as ) . ' AS' );
 		break;
 
+	case 'uninstall_kept':
+		global $wpdb;
+		$missing = array_diff( e2e_tables(), e2e_existing_tables() );
+		e2e_check( 'j5c', 'uninstall without opt-in keeps all tables, options and capabilities (SET-WC-05)', array() === $missing && false !== get_option( 'workflow_captain_db_version' ) && get_role( 'administrator' )->has_cap( 'manage_workflow_captain' ), $missing );
+		break;
+
 	case 'uninstalled':
 		global $wpdb;
 		$left = e2e_existing_tables();

@@ -575,18 +575,18 @@ check( 'WF-CORE-06 reporting changes nothing', EngineStore::STEP_RUNNING === ste
 use WorkflowCaptain\Settings;
 check( 'settings: defaults', 25 === Settings::defaults()['batch'] && 30 === Settings::defaults()['retention_finished'] );
 check( 'settings: values clamped to their range', 200 === Settings::sanitize( array( 'batch' => 9999 ) )['batch'] && 1 === Settings::sanitize( array( 'max_site' => -3 ) )['max_site'] );
-check( 'settings: retention cannot exceed the proposal', 90 === Settings::sanitize( array( 'retention_stuck' => 365 ) )['retention_stuck'] );
+check( 'settings: retention cannot exceed 180 days (E-S7 = F-04), defaults stay 30/90', 180 === Settings::sanitize( array( 'retention_stuck' => 365 ) )['retention_stuck'] && 120 === Settings::sanitize( array( 'retention_finished' => 120 ) )['retention_finished'] && 90 === Settings::defaults()['retention_stuck'] );
 check( 'settings: unknown keys dropped', ! isset( Settings::sanitize( array( 'evil' => 1 ) )['evil'] ) );
 check( 'settings: engine limits mapped', array( 'site' => 5, 'workflow' => 2, 'catch_up' => 86400, 'seconds' => 20 ) === Settings::engine_limits( Settings::defaults() ) );
 
 // SET-WC-01: register of the settings.
 use WorkflowCaptain\SettingsRegistry;
 use WorkflowCaptain\Notifications;
-check( 'SET-WC-01 register: every value of both options is in the register, nothing else', array_keys( Settings::defaults() ) === SettingsRegistry::keys( Settings::OPTION ) && array( 'recipients', 'kinds' ) === SettingsRegistry::keys( Notifications::OPTION ) && 11 === count( SettingsRegistry::SPEC ) );
+check( 'SET-WC-01 register: every value of both options is in the register, nothing else', array_keys( Settings::defaults() ) === SettingsRegistry::keys( Settings::OPTION ) && array( 'recipients', 'kinds', 'notify_admin_roles' ) === SettingsRegistry::keys( Notifications::OPTION ) && 18 === count( SettingsRegistry::SPEC ) );
 check( 'SET-WC-01 register: both options keep their settings group', 'workflow_captain' === SettingsRegistry::GROUPS[ Settings::OPTION ] && 'workflow_captain_notify' === SettingsRegistry::GROUPS[ Notifications::OPTION ] );
 check( 'SET-WC-01 register: every field has a label and every number field a help text', array() === array_diff( array_keys( SettingsRegistry::SPEC ), array_keys( SettingsRegistry::texts() ) ) && array() === array_filter( SettingsRegistry::keys( Settings::OPTION ), static fn( $k ) => '' === SettingsRegistry::texts()[ $k ][1] ) );
-check( 'SET-WC-01 register: defaults and ranges unchanged against 0.2.0', array( 'batch' => 25, 'max_site' => 5, 'max_workflow' => 2, 'catch_up_hours' => 24, 'max_seconds' => 20, 'retention_finished' => 30, 'retention_runs' => 30, 'retention_stuck' => 90, 'notify_daily' => 1 ) === Settings::defaults() && array( 1, 200 ) === array_slice( Settings::fields()['batch'], 1 ) );
-check( 'SET-WC-01 register: stored option of 0.2.0 is read unchanged (no migration needed)', array( 'max_site' => 7, 'retention_stuck' => 45 ) === array_intersect_key( Settings::sanitize( array( 'max_site' => '7', 'retention_stuck' => 45, 'old' => 1 ) ), array( 'max_site' => 1, 'retention_stuck' => 1 ) ) && array( 'recipients' => 'a@example.org', 'kinds' => array( 'paused' ) ) === Notifications::sanitize( array( 'recipients' => 'A@example.org', 'kinds' => array( 'paused' ) ) ) );
+check( 'SET-WC-01 register: defaults and ranges unchanged against 0.2.0', array( 'batch' => 25, 'max_site' => 5, 'max_workflow' => 2, 'catch_up_hours' => 24, 'max_seconds' => 20, 'test_mode' => 0, 'retry_attempts' => 8, 'max_chain_depth' => 3, 'retention_finished' => 30, 'retention_runs' => 30, 'retention_stuck' => 90, 'require_own_key' => 0, 'audit_keep' => 50, 'delete_data_on_uninstall' => 0, 'notify_daily' => 1 ) === Settings::defaults() && array( 1, 200 ) === array_slice( Settings::fields()['batch'], 1 ) );
+check( 'SET-WC-01 register: stored option of 0.2.0 is read unchanged (no migration needed)', array( 'max_site' => 7, 'retention_stuck' => 45 ) === array_intersect_key( Settings::sanitize( array( 'max_site' => '7', 'retention_stuck' => 45, 'old' => 1 ) ), array( 'max_site' => 1, 'retention_stuck' => 1 ) ) && array( 'recipients' => 'a@example.org', 'kinds' => array( 'paused' ), 'notify_admin_roles' => array() ) === Notifications::sanitize( array( 'recipients' => 'A@example.org', 'kinds' => array( 'paused' ) ) ) );
 add_filter( 'workflow_captain_setting_max_site', static fn( $v ) => 12 );
 add_filter( 'workflow_captain_setting_batch', static fn( $v ) => 5000 );
 add_filter( 'workflow_captain_setting_recipients', static fn( $v ) => 'ops@example.org, kaputt' );
@@ -928,7 +928,29 @@ check( 'scheduler: without Action Scheduler WP-Cron is planned', Scheduler::WP_C
 
 // ----- WF-SET-07: separate retention for runs -----------------------------------------------------------------
 
-check( 'settings: separate run retention, at most 30', 30 === Settings::defaults()['retention_runs'] && 30 === Settings::sanitize( array( 'retention_runs' => 99 ) )['retention_runs'] );
+check( 'settings: separate run retention, default 30, at most 180', 30 === Settings::defaults()['retention_runs'] && 99 === Settings::sanitize( array( 'retention_runs' => 99 ) )['retention_runs'] && 180 === Settings::sanitize( array( 'retention_runs' => 999 ) )['retention_runs'] );
+// SET-WC-09 (E-S5 = F-15): retries and chain depth.
+use WorkflowCaptain\Consumer\RetryPlan;
+check( 'SET-WC-09 retries: default 8 with the delays of 7.4, range 1 to 8', 8 === Settings::defaults()['retry_attempts'] && 86400 === RetryPlan::delay( 8 ) && null === RetryPlan::delay( 9 ) && 8 === count( RetryPlan::delays() ) && 1 === Settings::sanitize( array( 'retry_attempts' => 0 ) )['retry_attempts'] && 8 === Settings::sanitize( array( 'retry_attempts' => 20 ) )['retry_attempts'] );
+check( 'SET-WC-09 retries: with 3 set, the first three delays are used, the fourth failure is final', 900 === RetryPlan::delay( 3, 3 ) && null === RetryPlan::delay( 4, 3 ) && 60 === RetryPlan::delay( 1, 1 ) && null === RetryPlan::delay( 2, 1 ) );
+add_filter( 'workflow_captain_setting_retry_attempts', static fn( $v ) => 2 );
+add_filter( 'workflow_captain_setting_max_chain_depth', static fn( $v ) => 1 );
+$GLOBALS['wfc_limits'] = array( RetryPlan::delays(), RetryPlan::delay( 3 ), \WorkflowCaptain\Consumer\Consumer::max_depth() );
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_setting_retry_attempts'], $GLOBALS['wfc_test_filters']['workflow_captain_setting_max_chain_depth'] );
+check( 'SET-WC-09 the setting (here by filter) reaches the retry plan and the consumer', array( array( 60, 300 ), null, 1 ) === $GLOBALS['wfc_limits'] && 3 === \WorkflowCaptain\Consumer\Consumer::max_depth() );
+check( 'SET-WC-09 chain depth: default 3, range 1 to 8 (schema allows 8)', 3 === Settings::defaults()['max_chain_depth'] && 8 === Settings::sanitize( array( 'max_chain_depth' => 9 ) )['max_chain_depth'] && 1 === Settings::sanitize( array( 'max_chain_depth' => -1 ) )['max_chain_depth'] );
+check( 'SET-WC-28 retention: the core allows at most 180 days, an add-on may raise it by filter', 180 === \WorkflowCaptain\Privacy\Privacy::max_days() );
+// SET-WC-14: test mode "nothing executed": runs go through, no step takes effect.
+add_filter( 'workflow_captain_test_mode', static fn( $m ) => \WorkflowCaptain\TestMode::DRY );
+$e  = engine_site();
+$id = publish( $e, sample_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_test_mode'] );
+$wfc_steps = steps_of( $e );
+check( 'SET-WC-14 dry test mode: the run succeeds, no mail, no tag', EngineStore::RUN_SUCCEEDED === ( run_of( $e )['state'] ?? '' ) && array() === $e->dir->sent && array() === $e->store->tags_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' ) );
+check( 'SET-WC-14 dry test mode: each action step is logged as skipped (test_mode)', array( 'test_mode', 'test_mode' ) === array_values( array_filter( array_map( fn( $st ) => $st['result']['skipped'] ?? null, $wfc_steps ) ) ) );
+check( 'SET-WC-14 test mode is off by default and limited to 0, 1, 2', \WorkflowCaptain\TestMode::OFF === \WorkflowCaptain\TestMode::mode() && 2 === Settings::sanitize( array( 'test_mode' => 7 ) )['test_mode'] && false === \WorkflowCaptain\SettingsRegistry::field( 'test_mode' )['export'] );
 $p = Settings::problems( array( 'batch' => '9999', 'max_site' => 'abc', 'max_workflow' => '3', 'notify_daily' => '1' ) );
 check( 'WF-SET-13 settings: out-of-range and non-numeric values are reported per field, valid ones are not', array( 'batch', 'max_site' ) === array_keys( $p ) && array( '9999', 200, 1, 200 ) === $p['batch'] && 5 === $p['max_site'][1] );
 check( 'WF-SET-13 settings: no problems for an untouched form', array() === Settings::problems( Settings::defaults() ) && array() === Settings::problems( 'x' ) );
@@ -942,6 +964,9 @@ $e->clock->advance( 6 * DAY_IN_SECONDS );
 ( new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, fn() => $e->store ) )->apply_retention();
 check( 'retention: runs after 5 days gone, the event (30 days) stays', array() === $e->store->find_runs( array(), 10, 0 ) && 1 === count( $e->events->find( array(), 10, 0 ) ) );
 $GLOBALS['wfc_test_filters']['workflow_captain_retention_days'] = array();
+// P3: readme and the deletion code agree (the readme said "failed ones after 90 days", but failed runs go after 30).
+$readme = (string) file_get_contents( __DIR__ . '/../readme.txt' );
+check( 'P3 readme: periods match the code (events 30/90, finished, failed and cancelled runs 30, open runs kept, change log 50)', 30 === \WorkflowCaptain\Privacy\Privacy::RETENTION_DAYS['finished'] && 90 === \WorkflowCaptain\Privacy\Privacy::RETENTION_DAYS['stuck'] && 30 === Settings::defaults()['retention_runs'] && 50 === \WorkflowCaptain\Audit::KEEP && str_contains( $readme, 'Finished events are deleted after 30 days, failed and paused events after 90 days. Finished, failed and cancelled runs with their step log are deleted 30 days after they end; runs that still wait, are paused or need an action are kept until they end.' ) && str_contains( $readme, 'the change log keeps the last 50 changes' ) && ! str_contains( $readme, 'failed ones after 90 days' ) );
 
 // ----- WF-SET-13: audit trail of security-relevant changes
 $log = array();

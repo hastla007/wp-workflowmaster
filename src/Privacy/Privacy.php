@@ -18,7 +18,15 @@ final class Privacy {
 
 	const PAGE_SIZE = 100;
 
-	/** Proposal of R-12.4 (open, F-04): finished events 30 days, dead_letter and paused 90 days. */
+	/**
+	 * Longest retention in days. 180 in the free core (E-S7 = F-04); an add-on may raise it with the filter
+	 * `workflow_captain_retention_max_days` (never below 1).
+	 */
+	public static function max_days(): int {
+		return max( 1, (int) apply_filters( 'workflow_captain_retention_max_days', \WorkflowCaptain\SettingsRegistry::RETENTION_MAX ) );
+	}
+
+	/** Defaults of R-12.4 (F-04, decided 23.11.2026): finished events 30 days, dead_letter and paused 90 days. */
 	const RETENTION_DAYS = array(
 		'finished' => 30,
 		'stuck'    => 90,
@@ -136,12 +144,12 @@ final class Privacy {
 		$clock = $this->clock;
 		foreach ( self::RETENTION_DAYS as $group => $default ) {
 			/**
-			 * Retention in days for finished events ("finished") and for dead_letter/paused ("stuck"); only lower values
-			 * than the default take effect.
+			 * Retention in days for finished events ("finished") and for dead_letter/paused ("stuck"). Since 0.3.0 the
+			 * setting can also lengthen the period up to the maximum (180 days, E-S7 = F-04).
 			 *
 			 * @since 0.1.0
 			 */
-			$days   = max( 1, min( $default, (int) apply_filters( 'workflow_captain_retention_days', $default, $group ) ) );
+			$days   = max( 1, min( self::max_days(), (int) apply_filters( 'workflow_captain_retention_days', $default, $group ) ) );
 			$states = 'finished' === $group
 				? array( EventStore::DONE, EventStore::DISCARDED, EventStore::LOOP_BLOCKED )
 				: array( EventStore::DEAD_LETTER, EventStore::PAUSED );
@@ -150,7 +158,7 @@ final class Privacy {
 		if ( null !== $this->engine_provider ) {
 			// Finished runs and their step logs have their own period (WF-SET-07); open runs (running, action
 			// required, paused) are never deleted here.
-			$days = max( 1, min( 30, (int) apply_filters( 'workflow_captain_retention_days', 30, 'runs' ) ) );
+			$days = max( 1, min( self::max_days(), (int) apply_filters( 'workflow_captain_retention_days', 30, 'runs' ) ) );
 			$this->engine()->delete_runs_older( array( EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_FAILED, EngineStore::RUN_CANCELLED ), $clock->mysql( $clock->now() - $days * DAY_IN_SECONDS ) );
 		}
 	}

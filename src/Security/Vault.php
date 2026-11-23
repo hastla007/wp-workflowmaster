@@ -24,18 +24,31 @@ final class Vault {
 	private ?string $key;
 	private ?string $previous;
 
+	/** True when the master key comes from the WordPress salts (no own key given or configured). */
+	private bool $from_salts;
+
 	/**
 	 * @param string|null $key      Master key material; null = from the environment (see class comment).
 	 * @param string|null $previous Previous master key material for rotation; null = from the environment.
 	 */
 	public function __construct( ?string $key = null, ?string $previous = null ) {
-		$this->key      = self::material( $key ?? self::configured( 'WORKFLOW_CAPTAIN_SECRET_KEY' ) ?? self::from_salts() );
+		$own              = $key ?? self::configured( 'WORKFLOW_CAPTAIN_SECRET_KEY' );
+		$this->from_salts = null === $own;
+		$this->key        = self::material( $own ?? self::from_salts() );
 		$this->previous = self::material( $previous ?? self::configured( 'WORKFLOW_CAPTAIN_SECRET_KEY_PREVIOUS' ) );
 	}
 
 	/** Whether secrets can be stored at all (libsodium and a key). Without, connections needing one stay inactive. */
 	public function available(): bool {
 		return function_exists( 'sodium_crypto_secretbox' ) && null !== $this->key;
+	}
+
+	/**
+	 * Whether new secrets may be stored: always with an own key; with the key derived from the salts only while the
+	 * operator has not switched on "only with an own key" (setting `require_own_key`, SET-WC-24). Reading stays possible.
+	 */
+	public function may_store(): bool {
+		return ! $this->from_salts || 1 !== (int) \WorkflowCaptain\Settings::get()['require_own_key'];
 	}
 
 	/** Whether an own key is configured (recommended; the admin shows a hint otherwise). */
@@ -46,6 +59,9 @@ final class Vault {
 	public function encrypt( string $plaintext, string $context ): string {
 		if ( ! $this->available() ) {
 			throw new \RuntimeException( 'vault_unavailable' );
+		}
+		if ( ! $this->may_store() ) {
+			throw new \RuntimeException( 'own_key_required' );
 		}
 		$nonce = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
 		$box   = sodium_crypto_secretbox( $plaintext, $nonce, self::sub_key( (string) $this->key, $context ) );

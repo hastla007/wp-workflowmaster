@@ -23,6 +23,7 @@ const html = [
 	'<form class="wfc-settings-form" onsubmit="return false">',
 	'<input id="a" type="number" value="7" data-default="25" aria-invalid="true">',
 	'<input type="hidden" name="x" value="0"><input id="b" type="checkbox" data-default="1">',
+	'<input id="del" type="checkbox" data-default="0" data-confirm="Wirklich?">',
 	'<button type="button" class="wfc-reset-tab">Standardwerte</button><button id="s" type="submit">Speichern</button>',
 	'</form>',
 	'<script>window.workflowCaptainSettings = { unsaved: "U", reset: "R?" };</script>',
@@ -42,7 +43,7 @@ function check( label, ok ) {
 	const page = await browser.newPage();
 	const errors = [];
 	page.on( 'pageerror', ( e ) => errors.push( e.message ) );
-	const file = path.join( os.tmpdir(), 'wfc-settings-test.html' );
+	const file = path.join( os.tmpdir(), 'wfc-settings-test-' + process.pid + '.html' );
 	fs.writeFileSync( file, html );
 	await page.goto( 'file://' + file );
 	const value = () => page.$eval( '#a', ( x ) => x.value );
@@ -65,9 +66,34 @@ function check( label, ok ) {
 	check( 'reset clears the field error marker', null === await page.$eval( '#a', ( x ) => x.getAttribute( 'aria-invalid' ) ) );
 	check( 'unsaved changes warn before leaving', true === await blocked() );
 
+	answer = false;
+	await page.click( '#del' );
+	check( 'SET-WC-05 cancelled confirmation leaves "delete data" off', false === await page.$eval( '#del', ( x ) => x.checked ) );
+	answer = true;
+	await page.click( '#del' );
+	check( 'SET-WC-05 confirmed switch turns "delete data" on', true === await page.$eval( '#del', ( x ) => x.checked ) );
+	await page.click( '#del' );
+	check( 'SET-WC-05 switching it off needs no confirmation', false === await page.$eval( '#del', ( x ) => x.checked ) );
+
 	await page.click( '#s' );
 	check( 'no warning while the form is being saved', false === await blocked() );
 	check( 'no JavaScript errors', 0 === errors.length );
+
+	// P5: after the reload of a save, import, reset or undo, focus goes to what the action produced.
+	const focusPage = async ( body, query ) => {
+		const f = path.join( os.tmpdir(), 'wfc-settings-focus.html' );
+		fs.writeFileSync( f, '<!doctype html><html lang="de"><head><meta charset="utf-8"></head><body><div id="wpbody-content"><div class="wrap"' + ( query ? ' data-wfc-result="1"' : '' ) + '>' + body + '</div></div><script src="' + js + '"></script></body></html>' );
+		await page.goto( 'file://' + f + ( query || '' ) );
+		await page.waitForTimeout( 50 );
+		const id = await page.evaluate( () => document.activeElement && document.activeElement.id );
+		fs.unlinkSync( f );
+		return id;
+	};
+	check( 'focus goes to the first field with an error', 'e1' === await focusPage( '<div class="notice settings-error" id="n">Fehler</div><form class="wfc-settings-form"><input id="ok"><input id="e1" aria-invalid="true" aria-describedby="e1-error"><p id="e1-error">x</p><input id="e2" aria-invalid="true"></form>', '?settings-updated=true' ) );
+	check( 'focus goes to the import preview', 'pv' === await focusPage( '<form><button id="x">Export</button></form><div id="pv" class="notice inline" tabindex="-1" data-wfc-focus>Vorschau</div>' ) );
+	check( 'focus goes to the message of the action (status tab, no settings form)', 'n' === await focusPage( '<div class="notice settings-error" id="n">3 Einstellungen übernommen.</div><form><button id="x">Export</button></form>', '?page=x' ) );
+	check( 'no focus move on a plain page view', 'n' !== await focusPage( '<div class="notice settings-error" id="n">Hinweis</div>' ) );
+	check( 'no JavaScript errors in the focus pages', 0 === errors.length );
 
 	await browser.close();
 	fs.unlinkSync( file );

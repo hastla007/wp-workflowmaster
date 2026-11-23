@@ -341,8 +341,22 @@ final class Install {
 		return $tables;
 	}
 
-	/** Removes tables, options and capabilities of the current site (uninstall.php). */
+	/** Removes tables, options and capabilities of the current site when the operator chose so (uninstall.php). */
+	/**
+	 * Whether the operator chose to remove all data when the plugin is deleted (setting `delete_data_on_uninstall`,
+	 * SET-WC-05, E-S6). Default: keep. Reads the option directly: uninstall.php runs without the plugin's autoloader.
+	 */
+	public static function remove_data_wanted(): bool {
+		$settings = get_option( 'workflow_captain_settings', array() );
+		return is_array( $settings ) && 1 === (int) ( $settings['delete_data_on_uninstall'] ?? 0 );
+	}
+
 	public static function uninstall_site(): void {
+		if ( ! self::remove_data_wanted() ) {
+			// Keep tables, options and capabilities (E-S6); only the worker plan goes with the plugin.
+			self::deactivate();
+			return;
+		}
 		global $wpdb;
 		$tables = array( WpdbEventStore::events_table( $wpdb ), WpdbEventStore::causes_table( $wpdb ) );
 		foreach ( \WorkflowCaptain\Engine\WpdbEngineStore::TABLES as $name ) {
@@ -352,9 +366,11 @@ final class Install {
 			// Table names are the plugin's own (prefix + fixed name), never input; uninstall removes its tables.
 			$wpdb->query( 'DROP TABLE IF EXISTS ' . $table ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		}
-		foreach ( array( self::DB_OPTION, Migrator::LOCK_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at' ) as $option ) {
+		foreach ( array( self::DB_OPTION, Migrator::LOCK_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at', 'workflow_captain_settings_backup' ) as $option ) {
 			delete_option( $option );
 		}
+		// Short-lived transients per user (import preview, notices, dry run); fixed names, no input.
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '\\_transient\\_workflow\\_captain\\_%' OR option_name LIKE '\\_transient\\_timeout\\_workflow\\_captain\\_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fixed query on the plugin's own transients.
 		foreach ( wp_roles()->role_objects as $role ) {
 			foreach ( self::CAPS as $cap ) {
 				$role->remove_cap( $cap );
