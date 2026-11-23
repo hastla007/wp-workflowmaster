@@ -65,7 +65,7 @@ final class EventsPage {
 			return;
 		}
 		$store  = $this->plugin->consumer()->store();
-		$state  = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : '';
+		$state  = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 		$state  = in_array( $state, EventStore::STATES, true ) ? $state : '';
 		$corr    = self::correlation_param();
 		$product = isset( $_GET['product'] ) ? sanitize_key( wp_unslash( $_GET['product'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter only.
@@ -82,13 +82,13 @@ final class EventsPage {
 		$rows   = $store->find( $filter, self::PER_PAGE, $pages['offset'] );
 
 		echo '<div class="wrap"><h1>' . esc_html__( 'Ereignisse', 'workflow-captain' ) . '</h1>';
-		if ( isset( $_GET['requeued'] ) ) {
-			$ok = '1' === sanitize_key( wp_unslash( $_GET['requeued'] ) );
+		if ( isset( $_GET['requeued'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
+			$ok = '1' === sanitize_key( wp_unslash( $_GET['requeued'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 			echo '<div class="notice notice-' . ( $ok ? 'success' : 'error' ) . '"><p>' . esc_html( $ok ? __( 'Das Ereignis ist wieder eingereiht.', 'workflow-captain' ) : __( 'Das Ereignis ließ sich nicht wieder einreihen.', 'workflow-captain' ) ) . '</p></div>';
 		}
-		if ( isset( $_GET['requeued_many'] ) ) {
+		if ( isset( $_GET['requeued_many'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 			/* translators: %d: number of events */
-			echo '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d Ereignisse wieder eingereiht.', 'workflow-captain' ), absint( wp_unslash( $_GET['requeued_many'] ) ) ) ) . '</p></div>';
+			echo '<div class="notice notice-success"><p>' . esc_html( sprintf( __( '%d Ereignisse wieder eingereiht.', 'workflow-captain' ), absint( wp_unslash( $_GET['requeued_many'] ) ) ) ) . '</p></div>'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 		}
 		$adapters = $this->plugin->adapters()->products();
 		echo '<p>' . esc_html(
@@ -140,8 +140,11 @@ final class EventsPage {
 			echo '<tr><td colspan="8">' . esc_html__( 'Keine Ereignisse.', 'workflow-captain' ) . '</td></tr>';
 		}
 		foreach ( $rows as $row ) {
-			$check = $bulk ? '<input type="checkbox" form="wfc-bulk" name="events[]" value="' . (int) $row['id'] . '" aria-label="' . esc_attr( sprintf( /* translators: %d: event number */ __( 'Ereignis %d auswählen', 'workflow-captain' ), (int) $row['id'] ) ) . '"> ' : '';
-			echo '<tr><td>' . $check . (int) $row['id'] . '</td><td><code>' . esc_html( $row['type'] ) . '</code></td><td>' . esc_html( $row['subject_type'] . ' ' . $row['subject_id'] ) . '</td><td>' . esc_html( (string) ( $row['envelope']['occurred_at'] ?? $row['created_at'] ) ) . '</td><td>' . esc_html( self::state_label( $row['state'] ) ) . '</td><td>' . (int) $row['attempts'] . '</td><td>' . esc_html( (string) $row['last_error'] ) . '</td><td>';
+			echo '<tr><td>';
+			if ( $bulk ) {
+				echo '<input type="checkbox" form="wfc-bulk" name="events[]" value="' . (int) $row['id'] . '" aria-label="' . esc_attr( sprintf( /* translators: %d: event number */ __( 'Ereignis %d auswählen', 'workflow-captain' ), (int) $row['id'] ) ) . '"> ';
+			}
+			echo (int) $row['id'] . '</td><td><code>' . esc_html( $row['type'] ) . '</code></td><td>' . esc_html( $row['subject_type'] . ' ' . $row['subject_id'] ) . '</td><td>' . esc_html( (string) ( $row['envelope']['occurred_at'] ?? $row['created_at'] ) ) . '</td><td>' . esc_html( self::state_label( $row['state'] ) ) . '</td><td>' . (int) $row['attempts'] . '</td><td>' . esc_html( (string) $row['last_error'] ) . '</td><td>';
 			if ( in_array( $row['state'], array( EventStore::DEAD_LETTER, EventStore::PAUSED ), true ) && current_user_can( 'retry_workflow_runs' ) ) {
 				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 				echo '<input type="hidden" name="action" value="workflow_captain_requeue"><input type="hidden" name="event" value="' . (int) $row['id'] . '">';

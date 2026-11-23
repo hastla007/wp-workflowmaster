@@ -1,6 +1,6 @@
 # Übergabe: Aufgaben der Kundenconnectoren BoatingSchool und LearnBoating
 
-Stand: 16.11.2026. Grundlage: Entscheidung 17 des Inhabers vom 16.11.2026 (`wp-formmaster` `docs/ENTSCHEIDUNGEN.md:23`).
+Stand: 16.11.2026; **übergeben (WF-E17-02 erledigt am 23.11.2026):** `hastla007/boatingschool` `docs/commerce/connectoren-aufgaben.md`, Abschnitt „Workflow-Connector (WF-CUST1 …)“, und `hastla007/learnboating` `docs/workflow-connector-aufgaben.md`, beide bisher nur auf Branches (`claude/plugin-todo-liste-2a83v4`; LearnBoating weitergeführt auf `claude/loving-euler-c7h553`). Grundlage: Entscheidung 17 des Inhabers vom 16.11.2026 (`wp-formmaster` `docs/ENTSCHEIDUNGEN.md:23`).
 
 ## Warum diese Aufgaben gehen
 
