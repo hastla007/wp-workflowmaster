@@ -324,6 +324,10 @@ msgstr ""
 msgid "Building blocks"
 msgstr ""
 
+#: src/Admin/DataTexts.php:66
+msgid "Buyer"
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:796
 msgid "Cancel run"
 msgstr ""
@@ -360,6 +364,14 @@ msgstr ""
 msgid "Check and publish"
 msgstr ""
 
+#: src/Admin/DataTexts.php:27
+msgid "Check-in {{subject.id}}"
+msgstr ""
+
+#: src/Admin/DataTexts.php:26
+msgid "Check-in: notice to the site operator"
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:200
 msgid "Choose a target."
 msgstr ""
@@ -378,6 +390,14 @@ msgstr ""
 
 #: src/Admin/HelpPage.php:44
 msgid "Command line"
+msgstr ""
+
+#: src/Admin/DataTexts.php:20
+msgid "Commission approved: notify partner management after one day"
+msgstr ""
+
+#: src/Admin/DataTexts.php:22
+msgid "Commission {{subject.id}} of {{data.amount_minor}} {{data.currency}} has been approved for one day."
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:226
@@ -434,6 +454,10 @@ msgstr ""
 msgid "Custom secret key"
 msgstr ""
 
+#: src/Admin/DataTexts.php:65
+msgid "Customer"
+msgstr ""
+
 #: src/SettingsRegistry.php:203
 msgid "Daily notice email to the site operator address"
 msgstr ""
@@ -446,8 +470,16 @@ msgstr ""
 msgid "Database update"
 msgstr ""
 
+#: src/Admin/DataTexts.php:23
+msgid "Date canceled: tag the date and notify the site operator"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:306
 msgid "Date format"
+msgstr ""
+
+#: src/Admin/DataTexts.php:24
+msgid "Date {{subject.id}} canceled"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:214
@@ -755,6 +787,10 @@ msgstr ""
 msgid "Getting started"
 msgstr ""
 
+#: src/Admin/DataTexts.php:62
+msgid "Gift recipient"
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:173 src/Admin/WorkflowsPage.php:174
 msgid "Group"
 msgstr ""
@@ -845,6 +881,10 @@ msgstr ""
 
 #: src/Admin/ConnectorsPage.php:81
 msgid "Key registered twice"
+msgstr ""
+
+#: src/Admin/DataTexts.php:21
+msgid "Large commission approved"
 msgstr ""
 
 #: src/Admin/EventsPage.php:134
@@ -1142,6 +1182,10 @@ msgstr ""
 msgid "Overview"
 msgstr ""
 
+#: src/Admin/DataTexts.php:67
+msgid "Partner"
+msgstr ""
+
 #: src/Admin/ConnectorsPage.php:132
 msgid "Pass on personal fields:"
 msgstr ""
@@ -1242,6 +1286,10 @@ msgstr ""
 msgid "Recent security-relevant changes"
 msgstr ""
 
+#: src/Admin/DataTexts.php:64
+msgid "Recipient or buyer"
+msgstr ""
+
 #: src/Engine/Actions/NotifyAdmin.php:73 src/SettingsRegistry.php:204
 msgid "Recipients"
 msgstr ""
@@ -1252,6 +1300,10 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:250
 msgid "Recipients and notice types"
+msgstr ""
+
+#: src/Admin/DataTexts.php:30
+msgid "Redeemed: {{data.amount_minor}} {{data.currency}} via {{data.channel}}"
 msgstr ""
 
 #: src/SettingsRegistry.php:135
@@ -1591,6 +1643,10 @@ msgstr ""
 msgid "Site address"
 msgstr ""
 
+#: src/Admin/DataTexts.php:63
+msgid "Site operator"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:382
 msgid "Site time zone"
 msgstr ""
@@ -1903,6 +1959,14 @@ msgstr ""
 msgid "Thursday"
 msgstr ""
 
+#: src/Admin/DataTexts.php:68
+msgid "Ticket holder"
+msgstr ""
+
+#: src/Admin/DataTexts.php:28
+msgid "Ticket {{subject.id}} was checked in at {{occurred_at}} on device {{data.device_id}}."
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:212
 msgid "Time"
 msgstr ""
@@ -2022,6 +2086,10 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:319
 msgid "View runs and events"
+msgstr ""
+
+#: src/Admin/DataTexts.php:29
+msgid "Voucher redeemed: tag and add a note"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:386
@@ -2201,7 +2269,7 @@ msgstr ""
 msgid "You can select failed events under “Events” and re-queue them."
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:291 src/Admin/SettingsPage.php:351 src/Admin/SettingsPage.php:477 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:288 src/Admin/WorkflowsPage.php:299 src/Admin/WorkflowsPage.php:312 src/Admin/WorkflowsPage.php:318 src/Admin/WorkflowsPage.php:329 src/Admin/WorkflowsPage.php:345 src/Admin/WorkflowsPage.php:363 src/Admin/WorkflowsPage.php:392 src/Admin/WorkflowsPage.php:406 src/Plugin.php:413 src/Plugin.php:428
+#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:291 src/Admin/SettingsPage.php:351 src/Admin/SettingsPage.php:477 src/Admin/TemplatesPage.php:97 src/Admin/WorkflowsPage.php:288 src/Admin/WorkflowsPage.php:299 src/Admin/WorkflowsPage.php:312 src/Admin/WorkflowsPage.php:318 src/Admin/WorkflowsPage.php:329 src/Admin/WorkflowsPage.php:345 src/Admin/WorkflowsPage.php:363 src/Admin/WorkflowsPage.php:392 src/Admin/WorkflowsPage.php:406 src/Plugin.php:413 src/Plugin.php:428
 msgid "You do not have permission to do this."
 msgstr ""
 
@@ -2241,6 +2309,10 @@ msgstr ""
 msgid "all time"
 msgstr ""
 
+#: src/Admin/DataTexts.php:47
+msgid "also the order emails of WooCommerce"
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:171
 msgid "any rule (OR)"
 msgstr ""
@@ -2251,6 +2323,18 @@ msgstr ""
 
 #: src/Admin/ConnectorsPage.php:79
 msgid "built for a different major version of Workflow Captain"
+msgstr ""
+
+#: src/Admin/DataTexts.php:51
+msgid "can be turned off under WooCommerce → Settings → Emails"
+msgstr ""
+
+#: src/Admin/DataTexts.php:52
+msgid "can be turned off under WooCommerce → Settings → Emails, off by default"
+msgstr ""
+
+#: src/Admin/DataTexts.php:53
+msgid "cannot be turned off (only with a code filter)"
 msgstr ""
 
 #: src/Admin/OverviewPage.php:47
@@ -2273,6 +2357,18 @@ msgstr ""
 msgid "day(s)"
 msgstr ""
 
+#: src/Admin/DataTexts.php:37
+msgid "depending on the change; reactivation without email"
+msgstr ""
+
+#: src/Admin/DataTexts.php:38
+msgid "depending on the path: application, automatic approval or creation in the admin"
+msgstr ""
+
+#: src/Admin/DataTexts.php:36
+msgid "depending on the status change"
+msgstr ""
+
 #: src/Admin/ConnectorsPage.php:74
 msgid "enabled"
 msgstr ""
@@ -2289,12 +2385,24 @@ msgstr ""
 msgid "exists"
 msgstr ""
 
+#: src/Admin/DataTexts.php:35
+msgid "for each affected date, also the cancellation of the date"
+msgstr ""
+
+#: src/Admin/DataTexts.php:32
+msgid "for many codes; with a delivery date only at the time of delivery"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:305 src/Admin/SettingsPage.php:306
 msgid "from WordPress Settings → General"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:118
 msgid "from the run"
+msgstr ""
+
+#: src/Admin/DataTexts.php:42
+msgid "gifts only, only on the first redemption"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:185
@@ -2324,6 +2432,10 @@ msgstr ""
 #. translators: %d: number of days
 #: src/Admin/WorkflowsPage.php:698
 msgid "last 24 hours"
+msgstr ""
+
+#: src/Admin/DataTexts.php:46
+msgid "later via cron"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:184
@@ -2382,6 +2494,10 @@ msgstr ""
 msgid "not enabled"
 msgstr ""
 
+#: src/Admin/DataTexts.php:41
+msgid "not for WooCommerce orders (WooCommerce sends those) and not for refunds in the payment provider’s dashboard"
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:231
 msgid "not in list"
 msgstr ""
@@ -2411,6 +2527,10 @@ msgstr ""
 msgid "on"
 msgstr ""
 
+#: src/Admin/DataTexts.php:31
+msgid "on application without automatic approval"
+msgstr ""
+
 #. translators: %d: day of the month
 #: src/Admin/SchedulesPage.php:44
 msgid "on day %d"
@@ -2422,6 +2542,26 @@ msgstr ""
 
 #: src/Admin/WorkflowsPage.php:134
 msgid "one at a time per user"
+msgstr ""
+
+#: src/Admin/DataTexts.php:44
+msgid "only if the commission goes into review; later via cron"
+msgstr ""
+
+#: src/Admin/DataTexts.php:45
+msgid "only if there was a credit note"
+msgstr ""
+
+#: src/Admin/DataTexts.php:43
+msgid "only if “send” is chosen when issuing (default)"
+msgstr ""
+
+#: src/Admin/DataTexts.php:54
+msgid "only with the filter wpac_notify_credit_note"
+msgstr ""
+
+#: src/Admin/DataTexts.php:55
+msgid "only with the filter wpcap_send_refund_mail"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:702
@@ -2452,6 +2592,18 @@ msgstr ""
 msgid "set"
 msgstr ""
 
+#: src/Admin/DataTexts.php:48
+msgid "setting notify_admin_review"
+msgstr ""
+
+#: src/Admin/DataTexts.php:49
+msgid "setting notify_commissions (off by default) and the partner’s unsubscribe"
+msgstr ""
+
+#: src/Admin/DataTexts.php:50
+msgid "setting notify_payout_paid (on by default)"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:560
 msgid "the file belongs to a different plugin"
 msgstr ""
@@ -2462,6 +2614,14 @@ msgstr ""
 
 #: src/Admin/ConnectorsPage.php:80
 msgid "the runtime for custom connectors is not unlocked on this site (Workflow Captain Pro)"
+msgstr ""
+
+#: src/Admin/DataTexts.php:34
+msgid "the same email as for “Order paid”"
+msgstr ""
+
+#: src/Admin/DataTexts.php:33
+msgid "the voucher email itself was sent before this event"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:703
@@ -2484,8 +2644,20 @@ msgstr ""
 msgid "weekly"
 msgstr ""
 
+#: src/Admin/DataTexts.php:40
+msgid "with PDF tickets; for WooCommerce orders also the order emails of WooCommerce"
+msgstr ""
+
+#: src/Admin/DataTexts.php:39
+msgid "with credit note; not for WooCommerce orders"
+msgstr ""
+
 #: src/Admin/SettingsPage.php:387
 msgid "yes – system cron required: wp workflow-captain process"
+msgstr ""
+
+#: src/Admin/DataTexts.php:25
+msgid "{{data.issued_tickets}} issued tickets are affected. Pass Captain informs the guests itself; this notice is in addition."
 msgstr ""
 
 #: src/Settings.php:78

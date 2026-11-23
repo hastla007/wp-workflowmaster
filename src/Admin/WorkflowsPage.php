@@ -81,7 +81,7 @@ final class WorkflowsPage {
 			'actions'   => $actions,
 			'events'    => array_values( array_unique( $events ) ),
 			'fields'    => array() !== $fields ? $fields : new \stdClass(),
-			'coreMails' => is_array( $mails ) && is_array( $mails['events'] ?? null ) ? $mails['events'] : new \stdClass(),
+			'coreMails' => is_array( $mails ) && is_array( $mails['events'] ?? null ) ? DataTexts::core_mails( $mails['events'] ) : new \stdClass(),
 			'path'      => $path,
 			'errorNode' => is_array( $dry ) ? $dry['result']['error_node'] : null,
 			'sources'   => $this->sources(),

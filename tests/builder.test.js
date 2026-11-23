@@ -32,7 +32,7 @@ const config = {
 	],
 	events: [ 'pass.ticket.checked_in', 'pass.order.paid' ],
 	fields: { 'pass.ticket.checked_in': { checkin_source: 'string', device_id: 'integer', area_id: 'integer' } },
-	coreMails: { 'pass.order.paid': [ { to: 'Käufer', mail: 'tickets', off: 'nicht abschaltbar' } ] },
+	coreMails: { 'pass.order.paid': [ { to: 'buyer', to_label: 'Buyer', mail: 'tickets', off: 'cannot be turned off' } ] },
 	sources: {
 		products: { 'pass-captain': { label: 'Pass Captain', version: '1.4.0', contract: '1.0' }, 'workflow-captain': { label: 'Workflow Captain', version: '0.2.0', contract: '1.0' } },
 		events: { 'pass.ticket.checked_in': 'pass-captain', 'pass.order.paid': 'pass-captain', 'workflow.schedule.due': 'workflow-captain' },
@@ -271,7 +271,7 @@ function check( label, ok ) {
 	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.order.paid' );
 	await page.press( '.wfc-inspector input[list="wfc-events"]', 'Tab' );
 	await page.click( '.wfc-node[data-id="mail"]' );
-	check( 'notify node lists the core mail of the trigger event', ( await page.$eval( '.wfc-core-mails', ( x ) => x.textContent ) ).includes( 'Käufer: tickets' ) );
+	check( 'notify node lists the core mail of the trigger event', ( await page.$eval( '.wfc-core-mails', ( x ) => x.textContent ) ).includes( 'Buyer: tickets' ) );
 	check( 'operator message is not flagged when the core mail goes to the buyer', 0 === ( await page.$$( '.wfc-core-mails-duplicate' ) ).length );
 	await page.selectOption( '.wfc-inspector select', 'notify.user' );
 	check( 'customer message is flagged as possible duplicate of the buyer mail', 1 === ( await page.$$( '.wfc-core-mails-duplicate' ) ).length );

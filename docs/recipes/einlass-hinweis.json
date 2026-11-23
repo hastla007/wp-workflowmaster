@@ -1,7 +1,7 @@
 {
   "format": "workflow-captain/workflow",
   "format_version": 1,
-  "name": "Einlass: Hinweis an den Betreiber",
+  "name": "Check-in: notice to the site operator",
   "graph": {
     "nodes": [
       {
@@ -29,8 +29,8 @@
         "type": "action",
         "action": "notify.admin",
         "config": {
-          "subject": "Einlass {{subject.id}}",
-          "message": "Ticket {{subject.id}} wurde um {{occurred_at}} am Gerät {{data.device_id}} eingecheckt.",
+          "subject": "Check-in {{subject.id}}",
+          "message": "Ticket {{subject.id}} was checked in at {{occurred_at}} on device {{data.device_id}}.",
           "to": "site_admin"
         }
       },

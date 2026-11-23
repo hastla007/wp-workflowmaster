@@ -2498,3 +2498,175 @@ msgstr "nicht in Liste"
 #: src/Admin/WorkflowsPage.php:187
 msgid "week(s)"
 msgstr "Woche(n)"
+
+#: src/Admin/DataTexts.php:66
+msgid "Buyer"
+msgstr "Käufer"
+
+#: src/Admin/DataTexts.php:27
+msgid "Check-in {{subject.id}}"
+msgstr "Einlass {{subject.id}}"
+
+#: src/Admin/DataTexts.php:26
+msgid "Check-in: notice to the site operator"
+msgstr "Einlass: Hinweis an den Betreiber"
+
+#: src/Admin/DataTexts.php:20
+msgid "Commission approved: notify partner management after one day"
+msgstr "Provision freigegeben: nach einem Tag Hinweis an Partnerverwaltung"
+
+#: src/Admin/DataTexts.php:22
+msgid "Commission {{subject.id}} of {{data.amount_minor}} {{data.currency}} has been approved for one day."
+msgstr "Provision {{subject.id}} über {{data.amount_minor}} {{data.currency}} ist seit einem Tag freigegeben."
+
+#: src/Admin/DataTexts.php:65
+msgid "Customer"
+msgstr "Kunde"
+
+#: src/Admin/DataTexts.php:23
+msgid "Date canceled: tag the date and notify the site operator"
+msgstr "Termin abgesagt: Termin markieren und Betreiber informieren"
+
+#: src/Admin/DataTexts.php:24
+msgid "Date {{subject.id}} canceled"
+msgstr "Termin {{subject.id}} abgesagt"
+
+#: src/Admin/DataTexts.php:62
+msgid "Gift recipient"
+msgstr "Beschenkter"
+
+#: src/Admin/DataTexts.php:21
+msgid "Large commission approved"
+msgstr "Große Provision freigegeben"
+
+#: src/Admin/DataTexts.php:67
+msgid "Partner"
+msgstr "Partner"
+
+#: src/Admin/DataTexts.php:64
+msgid "Recipient or buyer"
+msgstr "Empfänger oder Käufer"
+
+#: src/Admin/DataTexts.php:30
+msgid "Redeemed: {{data.amount_minor}} {{data.currency}} via {{data.channel}}"
+msgstr "Eingelöst: {{data.amount_minor}} {{data.currency}} über {{data.channel}}"
+
+#: src/Admin/DataTexts.php:63
+msgid "Site operator"
+msgstr "Betreiber"
+
+#: src/Admin/DataTexts.php:68
+msgid "Ticket holder"
+msgstr "Ticketinhaber"
+
+#: src/Admin/DataTexts.php:28
+msgid "Ticket {{subject.id}} was checked in at {{occurred_at}} on device {{data.device_id}}."
+msgstr "Ticket {{subject.id}} wurde um {{occurred_at}} am Gerät {{data.device_id}} eingecheckt."
+
+#: src/Admin/DataTexts.php:29
+msgid "Voucher redeemed: tag and add a note"
+msgstr "Gutschein eingelöst: markieren und notieren"
+
+#: src/Admin/DataTexts.php:47
+msgid "also the order emails of WooCommerce"
+msgstr "zusätzlich die Bestellmails von WooCommerce"
+
+#: src/Admin/DataTexts.php:51
+msgid "can be turned off under WooCommerce → Settings → Emails"
+msgstr "abschaltbar unter WooCommerce → Einstellungen → E-Mails"
+
+#: src/Admin/DataTexts.php:52
+msgid "can be turned off under WooCommerce → Settings → Emails, off by default"
+msgstr "abschaltbar unter WooCommerce → Einstellungen → E-Mails, ab Werk aus"
+
+#: src/Admin/DataTexts.php:53
+msgid "cannot be turned off (only with a code filter)"
+msgstr "nicht abschaltbar (nur per Code-Filter)"
+
+#: src/Admin/DataTexts.php:37
+msgid "depending on the change; reactivation without email"
+msgstr "je nach Wechsel; Reaktivierung ohne Mail"
+
+#: src/Admin/DataTexts.php:38
+msgid "depending on the path: application, automatic approval or creation in the admin"
+msgstr "je nach Weg: Bewerbung, automatische Freigabe oder Anlage im Admin"
+
+#: src/Admin/DataTexts.php:36
+msgid "depending on the status change"
+msgstr "je nach Statuswechsel"
+
+#: src/Admin/DataTexts.php:35
+msgid "for each affected date, also the cancellation of the date"
+msgstr "je betroffenem Termin zusätzlich die Absage des Termins"
+
+#: src/Admin/DataTexts.php:32
+msgid "for many codes; with a delivery date only at the time of delivery"
+msgstr "bei vielen Codes; mit Lieferdatum erst zum Lieferzeitpunkt"
+
+#: src/Admin/DataTexts.php:42
+msgid "gifts only, only on the first redemption"
+msgstr "nur Geschenke, nur bei der ersten Einlösung"
+
+#: src/Admin/DataTexts.php:46
+msgid "later via cron"
+msgstr "später per Cron"
+
+#: src/Admin/DataTexts.php:41
+msgid "not for WooCommerce orders (WooCommerce sends those) and not for refunds in the payment provider’s dashboard"
+msgstr "nicht bei WooCommerce-Bestellungen (dort WooCommerce) und nicht bei Erstattungen im Dashboard des Zahlungsanbieters"
+
+#: src/Admin/DataTexts.php:31
+msgid "on application without automatic approval"
+msgstr "bei Bewerbung ohne automatische Freigabe"
+
+#: src/Admin/DataTexts.php:44
+msgid "only if the commission goes into review; later via cron"
+msgstr "nur wenn die Provision in Prüfung geht; später per Cron"
+
+#: src/Admin/DataTexts.php:45
+msgid "only if there was a credit note"
+msgstr "nur wenn es eine Gutschrift gab"
+
+#: src/Admin/DataTexts.php:43
+msgid "only if “send” is chosen when issuing (default)"
+msgstr "nur wenn beim Ausstellen „senden“ gewählt ist (Standard)"
+
+#: src/Admin/DataTexts.php:54
+msgid "only with the filter wpac_notify_credit_note"
+msgstr "nur per Filter wpac_notify_credit_note"
+
+#: src/Admin/DataTexts.php:55
+msgid "only with the filter wpcap_send_refund_mail"
+msgstr "nur per Filter wpcap_send_refund_mail"
+
+#: src/Admin/DataTexts.php:48
+msgid "setting notify_admin_review"
+msgstr "Einstellung notify_admin_review"
+
+#: src/Admin/DataTexts.php:49
+msgid "setting notify_commissions (off by default) and the partner’s unsubscribe"
+msgstr "Einstellung notify_commissions (ab Werk aus) und Abmeldung des Partners"
+
+#: src/Admin/DataTexts.php:50
+msgid "setting notify_payout_paid (on by default)"
+msgstr "Einstellung notify_payout_paid (ab Werk an)"
+
+#: src/Admin/DataTexts.php:34
+msgid "the same email as for “Order paid”"
+msgstr "dieselbe Mail wie bei „Bestellung bezahlt“"
+
+#: src/Admin/DataTexts.php:33
+msgid "the voucher email itself was sent before this event"
+msgstr "die Gutscheinmail selbst ging schon vor diesem Ereignis hinaus"
+
+#: src/Admin/DataTexts.php:40
+msgid "with PDF tickets; for WooCommerce orders also the order emails of WooCommerce"
+msgstr "mit PDF-Tickets; bei WooCommerce-Bestellungen zusätzlich die Bestellmails von WooCommerce"
+
+#: src/Admin/DataTexts.php:39
+msgid "with credit note; not for WooCommerce orders"
+msgstr "mit Gutschrift; nicht bei WooCommerce-Bestellungen"
+
+#: src/Admin/DataTexts.php:25
+msgid "{{data.issued_tickets}} issued tickets are affected. Pass Captain informs the guests itself; this notice is in addition."
+msgstr "{{data.issued_tickets}} ausgegebene Tickets sind betroffen. Pass Captain informiert die Gäste selbst; dieser Hinweis ist zusätzlich."

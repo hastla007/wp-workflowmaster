@@ -1,7 +1,7 @@
 {
   "format": "workflow-captain/workflow",
   "format_version": 1,
-  "name": "Gutschein eingelöst: markieren und notieren",
+  "name": "Voucher redeemed: tag and add a note",
   "graph": {
     "nodes": [
       {
@@ -23,7 +23,7 @@
         "type": "action",
         "action": "workflow.note.add",
         "config": {
-          "text": "Eingelöst: {{data.amount_minor}} {{data.currency}} über {{data.channel}}"
+          "text": "Redeemed: {{data.amount_minor}} {{data.currency}} via {{data.channel}}"
         }
       },
       {

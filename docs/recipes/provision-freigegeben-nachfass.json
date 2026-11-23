@@ -1,7 +1,7 @@
 {
   "format": "workflow-captain/workflow",
   "format_version": 1,
-  "name": "Provision freigegeben: nach einem Tag Hinweis an Partnerverwaltung",
+  "name": "Commission approved: notify partner management after one day",
   "graph": {
     "nodes": [
       {
@@ -35,8 +35,8 @@
         "type": "action",
         "action": "notify.admin",
         "config": {
-          "subject": "Große Provision freigegeben",
-          "message": "Provision {{subject.id}} über {{data.amount_minor}} {{data.currency}} ist seit einem Tag freigegeben.",
+          "subject": "Large commission approved",
+          "message": "Commission {{subject.id}} of {{data.amount_minor}} {{data.currency}} has been approved for one day.",
           "to": "manage_options"
         }
       },

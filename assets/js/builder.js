@@ -1016,7 +1016,7 @@
 			const trigger = this.graph.nodes.find( ( x ) => 'trigger' === x.type );
 			const mails = ( trigger && this.config.coreMails && this.config.coreMails[ trigger.event ] ) || [];
 			// Possible duplicate: the same circle of recipients already gets a core mail (operator vs. customers).
-			const toOperator = ( m ) => 'Betreiber' === m.to;
+			const toOperator = ( m ) => 'operator' === m.to;
 			const duplicate = mails.some( ( m ) => ( 'notify.admin' === action ) === toOperator( m ) );
 			const box = el( 'div', { class: 'wfc-core-mails notice inline ' + ( duplicate ? 'notice-warning wfc-core-mails-duplicate' : 'notice-info' ) } );
 			if ( ! trigger || ! trigger.event ) {
@@ -1027,7 +1027,7 @@
 				return box;
 			}
 			box.appendChild( el( 'p', { text: this.t( 'coreMailsIntro', 'For this event the core plugin already sends:' ) } ) );
-			box.appendChild( el( 'ul', {}, mails.map( ( m ) => el( 'li', { text: m.to + ': ' + m.mail + ' (' + m.off + ( m.note ? '; ' + m.note : '' ) + ')' } ) ) ) );
+			box.appendChild( el( 'ul', {}, mails.map( ( m ) => el( 'li', { text: ( m.to_label || m.to ) + ': ' + m.mail + ' (' + m.off + ( m.note ? '; ' + m.note : '' ) + ')' } ) ) ) );
 			if ( duplicate ) {
 				box.appendChild( el( 'p', { role: 'status', text: this.t( 'coreMailsDuplicate', 'Possibly a duplicate: these recipients already get an email from the core plugin for the same occasion.' ) } ) );
 			}
