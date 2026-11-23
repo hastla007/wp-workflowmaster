@@ -123,7 +123,9 @@ Workflows entstehen im visuellen Editor (Admin „Workflows“); darunter steht 
 | `workflow_captain_inbound_triggers_v1` | Filter | Auslöser für eingehende Aufrufe anmelden; speichern mit `Consumer::capture_inbound()` |
 | `workflow_captain_audit_labels_v1` | Filter | Beschriftungen für Audit-Einträge von Add-ons (Status-Tab) |
 | `workflow_captain_connector_runtime_allowed_v1` | Filter | Laufzeit eigener Connectoren erlauben (ab Werk ja; für Pro, F-18a) |
-| `workflow_captain_retention_days` | Filter | Aufbewahrung nur verkürzen (`finished`, `stuck`) |
+| `workflow_captain_retention_days` | Filter | Aufbewahrung in Tagen (`finished`, `stuck`, `runs`), seit 0.3.0 bis zur Obergrenze verlängerbar |
+| `workflow_captain_retention_max_days` | Filter | Obergrenze der Aufbewahrung (180 im kostenlosen Kern; ein Add-on darf sie anheben) |
+| `workflow_captain_setting_<feld>` | Filter | Wert einer Einstellung des Registers (`docs/OPTIONS.md`); gewinnt, wird aber gegen Typ und Bereich geprüft |
 
 ## 5a. Bausteine für Webhooks und n8n (für Add-ons)
 

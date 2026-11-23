@@ -19,6 +19,9 @@ final class SettingsRegistry {
 	/** Format number of exported settings files (SET-WC-11). */
 	const FORMAT = 1;
 
+	/** Longest retention the free core allows (E-S7 = F-04): 180 days; the defaults stay 30 and 90. */
+	const RETENTION_MAX = 180;
+
 	const TYPE_INT    = 'int';
 	const TYPE_BOOL   = 'bool';
 	const TYPE_EMAILS = 'emails';
@@ -34,9 +37,11 @@ final class SettingsRegistry {
 		'max_workflow'       => array( Settings::OPTION, self::TYPE_INT, 2, 1, 10, 'execution', true ),
 		'catch_up_hours'     => array( Settings::OPTION, self::TYPE_INT, 24, 1, 168, 'execution', true ),
 		'max_seconds'        => array( Settings::OPTION, self::TYPE_INT, 20, 5, 120, 'execution', true ),
-		'retention_finished' => array( Settings::OPTION, self::TYPE_INT, 30, 1, 30, 'privacy', true ),
-		'retention_runs'     => array( Settings::OPTION, self::TYPE_INT, 30, 1, 30, 'privacy', true ),
-		'retention_stuck'    => array( Settings::OPTION, self::TYPE_INT, 90, 1, 90, 'privacy', true ),
+		'retry_attempts'     => array( Settings::OPTION, self::TYPE_INT, 8, 1, 8, 'execution', true ),
+		'max_chain_depth'    => array( Settings::OPTION, self::TYPE_INT, 3, 1, 8, 'execution', true ),
+		'retention_finished' => array( Settings::OPTION, self::TYPE_INT, 30, 1, self::RETENTION_MAX, 'privacy', true ),
+		'retention_runs'     => array( Settings::OPTION, self::TYPE_INT, 30, 1, self::RETENTION_MAX, 'privacy', true ),
+		'retention_stuck'    => array( Settings::OPTION, self::TYPE_INT, 90, 1, self::RETENTION_MAX, 'privacy', true ),
 		'notify_daily'       => array( Settings::OPTION, self::TYPE_BOOL, 1, 0, 1, 'notify', true ),
 		'recipients'         => array( Notifications::OPTION, self::TYPE_EMAILS, '', 0, 10, 'notify', false ),
 		'kinds'              => array( Notifications::OPTION, self::TYPE_KINDS, Notifications::KINDS, 0, 0, 'notify', true ),
@@ -131,9 +136,11 @@ final class SettingsRegistry {
 			'max_workflow'       => array( __( 'Höchstens gleichzeitig laufende Schritte je Workflow', 'workflow-captain' ), __( 'Verhindert, dass ein einzelner Workflow alle Plätze belegt; die anderen kommen weiter dran.', 'workflow-captain' ) ),
 			'catch_up_hours'     => array( __( 'Nachholgrenze in Stunden', 'workflow-captain' ), __( 'Ein Schritt, der länger überfällig ist (zum Beispiel weil WP-Cron nicht lief), wird nicht von selbst ausgeführt, sondern zur Entscheidung angezeigt.', 'workflow-captain' ) ),
 			'max_seconds'        => array( __( 'Laufzeit je Worker-Durchlauf in Sekunden', 'workflow-captain' ), __( 'Danach beginnt der Worker keinen neuen Schritt mehr; ein begonnener Schritt läuft zu Ende. Hält Seitenaufrufe kurz, wenn WP-Cron über Besucher läuft.', 'workflow-captain' ) ),
-			'retention_finished' => array( __( 'Erledigte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 30 Tage; nur kürzer möglich.', 'workflow-captain' ) ),
-			'retention_runs'     => array( __( 'Erledigte Läufe mit Schrittprotokoll löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 30 Tage; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf.', 'workflow-captain' ) ),
-			'retention_stuck'    => array( __( 'Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 90 Tage; nur kürzer möglich. Die Fristen sind ein Vorschlag bis zur Rechtsprüfung.', 'workflow-captain' ) ),
+			'retry_attempts'     => array( __( 'Wiederholungen nach einem vorübergehenden Fehler', 'workflow-captain' ), __( 'So oft wird ein Ereignis oder Schritt nach einem vorübergehenden Fehler erneut versucht, mit wachsenden Abständen (1 Min. bis 24 Std.). Danach wird ein Ereignis als fehlgeschlagen angezeigt, ein Schritt braucht eine Entscheidung. Nachrichten mit unklarem Ausgang werden nie von selbst wiederholt.', 'workflow-captain' ) ),
+			'max_chain_depth'    => array( __( 'Höchste Tiefe einer Kette von Workflows', 'workflow-captain' ), __( 'Löst ein Workflow ein Ereignis aus, das wieder einen Workflow startet, entsteht eine Kette. Tiefer verschachtelte Ereignisse werden gespeichert, starten aber nichts (Schutz vor Schleifen).', 'workflow-captain' ) ),
+			'retention_finished' => array( __( 'Erledigte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Vorgabe 30 Tage, höchstens 180. Welche Frist für Ihren Betrieb gilt, klären Sie mit Ihrer Rechtsberatung.', 'workflow-captain' ) ),
+			'retention_runs'     => array( __( 'Erledigte Läufe mit Schrittprotokoll löschen nach (Tagen)', 'workflow-captain' ), __( 'Vorgabe 30 Tage, höchstens 180; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf.', 'workflow-captain' ) ),
+			'retention_stuck'    => array( __( 'Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Vorgabe 90 Tage, höchstens 180. Die Vorgaben sind ein Vorschlag bis zur Rechtsprüfung.', 'workflow-captain' ) ),
 			'notify_daily'       => array( __( 'Tägliche Hinweis-Mail an die Betreiber-Adresse', 'workflow-captain' ), __( 'Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen.', 'workflow-captain' ) ),
 			'recipients'         => array( __( 'Empfänger', 'workflow-captain' ), __( 'Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website.', 'workflow-captain' ) ),
 			'kinds'              => array( __( 'Arten', 'workflow-captain' ), '' ),

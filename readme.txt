@@ -94,7 +94,7 @@ Use the button "Diagnose herunterladen" (download diagnostics) under **Workflow 
 
 == Privacy ==
 
-Stored events and runs contain IDs, status, amounts and times, no codes, email addresses, names or free text. The user ID of whoever triggered an event is cleared once no run waits for it. Workflow Captain registers with the WordPress personal data export and erasure tools. Finished events and runs are deleted after 30 days, failed ones after 90 days; both can be shortened.
+Stored events and runs contain IDs, status, amounts and times, no codes, email addresses, names or free text. The user ID of whoever triggered an event is cleared once no run waits for it. Workflow Captain registers with the WordPress personal data export and erasure tools. Finished events and runs are deleted after 30 days, failed ones after 90 days; the site owner can set each period between 1 and 180 days.
 
 How the data flows:
 

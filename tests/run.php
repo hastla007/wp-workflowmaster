@@ -597,7 +597,11 @@ $s->consumer->capture( $s->adapter, checkin() );
 $s->consumer->process();
 $s->clock->advance( 31 * DAY_IN_SECONDS );
 ( new Privacy( fn() => $s->store, $s->clock ) )->apply_retention();
-check( 'C-14 retention cannot be extended by filter', array() === $s->store->find( array(), 10, 0 ) );
+check( 'C-14 retention can be lengthened (E-S7 = F-04): kept after 31 days with 1000 asked', 1 === count( $s->store->find( array(), 10, 0 ) ) );
+$s->clock->advance( 150 * DAY_IN_SECONDS );
+( new Privacy( fn() => $s->store, $s->clock ) )->apply_retention();
+check( 'C-14 retention cannot be extended beyond 180 days by filter', array() === $s->store->find( array(), 10, 0 ) );
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_retention_days'] );
 
 // C-16: sites are separate
 $pdo = FakeWpdb::memory();

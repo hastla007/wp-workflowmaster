@@ -116,7 +116,7 @@ msgstr ""
 msgid "Abgebrochen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:472
+#: src/Admin/SettingsPage.php:484
 msgid "Abgebrochene Datenbank-Aktualisierung wiederholt"
 msgstr ""
 
@@ -254,7 +254,7 @@ msgstr ""
 msgid "Archiviert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:183 src/Admin/SettingsPage.php:183 src/SettingsRegistry.php:139
+#: src/Admin/SettingsPage.php:183 src/Admin/SettingsPage.php:183 src/SettingsRegistry.php:146
 msgid "Arten"
 msgstr ""
 
@@ -299,7 +299,7 @@ msgstr ""
 msgid "Beendet (UTC)"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:679 src/Privacy/Privacy.php:102
+#: src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:679 src/Privacy/Privacy.php:110
 msgid "Begonnen (UTC)"
 msgstr ""
 
@@ -323,7 +323,7 @@ msgstr ""
 msgid "Benachrichtigungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:505
 msgid "Benutzer"
 msgstr ""
 
@@ -344,7 +344,7 @@ msgstr ""
 msgid "Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website (%s). Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress."
 msgstr ""
 
-#: src/SettingsRegistry.php:138
+#: src/SettingsRegistry.php:145
 msgid "Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website."
 msgstr ""
 
@@ -364,7 +364,7 @@ msgstr ""
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
-#: src/SettingsRegistry.php:133
+#: src/SettingsRegistry.php:138
 msgid "Danach beginnt der Worker keinen neuen Schritt mehr; ein begonnener Schritt läuft zu Ende. Hält Seitenaufrufe kurz, wenn WP-Cron über Besucher läuft."
 msgstr ""
 
@@ -573,7 +573,7 @@ msgstr ""
 msgid "Ein Import wird immer ein Entwurf. Veröffentlicht wird erst nach Prüfung und Testlauf."
 msgstr ""
 
-#: src/SettingsRegistry.php:132
+#: src/SettingsRegistry.php:137
 msgid "Ein Schritt, der länger überfällig ist (zum Beispiel weil WP-Cron nicht lief), wird nicht von selbst ausgeführt, sondern zur Entscheidung angezeigt."
 msgstr ""
 
@@ -617,7 +617,7 @@ msgstr ""
 msgid "Einstellung"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:459
+#: src/Admin/SettingsPage.php:471
 msgid "Einstellung per WP-CLI geändert"
 msgstr ""
 
@@ -625,7 +625,7 @@ msgstr ""
 msgid "Einstellungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:457
+#: src/Admin/SettingsPage.php:469
 msgid "Einstellungen auf Standard gesetzt"
 msgstr ""
 
@@ -633,15 +633,15 @@ msgstr ""
 msgid "Einstellungen exportieren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:455
+#: src/Admin/SettingsPage.php:467
 msgid "Einstellungen geändert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:456
+#: src/Admin/SettingsPage.php:468
 msgid "Einstellungen importiert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:458
+#: src/Admin/SettingsPage.php:470
 msgid "Einstellungen wiederhergestellt"
 msgstr ""
 
@@ -653,7 +653,7 @@ msgstr ""
 msgid "Einstellungen, Notfallpause, Diagnose"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:505
 msgid "Einzelheiten"
 msgstr ""
 
@@ -661,7 +661,7 @@ msgstr ""
 msgid "Empfangen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:180 src/SettingsRegistry.php:138
+#: src/Admin/SettingsPage.php:180 src/SettingsRegistry.php:145
 msgid "Empfänger"
 msgstr ""
 
@@ -685,7 +685,7 @@ msgstr ""
 msgid "Entwurf"
 msgstr ""
 
-#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:145 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:676 src/Privacy/Privacy.php:77 src/Privacy/Privacy.php:99
+#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:145 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:676 src/Privacy/Privacy.php:85 src/Privacy/Privacy.php:107
 msgid "Ereignis"
 msgstr ""
 
@@ -722,11 +722,11 @@ msgstr ""
 msgid "Ereignisse sind fehlgeschlagen"
 msgstr ""
 
-#: src/SettingsRegistry.php:129
+#: src/SettingsRegistry.php:134
 msgid "Ereignisse und Schritte je Worker-Durchlauf"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:464
+#: src/Admin/SettingsPage.php:476
 msgid "Ereignisse wieder eingereiht"
 msgstr ""
 
@@ -760,11 +760,11 @@ msgstr ""
 msgid "Erledigt."
 msgstr ""
 
-#: src/SettingsRegistry.php:134
+#: src/SettingsRegistry.php:141
 msgid "Erledigte Ereignisse löschen nach (Tagen)"
 msgstr ""
 
-#: src/SettingsRegistry.php:135
+#: src/SettingsRegistry.php:142
 msgid "Erledigte Läufe mit Schrittprotokoll löschen nach (Tagen)"
 msgstr ""
 
@@ -781,7 +781,7 @@ msgid "Erste Seite"
 msgstr ""
 
 #. translators: 1: number, 2: option name
-#: src/Admin/SettingsPage.php:503
+#: src/Admin/SettingsPage.php:515
 msgid "Es bleiben die letzten %1$d Einträge in der Option %2$s."
 msgstr ""
 
@@ -831,7 +831,7 @@ msgstr ""
 msgid "Fehlgeschlagene Ereignisse lassen sich unter „Ereignisse“ auswählen und erneut einreihen."
 msgstr ""
 
-#: src/SettingsRegistry.php:136
+#: src/SettingsRegistry.php:143
 msgid "Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)"
 msgstr ""
 
@@ -863,7 +863,7 @@ msgstr ""
 msgid "Freigabe"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:463
+#: src/Admin/SettingsPage.php:475
 msgid "Freigabe eines eigenen Connectors geändert"
 msgstr ""
 
@@ -941,28 +941,20 @@ msgstr ""
 msgid "Hängende Schritte und Läufe"
 msgstr ""
 
+#: src/SettingsRegistry.php:140
+msgid "Höchste Tiefe einer Kette von Workflows"
+msgstr ""
+
 #. translators: %d: maximum number of rules
 #: src/Admin/WorkflowsPage.php:179
 msgid "Höchstens %d Regeln je Bedingung, Gruppen eingeschlossen."
 msgstr ""
 
-#: src/SettingsRegistry.php:134
-msgid "Höchstens 30 Tage; nur kürzer möglich."
-msgstr ""
-
 #: src/SettingsRegistry.php:135
-msgid "Höchstens 30 Tage; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf."
-msgstr ""
-
-#: src/SettingsRegistry.php:136
-msgid "Höchstens 90 Tage; nur kürzer möglich. Die Fristen sind ein Vorschlag bis zur Rechtsprüfung."
-msgstr ""
-
-#: src/SettingsRegistry.php:130
 msgid "Höchstens gleichzeitig laufende Schritte auf dieser Website"
 msgstr ""
 
-#: src/SettingsRegistry.php:131
+#: src/SettingsRegistry.php:136
 msgid "Höchstens gleichzeitig laufende Schritte je Workflow"
 msgstr ""
 
@@ -1052,7 +1044,7 @@ msgstr ""
 msgid "Kommandozeile"
 msgstr ""
 
-#: src/SettingsRegistry.php:137
+#: src/SettingsRegistry.php:144
 msgid "Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen."
 msgstr ""
 
@@ -1088,7 +1080,7 @@ msgstr ""
 msgid "Lauf abbrechen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:465
+#: src/Admin/SettingsPage.php:477
 msgid "Lauf abgebrochen"
 msgstr ""
 
@@ -1096,7 +1088,7 @@ msgstr ""
 msgid "Lauf exportieren (JSON, redigiert)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:473
+#: src/Admin/SettingsPage.php:485
 msgid "Lauf exportiert"
 msgstr ""
 
@@ -1112,7 +1104,7 @@ msgstr ""
 msgid "Laufende Läufe"
 msgstr ""
 
-#: src/SettingsRegistry.php:133
+#: src/SettingsRegistry.php:138
 msgid "Laufzeit je Worker-Durchlauf in Sekunden"
 msgstr ""
 
@@ -1120,7 +1112,7 @@ msgstr ""
 msgid "Letzte Seite"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:487 src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:499 src/Admin/SettingsPage.php:505
 msgid "Letzte sicherheitsrelevante Änderungen"
 msgstr ""
 
@@ -1181,6 +1173,10 @@ msgstr ""
 msgid "Läuft"
 msgstr ""
 
+#: src/SettingsRegistry.php:140
+msgid "Löst ein Workflow ein Ereignis aus, das wieder einen Workflow startet, entsteht eine Kette. Tiefer verschachtelte Ereignisse werden gespeichert, starten aber nichts (Schutz vor Schleifen)."
+msgstr ""
+
 #: src/Admin/ConnectorsPage.php:77
 msgid "Manifest ungültig"
 msgstr ""
@@ -1201,7 +1197,7 @@ msgstr ""
 msgid "Mehr als ein Ausgang."
 msgstr ""
 
-#: src/SettingsRegistry.php:129
+#: src/SettingsRegistry.php:134
 msgid "Mehr je Durchlauf arbeitet einen Rückstau schneller ab, macht aber jeden Durchlauf länger. Bei wenig Speicher oder kurzen Laufzeiten des Hosters kleiner wählen."
 msgstr ""
 
@@ -1213,7 +1209,7 @@ msgstr ""
 msgid "Montag"
 msgstr ""
 
-#: src/SettingsRegistry.php:132
+#: src/SettingsRegistry.php:137
 msgid "Nachholgrenze in Stunden"
 msgstr ""
 
@@ -1269,7 +1265,7 @@ msgstr ""
 msgid "Noch kein Provider bekannt."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:490
+#: src/Admin/SettingsPage.php:502
 msgid "Noch keine Einträge."
 msgstr ""
 
@@ -1289,7 +1285,7 @@ msgstr ""
 msgid "Notfallpause aktivieren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:462
+#: src/Admin/SettingsPage.php:474
 msgid "Notfallpause aufgehoben"
 msgstr ""
 
@@ -1297,7 +1293,7 @@ msgstr ""
 msgid "Notfallpause aufheben"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:461
+#: src/Admin/SettingsPage.php:473
 msgid "Notfallpause eingeschaltet"
 msgstr ""
 
@@ -1352,7 +1348,7 @@ msgstr ""
 msgid "Nächster Worker-Lauf (UTC)"
 msgstr ""
 
-#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:677 src/Privacy/Privacy.php:78 src/Privacy/Privacy.php:100
+#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:677 src/Privacy/Privacy.php:86 src/Privacy/Privacy.php:108
 msgid "Objekt"
 msgstr ""
 
@@ -1412,7 +1408,7 @@ msgstr ""
 msgid "Prüfen und veröffentlichen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:460
+#: src/Admin/SettingsPage.php:472
 msgid "Rechte der Rollen geändert"
 msgstr ""
 
@@ -1462,7 +1458,7 @@ msgstr ""
 msgid "Schritt %s fortsetzen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:466
+#: src/Admin/SettingsPage.php:478
 msgid "Schritt fortgesetzt"
 msgstr ""
 
@@ -1474,7 +1470,7 @@ msgstr ""
 msgid "Schritte oder Läufe hängen"
 msgstr ""
 
-#: src/SettingsRegistry.php:130
+#: src/SettingsRegistry.php:135
 msgid "Schützt den Server, wenn viele Ereignisse auf einmal kommen. Weitere Schritte warten, bis ein Platz frei wird."
 msgstr ""
 
@@ -1492,6 +1488,10 @@ msgstr ""
 
 #: src/Admin/SettingsPage.php:161
 msgid "So läuft die Ausführung"
+msgstr ""
+
+#: src/SettingsRegistry.php:139
+msgid "So oft wird ein Ereignis oder Schritt nach einem vorübergehenden Fehler erneut versucht, mit wachsenden Abständen (1 Min. bis 24 Std.). Danach wird ein Ereignis als fehlgeschlagen angezeigt, ein Schritt braucht eine Entscheidung. Nachrichten mit unklarem Ausgang werden nie von selbst wiederholt."
 msgstr ""
 
 #: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:131
@@ -1514,7 +1514,7 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:500
+#: src/Admin/SettingsPage.php:512
 msgid "System/WP-CLI"
 msgstr ""
 
@@ -1547,11 +1547,11 @@ msgstr ""
 msgid "Testnachricht übergeben. Kommt sie nicht an, prüfen Sie den Mailversand der Website."
 msgstr ""
 
-#: src/SettingsRegistry.php:137
+#: src/SettingsRegistry.php:144
 msgid "Tägliche Hinweis-Mail an die Betreiber-Adresse"
 msgstr ""
 
-#: src/SettingsRegistry.php:131
+#: src/SettingsRegistry.php:136
 msgid "Verhindert, dass ein einzelner Workflow alle Plätze belegt; die anderen kommen weiter dran."
 msgstr ""
 
@@ -1596,6 +1596,18 @@ msgstr ""
 msgid "Veröffentlicht. Neue Läufe nutzen diese Version; laufende behalten ihre."
 msgstr ""
 
+#: src/SettingsRegistry.php:141
+msgid "Vorgabe 30 Tage, höchstens 180. Welche Frist für Ihren Betrieb gilt, klären Sie mit Ihrer Rechtsberatung."
+msgstr ""
+
+#: src/SettingsRegistry.php:142
+msgid "Vorgabe 30 Tage, höchstens 180; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf."
+msgstr ""
+
+#: src/SettingsRegistry.php:143
+msgid "Vorgabe 90 Tage, höchstens 180. Die Vorgaben sind ein Vorschlag bis zur Rechtsprüfung."
+msgstr ""
+
 #: src/Admin/EventsPage.php:131
 msgid "Vorher prüfen, ob die Ursache (Adapter, Lizenz, Provider) behoben ist."
 msgstr ""
@@ -1622,7 +1634,7 @@ msgstr ""
 
 #. translators: %s: list of waiting times
 #: src/Admin/SettingsPage.php:163
-msgid "Vorübergehende Fehler werden nach festem Plan wiederholt: %s. Danach wird ein Ereignis als fehlgeschlagen angezeigt; ein Schritt braucht eine Entscheidung. Nachrichten werden nach einem unklaren Ausgang nie von selbst wiederholt."
+msgid "Vorübergehende Fehler werden nach diesem Plan wiederholt (Einstellung oben): %s. Danach wird ein Ereignis als fehlgeschlagen angezeigt; ein Schritt braucht eine Entscheidung. Nachrichten werden nach einem unklaren Ausgang nie von selbst wiederholt."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:289
@@ -1681,6 +1693,10 @@ msgstr ""
 msgid "Wiederholen, fortsetzen, abbrechen"
 msgstr ""
 
+#: src/SettingsRegistry.php:139
+msgid "Wiederholungen nach einem vorübergehenden Fehler"
+msgstr ""
+
 #: src/Admin/OverviewPage.php:47
 msgid "Worker"
 msgstr ""
@@ -1715,11 +1731,11 @@ msgstr ""
 msgid "Workflow Captain: Die Notfallpause ist aktiv. Ereignisse werden gespeichert, aber kein Schritt wird ausgeführt."
 msgstr ""
 
-#: src/Privacy/Privacy.php:87
+#: src/Privacy/Privacy.php:95
 msgid "Workflow Captain: Ereignisse"
 msgstr ""
 
-#: src/Privacy/Privacy.php:96
+#: src/Privacy/Privacy.php:104
 msgid "Workflow Captain: Läufe"
 msgstr ""
 
@@ -1728,7 +1744,7 @@ msgstr ""
 msgid "Workflow Captain: Testnachricht von %s"
 msgstr ""
 
-#: src/Privacy/Privacy.php:52 src/Privacy/Privacy.php:60
+#: src/Privacy/Privacy.php:60 src/Privacy/Privacy.php:68
 msgid "Workflow Captain: gespeicherte Ereignisse"
 msgstr ""
 
@@ -1736,11 +1752,11 @@ msgstr ""
 msgid "Workflow archivieren? Er startet keine neuen Läufe mehr; Läufe und Protokolle bleiben erhalten."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:468
+#: src/Admin/SettingsPage.php:480
 msgid "Workflow archiviert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:471
+#: src/Admin/SettingsPage.php:483
 msgid "Workflow fortgesetzt"
 msgstr ""
 
@@ -1752,15 +1768,15 @@ msgstr ""
 msgid "Workflow nicht gefunden."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:470
+#: src/Admin/SettingsPage.php:482
 msgid "Workflow pausiert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:467
+#: src/Admin/SettingsPage.php:479
 msgid "Workflow veröffentlicht"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:469
+#: src/Admin/SettingsPage.php:481
 msgid "Workflow wiederhergestellt"
 msgstr ""
 
@@ -1794,7 +1810,7 @@ msgstr ""
 msgid "Workflows, neueste zuerst"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:505
 msgid "Zeit (UTC)"
 msgstr ""
 
@@ -1818,7 +1834,7 @@ msgstr ""
 msgid "Zeitpläne der Workflows"
 msgstr ""
 
-#: src/Admin/EventsPage.php:134 src/Privacy/Privacy.php:79
+#: src/Admin/EventsPage.php:134 src/Privacy/Privacy.php:87
 msgid "Zeitpunkt (UTC)"
 msgstr ""
 
@@ -1867,7 +1883,7 @@ msgstr ""
 msgid "Zurücksetzen"
 msgstr ""
 
-#: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:698 src/Privacy/Privacy.php:80 src/Privacy/Privacy.php:101
+#: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:698 src/Privacy/Privacy.php:88 src/Privacy/Privacy.php:109
 msgid "Zustand"
 msgstr ""
 
@@ -2082,7 +2098,7 @@ msgstr ""
 msgid "wöchentlich"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:505
 msgid "Änderung"
 msgstr ""
 

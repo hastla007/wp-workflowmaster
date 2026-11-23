@@ -26,9 +26,11 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `max_workflow` | `workflow_captain_settings` | Zahl | 2 | 1–10 | Ausführung | ja |
 | `catch_up_hours` | `workflow_captain_settings` | Zahl | 24 | 1–168 | Ausführung | ja |
 | `max_seconds` | `workflow_captain_settings` | Zahl | 20 | 5–120 | Ausführung | ja |
-| `retention_finished` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–30 | Datenschutz & Aufbewahrung | ja |
-| `retention_runs` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–30 | Datenschutz & Aufbewahrung | ja |
-| `retention_stuck` | `workflow_captain_settings` | Zahl (Tage) | 90 | 1–90 | Datenschutz & Aufbewahrung | ja |
+| `retry_attempts` | `workflow_captain_settings` | Zahl | 8 | 1–8 | Ausführung | ja |
+| `max_chain_depth` | `workflow_captain_settings` | Zahl | 3 | 1–8 | Ausführung | ja |
+| `retention_finished` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–180 | Datenschutz & Aufbewahrung | ja |
+| `retention_runs` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–180 | Datenschutz & Aufbewahrung | ja |
+| `retention_stuck` | `workflow_captain_settings` | Zahl (Tage) | 90 | 1–180 | Datenschutz & Aufbewahrung | ja |
 | `notify_daily` | `workflow_captain_settings` | ja/nein | ja | – | Benachrichtigungen | ja |
 | `recipients` | `workflow_captain_notify` | Adressen | leer = Adresse der Website | bis 10 | Benachrichtigungen | nein (personenbezogen, an die Installation gebunden) |
 | `kinds` | `workflow_captain_notify` | Auswahl | alle sechs Arten | – | Benachrichtigungen | ja |
@@ -43,11 +45,11 @@ Capabilities bei Aktivierung für Administratoren: `manage_workflow_captain`, `e
 
 | Tabelle | Inhalt | Personenbezug | Frist |
 |---|---|---|---|
-| `events` | gespeicherte Umschläge, Zustand, Versuche | `actor_user_id`, geleert sobald kein Lauf wartet | erledigt 30 Tage, `dead_letter`/`paused` 90 Tage (nur kürzer einstellbar) |
+| `events` | gespeicherte Umschläge, Zustand, Versuche | `actor_user_id`, geleert sobald kein Lauf wartet | erledigt 30 Tage, `dead_letter`/`paused` 90 Tage (einstellbar 1–180 Tage) |
 | `causes` | welcher Befehl welches Objekt erzeugt hat (R-7.12) | keiner | 7 Tage |
 | `workflows` | Name, Zustand, Entwurf | keiner | bis zur Deinstallation; „Löschen“ archiviert |
 | `versions` | unveränderliche veröffentlichte Graphen, `authorized_by_user_id` | Benutzer-ID des Veröffentlichenden | mit dem Workflow |
-| `runs` | Lauf mit Kopie des Umschlags | `actor_user_id` | erledigte Läufe 30 Tage (eigene Frist), offene bleiben |
+| `runs` | Lauf mit Kopie des Umschlags | `actor_user_id` | erledigte Läufe 30 Tage (eigene Frist, einstellbar 1–180 Tage), offene bleiben |
 | `steps` | Schritte, Sperrfrist, Buchung des Seiteneffekts, redigiertes Ergebnis | keiner | mit dem Lauf |
 | `tags`, `notes` | Markierungen und Notizen an Objekten | nur wenn der Betreiber Personenbezug in eine Notiz schreibt | bis zur Löschung |
 

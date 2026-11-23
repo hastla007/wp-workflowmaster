@@ -27,6 +27,11 @@ final class Consumer {
 	/** Events deeper than this start no workflow (R-7.13; the number is a proposal, F-15). */
 	const MAX_DEPTH = 3;
 
+	/** Depth the operator set (1 to 8, default MAX_DEPTH; setting `max_chain_depth`, SET-WC-09, R-7.13). */
+	public static function max_depth(): int {
+		return (int) \WorkflowCaptain\Settings::get()['max_chain_depth'];
+	}
+
 	/** Seconds a worker holds a claimed event (C-6). */
 	const LEASE_SECONDS = 300;
 
@@ -100,7 +105,7 @@ final class Consumer {
 				( $this->on_reject )( $violations );
 				return self::REJECTED;
 			}
-			$state  = $envelope['chain_depth'] > self::MAX_DEPTH ? EventStore::LOOP_BLOCKED : EventStore::RECEIVED;
+			$state  = $envelope['chain_depth'] > self::max_depth() ? EventStore::LOOP_BLOCKED : EventStore::RECEIVED;
 			$result = $this->store->insert( $envelope, $state, $this->clock->mysql() );
 			return EventStore::STORED === $result ? self::CAPTURED : $result;
 		} catch ( \Throwable $e ) {
@@ -188,7 +193,7 @@ final class Consumer {
 				$finish( EventStore::DEAD_LETTER, array( 'last_error' => 'schema' ) );
 				return;
 			}
-			if ( (int) $envelope['chain_depth'] > self::MAX_DEPTH ) {
+			if ( (int) $envelope['chain_depth'] > self::max_depth() ) {
 				$finish( EventStore::LOOP_BLOCKED, array( 'last_error' => 'chain_depth' ) );
 				return;
 			}

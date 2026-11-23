@@ -155,12 +155,12 @@ final class SettingsPage {
 	/** How the worker is scheduled and how failures are repeated (WF-SET-05). */
 	private function execution_help(): void {
 		$plan = array();
-		foreach ( \WorkflowCaptain\Consumer\RetryPlan::DELAYS as $seconds ) {
+		foreach ( \WorkflowCaptain\Consumer\RetryPlan::delays() as $seconds ) {
 			$plan[] = $seconds < HOUR_IN_SECONDS ? sprintf( /* translators: %d: minutes */ __( '%d Min.', 'workflow-captain' ), $seconds / MINUTE_IN_SECONDS ) : sprintf( /* translators: %d: hours */ __( '%d Std.', 'workflow-captain' ), $seconds / HOUR_IN_SECONDS );
 		}
 		echo '<h2>' . esc_html__( 'So läuft die Ausführung', 'workflow-captain' ) . '</h2>';
 		echo '<p>' . esc_html( \WorkflowCaptain\Scheduler::ACTION_SCHEDULER === \WorkflowCaptain\Scheduler::backend() ? __( 'Der Worker läuft über Action Scheduler (von WooCommerce), jede Minute.', 'workflow-captain' ) : __( 'Der Worker läuft über WP-Cron, jede Minute. WP-Cron startet nur bei Seitenaufrufen; auf Websites mit wenig Besuch oder mit DISABLE_WP_CRON einen System-Cron einrichten: wp workflow-captain process (jede Minute).', 'workflow-captain' ) ) . '</p>';
-		echo '<p>' . esc_html( sprintf( /* translators: %s: list of waiting times */ __( 'Vorübergehende Fehler werden nach festem Plan wiederholt: %s. Danach wird ein Ereignis als fehlgeschlagen angezeigt; ein Schritt braucht eine Entscheidung. Nachrichten werden nach einem unklaren Ausgang nie von selbst wiederholt.', 'workflow-captain' ), implode( ', ', $plan ) ) ) . '</p>';
+		echo '<p>' . esc_html( sprintf( /* translators: %s: list of waiting times */ __( 'Vorübergehende Fehler werden nach diesem Plan wiederholt (Einstellung oben): %s. Danach wird ein Ereignis als fehlgeschlagen angezeigt; ein Schritt braucht eine Entscheidung. Nachrichten werden nach einem unklaren Ausgang nie von selbst wiederholt.', 'workflow-captain' ), implode( ', ', $plan ) ) ) . '</p>';
 		echo '<p>' . esc_html__( 'Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows.', 'workflow-captain' ) . '</p>';
 	}
 

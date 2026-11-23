@@ -99,10 +99,9 @@ final class Settings {
 		);
 	}
 
-	/** Filter callback for workflow_captain_retention_days: the setting can only shorten the period. */
+	/** Filter callback for workflow_captain_retention_days: the setting of the group (1 to 180 days, E-S7 = F-04). */
 	public static function retention( $days, $group ): int {
 		$settings = self::get();
-		$own      = array( 'finished' => $settings['retention_finished'], 'stuck' => $settings['retention_stuck'], 'runs' => $settings['retention_runs'] )[ $group ] ?? (int) $days;
-		return min( (int) $days, $own );
+		return array( 'finished' => $settings['retention_finished'], 'stuck' => $settings['retention_stuck'], 'runs' => $settings['retention_runs'] )[ $group ] ?? (int) $days;
 	}
 }
