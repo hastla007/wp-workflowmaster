@@ -17,7 +17,23 @@ Technisch sauber, aber für fremde Shops und Länder kaum anpassbar: 9 Zahlenfel
 | E-S5 = F-15 | Wiederholungen und Schleifentiefe | **einstellbar in 1–8**, Standard 8 und 3 |
 | E-S6 | Deinstallation | **Daten behalten** ist die Vorgabe; Löschen nur nach ausdrücklichem Einschalten |
 | E-S7 = F-04 | Aufbewahrung länger als 30/90 Tage | **bis 180 Tage frei** im Kern, darüber `workflow.extended_logs` (Pro) |
-| E-S8 | Pro-Hinweise, Ruhezeit | **graue Hinweiszeile** am Ende des Reiters mit Schalter „Pro-Hinweise zeigen“; Ruhezeit für die ganze Website frei, je Workflow und Kalender Pro (`workflow.advanced_logic`); neues Recht `workflow.branding` vormerken (Lizenz-Sitzung) |
+| E-S8 | Pro-Hinweise, Ruhezeit | (Hinweiszeilen erst ab Verkauf der Funktion, S5) **graue Hinweiszeile** am Ende des Reiters mit Schalter „Pro-Hinweise zeigen“; Ruhezeit für die ganze Website frei, je Workflow und Kalender Pro (`workflow.advanced_logic`); neues Recht `workflow.branding` vormerken (Lizenz-Sitzung) |
+
+## Entscheidungen für die ganze Suite (23.11.2026, über die Lizenz-Sitzung)
+
+Der Inhaber hat sie direkt bei der Lizenz-Sitzung getroffen; sie gelten für alle Captain-Plugins. Für Workflow Captain:
+
+| Nr. | Entscheidung | Folge hier |
+|---|---|---|
+| S4 | Quellsprache Englisch, `de_DE` = du, `de_DE_formal` = Sie, keine Mischung in einer Datei; Workflow Captain stellt **jetzt** um | SET-WC-06 vorgezogen |
+| S5 | Alle vorgeschlagenen Rechteschlüssel sind „geplant“; gebaut und verkauft erst nach Einzelfreigabe; Hinweiszeilen im Kern erst, wenn die Funktion verkauft wird; `workflow.delays` entfällt | SET-WC-02: Anzeige und Hook bauen, Liste der Zeilen bleibt leer bis zur Freigabe; ersetzt in E-S8 die sofortige Hinweiszeile |
+| S6 | Logo und Absender auf Belegen und E-Mails sind in jedem Kern frei; White Label bleibt Pro | SET-WC-10 frei |
+| S8 | Länderprofile zum Start: DE, AT, CH (geprüft vor Verkaufsstart), EU allgemein, OTHER neutral und „nicht geprüft“; Profil ist immer Vorschlag mit Vorher/Nachher | SET-WC-17, Schlüssel `DE`, `AT`, `CH`, `EU`, `OTHER` |
+| S9 | Aufbewahrung: bestehende kürzere Fristen bleiben; nichts still ändern; Profile schlagen nur vor | Fristen der Laufprotokolle (30/90 Tage) unverändert |
+| S10 | Deinstallation: Vorgabe „Daten behalten“, Löschen nur nach ausdrücklicher Wahl mit Bestätigung; einheitlicher Standard für die ganze Suite (Inhaberin: „wir machen es überall gleich“): Einschalten nur mit getipptem LÖSCHEN/LOESCHEN/DELETE (serverseitig, WP-CLI `--confirm`), Beschriftung „Beim Löschen des Plugins alle Daten entfernen“, je Website, nicht exportiert; gilt auch für Pro-Add-ons und Connectoren mit eigenen Tabellen | entspricht E-S6, umgesetzt (SET-WC-05, Bestätigungswort in PR 14) |
+| S11 | Jede Nachricht an Kunden ist Werbung oder Transaktion; Werbung nur mit Einwilligung und mit Abmelde-Link über **eine** öffentliche Adresse; bestehende Workflows gelten als Transaktion | SET-WC-03, SET-WC-04 entschieden; Zusage „keine öffentliche Ausgabe“ in `docs/OPTIONS.md` und ihr Test werden für diese eine Adresse angepasst; Wortlaut und Rechtsgrundlage: Rechtsprüfung |
+
+Weiter gültig: S1 (graue Hinweiszeile am Ende des Reiters, nur Text, ausblendbar), S2 (Geschäftspolitik ist Einstellung mit sicherer Vorgabe, Filter gewinnt), keine Rechteschlüssel-Namen im Kern.
 
 ## Grenzen, die beim Umsetzen gelten
 
