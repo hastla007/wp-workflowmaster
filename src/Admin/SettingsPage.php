@@ -98,8 +98,6 @@ final class SettingsPage {
 		}
 		if ( 'general' === $tab ) {
 			$this->general();
-			echo '</div>';
-			return;
 		}
 		if ( 'roles' === $tab ) {
 			$this->roles();
@@ -191,6 +189,8 @@ final class SettingsPage {
 		if ( 'execution' === $tab ) {
 			$this->execution_help();
 		}
+		// Add-on fields and the grey Pro hint lines close the tab (SET-WC-02).
+		SettingsExtras::render( $tab );
 	}
 
 	/** How the worker is scheduled and how failures are repeated (WF-SET-05). */
