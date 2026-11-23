@@ -4,13 +4,14 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 
 ## Stand
 
-**Konzept, Spezifikation und erster Code.** Abweichend von D12 wird seit dem 16.11.2026 schon vor dem Verkaufsstart der drei vorhandenen Add-ons gebaut. Vorhanden sind im kostenlosen Kern (Plugin 0.2.0) der Consumer (Ereignisspeicher, Wiederholung, Schleifenschutz, Anmeldeschnittstelle für Adapter) und die Workflow-Engine (Workflows mit unveränderlichen Versionen, Bedingungen, Wartezeiten, Läufe und Schritte mit sicherer Wiederholung, Aktionen `notify.admin`, `notify.user`, Markierungen und Notizen), dazu Datenschutz und Admin-Seiten. Workflows werden bis zum visuellen Builder als JSON bearbeitet. Adapter für die Captain-Produkte fehlen noch (sie gehören nach `captain-pro`).
+**Konzept, Spezifikation und erster Code.** Abweichend von D12 wird seit dem 16.11.2026 schon vor dem Verkaufsstart der drei vorhandenen Add-ons gebaut. Vorhanden sind im kostenlosen Kern (Plugin 0.2.0) der Consumer (Ereignisspeicher, Wiederholung, Schleifenschutz, Anmeldeschnittstelle für Adapter) und die Workflow-Engine (Workflows mit unveränderlichen Versionen, Bedingungen, Wartezeiten, Läufe und Schritte mit sicherer Wiederholung, Aktionen `notify.admin`, `notify.user`, Markierungen und Notizen), dazu Datenschutz und Admin-Seiten. Workflows entstehen im visuellen Editor (mit linearer Schrittansicht für kleine Bildschirme); JSON-Import und -Export bleiben möglich. Die Adapter für die Captain-Produkte gehören nach `captain-pro` (Workflow Captain Pro) und liegen dort bisher nur auf dem Branch `claude/plugin-todo-liste-2a83v4`, nicht auf `main` (Stand 23.11.2026, [`docs/KOMPATIBILITAET.md`](docs/KOMPATIBILITAET.md)).
 
 ## Inhalt
 
 | Datei | Zweck |
 |---|---|
 | [`docs/SPEC-suite-events.md`](docs/SPEC-suite-events.md) | **Normativ.** Die eine gemeinsame Spezifikation dafür, wie die Plugins der Captain Suite zusammenarbeiten: Ereignisse, Umschlag, Zustellung, Befehle, Lizenzen. Version 1.0.0-draft.8, Entwurf zur Abnahme. |
+| [`docs/ENTSCHEIDUNGSVORLAGE.md`](docs/ENTSCHEIDUNGSVORLAGE.md) | Alle offenen Entscheidungen mit Empfehlung (was die Antwort freigibt) und die externen Blocker. |
 | [`docs/SPEC-open-questions.md`](docs/SPEC-open-questions.md) | Offene Fragen zur Spezifikation mit Empfehlung und die Widersprüche zwischen den Entscheidungen. |
 | [`docs/schema/suite-event-v1.schema.json`](docs/schema/suite-event-v1.schema.json) | JSON Schema des Umschlags. |
 | [`docs/examples/`](docs/examples/) | Beispiel-Umschläge, je Ereignistyp von Pass und Voucher Captain einer. |
@@ -29,6 +30,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`docs/LOESCHUNG.md`](docs/LOESCHUNG.md) | Löschen und Anonymisieren über Kern-Plugins und Workflow Captain. |
 | [`docs/OPTIONS.md`](docs/OPTIONS.md) | Optionen, Tabellen, Datenflächen und Änderungssemantik. |
 | [`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) | Release-Gate des kostenlosen Kerns. |
+| [`docs/readme-de.txt`](docs/readme-de.txt) | Deutsche Fassung der `readme.txt` (Vorlage für die Übersetzung de_DE; WordPress.org verlangt die `readme.txt` auf Englisch). |
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Betrieb und Wiederherstellung: typische Lagen, Backup, Grenzen. |
 | [`docs/SDK.md`](docs/SDK.md) | Entwickler-SDK: Adapter, Aktionen, Workflow-Format, Hooks, Datenfluss, Betrieb. |
 | [`docs/CONNECTOR-CONTRACT.md`](docs/CONNECTOR-CONTRACT.md) | Entwurf des öffentlichen Connector-Vertrags für eigene Projekte (wartet auf F-22). |

@@ -1114,8 +1114,8 @@
       ]
     },
     "wp-license": {
-      "contract_constant": null,
-      "min_contract": null,
+      "contract_constant": "WPLC_CONTRACT_VERSION",
+      "min_contract": "1.0.0",
       "example_required": true,
       "fields_complete": true,
       "events": [
@@ -1306,7 +1306,7 @@
         {
           "type": "form.form.entries_imported",
           "hook": "form_captain_entries_imported_v1",
-          "since": "1.0.0 (added without MINOR bump, FC-2)",
+          "since": "1.0.0 (added without MINOR bump; FORM_CAPTAIN_CONTRACT_VERSION raised to 1.1.0 on main afterwards, FC-2)",
           "subject_type": "form",
           "id_kind": "public",
           "data_fields": [
@@ -1323,7 +1323,7 @@
         {
           "type": "form.entry.consent_withdrawn",
           "hook": "form_captain_consent_withdrawn_v1",
-          "since": "1.0.0 (added without MINOR bump, FC-2)",
+          "since": "1.0.0 (added without MINOR bump; FORM_CAPTAIN_CONTRACT_VERSION raised to 1.1.0 on main afterwards, FC-2)",
           "subject_type": "entry",
           "id_kind": "record",
           "data_fields": [
@@ -1365,7 +1365,8 @@
     "review-captain": {
       "contract_constant": "REVIEW_CAPTAIN_CONTRACT_VERSION",
       "min_contract": "1.0.0",
-      "contract_fallback": "REVIEW_CAPTAIN_VERSION 0.1.0-dev with ReviewCaptain\\Events\\Events::SCHEMA = review_captain.review.v1 (R-3.3, while main has no contract constant)",
+      "contract_fallback": "REVIEW_CAPTAIN_VERSION 0.1.0-dev with ReviewCaptain\\Events\\Events::SCHEMA = review_captain.review.v1 (R-3.3, while main has no contract constant; on 23.11.2026 the constant 1.1.0 exists only on branch claude/sleepy-gates-6mm217)",
+      "rating_fields_since": "1.1.0 (rating_value, rating_scale_min, rating_scale_max in the payload; below 1.1.0 the adapter reads them via reviews()->find_by_uuid(), R-4.27)",
       "example_required": true,
       "fields_complete": true,
       "events": [

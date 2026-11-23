@@ -40,7 +40,7 @@ final class OutboundPolicy {
 	 * @return array{ok:bool,reason:string,ips:string[]} reason is a fixed code; ips are the addresses to connect to.
 	 */
 	public function check( string $url, array $exception = array() ): array {
-		$parts = parse_url( $url );
+		$parts = wp_parse_url( $url );
 		if ( false === $parts || empty( $parts['scheme'] ) || empty( $parts['host'] ) ) {
 			return self::deny( 'invalid_url' );
 		}

@@ -442,6 +442,44 @@ $s->clock->advance( 301 );
 check( 'C-6 after the lease the event is processed', 1 === $s->consumer->process() && EventStore::DONE === only_row( $s )['state'] );
 check( 'C-6 stale owner cannot overwrite', false === $s->store->finish( only_row( $s )['id'], 'crashed-worker', array( 'state' => EventStore::RETRY_WAIT ), $s->clock->mysql() ) );
 
+// Queue-Ausfall (TODO E2E-Matrix): the worker does not run for two days, events pile up; when it runs again the
+// backlog drains in batches, oldest first, each event once, also when a worker crashes in the middle of the backlog.
+$s     = site();
+$total = 120;
+for ( $i = 0; $i < $total; $i++ ) {
+	$s->consumer->capture( $s->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'outage-' . $i ) );
+	$s->clock->advance( 1440 ); // one event every 24 minutes, 48 hours in all.
+}
+$stored = $s->store->find( array(), 500, 0 );
+check( 'queue outage: all events stored while no worker runs, none dispatched', $total === count( $stored ) && array() === $s->dispatcher->calls && array( EventStore::RECEIVED ) === array_values( array_unique( array_column( $stored, 'state' ) ) ) );
+$crashed = $s->store->claim_due( 25, $s->clock->mysql(), 'crashed-worker', $s->clock->mysql( $s->clock->now() + 300 ) );
+check( 'queue outage: a worker crashes after claiming the first batch of 25', 25 === count( $crashed ) );
+$batches = 0;
+while ( $s->consumer->process( 25 ) > 0 && $batches < 50 ) {
+	++$batches;
+}
+$after_first = count( $s->dispatcher->calls );
+check( 'queue outage: other workers drain the rest in batches of 25 while the crashed batch is leased', $total - 25 === $after_first && 4 === $batches );
+$s->clock->advance( 301 );
+while ( $s->consumer->process( 25 ) > 0 && $batches < 50 ) {
+	++$batches;
+}
+$ids  = array_map( static fn( array $call ): string => $call[0]['id'], $s->dispatcher->calls );
+$rows = $s->store->find( array(), 500, 0 );
+check( 'queue outage: after the lease the crashed batch runs too; every event dispatched exactly once', $total === count( $ids ) && $total === count( array_unique( $ids ) ) );
+check( 'queue outage: all events done, nothing left in processing', array( EventStore::DONE ) === array_values( array_unique( array_column( $rows, 'state' ) ) ) );
+$by_id = array();
+foreach ( $rows as $row ) {
+	$by_id[ $row['envelope']['id'] ] = (int) $row['id'];
+}
+$order = array_map( static fn( string $event_id ): int => (int) $by_id[ $event_id ], $ids );
+$later = array_slice( $order, 0, $total - 25 );
+$sorted = $later;
+sort( $sorted );
+check( 'queue outage: backlog runs oldest first', $sorted === $later && range( 26, $total ) === $later );
+check( 'queue outage: started runs once per event and workflow (no double start after the crash)', 2 * $total === count( $s->dispatcher->runs ) );
+check( 'queue outage: an empty queue does nothing', 0 === $s->consumer->process( 25 ) && $total === count( $s->dispatcher->calls ) );
+
 // C-7: re-read before start
 $s = site();
 $s->adapter->reread        = array( 'pass.ticket.checked_in' );

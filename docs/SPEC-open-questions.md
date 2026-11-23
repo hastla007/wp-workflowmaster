@@ -2,7 +2,7 @@
 
 Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
-**Noch offen:** F-02 bis F-04, F-05a, F-06, F-08 bis F-10, F-13 bis F-16, F-19 (ohne Form), F-21, F-23 und W-1 bis W-9, W-13. **Am 16.11.2026 entschieden:** F-01, F-07, F-12 (Form und Review), F-18a, F-20, F-22, W-11; dazu: Lizenzserver liest über `LicenseReader` (Branch `claude/zen-babbage-7q4nac`), die eigene Lesefassade `ReadFacade` ist zurückgezogen; Pass Captain 1.6.0 und Voucher Captain 1.3.0 erhöhen ihre Plugin-Version für die neuen Lesefunktionen.
+**Noch offen:** F-02 bis F-04, F-06, F-08 bis F-10, F-14 bis F-16, F-19 (ohne Form), F-21, F-23, F-24 (neu am 23.11.2026) und W-1 bis W-9, W-13. **Am 23.11.2026 entschieden:** F-05a, F-13. **Am 16.11.2026 entschieden:** F-01, F-07, F-12 (Form und Review), F-18a, F-20, F-22, W-11; dazu: Lizenzserver liest über `LicenseReader` (Branch `claude/zen-babbage-7q4nac`), die eigene Lesefassade `ReadFacade` ist zurückgezogen; Pass Captain 1.6.0 und Voucher Captain 1.3.0 erhöhen ihre Plugin-Version für die neuen Lesefunktionen.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -50,7 +50,10 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
   - `voucher.redeem`: **jeder** Gutschein, nicht nur ein selbst ausgestellter; höchstens 100 EUR je Einlösung; 50 je Tag und Website.
 - **In der Spezifikation:** Tabelle in Abschnitt 8.3.1. Die frühere Empfehlung dieses Dokuments (50, 20, nur selbst ausgestellte Gutscheine, ein Wechsel je Gutschein und Tag) ist damit überholt.
 
-### F-05a · Höchstbeträge in Shops ohne Euro
+### F-05a · Höchstbeträge in Shops ohne Euro — **entschieden am 23.11.2026**
+
+**Entscheidung (gemeldet aus der Gutschein-Sitzung):** Höchstbetrag 100 auch in CHF, USD und GBP; in anderen Währungen trägt der Betreiber den Betrag selbst ein, bis dahin bleiben die Befehle aus. Umsetzung: wp-couponmaster Pull Request #20.
+
 
 - **Frage:** Die Höchstbeträge sind in Euro entschieden. Was gilt in einem Shop mit anderer Währung?
 - **Annahme der Spezifikation:** Ohne eigenen Eintrag des Betreibers lehnt der Einstiegspunkt Beträge in einer anderen Währung ab (Abschnitt 8.3.1).
@@ -110,7 +113,10 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Entschieden (D13) für den Voucher-Kern:** Der Provider aus Pull Request 16 mit Lizenzwissen und Mail-Übergabe wird vor dem Release entfernt.
 - **Empfehlung für Form und Review:** Genauso verfahren wie D13 für Affiliate und Voucher: nicht normativ, vor dem ersten Release herausnehmen. In Form Captain die Übergabe der Mails entfernen oder abschalten. Die Kataloge für `form.*` und `review.*` kommen in einer MINOR-Version dieser Spezifikation, bevor einer der beiden Kerne veröffentlicht wird.
 
-### F-13 · Empfänger ohne Benutzerkonto
+### F-13 · Empfänger ohne Benutzerkonto — **entschieden am 23.11.2026**
+
+**Entscheidung (gemeldet aus der Gutschein-Sitzung):** „Ja, nach Rechtsprüfung“. Je eine dokumentierte Lesefunktion für Kontakt und Einwilligung, ab Werk aus: Voucher Captain Vertrag 1.5.0 (wp-couponmaster Pull Request #20), Pass Captain mit 1.7.0 (PASS-E17-01).
+
 
 - **Frage:** Wie erreicht eine Review-Einladung den Gast eines Tickets oder den Empfänger eines Gutscheins, wenn es kein WordPress-Konto gibt und das Ereignis keine E-Mail-Adresse tragen darf?
 - **Stand:** Beim Einlass ist die Benutzer-ID die des Personals (`PC:src/Checkin.php:153`). Einen Abruf „Kontakt zu diesem Ticket“ für andere Plugins beschreibt Pass Captain nicht als Vertrag.
@@ -197,6 +203,13 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Stand:** 8.1 lässt in Version 1 nur die vier Gutschein-Befehle mit Wirkung im Provider zu (D11b); 8.2 verbietet das Unterdrücken oder erneute Auslösen von Mails eines Kerns. Eine Einladung ist eine Mail an einen Kunden (Abschnitt 9, D10). Der Planer von Review Captain Pro ist noch nicht gebaut; ohne ihn antwortet der Kern `rc.contract.unavailable`.
 - **Annahme der Spezifikation:** keine Befehle für Review Captain in Version 1 (R-4.30); der Adapter bietet die Methoden nicht an.
 - **Empfehlung:** Für Version 1 so bestätigen. Eine Einladung plant Review Captain Pro aus seinen eigenen Quellen (F-08). Später in einer MINOR-Version höchstens `review.request.plan` und `review.request.cancel` zulassen, nur über den Planer von Review Captain Pro mit allen Schutzregeln, idempotent über den Schlüssel des Aufrufers, mit Rückgabe des Status und ohne Kontaktdaten im Workflow; `create_draft()` nicht als Befehl, weil ein Entwurf Bewertungstext und Namen bräuchte (R-5.1).
+
+### F-24 · Schreibende Workflow-Aktionen für Course Captain (neu am 23.11.2026)
+
+- **Frage:** Course Captain hat entschieden (`CC:docs/r0/ENTSCHEIDUNGEN.md`, E-39 und E-39b auf Branch `claude/blissful-curie-tuuf7q` `c45e891`), dass ein Workflow schon in Version 1 Lernzugänge anlegen und entziehen darf (`course.enroll`, `course.revoke`), über die Grant-Quelle `workflow` im Connector von Course Captain Pro, mit Idempotenz und Audit. Dort steht es als Änderungsauftrag an Workflow Captain. Soll die Suite-Spezifikation das zulassen?
+- **Stand:** 8.1 lässt in Version 1 nur die vier Gutschein-Befehle mit Wirkung in einem Provider zu (D11b). Course Captain liest `konzept.md` so, dass schreibende Aktionen für Lernplattformen ausgeschlossen sind (sein Verweis R0-32); `konzept.md` 17.10 schließt für den Kundenconnector BoatingSchool Aktionen zum Ändern von Kursrechten ausdrücklich aus. Course Captain hat auf `main` (`5af78c3`) keinen Code; auf dem Branch feuert es bisher nur `course_captain_loaded_v1`, einen Katalog `course.*` gibt es nicht (4.6.4).
+- **Annahme der Spezifikation:** keine Befehle für Course Captain in Version 1; der Katalog `course.*` kommt erst mit einer MINOR-Version, und Befehle kämen nach den Regeln aus 8 (feste Grenzen, Idempotenz über den Schlüssel des Aufrufers, Protokoll, ab Werk aus, Berechtigung im Kern) als weitere MINOR-Version.
+- **Empfehlung:** Für Version 1 so lassen. Erst die Ereignisse (`course.*`, CC-3), dann `course.enroll`/`course.revoke` als Befehle nach dem Muster der Gutschein-Befehle (8.3): Einstiegspunkte im Course-Kern mit Pflichtfeldern, Idempotenz, Tagesgrenzen und Abschaltbarkeit, Aktion in Workflow Captain Pro, nicht in Course Captain Pro, damit es nur einen Weg gibt.
 
 ## Teil 2: Widersprüche zwischen den Entscheidungen vom 16.11.2026
 

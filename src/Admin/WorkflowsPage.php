@@ -393,7 +393,7 @@ final class WorkflowsPage {
 			}
 		}
 
-		$edit = isset( $_GET['edit'] ) ? sanitize_key( wp_unslash( $_GET['edit'] ) ) : '';
+		$edit = isset( $_GET['edit'] ) ? sanitize_key( wp_unslash( $_GET['edit'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 		if ( '' !== $edit ) {
 			$this->render_editor( 'new' === $edit ? null : $store->get_workflow( absint( $edit ) ) );
 			echo '</div>';
@@ -522,11 +522,11 @@ final class WorkflowsPage {
 		}
 		$store = $this->plugin->engine()->store();
 		echo '<div class="wrap"><h1>' . esc_html__( 'Läufe', 'workflow-captain' ) . '</h1>';
-		if ( isset( $_GET['done'] ) ) {
-			$ok = '1' === sanitize_key( wp_unslash( $_GET['done'] ) );
+		if ( isset( $_GET['done'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
+			$ok = '1' === sanitize_key( wp_unslash( $_GET['done'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 			echo '<div class="notice notice-' . ( $ok ? 'success' : 'error' ) . '"><p>' . esc_html( $ok ? __( 'Erledigt.', 'workflow-captain' ) : __( 'Das ging nicht. Ein Schritt mit begonnener Nachricht braucht die Bestätigung, dass sie erneut gesendet werden darf.', 'workflow-captain' ) ) . '</p></div>';
 		}
-		$run_id = isset( $_GET['run'] ) ? absint( wp_unslash( $_GET['run'] ) ) : 0;
+		$run_id = isset( $_GET['run'] ) ? absint( wp_unslash( $_GET['run'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 		$run    = $run_id > 0 ? $store->get_run( $run_id ) : null;
 		if ( null !== $run ) {
 			$this->render_run( $run );
@@ -534,13 +534,13 @@ final class WorkflowsPage {
 			return;
 		}
 		$states   = array( EngineStore::RUN_RUNNING, EngineStore::RUN_ACTION_REQUIRED, EngineStore::RUN_PAUSED, EngineStore::RUN_FAILED, EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_CANCELLED );
-		$state    = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : '';
+		$state    = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 		$state    = in_array( $state, $states, true ) ? $state : '';
 		$corr     = EventsPage::correlation_param();
-		$workflow = isset( $_GET['workflow'] ) ? absint( wp_unslash( $_GET['workflow'] ) ) : 0;
-		$period   = isset( $_GET['period'] ) ? sanitize_key( wp_unslash( $_GET['period'] ) ) : '';
-		$from     = isset( $_GET['from'] ) ? sanitize_text_field( wp_unslash( $_GET['from'] ) ) : '';
-		$to       = isset( $_GET['to'] ) ? sanitize_text_field( wp_unslash( $_GET['to'] ) ) : '';
+		$workflow = isset( $_GET['workflow'] ) ? absint( wp_unslash( $_GET['workflow'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
+		$period   = isset( $_GET['period'] ) ? sanitize_key( wp_unslash( $_GET['period'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
+		$from     = isset( $_GET['from'] ) ? sanitize_text_field( wp_unslash( $_GET['from'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
+		$to       = isset( $_GET['to'] ) ? sanitize_text_field( wp_unslash( $_GET['to'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 		$range    = self::period_filter( $period, $from, $to, time() );
 		$base     = array_filter( array( 'correlation_id' => $corr, 'workflow_id' => $workflow ) ) + $range['filter'];
 		$filter   = $base + array_filter( array( 'state' => $state ) );

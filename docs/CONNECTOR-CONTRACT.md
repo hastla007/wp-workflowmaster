@@ -62,6 +62,7 @@ Passt etwas nicht, bleibt der Connector aus, und die Admin-Seite „Eigene Conne
 | `requires_newer_core` | `requires.workflow_captain` ist höher als `WORKFLOW_CAPTAIN_CONTRACT_VERSION` |
 | `contract_major` | `requires.workflow_captain` hat eine andere Hauptversion als `WORKFLOW_CAPTAIN_CONTRACT_VERSION` |
 | `duplicate` | Der Schlüssel ist schon angemeldet; die erste Anmeldung bleibt gültig |
+| `runtime_not_allowed` | Die Laufzeit für eigene Connectoren ist nicht freigegeben: der Filter `workflow_captain_connector_runtime_allowed_v1` liefert `false` (Workflow Captain Pro ohne das Recht `workflow.custom_connectors`, F-18a) |
 | `not_enabled` | angenommen, aber noch nicht freigegeben |
 
 ## Freigabe durch den Betreiber (WF-CONNECTOR-11)
@@ -90,7 +91,7 @@ Die Ereignistypen freigegebener Connectoren stehen in der Auswahl der Auslöser,
 
 ## Lizenz
 
-Der Kern prüft keine Lizenz (R-2.4). Ein Projektprodukt prüft seine eigene Lizenz (Entscheidung 17). Ob die Ausführung eigener Connectoren zusätzlich Workflow Captain Pro voraussetzt, ist weiter F-18a.
+Der Kern prüft keine Lizenz (R-2.4). Ein Projektprodukt prüft seine eigene Lizenz (Entscheidung 17). Die Ausführung eigener Connectoren setzt Workflow Captain Pro mit dem Recht `workflow.custom_connectors` voraus (F-18a, entschieden am 16.11.2026): Pro hängt sich an den Filter `workflow_captain_connector_runtime_allowed_v1`; ohne Freigabe bleibt der Connector mit dem Grund `runtime_not_allowed` aus. Ob Pro installiert ist, erfährt ein Connector über diese Ablehnung, nicht über Konstanten von Pro (`WORKFLOW_CAPTAIN_PRO_VERSION` ist nicht Teil dieses Vertrags).
 
 ## Starter-Connector (WF-CONNECTOR-05)
 
