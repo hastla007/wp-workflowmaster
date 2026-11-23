@@ -34,7 +34,7 @@ Workflow Captain verbindet Ereignisse aus den Plugins der Captain Suite mit Abl�
 **Auslöser, die eingebaut sind**
 
 * WordPress: Benutzer registriert, Beitrag veröffentlicht (nur öffentliche Inhaltstypen). Übergeben werden Kennungen und Status, nie Name, E-Mail-Adresse, Login, Titel oder Inhalt.
-* WooCommerce (ab Version 11.2, HPOS und klassische Bestelltabellen): Bestellung angelegt, bezahlt, Statuswechsel, erstattet, storniert. Übergeben werden Status, Beträge in kleinster Einheit, Währung und Kennungen, nie Adressen, E-Mail, Namen, IP-Adresse, Kundennotiz oder Gutscheincodes.
+* WooCommerce (ab Version 11.2.2, HPOS und klassische Bestelltabellen): Bestellung angelegt, bezahlt, Statuswechsel, erstattet, storniert. Übergeben werden Status, Beträge in kleinster Einheit, Währung und Kennungen, nie Adressen, E-Mail, Namen, IP-Adresse, Kundennotiz oder Gutscheincodes.
 * Zeitplan: täglich, wöchentlich oder monatlich zu einer Uhrzeit in der Zeitzone der Website. Ein verpasster Termin wird höchstens einmal nachgeholt.
 * Eingehende Auslöser: Ein Add-on kann Auslöser mit festen, typisierten Feldern anmelden. Workflow Captain prüft jeden Aufruf noch einmal und speichert ihn wie jedes andere Ereignis. Die Annahme von außen (signierte Webhooks, n8n) gehört nicht zum kostenlosen Plugin.
 
@@ -122,7 +122,7 @@ Keine. Workflow Captain ruft keinen externen Dienst auf.
 == Changelog ==
 
 = 0.2.0 =
-* Mindestversionen: PHP 8.5 und WordPress 7.0; darunter bleibt das Plugin mit einem Hinweis inaktiv. Der WooCommerce-Adapter braucht WooCommerce 11.2. Website-Zustand empfiehlt ein Update, wenn der Datenbankserver älter als MySQL 9.7 bzw. MariaDB 12.3 ist (keine Sperre).
+* Mindestversionen: PHP 8.5 und WordPress 7.0; darunter bleibt das Plugin mit einem Hinweis inaktiv. Der WooCommerce-Adapter braucht WooCommerce 11.2.2. Website-Zustand empfiehlt ein Update, wenn der Datenbankserver älter als MySQL 9.7 bzw. MariaDB 12.3 ist (keine Sperre).
 * Workflow-Engine: Workflows, Versionen, Läufe, Schritte, Bedingungen, Wartezeiten, Aktionen der Version 1.
 * Visueller Editor mit Testlauf, Bedingungsformular, Platzhaltern, Zoom und Hinweis auf die Mails der Kerne.
 * Parallelitätsgrenzen, Fairness, Serialisierung, Heartbeat, Notfallpause.

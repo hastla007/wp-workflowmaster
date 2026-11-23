@@ -1,10 +1,32 @@
 # Kompatibilitätsmatrix der Provider
 
-Stand: 17.11.2026 (Mindestversionen MINVER-1; Provider-Matrix 16.11.2026 abends), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.8, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
+Stand: 23.11.2026 (Provider-Matrix nach Prüfung aller Suite-Repositories; Mindestversionen MINVER-1 vom 17.11.2026), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.8, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
 
 Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens die Mindestversion hat und dieselbe MAJOR-Version trägt (R-3.3, R-13.4). Die Plugin-Version allein entscheidet nicht. Alle Angaben sind am Code gelesen; „Branch“ heißt: noch nicht nach `main` gemergt.
 
 ## Aktuelle Matrix
+
+Prüfung am 23.11.2026 an allen Suite-Repositories (nur gelesen). Spalte „`main`“ ist der veröffentlichte Stand, Spalte „Branch“ der weiteste ungemergte Stand.
+
+| Provider | `main` | Weitester Branch | Adapter verlangt (Workflow Captain Pro) | Was der Stand bringt | Adapter |
+|---|---|---|---|---|---|
+| WordPress | – | – | WordPress ≥ 7.0 (MINVER-1) | `wordpress.user.registered`, `wordpress.post.published` | im kostenlosen Kern |
+| WooCommerce | – | – | WooCommerce ≥ 11.2.2 (MINVER-1, `src/Requirements.php`; darunter auf der Seite „Provider“ „abgelehnt – provider_too_old“), HPOS und klassische Bestelltabellen | `woocommerce.order.*` (5 Typen) | im kostenlosen Kern |
+| Workflow Captain (Zeitplan, eingehende Auslöser) | Kern 0.2.0, `WORKFLOW_CAPTAIN_CONTRACT_VERSION` = `0.1.0` | – | – | `workflow.schedule.due`; `workflow.inbound.<auslöser>` nur, wenn ein Add-on Auslöser anmeldet | im kostenlosen Kern |
+| Pass Captain | `b2b88ea`, Plugin 1.4.0, **keine** Vertragskonstante; `wpcap_event_cancelled` und `wp_pass_captain_invoice_created_v1` fehlen – **genügt nicht** | zwei Linien, die sich widersprechen: `claude/plugin-todo-liste-2a83v4` `453f9cc` (Plugin 1.6.0, `WPCAP_CONTRACT_VERSION` = `1.2.0` = Lesefassade) und `claude/woocommerce-ticket-plugin-8q4m8q` `0efe8a4` (Plugin 1.5.0, `1.2.0` = `service_date`, `1.3.0` = Lesefassade) | `1.1.0` (Rückfall, veraltet); Lesefassade `wpcap_get_*_state()` ab `1.2.0` – der `PassAdapter` prüft zusätzlich, ob die Fassaden-Funktionen existieren, und fängt so die doppelte Bedeutung von `1.2.0` ab | 13 Ereignistypen, Lesefassade | Pro, `PassAdapter` |
+| Voucher Captain | `151786c`, Plugin 1.2.0, **keine** Vertragskonstante (nur `VCAP_VERSION`); enthält noch den vorläufigen Workflow-Provider (D13, VC-5) – **genügt nicht** | `claude/wp-plugin-analyse-todo-hvollo-refactors` `fa42cf5` (Pull Request #19, offen): Plugin 1.3.0, `VCAP_CONTRACT_VERSION` = `1.4.0` (1.2.0 Lesefassade, 1.3.0 Befehle, 1.4.0 Connector-Zugriff auf `vcap()->api_v1`), Provider entfernt | `1.1.0` (Rückfall, veraltet); Lesefassade `vcap_read_*()` ab `1.2.0`; Gutschein-Befehle ab `1.3.0` | 16 Ereignistypen, Lesefassade, Einstiegspunkte für die Befehle (R-8.3) | Pro, `VoucherAdapter` (Ereignisse); die Befehle als Workflow-Aktionen fehlen in Pro noch (WF-INT-03) |
+| Affiliate Captain | `930b6b1`, Plugin 0.17.0, `WPAC_CONTRACT_VERSION` = `1.6.0` (1.5.0 Partnerprogramme, 1.6.0 „Seit“-Tabelle und Lese-Aggregate; additiv) | – (Branch `claude/plugin-todo-liste-2a83v4` mit 0.15.0/1.4.0 ist überholt) | `1.4.0` | 21 Ereignistypen; `wpac_affiliate_program_changed` (seit 1.5.0) ist nicht im Katalog | Pro, `AffiliateAdapter` |
+| Lizenzserver (nur im Shop des Anbieters) | `ec9220d` (Pull Request #48), Plugin 0.2.0, `WPLC_CONTRACT_VERSION` = `1.0.0`, `WPLC\Events\LicenseReader`, vier neue Actions (reserviert, nicht im Katalog) | – | `1.0.0` mit Lesefunktion `LicenseReader::get()`; der Rückfall ohne Konstante über `PlanChange::get_license()` ist für `main` überholt | 3 Ereignistypen | Pro, `LicenseAdapter` |
+| Form Captain | `59580d5`, Plugin 1.0.0-dev, `FORM_CAPTAIN_CONTRACT_VERSION` = `1.1.0` (`entries_imported_v1`, `consent_withdrawn_v1`); Mail-Übergabe entfernt, eigener Vertrag zurückgezogen | – | Major 1, mindestens `1.0.0`; der ganze Katalog `form.*` braucht `1.1.0` | Katalog `form.*` (8 Typen, 4.6.1, 4.6.2) | Workflow Captain Pro (`FormAdapter`), bleibt aus bis Form Captain Pro |
+| Review Captain | `0818df0`, Plugin 0.1.0-dev, **keine** Vertragskonstante; Code und alle 3 Hooks vorhanden; `workflow-provider-v1.md` ohne Hinweis „nicht normativ“ | `claude/sleepy-gates-6mm217` `35af5e0` (6 Commits vor `main`, ohne Konflikt): `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.1.0`, Sterne (`rating_value`, `rating_scale_min`, `rating_scale_max`) im Payload ab `1.1.0`, Hinweis „Nicht normativ (F-12)“ | Major 1, mindestens `1.0.0`; ohne Konstante Rückfall über `REVIEW_CAPTAIN_VERSION` und `Events::SCHEMA` = `review_captain.review.v1` (R-3.3). Sterne ab `1.1.0` aus dem Payload, darunter über `reviews()->find_by_uuid()` ohne Vertrag (R-4.27) | Katalog `review.*` (3 Typen, 4.6.3); keine Befehle (R-4.30, F-23) | Workflow Captain Pro (`ReviewAdapter`), bleibt aus bis Review Captain Pro (captain-pro Pull Request 10) |
+| Course Captain | `5af78c3`, nur Dokumente | `claude/blissful-curie-tuuf7q` `c45e891`: Code, `COURSE_CAPTAIN_CONTRACT_VERSION` = `0.1.0`; feuert bisher nur `course_captain_loaded_v1` | – (kein Katalog `course.*`, 4.6.4) | – | keiner |
+| Eigene Connectoren | eigenes Plugin | BoatingSchool und LearnBoating: Branch `claude/plugin-todo-liste-2a83v4` (nicht auf `main`) | `contract` im Manifest (`CONNECTOR-CONTRACT.md`); Workflow Captain Pro als Laufzeit (Filter `workflow_captain_connector_runtime_allowed_v1`, F-18a); die eigene Lizenz prüft der Connector selbst | eigene Typen `x<präfix>.*` | im Kern, freigeschaltet durch Pro |
+
+**Workflow Captain Pro** liegt nur auf captain-pro Branch `claude/plugin-todo-liste-2a83v4` (`e004004`, 23 Commits vor `main`); auf `main` (`911c403`) gibt es weder das Add-on noch die Suite-Adapter. Es verlangt Workflow Captain ≥ 0.2.0 (für netzwerkweite Abläufe Schema 4 mit `ForeignRuns`) und für jedes Captain-Produkt zusätzlich dessen gültiges Pro-Add-on (Spezifikation 10.1; der Lizenzserver hat keines).
+
+**Ungeprüft:** ein Lauf der Adapter gegen genau diese Stände in einer echten WordPress-Installation (laut [`E2E-RESULTS.md`](E2E-RESULTS.md) liefen die Suite-Adapter von Pro dort nicht, weil Pro ohne Lizenz keine Funktion freigibt; Prüfung der Adapter bisher nur mit PHPUnit in `captain-pro`). Ältere Stände stehen unten als Verlauf.
+
+## Verlauf: Stand 17.11.2026
 
 | Provider | Gelesener Stand | Plugin | Vertragskonstante | Adapter verlangt (Workflow Captain Pro) | Was der Stand bringt | Adapter |
 |---|---|---|---|---|---|---|
@@ -19,10 +41,6 @@ Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens 
 | Review Captain | `wp-reviewmaster` `main` `863b92b`, Branch `claude/plugin-todo-liste-2a83v4` (Vertragskonstante) | 0.1.0-dev | `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.0.0` (nur Branch; auf `main` fehlt sie) | Major 1, mindestens `1.0.0`; ohne Konstante Rückfall über `REVIEW_CAPTAIN_VERSION` und `Events::SCHEMA` = `review_captain.review.v1` (R-3.3, veraltet, sobald die Konstante auf `main` ist). Sterne über `reviews()->find_by_uuid()` ohne Vertrag (R-4.27) | Katalog `review.*` (3 Typen) seit Spezifikation 1.0.0-draft.8 (4.6.3); keine Befehle (R-4.30, F-23); eigener Workflow-Vertrag nicht normativ (F-12) | Workflow Captain Pro (`ReviewAdapter`), bleibt aus bis Review Captain Pro (captain-pro Pull Request 10) |
 | Course Captain | – | kein Code | – | – | – | keiner |
 | Eigene Connectoren | eigenes Plugin | eigene | `contract` im Manifest (`CONNECTOR-CONTRACT.md`) | Workflow Captain Pro als Laufzeit (Filter `workflow_captain_connector_runtime_allowed_v1`, F-18a); die eigene Lizenz prüft der Connector selbst | eigene Typen `x<präfix>.*` | im Kern, freigeschaltet durch Pro |
-
-**Workflow Captain Pro** verlangt Workflow Captain ≥ 0.2.0 (für netzwerkweite Abläufe Schema 4 mit `ForeignRuns`) und für jedes Captain-Produkt zusätzlich dessen gültiges Pro-Add-on (Spezifikation 10.1; der Lizenzserver hat keines).
-
-**Ungeprüft:** ein Lauf der Adapter gegen genau diese Stände in einer echten WordPress-Installation (laut [`E2E-RESULTS.md`](E2E-RESULTS.md) liefen die Suite-Adapter von Pro dort nicht, weil Pro ohne Lizenz keine Funktion freigibt; Prüfung der Adapter bisher nur mit PHPUnit in `captain-pro`). Ältere Stände stehen unten als Verlauf.
 
 ## Verlauf: Stand 16.11.2026 (Vormittag)
 
@@ -50,14 +68,16 @@ Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens 
 
 Keiner dieser Branches ist gemergt. Die Plugin-Versionen von Pass Captain (1.5.0) und Voucher Captain (1.2.0) wurden nicht erhöht; Add-ons prüfen deshalb die Vertragsversion, nicht die Plugin-Version.
 
-## Stände auf `main`, die **nicht** genügen
+## Stände auf `main`, die **nicht** genügen (23.11.2026)
 
 | Provider | `main` | Warum nicht |
 |---|---|---|
-| Pass Captain | `b2b88ea`, Plugin 1.4.0 | keine Vertragskonstante, kein `wpcap_event_cancelled`, kein `wp_pass_captain_invoice_created_v1`, `wpcap_order_cancelled` nur mit `$order_id`; 416 Commits hinter dem gelesenen Branch |
-| Voucher Captain | `2d84943`, Plugin 1.1.0 | keine Vertragskonstante, kein `issue_standalone`, keine Hooks für Rückläufer, Aufgabe der Zustellung und Neuausstellung |
+| Pass Captain | `b2b88ea`, Plugin 1.4.0 | keine Vertragskonstante, kein `wpcap_event_cancelled`, kein `wp_pass_captain_invoice_created_v1`, `wpcap_order_cancelled` nur mit `$order_id` |
+| Voucher Captain | `151786c`, Plugin 1.2.0 | keine Vertragskonstante; enthält den vorläufigen Workflow-Provider (`src/Workflow/Provider.php`, D13) |
+| Review Captain | `0818df0`, Plugin 0.1.0-dev | keine Vertragskonstante (Rückfall nach R-3.3 möglich, aber veraltet), keine Sterne im Payload |
 
-Ein Adapter, der gegen `main` dieser Kerne läuft, meldet sich nach R-3.3 und R-13.4 nicht an.
+Ein Adapter, der gegen `main` von Pass oder Voucher Captain läuft, meldet sich nach R-3.3 und R-13.4 nicht an.
+
 
 ## Add-on-Kernel
 

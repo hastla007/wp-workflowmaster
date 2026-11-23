@@ -4,7 +4,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 
 ## Stand
 
-**Konzept, Spezifikation und erster Code.** Abweichend von D12 wird seit dem 16.11.2026 schon vor dem Verkaufsstart der drei vorhandenen Add-ons gebaut. Vorhanden sind im kostenlosen Kern (Plugin 0.2.0) der Consumer (Ereignisspeicher, Wiederholung, Schleifenschutz, Anmeldeschnittstelle für Adapter) und die Workflow-Engine (Workflows mit unveränderlichen Versionen, Bedingungen, Wartezeiten, Läufe und Schritte mit sicherer Wiederholung, Aktionen `notify.admin`, `notify.user`, Markierungen und Notizen), dazu Datenschutz und Admin-Seiten. Workflows werden bis zum visuellen Builder als JSON bearbeitet. Adapter für die Captain-Produkte fehlen noch (sie gehören nach `captain-pro`).
+**Konzept, Spezifikation und erster Code.** Abweichend von D12 wird seit dem 16.11.2026 schon vor dem Verkaufsstart der drei vorhandenen Add-ons gebaut. Vorhanden sind im kostenlosen Kern (Plugin 0.2.0) der Consumer (Ereignisspeicher, Wiederholung, Schleifenschutz, Anmeldeschnittstelle für Adapter) und die Workflow-Engine (Workflows mit unveränderlichen Versionen, Bedingungen, Wartezeiten, Läufe und Schritte mit sicherer Wiederholung, Aktionen `notify.admin`, `notify.user`, Markierungen und Notizen), dazu Datenschutz und Admin-Seiten. Workflows entstehen im visuellen Editor (mit linearer Schrittansicht für kleine Bildschirme); JSON-Import und -Export bleiben möglich. Die Adapter für die Captain-Produkte gehören nach `captain-pro` (Workflow Captain Pro) und liegen dort bisher nur auf dem Branch `claude/plugin-todo-liste-2a83v4`, nicht auf `main` (Stand 23.11.2026, [`docs/KOMPATIBILITAET.md`](docs/KOMPATIBILITAET.md)).
 
 ## Inhalt
 
