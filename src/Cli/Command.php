@@ -251,16 +251,18 @@ final class Command {
 				$rows = array();
 				foreach ( array_keys( \WorkflowCaptain\SettingsRegistry::SPEC ) as $key ) {
 					$f      = \WorkflowCaptain\SettingsRegistry::field( $key );
+					$eff    = $show( \WorkflowCaptain\SettingsRegistry::filtered( $key, $current[ $key ] ) );
 					$rows[] = array(
 						'key'     => $key,
 						'value'   => $show( $current[ $key ] ),
+						'filter'  => $eff === $show( $current[ $key ] ) ? '' : $eff, // Value in effect when a filter overrides the stored one.
 						'default' => $show( $f['default'] ),
 						'range'   => in_array( $f['type'], array( 'int' ), true ) ? $f['min'] . '-' . $f['max'] : $f['type'],
 						'tab'     => $f['tab'],
 						'export'  => $f['export'] ? 'yes' : 'no',
 					);
 				}
-				\WP_CLI\Utils\format_items( 'table', $rows, array( 'key', 'value', 'default', 'range', 'tab', 'export' ) );
+				\WP_CLI\Utils\format_items( 'table', $rows, array( 'key', 'value', 'filter', 'default', 'range', 'tab', 'export' ) );
 				return;
 			case 'get':
 				$key = (string) ( $args[1] ?? '' );
@@ -268,6 +270,11 @@ final class Command {
 					\WP_CLI::error( 'Unknown setting. See: wp workflow-captain settings list' );
 				}
 				\WP_CLI::line( $show( $current[ $key ] ) );
+				$effective = \WorkflowCaptain\SettingsRegistry::filtered( $key, $current[ $key ] );
+				if ( $effective !== $current[ $key ] ) {
+					// The stored value is shown; a filter overrides it (SET-WC-01), say so instead of hiding it.
+					\WP_CLI::warning( sprintf( 'In effect: %s (set by the filter workflow_captain_setting_%s).', $show( $effective ), $key ) );
+				}
 				return;
 			case 'set':
 				$key   = (string) ( $args[1] ?? '' );

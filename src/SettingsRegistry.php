@@ -105,18 +105,40 @@ final class SettingsRegistry {
 				}
 				return implode( ', ', array_slice( $list, 0, $f['max'] ) );
 			case self::TYPE_KINDS:
-				return is_array( $value ) ? array_values( array_intersect( $f['default'], array_map( 'strval', $value ) ) ) : $f['default'];
+				return is_array( $value ) ? array_values( array_intersect( $f['default'], array_map( 'strval', array_filter( $value, 'is_scalar' ) ) ) ) : $f['default'];
 		}
 		return $f['default'];
 	}
 
-	/** Applies the filter of a field to a stored value; the filter wins within type and range. */
+	/**
+	 * Applies the filter of a field to a stored value; the filter wins within type and range. A switch takes true and
+	 * false (`__return_false` turns it off), addresses also a list. A result of the wrong type keeps the stored value:
+	 * falling back to the default would switch a mail back on or widen the chosen kinds (P1 finding).
+	 */
 	public static function filtered( string $key, $value ) {
 		if ( ! function_exists( 'apply_filters' ) ) {
 			return $value;
 		}
 		$filtered = apply_filters( 'workflow_captain_setting_' . $key, $value );
-		return $filtered === $value ? $value : self::clean( $key, $filtered );
+		if ( $filtered === $value ) {
+			return $value;
+		}
+		$f = self::field( $key );
+		switch ( $f['type'] ?? '' ) {
+			case self::TYPE_BOOL:
+				$filtered = is_bool( $filtered ) ? (int) $filtered : $filtered;
+				return is_numeric( $filtered ) ? self::clean( $key, $filtered ) : $value;
+			case self::TYPE_INT:
+				return is_numeric( $filtered ) ? self::clean( $key, $filtered ) : $value;
+			case self::TYPE_EMAILS:
+				if ( is_array( $filtered ) ) {
+					$filtered = implode( ', ', array_filter( $filtered, 'is_scalar' ) );
+				}
+				return is_scalar( $filtered ) ? self::clean( $key, $filtered ) : $value;
+			case self::TYPE_KINDS:
+				return is_array( $filtered ) ? self::clean( $key, $filtered ) : $value;
+		}
+		return $value;
 	}
 
 	/**

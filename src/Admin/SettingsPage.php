@@ -32,7 +32,8 @@ final class SettingsPage {
 		add_action( 'admin_post_workflow_captain_settings_reset', array( $this, 'handle_reset' ) );
 		add_action( 'admin_post_workflow_captain_settings_undo', array( $this, 'handle_undo' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
-		add_action( 'update_option_' . Settings::OPTION, array( Audit::class, 'settings_updated' ), 10, 2 );
+		// Form saves of both options, the first save of a site included (it creates the option).
+		Audit::watch_settings( true );
 	}
 
 	/** Warning on unsaved changes and the confirmed reset of a tab (WF-SET-13). */
@@ -98,7 +99,10 @@ final class SettingsPage {
 			echo '</div>';
 			return;
 		}
-		$s      = Settings::get();
+		// The form shows and saves what is stored; a value a filter overrides is only noted at the field, otherwise
+		// saving any tab would store the filtered value for good (P1 finding).
+		$s      = Settings::stored();
+		$active = Settings::get();
 		$texts  = \WorkflowCaptain\SettingsRegistry::texts();
 		$fields = array();
 		foreach ( \WorkflowCaptain\SettingsRegistry::tab( $tab, Settings::OPTION ) as $key ) {
@@ -138,6 +142,9 @@ final class SettingsPage {
 			if ( '' !== $help ) {
 				echo '<p id="' . esc_attr( $id . '-help' ) . '" class="description">' . esc_html( $help ) . '</p>';
 			}
+			if ( $active[ $key ] !== $s[ $key ] ) {
+				echo '<p class="description">' . esc_html( self::filter_note( $key, (string) $active[ $key ] ) ) . '</p>';
+			}
 			echo '</td></tr>';
 		}
 		echo '</table><p class="submit">';
@@ -164,10 +171,17 @@ final class SettingsPage {
 		echo '<p>' . esc_html__( 'Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows.', 'workflow-captain' ) . '</p>';
 	}
 
+	/** Note at a field whose value a filter overrides (SET-WC-01: the filter wins, the stored value stays). */
+	private static function filter_note( string $key, string $value ): string {
+		/* translators: 1: filter name, 2: value in effect */
+		return sprintf( __( 'Der Filter %1$s setzt diesen Wert auf „%2$s“. Gespeichert bleibt der Wert im Feld; er gilt erst wieder ohne den Filter.', 'workflow-captain' ), 'workflow_captain_setting_' . $key, '' === $value ? '–' : $value );
+	}
+
 	/** Recipients, kinds and a test mail (WF-SET-06). */
 	private function notify(): void {
-		$c     = Notifications::config();
-		$kinds = array(
+		$c      = Notifications::stored();
+		$active = Notifications::config();
+		$kinds  = array(
 			'decisions' => __( 'Läufe, die eine Entscheidung brauchen', 'workflow-captain' ),
 			'paused'    => __( 'Pausierte Läufe', 'workflow-captain' ),
 			'failed'    => __( 'Fehlgeschlagene Ereignisse (Queue-Ausfall)', 'workflow-captain' ),
@@ -179,14 +193,22 @@ final class SettingsPage {
 		settings_fields( 'workflow_captain_notify' );
 		echo '<table class="form-table" role="presentation"><tr><th scope="row"><label for="wfc-recipients">' . esc_html__( 'Empfänger', 'workflow-captain' ) . '</label></th><td>';
 		echo '<input id="wfc-recipients" type="text" class="regular-text" name="' . esc_attr( Notifications::OPTION ) . '[recipients]" value="' . esc_attr( $c['recipients'] ) . '" aria-describedby="wfc-recipients-help">';
-		echo '<p id="wfc-recipients-help" class="description">' . esc_html( sprintf( /* translators: %s: e-mail address of the site */ __( 'Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website (%s). Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress.', 'workflow-captain' ), (string) get_option( 'admin_email' ) ) ) . '</p></td></tr>';
+		echo '<p id="wfc-recipients-help" class="description">' . esc_html( sprintf( /* translators: %s: e-mail address of the site */ __( 'Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website (%s). Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress.', 'workflow-captain' ), (string) get_option( 'admin_email' ) ) ) . '</p>';
+		if ( $active['recipients'] !== $c['recipients'] ) {
+			echo '<p class="description">' . esc_html( self::filter_note( 'recipients', $active['recipients'] ) ) . '</p>';
+		}
+		echo '</td></tr>';
 		echo '<tr><th scope="row">' . esc_html__( 'Arten', 'workflow-captain' ) . '</th><td><fieldset><legend class="screen-reader-text">' . esc_html__( 'Arten', 'workflow-captain' ) . '</legend>';
 		// An empty list must still reach the server, otherwise all kinds would come back.
 		echo '<input type="hidden" name="' . esc_attr( Notifications::OPTION ) . '[kinds][]" value="">';
 		foreach ( $kinds as $key => $label ) {
 			echo '<label><input type="checkbox" name="' . esc_attr( Notifications::OPTION ) . '[kinds][]" value="' . esc_attr( $key ) . '"' . ( in_array( $key, $c['kinds'], true ) ? ' checked' : '' ) . '> ' . esc_html( $label ) . '</label><br>';
 		}
-		echo '</fieldset></td></tr></table>';
+		echo '</fieldset>';
+		if ( $active['kinds'] !== $c['kinds'] ) {
+			echo '<p class="description">' . esc_html( self::filter_note( 'kinds', implode( ', ', $active['kinds'] ) ) ) . '</p>';
+		}
+		echo '</td></tr></table>';
 		submit_button();
 		echo '</form>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_test_mail">';

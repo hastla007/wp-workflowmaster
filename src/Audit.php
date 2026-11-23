@@ -52,11 +52,52 @@ final class Audit {
 		return is_array( $log ) ? $log : array();
 	}
 
-	/** Hook for update_option_workflow_captain_settings. */
+	/** Hook for update_option_ of both settings options (form save through options.php). */
 	public static function settings_updated( $old, $new ): void {
 		$changed = self::changed( is_array( $old ) ? $old : array(), is_array( $new ) ? $new : array() );
 		if ( $changed ) {
-			self::record( 'settings', $changed );
+			self::record( 'settings', self::masked( $changed ) );
 		}
+	}
+
+	/**
+	 * Hook for add_option_ of both settings options: the first save of a site creates the option instead of updating
+	 * it, so update_option_ does not fire (P1 finding). The change is recorded against the defaults.
+	 */
+	public static function settings_added( $option, $value ): void {
+		$defaults = Settings::OPTION === $option ? Settings::defaults() : Notifications::sanitize( array() );
+		self::settings_updated( $defaults, $value );
+	}
+
+	/** Addresses are personal data: the log names the field, not the value (as SettingsTransfer::apply()). */
+	private static function masked( array $changed ): array {
+		foreach ( $changed as $key => $pair ) {
+			$field = SettingsRegistry::field( (string) $key );
+			if ( null !== $field && SettingsRegistry::TYPE_EMAILS === $field['type'] ) {
+				$changed[ $key ] = array( '…', '…' );
+			}
+		}
+		return $changed;
+	}
+
+	/**
+	 * Hooks or unhooks the form-save audit of both settings options. SettingsTransfer::apply() unhooks it while it
+	 * writes, because it records the same change with its source.
+	 */
+	public static function watch_settings( bool $on ): void {
+		foreach ( array( Settings::OPTION, Notifications::OPTION ) as $option ) {
+			if ( $on ) {
+				add_action( 'update_option_' . $option, array( self::class, 'settings_updated' ), 10, 2 );
+				add_action( 'add_option_' . $option, array( self::class, 'settings_added' ), 10, 2 );
+			} else {
+				remove_action( 'update_option_' . $option, array( self::class, 'settings_updated' ), 10 );
+				remove_action( 'add_option_' . $option, array( self::class, 'settings_added' ), 10 );
+			}
+		}
+	}
+
+	/** Whether the form-save audit is hooked (see watch_settings()). */
+	public static function watching_settings(): bool {
+		return function_exists( 'has_action' ) && false !== has_action( 'update_option_' . Settings::OPTION, array( self::class, 'settings_updated' ) );
 	}
 }
