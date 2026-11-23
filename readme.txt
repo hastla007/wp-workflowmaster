@@ -8,134 +8,136 @@ Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Automatisierungsbaukasten der Captain Suite: Ereignisse speichern, Workflows im visuellen Editor bauen und zuverlässig ausführen.
+Automation toolkit of the Captain Suite: store events, build workflows in a visual editor and run them reliably.
 
 == Description ==
 
-Workflow Captain verbindet Ereignisse aus den Plugins der Captain Suite mit Abläufen, die der Betreiber selbst baut.
+Workflow Captain connects events from the plugins of the Captain Suite with workflows that the site owner builds.
 
-**Ereignisse**
+**Events**
 
-* speichert jedes Ereignis einmal je Website und erkennt Doppelte
-* wiederholt bei vorübergehenden Fehlern nach einem festen Plan; fehlgeschlagene Ereignisse lassen sich im Admin gezielt erneut einreihen
-* verhindert Schleifen zwischen Abläufen (Kausalkette, Tiefe höchstens 3)
-* bietet die Schnittstelle, an der sich Adapter aus Add-ons anmelden
+* stores every event once per site and detects duplicates
+* retries temporary failures on a fixed schedule; failed events can be queued again from the admin
+* prevents loops between workflows (causation chain, depth at most 3)
+* offers the interface where adapters from add-ons register
 
 **Workflows**
 
-* visueller Editor mit Auslöser, Bedingungen (Dann/Sonst), Wartezeiten, Aktionen und Ende; per Tastatur bedienbar, mit Listenansicht
-* Testlauf mit Beispieldaten ohne Seiteneffekte
-* Entwurf und Veröffentlichen: jede veröffentlichte Version bleibt für laufende Läufe unverändert
-* Aktionen: Nachricht an Betreiber, Nachricht an Benutzer, Markierung setzen und entfernen, Notiz anlegen
-* Läufe mit Schritten, Abbrechen und Fortsetzen nach einer Entscheidung
-* Export und Import einzelner Workflows als JSON, Duplizieren, Archivieren
-* Grenzen für Parallelität, faire Verteilung, Notfallpause; auf Wunsch laufen Läufe je Objekt oder je Benutzer nacheinander
+* visual editor with trigger, conditions (then/else), waits, actions and end; usable with the keyboard, with a list view
+* test run with sample data and no side effects
+* draft and publish: every published version stays unchanged for the runs that use it
+* actions: message to the site owner, message to a user, set and remove a tag, add a note
+* runs with steps, cancel, and resume after a decision
+* export and import of single workflows as JSON, duplicate, archive
+* limits for parallel runs, fair distribution, emergency pause; on request, runs for the same object or the same user run one after the other
 
-**Auslöser, die eingebaut sind**
+**Built-in triggers**
 
-* WordPress: Benutzer registriert, Beitrag veröffentlicht (nur öffentliche Inhaltstypen). Übergeben werden Kennungen und Status, nie Name, E-Mail-Adresse, Login, Titel oder Inhalt.
-* WooCommerce (ab Version 11.2.2, HPOS und klassische Bestelltabellen): Bestellung angelegt, bezahlt, Statuswechsel, erstattet, storniert. Übergeben werden Status, Beträge in kleinster Einheit, Währung und Kennungen, nie Adressen, E-Mail, Namen, IP-Adresse, Kundennotiz oder Gutscheincodes.
-* Zeitplan: täglich, wöchentlich oder monatlich zu einer Uhrzeit in der Zeitzone der Website. Ein verpasster Termin wird höchstens einmal nachgeholt.
-* Eingehende Auslöser: Ein Add-on kann Auslöser mit festen, typisierten Feldern anmelden. Workflow Captain prüft jeden Aufruf noch einmal und speichert ihn wie jedes andere Ereignis. Die Annahme von außen (signierte Webhooks, n8n) gehört nicht zum kostenlosen Plugin.
+* WordPress: user registered, post published (public post types only). Only IDs and status are passed on, never name, email address, login, title or content.
+* WooCommerce (version 11.2.2 or later, HPOS and legacy order tables): order created, paid, status changed, refunded, cancelled. Status, amounts in the smallest currency unit, currency and IDs are passed on, never addresses, email, names, IP address, customer note or coupon codes.
+* Schedule: daily, weekly or monthly at a time in the site's time zone. A missed time is caught up at most once.
+* Inbound triggers: an add-on can register triggers with fixed, typed fields. Workflow Captain checks every call again and stores it like any other event. Accepting calls from outside (signed webhooks, n8n) is not part of the free plugin.
 
-**Captain Suite und eigene Connectoren (mit Workflow Captain Pro)**
+**Captain Suite and custom connectors (with Workflow Captain Pro)**
 
-* Pass Captain, Voucher Captain, Affiliate Captain und der Lizenzserver des Anbieters liefern ihre Ereignisse über Adapter, die mit dem Add-on Workflow Captain Pro kommen. Für ein Captain-Produkt braucht es außerdem dessen eigenes Pro-Add-on. Welche Versionen zusammenpassen, steht in der Kompatibilitätsmatrix (siehe FAQ).
-* Eigene Connectoren sind eigene Plugins, die sich nach einem öffentlichen Vertrag anmelden. Sie laufen, wenn Workflow Captain Pro aktiv ist, und müssen unter „Eigene Connectoren“ freigegeben werden. Ihre eigene Lizenz prüft jeder Connector selbst.
-* Ohne Adapter bleiben neue Ereignisse eines Anbieters pausiert aufbewahrt. Nichts wird gelöscht und nichts von selbst nachgeholt.
+* Pass Captain, Voucher Captain, Affiliate Captain and the vendor's license server deliver their events through adapters that come with the add-on Workflow Captain Pro. A Captain product also needs its own Pro add-on. The compatibility matrix lists which versions work together (see FAQ).
+* Custom connectors are separate plugins that register under a public contract. They run when Workflow Captain Pro is active and must be enabled under "Custom connectors". Each connector checks its own license.
+* Without an adapter, new events of a provider are kept as paused. Nothing is deleted and nothing is caught up on its own.
 
-**Betrieb**
+**Operations**
 
-* Worker über Action Scheduler, wenn vorhanden, sonst WP-Cron; WP-CLI-Befehle für System-Cron, Migration, Prüfung und Diagnose
-* Prüfungen im Website-Zustand, Diagnose-Download ohne persönliche Daten
-* eigene Rechte: `manage_workflow_captain`, `edit_workflows`, `activate_workflows`, `view_workflow_logs`, `retry_workflow_runs`, `manage_workflow_integrations`
-* Protokoll der Eingriffe: Rechte, Notfallpause, Einstellungen, erneut eingereihte Ereignisse, abgebrochene Läufe, veröffentlichte, pausierte und archivierte Workflows
-* Datenbank-Aktualisierung mit Versionsstand: eine abgebrochene Aktualisierung wird sicher wiederholt, nach einem Downgrade wird nichts geändert
+* worker through Action Scheduler when available, otherwise WP-Cron; WP-CLI commands for system cron, migration, verification and diagnostics
+* Site Health checks, diagnostics download without personal data
+* own capabilities: `manage_workflow_captain`, `edit_workflows`, `activate_workflows`, `view_workflow_logs`, `retry_workflow_runs`, `manage_workflow_integrations`
+* audit log of interventions: capabilities, emergency pause, settings, requeued events, cancelled runs, published, paused and archived workflows
+* versioned database upgrade: an interrupted upgrade is safely repeated, after a downgrade nothing is changed
 
-Workflow Captain gibt auf öffentlichen Seiten nichts aus und registriert keine REST-Routen, Shortcodes oder Sitemaps.
+Workflow Captain prints nothing on public pages and registers no REST routes, shortcodes or sitemaps.
+
+The admin interface is currently in German.
 
 == Installation ==
 
-1. Plugin hochladen und aktivieren. Die Tabellen entstehen bei der Aktivierung (bei Multisite je Website).
-2. Unter **Workflow Captain → Einstellungen** Grenzen, Aufbewahrung und Rechte prüfen.
-3. Wenn WP-Cron abgeschaltet ist: `wp workflow-captain process` jede Minute per System-Cron aufrufen.
+1. Upload and activate the plugin. The tables are created on activation (on multisite, per site).
+2. Check limits, retention and capabilities under **Workflow Captain → Einstellungen** (settings).
+3. If WP-Cron is disabled: run `wp workflow-captain process` every minute from the system cron.
 
 == Frequently Asked Questions ==
 
-= Ersetzt ein Workflow die Mails meiner Plugins? =
+= Does a workflow replace the emails of my plugins? =
 
-Nein. Jeder Kern behält seine Mails. Ein Workflow sendet nur zusätzliche Nachrichten. Der Editor zeigt, welche Mail des Kerns zum selben Anlass ohnehin hinausgeht.
+No. Every core plugin keeps its emails. A workflow only sends additional messages. The editor shows which email of the core plugin goes out for the same occasion anyway.
 
-= Wird eine Nachricht doppelt verschickt, wenn der Worker abbricht? =
+= Is a message sent twice when the worker stops? =
 
-Nein. Ist unklar, ob eine Nachricht schon hinausging, hält der Lauf an und ein Mensch entscheidet.
+No. If it is unclear whether a message already went out, the run stops and a person decides.
 
-= Was passiert, wenn ich das Plugin auf eine ältere Version zurücksetze? =
+= What happens if I go back to an older version of the plugin? =
 
-Ist das Datenbankschema neuer als das Plugin, verarbeitet das Plugin nichts und ändert nichts, bis die neuere Version wieder installiert ist.
+If the database schema is newer than the plugin, the plugin processes nothing and changes nothing until the newer version is installed again.
 
-= Was passiert, wenn ein Update abbricht? =
+= What happens if an update is interrupted? =
 
-Die Aktualisierung der Tabellen merkt sich ihren Stand. Bricht sie ab, wartet der Worker, und nach zehn Minuten wiederholt der nächste Aufruf im Admin, per Cron oder `wp workflow-captain migrate` die Aktualisierung ab dem letzten fertigen Schritt. Es wird nichts gelöscht.
+The table upgrade remembers its progress. If it is interrupted, the worker waits, and after ten minutes the next call in the admin, by cron or `wp workflow-captain migrate` repeats the upgrade from the last finished step. Nothing is deleted.
 
-= Laufen Workflows in der Reihenfolge der Ereignisse? =
+= Do workflows run in the order of the events? =
 
-Nicht garantiert. Mehrere Läufe können gleichzeitig laufen. Wer eine Reihenfolge braucht, stellt am Auslöser „Läufe nacheinander“ ein: Dann wartet je Objekt (zum Beispiel je Bestellung) oder je Benutzer ein neuer Lauf, bis der ältere fertig ist.
+Not guaranteed. Several runs can run at the same time. If you need an order, choose "runs one after the other" at the trigger: then a new run waits per object (for example per order) or per user until the older one has finished.
 
-= Welche Versionen der Captain-Plugins passen? =
+= Which versions of the Captain plugins work together? =
 
-Die Kompatibilitätsmatrix nennt je Plugin die Version und die Vertragsversion, ab der Ereignisse ankommen: https://github.com/hastla007/wp-workflowmaster/blob/main/docs/KOMPATIBILITAET.md. Ein Adapter meldet sich nur bei einem passenden Vertrag an; sonst zeigt die Seite **Workflow Captain → Provider**, warum nicht.
+The compatibility matrix lists, per plugin, the version and the contract version from which events arrive: https://github.com/hastla007/wp-workflowmaster/blob/main/docs/KOMPATIBILITAET.md. An adapter only registers with a matching contract; otherwise the page **Workflow Captain → Provider** shows why.
 
-= Was schicke ich dem Support? =
+= What do I send to support? =
 
-Unter **Workflow Captain → Ereignisse** die Schaltfläche „Diagnose herunterladen“ oder `wp workflow-captain diagnostics`. Die Datei enthält Versionen, Zustand von Schema und Worker, angemeldete Adapter und Zahlen je Zustand, aber keine persönlichen Daten, keine Inhalte von Ereignissen und keine Geheimnisse. Die gleichen Prüfungen zeigt **Werkzeuge → Website-Zustand**.
+Use the button "Diagnose herunterladen" (download diagnostics) under **Workflow Captain → Ereignisse** (events) or `wp workflow-captain diagnostics`. The file contains versions, the state of schema and worker, registered adapters and counts per state, but no personal data, no event contents and no secrets. **Tools → Site Health** shows the same checks.
 
 == Privacy ==
 
-Gespeicherte Ereignisse und Läufe enthalten Kennungen, Status, Beträge und Zeitpunkte, keine Codes, E-Mail-Adressen, Namen oder Freitext. Die Benutzer-ID des Auslösers wird geleert, sobald kein Lauf mehr wartet. Workflow Captain meldet sich beim Export und Löschen persönlicher Daten von WordPress an. Erledigte Ereignisse und Läufe werden nach 30 Tagen gelöscht, fehlgeschlagene nach 90 Tagen; beides lässt sich verkürzen.
+Stored events and runs contain IDs, status, amounts and times, no codes, email addresses, names or free text. The user ID of whoever triggered an event is cleared once no run waits for it. Workflow Captain registers with the WordPress personal data export and erasure tools. Finished events and runs are deleted after 30 days, failed ones after 90 days; both can be shortened.
 
-So fließen die Daten:
+How the data flows:
 
-1. Ein Plugin (WordPress, WooCommerce, ein Captain-Plugin über seinen Adapter, ein eigener Connector) meldet ein Ereignis. Workflow Captain prüft es und lehnt Ereignisse mit verbotenen Feldern (Codes, E-Mail, Namen, Adressen, Freitext) ab.
-2. Das Ereignis wird in einer Tabelle der eigenen Website gespeichert, mit der Benutzer-ID des Auslösers, falls es einen gibt.
-3. Ein Lauf kopiert das Ereignis. Schritte speichern nur ihren Zustand und ein gekürztes Ergebnis.
-4. Eine Nachricht an Benutzer löst die E-Mail-Adresse erst beim Versand auf und speichert sie nicht.
-5. Markierungen und Notizen enthalten nur den Text, den der Betreiber im Workflow festlegt.
-6. Außer den E-Mails, die ein Workflow über WordPress verschickt, verlässt nichts die Website. Daten an externe Dienste (Webhooks, n8n) sendet nur ein Add-on und nur nach Einrichtung durch den Betreiber.
+1. A plugin (WordPress, WooCommerce, a Captain plugin through its adapter, a custom connector) reports an event. Workflow Captain checks it and rejects events with forbidden fields (codes, email, names, addresses, free text).
+2. The event is stored in a table of the site itself, with the user ID of whoever triggered it, if any.
+3. A run copies the event. Steps store only their state and a shortened result.
+4. A message to a user looks up the email address only when sending and does not store it.
+5. Tags and notes contain only the text the site owner sets in the workflow.
+6. Apart from the emails a workflow sends through WordPress, nothing leaves the site. Data for external services (webhooks, n8n) is only sent by an add-on and only after the site owner has set it up.
 
 == External services ==
 
-Keine. Workflow Captain ruft keinen externen Dienst auf.
+None. Workflow Captain does not call any external service.
 
 == Screenshots ==
 
-1. Visueller Editor: Bedingung mit Gruppe („A und (B oder C)“), Herkunft am Knoten, Kopfzeile mit Auslöser, Provider und letztem Lauf.
-2. Zeitplan als Auslöser: wöchentlich, mit den nächsten drei Terminen in der Zeitzone der Website.
-3. Übersicht: Läufe der letzten 30 Tage, Entscheidungen, Fehler, Zustand des Workers, Providerstatus und Notfallpause.
-4. Workflows mit letztem Lauf und den Fehlern der letzten 30 Tage.
-5. Läufe mit Filtern nach Zustand und Zeitraum und mit Blättern.
-6. Ein Lauf: Korrelation, Zeitleiste der Schritte, redigierte Ereignisdaten und Export ohne persönliche Daten.
-7. Ereignisse eines Anbieters mit Filtern nach Zustand und Blättern.
-8. Zeitpläne: Regel, nächster Termin und zuletzt ausgelöst.
-9. Einstellungen „Status“: Schema, Datenbank-Aktualisierung, Worker und Protokoll der Eingriffe.
+1. Visual editor: condition with a group ("A and (B or C)"), origin at the node, header with trigger, provider and last run.
+2. Schedule as trigger: weekly, with the next three times in the site's time zone.
+3. Overview: runs of the last 30 days, decisions, errors, worker state, provider status and emergency pause.
+4. Workflows with their last run and the errors of the last 30 days.
+5. Runs with filters by state and period, with paging.
+6. A run: correlation, timeline of the steps, redacted event data and export without personal data.
+7. Events of a provider with filters by state and paging.
+8. Schedules: rule, next time and last fired.
+9. Settings "Status": schema, database upgrade, worker and audit log of interventions.
 
 == Changelog ==
 
 = 0.2.0 =
-* Mindestversionen: PHP 8.5 und WordPress 7.0; darunter bleibt das Plugin mit einem Hinweis inaktiv. Der WooCommerce-Adapter braucht WooCommerce 11.2.2. Website-Zustand empfiehlt ein Update, wenn der Datenbankserver älter als MySQL 9.7 bzw. MariaDB 12.3 ist (keine Sperre).
-* Workflow-Engine: Workflows, Versionen, Läufe, Schritte, Bedingungen, Wartezeiten, Aktionen der Version 1.
-* Visueller Editor mit Testlauf, Bedingungsformular, Platzhaltern, Zoom und Hinweis auf die Mails der Kerne.
-* Parallelitätsgrenzen, Fairness, Serialisierung, Heartbeat, Notfallpause.
-* Einstellungen (Allgemein, Ausführung, Benachrichtigungen, Datenschutz, Rollen & Rechte, Status), Übersichtsseite, Website-Zustand.
-* Export, Import, Duplizieren und Archivieren von Workflows; WP-CLI-Befehle; Action Scheduler, wenn vorhanden.
-* Auslöser für WordPress, WooCommerce, Zeitplan und eingehende Auslöser von Add-ons; Anmeldung eigener Connectoren.
-* Datenbank-Aktualisierung mit Sperre und sicherer Wiederholung; Protokoll der Eingriffe; Einstellung „Läufe nacheinander“ im Editor.
-* Workflows, Läufe und Ereignisse seitenweise mit Gesamtzahl; Laufansicht mit Korrelation, Zeitleiste der Schritte und redigierten Ereignisdaten.
-* Editor: Herkunft (Provider, Plugin- und Vertragsversion) und Kurzbeschreibung am Knoten, Kopfzeile mit Zustand, Version, letztem Lauf, Testlauf und Veröffentlichen; Feld einer Bedingung als Auswahlliste mit Datentyp und Beispielwert; Vorschau der nächsten Termine eines Zeitplans in der Zeitzone der Website.
-* Lauf als redigiertes JSON exportieren (ohne Benutzer und Geheimnisse); „Im Editor zeigen“ springt vom Schritt zum markierten Knoten; Workflowliste mit letztem Lauf und Fehlern der letzten 30 Tage.
-* Zeitplan: Eine Uhrzeit in der doppelten Stunde bei Ende der Sommerzeit gilt jetzt auch östlich von UTC beim ersten Vorkommen (vorher eine Stunde später).
-* Läufe nach Zeitraum filtern (letzte 24 Stunden bis 90 Tage oder eigene Daten); Übersicht mit Kachel „Läufe · 30 Tage“ und Providerstatus; neue Seite „Zeitpläne“ mit nächstem Termin und letzter Auslösung in der Zeitzone der Website.
-* Editor: Bausteine auf den Ablauf ziehen; „+ Gruppe“ im Bedingungsformular (eine Gruppenebene, höchstens 20 Regeln); Warnzeichen am Knoten bei fehlendem Provider, offenem Ausgang oder ungültigen Regeln; „Zuletzt ausgelöst“ im Zeitplan.
+* Minimum versions: PHP 8.5 and WordPress 7.0; below that the plugin stays inactive with a notice. The WooCommerce adapter needs WooCommerce 11.2.2. Site Health recommends an update when the database server is older than MySQL 9.7 or MariaDB 12.3 (no block).
+* Workflow engine: workflows, versions, runs, steps, conditions, waits, actions of version 1.
+* Visual editor with test run, condition form, placeholders, zoom and a hint about the emails of the core plugins.
+* Limits for parallel runs, fairness, serialisation, heartbeat, emergency pause.
+* Settings (general, execution, notifications, privacy, roles and capabilities, status), overview page, Site Health.
+* Export, import, duplicate and archive workflows; WP-CLI commands; Action Scheduler when available.
+* Triggers for WordPress, WooCommerce, schedules and inbound triggers of add-ons; registration of custom connectors.
+* Database upgrade with a lock and safe repetition; audit log of interventions; setting "runs one after the other" in the editor.
+* Workflows, runs and events paged with a total count; run view with correlation, timeline of the steps and redacted event data.
+* Editor: origin (provider, plugin and contract version) and short description at the node, header with state, version, last run, test run and publish; field of a condition as a list with data type and example value; preview of the next times of a schedule in the site's time zone.
+* Export a run as redacted JSON (without users and secrets); "Im Editor zeigen" (show in editor) jumps from the step to the marked node; workflow list with the last run and the errors of the last 30 days.
+* Schedule: a time in the repeated hour at the end of daylight saving time now also applies at its first occurrence east of UTC (before: one hour later).
+* Filter runs by period (last 24 hours to 90 days or custom dates); overview with the tile "runs · 30 days" and provider status; new page "Zeitpläne" (schedules) with the next time and the last firing in the site's time zone.
+* Editor: drag building blocks onto the flow; "+ Gruppe" (add group) in the condition form (one group level, at most 20 rules); warning sign at the node when a provider is missing, an output is open or rules are invalid; "last fired" in the schedule.
 
 = 0.1.0 =
-* Erster Stand des Consumers nach docs/SPEC-suite-events.md (Entwurf 1.0.0-draft.5).
+* First version of the consumer following docs/SPEC-suite-events.md (draft 1.0.0-draft.5).

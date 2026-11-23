@@ -144,7 +144,7 @@ final class ProvidersPage {
 			foreach ( $r['types'] as $type ) {
 				$links[] = '<a href="' . esc_url( wp_nonce_url( add_query_arg( array( 'page' => self::SLUG, 'test' => $type ), admin_url( 'admin.php' ) ), 'workflow_captain_test_event' ) ) . '" title="' . esc_attr__( 'Testereignis', 'workflow-captain' ) . '">' . esc_html( $type ) . '</a>';
 			}
-			echo '<tr><td><code>' . esc_html( $r['product'] ) . '</code></td><td>' . esc_html( $labels[ $r['status'] ] . ( $r['reason'] ? ' – ' . $r['reason'] : '' ) ) . '</td><td>' . esc_html( ( $r['core_version'] ?? '–' ) . ' / ' . ( $r['contract_version'] ?? '–' ) ) . '</td><td>' . implode( ', ', $links ) . '</td><td>' . esc_html( implode( ', ', $events ) ) . '</td><td>' . esc_html( implode( ', ', $active ) ) . '</td></tr>';
+			echo '<tr><td><code>' . esc_html( $r['product'] ) . '</code></td><td>' . esc_html( $labels[ $r['status'] ] . ( $r['reason'] ? ' – ' . $r['reason'] : '' ) ) . '</td><td>' . esc_html( ( $r['core_version'] ?? '–' ) . ' / ' . ( $r['contract_version'] ?? '–' ) ) . '</td><td>' . wp_kses( implode( ', ', $links ), array( 'a' => array( 'href' => true, 'title' => true ) ) ) . '</td><td>' . esc_html( implode( ', ', $events ) ) . '</td><td>' . esc_html( implode( ', ', $active ) ) . '</td></tr>';
 		}
 		echo '</tbody></table></div>';
 	}

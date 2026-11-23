@@ -6,7 +6,7 @@
 > WooCommerce 9.9.5/8.9.0. Sie sind ab jetzt **nur noch historisch**: mit dem aktuellen Stand bleibt das Plugin dort
 > inaktiv. Im Prüfcontainer steht kein PHP 8.5 zur Verfügung; die echten Läufe auf PHP 8.5 (8.6 experimentell) mit
 > MySQL 9.7 und MariaDB 12.3 macht die CI (`.github/workflows/e2e-db.yml`, `bin/e2e/ci-db.sh`, siehe
-> [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md)). Ein Lauf mit Browser auf einer echten Installation mit PHP 8.5 steht aus.
+> [`KOMPATIBILITAET.md`](KOMPATIBILITAET.md)). Ein Lauf mit Browser auf einer echten Installation mit PHP 8.5 steht aus. **Nachtrag 23.11.2026:** Lauf ohne Browser auf PHP 8.5 lokal, siehe Abschnitt „PHP 8.5 (23.11.2026)“ am Ende.
 
 Stand: 16.11.2026, Branch `wt/e2e` (Basis `claude/plugin-todo-liste-2a83v4`, `f8ab812`, Schema 4). Das Ergebnis jeder Prüfung
 steht unten in den Tabellen; erzeugt mit `bin/e2e/run-checks.sh` und `bin/e2e/release-zip.sh` (nicht ausgeliefert,
@@ -1140,3 +1140,16 @@ neuen Prüfungen: Einrichtung, Checkout (HPOS an), Yoast mit JS (HPOS an), Minde
 | s15 | classic editor with the built Yoast JS: metabox shows focus keyphrase, SEO analysis and the snippet with the saved description | **PASS** | {"keyphrase":"testfokus","analysis":true,"preview":true} |
 | s16 | classic editor after the workflow run: the metabox shows the same focus keyphrase, analysis and snippet | **PASS** | {"keyphrase":"testfokus","analysis":true,"preview":true} |
 | s17 | no uncaught JS error at all in the block editor and the classic editor with Yoast, WooCommerce and Workflow Captain active | **PASS** |  |
+
+## PHP 8.5 (23.11.2026)
+
+Umgebung: PHP 8.5.13 aus dem Quellcode gebaut (`/opt/php85`, mysqli, curl, openssl, zip, gd, intl), WordPress 7.1.4 und WooCommerce 11.3.0 von wordpress.org, MariaDB 10.11 (älter als die Empfehlung MySQL 9.7/MariaDB 12.3, daher nur Hinweis), WP-CLI 2.12.0, Workflow Captain aus dem Release-ZIP (`git archive`). Ohne Browser.
+
+| Lauf | Ergebnis |
+|---|---|
+| `bin/e2e/ci-db.sh install` und `checks` (Aktivierung, Provider, Bestellablauf mit HPOS, weitere WooCommerce-/WordPress-Ereignisse, Action Scheduler, Zeitplan, System-Cron-Pfad, Notfallpause, Dead Letter, CLI, Migrationen) | 96 von 97; offen nur `ci3-db`: Website-Zustand meldet für MariaDB 10.11 erwartungsgemäß „Update empfohlen“ (`old_server`) |
+| `bin/e2e/upgrade-gate.sh` (neu): Vorversion `f36da2d` (Schema 3) aus ZIP, Workflow „Bestellung bezahlt → Markierung“, Update per ZIP, Frontend migriert nicht, erster Admin-Aufruf migriert auf Schema 4, `verify` ohne Befund, alle Zeilen erhalten, neue Bestellung läuft durch den alten Workflow; Downgrade: Schema bleibt 4, Worker verarbeitet nichts, Hinweis im Admin, nichts gelöscht; erneutes Update: die während des Downgrades erfasste Bestellung wird nachgeholt | 15 von 15 |
+| `debug.log` | keine Meldung aus Workflow Captain, WooCommerce oder WordPress (nur Deprecations von WP-CLI selbst) |
+| Plugin Check 2.2.0 | ohne Fehler und Warnungen (vorher 23 Fehler, 34 Warnungen; behoben im selben Commit) |
+
+Befund am Rand: Ein nicht angemeldeter Aufruf von `/wp-admin/` startet die Migration ebenfalls (`is_admin()` ist vor der Anmeldeprüfung wahr). Die Migration ist gesperrt und wiederholbar, deshalb unkritisch; die Zusage „im Admin, nicht im Frontend“ gilt.

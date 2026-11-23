@@ -29,6 +29,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | [`docs/LOESCHUNG.md`](docs/LOESCHUNG.md) | Löschen und Anonymisieren über Kern-Plugins und Workflow Captain. |
 | [`docs/OPTIONS.md`](docs/OPTIONS.md) | Optionen, Tabellen, Datenflächen und Änderungssemantik. |
 | [`docs/RELEASE-CHECKLIST.md`](docs/RELEASE-CHECKLIST.md) | Release-Gate des kostenlosen Kerns. |
+| [`docs/readme-de.txt`](docs/readme-de.txt) | Deutsche Fassung der `readme.txt` (Vorlage für die Übersetzung de_DE; WordPress.org verlangt die `readme.txt` auf Englisch). |
 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) | Betrieb und Wiederherstellung: typische Lagen, Backup, Grenzen. |
 | [`docs/SDK.md`](docs/SDK.md) | Entwickler-SDK: Adapter, Aktionen, Workflow-Format, Hooks, Datenfluss, Betrieb. |
 | [`docs/CONNECTOR-CONTRACT.md`](docs/CONNECTOR-CONTRACT.md) | Entwurf des öffentlichen Connector-Vertrags für eigene Projekte (wartet auf F-22). |

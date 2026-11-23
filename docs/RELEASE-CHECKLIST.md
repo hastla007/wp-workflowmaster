@@ -16,12 +16,14 @@ Stand: Plugin 0.2.x. Aufgaben WF-INT-18 (Teil Kern) und WF-SEO-10. Abgehakt wird
 - [ ] Aktivieren, Deaktivieren und Deinstallieren auf einer Einzelwebsite und in Multisite (netzwerkweit und je Website); Tabellen und Optionen entstehen und verschwinden
 - [ ] Update von der vorigen Version: Schema migriert im Admin, nicht im Frontend; `wp workflow-captain verify` ohne Befund
 - [ ] Downgrade auf die vorige Version: Hinweis erscheint, nichts wird verarbeitet, nichts gelöscht
+  (beides automatisch: `bin/e2e/upgrade-gate.sh`, Einstellungen wie `bin/e2e/ci-db.sh`; zuletzt 15 von 15 am 23.11.2026 auf PHP 8.5)
 - [ ] Workflow im Builder anlegen, Testlauf, veröffentlichen, Lauf mit echtem Ereignis eines Adapters, Nachricht kommt an
 - [ ] WP-Cron abgeschaltet: Website-Zustand meldet es, `wp workflow-captain process` per System-Cron verarbeitet
 - [ ] Mit WooCommerce: Worker läuft über Action Scheduler, nicht doppelt über WP-Cron
 - [ ] Export und Löschung persönlicher Daten über „Werkzeuge“ erfassen Ereignisse und Läufe
 - [ ] Frontend mit und ohne Yoast SEO: keine zusätzlichen oder doppelten Meta-, Canonical- oder Schema-Ausgaben, keine Sitemap-Einträge von Workflow Captain (WF-SEO-10)
-- [ ] Plugin Check und PHPCS mit WordPress-Regeln ohne Fehler
+- [ ] Plugin Check (`wp plugin check workflow-captain`) ohne Fehler; PHPCS mit `phpcs.xml.dist` ohne Befund in den Sicherheits-, Datenbank-, Rechte- und i18n-Regeln
+- [ ] `readme.txt` auf Englisch (Pflicht von WordPress.org); deutsche Fassung für die Übersetzung in `docs/readme-de.txt`
 - [ ] Release-ZIP enthält nur `workflow-captain.php`, `uninstall.php`, `readme.txt`, `src/`, `assets/`, `languages/` (`.gitattributes`)
 
 ## Inhalt

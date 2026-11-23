@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<!--
+	PHPCS for the shipped code of Workflow Captain (release gate, docs/RELEASE-CHECKLIST.md). Not shipped (export-ignore).
+
+	composer global require wp-coding-standards/wpcs:^3 phpcompatibility/phpcompatibility-wp
+	phpcs            (from the repository root)
+-->
+<ruleset name="Workflow Captain">
+	<description>WordPress-Extra with the security sniffs for the free core.</description>
+
+	<file>workflow-captain.php</file>
+	<file>uninstall.php</file>
+	<file>src</file>
+
+	<arg name="extensions" value="php"/>
+	<arg value="sp"/>
+
+	<config name="minimum_wp_version" value="7.0"/>
+	<config name="testVersion" value="8.5-"/>
+
+	<rule ref="WordPress-Extra">
+		<!-- Classes follow PSR-4 (src/Engine/Workflows.php for WorkflowCaptain\Engine\Workflows, composer.json). -->
+		<exclude name="WordPress.Files.FileName"/>
+	</rule>
+	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="workflow-captain"/>
+			</property>
+		</properties>
+	</rule>
+	<rule ref="WordPress.WP.Capabilities">
+		<properties>
+			<property name="custom_capabilities" type="array">
+				<element value="manage_workflow_captain"/>
+				<element value="edit_workflows"/>
+				<element value="activate_workflows"/>
+				<element value="view_workflow_logs"/>
+				<element value="retry_workflow_runs"/>
+				<element value="manage_workflow_integrations"/>
+			</property>
+		</properties>
+	</rule>
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="workflow_captain"/>
+				<element value="WorkflowCaptain"/>
+				<element value="WORKFLOW_CAPTAIN"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

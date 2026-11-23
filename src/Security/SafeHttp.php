@@ -37,7 +37,7 @@ final class SafeHttp {
 	 * @return array{ok:bool,reason:string,ips:string[]}
 	 */
 	public function allowed( string $profile, string $url, array $exception = array() ): array {
-		$scheme = strtolower( (string) parse_url( $url, PHP_URL_SCHEME ) );
+		$scheme = strtolower( (string) wp_parse_url( $url, PHP_URL_SCHEME ) );
 		if ( 'webhook' === $profile ) {
 			$exception = array();
 		} elseif ( 'n8n' !== $profile ) {
@@ -97,7 +97,7 @@ final class SafeHttp {
 
 	/** Hint for local n8n URLs (WF-N8N-15): the request starts on the WordPress server, not in the browser. */
 	public static function local_hint( string $url ): string {
-		$host = strtolower( trim( (string) parse_url( $url, PHP_URL_HOST ), '[]' ) );
+		$host = strtolower( trim( (string) wp_parse_url( $url, PHP_URL_HOST ), '[]' ) );
 		if ( in_array( $host, array( 'localhost', '127.0.0.1', '::1' ), true ) ) {
 			return __( '„localhost“ ist der WordPress-Server selbst, nicht Ihr Rechner. Läuft n8n in einem anderen Container oder auf einem anderen Gerät, dessen Namen oder Adresse im Netz eintragen (zum Beispiel den Docker-Dienstnamen).', 'workflow-captain' );
 		}
@@ -112,7 +112,7 @@ final class SafeHttp {
 		if ( preg_match( '#^https?://#i', $location ) ) {
 			return $location;
 		}
-		$b = parse_url( $base );
+		$b = wp_parse_url( $base );
 		$origin = $b['scheme'] . '://' . $b['host'] . ( isset( $b['port'] ) ? ':' . $b['port'] : '' );
 		return str_starts_with( $location, '/' ) ? $origin . $location : $origin . '/' . ltrim( $location, '/' );
 	}
@@ -123,12 +123,14 @@ final class SafeHttp {
 
 	/** Default transport: WordPress HTTP API, pinned to the checked IPs. */
 	public static function wp_transport( string $url, array $args ): array {
-		$host = (string) parse_url( $url, PHP_URL_HOST );
-		$port = (int) ( parse_url( $url, PHP_URL_PORT ) ?: ( 'https' === parse_url( $url, PHP_URL_SCHEME ) ? 443 : 80 ) );
+		$host = (string) wp_parse_url( $url, PHP_URL_HOST );
+		$port = (int) ( wp_parse_url( $url, PHP_URL_PORT ) ?: ( 'https' === wp_parse_url( $url, PHP_URL_SCHEME ) ? 443 : 80 ) );
 		$pin  = static function ( $handle ) use ( $host, $port, $args ): void {
 			if ( defined( 'CURLOPT_RESOLVE' ) && array() !== $args['pin'] ) {
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt -- inside http_api_curl of the WordPress HTTP API: pins the IP that was checked (SSRF).
 				curl_setopt( $handle, CURLOPT_RESOLVE, array_map( static fn( $ip ) => $host . ':' . $port . ':' . ( str_contains( $ip, ':' ) ? '[' . $ip . ']' : $ip ), $args['pin'] ) );
 			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.curl_curl_setopt -- inside http_api_curl: no proxy, the pinned IP is the checked one.
 			curl_setopt( $handle, CURLOPT_PROXY, '' ); // No proxy: the pinned IP is the one that was checked.
 		};
 		add_action( 'http_api_curl', $pin );

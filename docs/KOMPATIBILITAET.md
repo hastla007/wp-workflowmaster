@@ -1,6 +1,6 @@
 # Kompatibilitätsmatrix der Provider
 
-Stand: 23.11.2026 (Provider-Matrix nach Prüfung aller Suite-Repositories; Mindestversionen MINVER-1 vom 17.11.2026), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.8, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Welche Versionen der Captain-Plugins passen?“).
+Stand: 23.11.2026 (Provider-Matrix nach Prüfung aller Suite-Repositories; Mindestversionen MINVER-1 vom 17.11.2026), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.8, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Which versions of the Captain plugins work together?“).
 
 Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens die Mindestversion hat und dieselbe MAJOR-Version trägt (R-3.3, R-13.4). Die Plugin-Version allein entscheidet nicht. Alle Angaben sind am Code gelesen; „Branch“ heißt: noch nicht nach `main` gemergt.
 

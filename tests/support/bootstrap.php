@@ -26,6 +26,16 @@ spl_autoload_register(
 $GLOBALS['wfc_test_filters'] = array();
 $GLOBALS['wfc_test_users']   = array();
 
+/** wp_parse_url() of WordPress: parse_url() with the same component argument (PHP >= 8 behaves the same). */
+function wp_parse_url( $url, $component = -1 ) {
+	return parse_url( $url, $component ); // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- test stub.
+}
+
+/** wp_kses() stand-in for the tests: keeps the markup (the callers pass escaped HTML). */
+function wp_kses( $content, $allowed_html ) {
+	return (string) $content;
+}
+
 function __( $text, $domain = '' ) {
 	return $text;
 }
