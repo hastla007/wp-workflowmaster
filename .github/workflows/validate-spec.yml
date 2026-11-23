@@ -3,6 +3,10 @@ name: Spezifikation prüfen
 # WF-SPEC-04: Schema, Beispiele und Gegenbeispiele der Suite-Spezifikation bei jeder Änderung prüfen.
 on:
   push:
+    branches:
+      - main
+    tags:
+      - "*"
     paths:
       - "docs/schema/**"
       - "docs/examples/**"
@@ -21,6 +25,10 @@ on:
       - "bin/validate-spec-examples.py"
       - ".github/workflows/validate-spec.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
