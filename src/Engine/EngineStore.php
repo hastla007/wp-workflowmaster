@@ -207,4 +207,18 @@ interface EngineStore {
 
 	/** Deletes finished runs (and their steps) last updated before $before. */
 	public function delete_runs_older( array $states, string $before ): int;
+
+	// ----- Daily limit per recipient (SET-WC-08) ----------------------------------------------------------------
+
+	/** Takes one of $max slots of $user_id on calendar day $day (Y-m-d) atomically; false when all are taken. */
+	public function take_send_slot( string $day, int $user_id, int $max ): bool;
+
+	/** Gives one slot back (the message did not go out). */
+	public function release_send_slot( string $day, int $user_id ): void;
+
+	/** Deletes the counters of days before $day. */
+	public function purge_send_counts( string $day ): int;
+
+	/** Deletes every counter of the user (privacy eraser, deleted user). */
+	public function erase_send_counts( int $user_id ): int;
 }

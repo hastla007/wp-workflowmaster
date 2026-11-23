@@ -162,7 +162,7 @@ final class Plugin {
 			$actions   = new \WorkflowCaptain\Engine\ActionRegistry();
 			$actions->set_availability( array( $this->connectors(), 'action_available' ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyAdmin( $directory ) );
-			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyUser( $directory ) );
+			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyUser( $directory, new \WorkflowCaptain\Engine\Pacing( $store, $clock, wp_timezone_string(), static fn(): array => Settings::get() ) ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Tag( $store, $clock ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Tag( $store, $clock, true ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Note( $store, $clock ) );

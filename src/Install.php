@@ -150,7 +150,7 @@ final class Install {
 
 	/**
 	 * Data steps by the schema version they lead to. Each must be idempotent and must not delete history. Versions 1 to
-	 * 4 changed only tables (dbDelta), so there is no data step yet; a later version adds e.g. 5 => [ self::class, 'to_5' ].
+	 * 5 changed only tables (dbDelta), so there is no data step yet; a later version adds e.g. 6 => [ self::class, 'to_6' ].
 	 *
 	 * @return array<int,callable>
 	 */
@@ -310,6 +310,16 @@ final class Install {
   created_at datetime NOT NULL,
   PRIMARY KEY  (id),
   UNIQUE KEY subject_tag (product,subject_type,subject_id(64),tag)
+) {$charset};"
+		);
+		// Daily limit per recipient (SET-WC-08): one row per calendar day of the site and user, kept a few days.
+		dbDelta(
+			"CREATE TABLE {$t( 'sends' )} (
+  day date NOT NULL,
+  user_id bigint(20) unsigned NOT NULL,
+  sent smallint(5) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY  (day,user_id),
+  KEY user_id (user_id)
 ) {$charset};"
 		);
 		dbDelta(

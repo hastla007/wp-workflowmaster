@@ -59,7 +59,7 @@ live=$(grep -c '"subject":"BR \(sofort\|nach Warten\)' "$E2E_LOGS/mail-br-live.j
 rec r12 'mails: live site before the backup + copy after the restore = one per workflow step and order' $([ "$live" = 2 ] && [ "$copy" = 6 ] && echo 1 || echo 0) "live $live (BR sofort o1,o2), copy $copy (BR sofort o3,o4; BR nach Warten o1-o4)"
 
 # ----- 4. schema migrations on the copy -----------------------------------------------------------------------------
-out=$(wp workflow-captain migrate 2>&1 | q); rec m1 'migrate on a current schema' $([[ "$out" == *"Schema 4 in place"* ]] && echo 1 || echo 0) "$out"
+cur=$(wp eval 'echo WORKFLOW_CAPTAIN_DB_VERSION;' 2>/dev/null); out=$(wp workflow-captain migrate 2>&1 | q); rec m1 'migrate on a current schema' $([[ -n "$cur" && "$out" == *"Schema $cur in place"* ]] && echo 1 || echo 0) "$out"
 wp eval-file "$OPS" mig_newer 2>&1 | q
 out=$(wp workflow-captain process 2>&1 | q); rc=$?
 rec m2 'downgrade (stored schema newer than the code): process refuses and processes nothing' $([[ "$out" == *"does not match"* ]] && echo 1 || echo 0) "$out"

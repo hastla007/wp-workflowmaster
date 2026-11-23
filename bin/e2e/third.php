@@ -116,7 +116,7 @@ switch ( $e3_section ) {
 		$runs = e2e_runs( (int) $s['old_wf'] );
 		e2e_check( 'u3', 'the workflow published with the old version keeps working after the update (new order -> run succeeded)', 4 === count( $runs ) && 'succeeded' === end( $runs )['state'], array_column( $runs, 'state' ) );
 		$diag = Plugin::instance()->diagnostics();
-		e2e_check( 'u5', 'diagnostics: schema 4/4 current, upgrade lock free', 'current' === $diag['environment']['schema_state'] && 'free' === ( $diag['environment']['upgrade_lock'] ?? '' ), array_intersect_key( $diag['environment'], array_flip( array( 'schema', 'schema_expected', 'schema_state', 'upgrade_lock' ) ) ) );
+		e2e_check( 'u5', 'diagnostics: schema current, upgrade lock free', 'current' === $diag['environment']['schema_state'] && 'free' === ( $diag['environment']['upgrade_lock'] ?? '' ), array_intersect_key( $diag['environment'], array_flip( array( 'schema', 'schema_expected', 'schema_state', 'upgrade_lock' ) ) ) );
 		break;
 
 	case 'interrupt': // An upgrade that broke off before the version moved: schema 3, one index and one table missing.

@@ -72,6 +72,7 @@ final class SettingsPage {
 		$tabs = array(
 			'general'   => __( 'General', 'workflow-captain' ),
 			'execution' => __( 'Execution', 'workflow-captain' ),
+			'messages'  => __( 'Messages', 'workflow-captain' ),
 			'notify'    => __( 'Notifications', 'workflow-captain' ),
 			'privacy'   => __( 'Privacy & retention', 'workflow-captain' ),
 			'roles'     => __( 'Roles & capabilities', 'workflow-captain' ),
@@ -130,20 +131,14 @@ final class SettingsPage {
 			list( $default, $min, $max ) = Settings::fields()[ $key ];
 			$id                          = 'wfc-' . $key;
 			$name                        = Settings::OPTION . '[' . $key . ']';
-			$range                       = ( 0 === $min && 1 === $max ) || array() !== \WorkflowCaptain\SettingsRegistry::choices( $key ) ? '' : sprintf( /* translators: 1: lowest, 2: highest, 3: default value */ __( 'Allowed: %1$d to %2$d. Default: %3$d.', 'workflow-captain' ), $min, $max, $default );
+			$range                       = ( 0 === $min && 1 === $max ) || array() !== \WorkflowCaptain\SettingsRegistry::choices( $key ) || \WorkflowCaptain\SettingsRegistry::TYPE_DAYS === \WorkflowCaptain\SettingsRegistry::field( $key )['type'] ? '' : sprintf( /* translators: 1: lowest, 2: highest, 3: default value */ __( 'Allowed: %1$d to %2$d. Default: %3$d.', 'workflow-captain' ), $min, $max, $default );
 			$help                        = trim( $help . ' ' . $range );
 			// The error first: a screen reader reads it before the help text.
 			$described                   = trim( ( isset( $errors[ $id ] ) ? $id . '-error ' : '' ) . ( '' !== $help ? $id . '-help' : '' ) );
 			$invalid                     = isset( $errors[ $id ] );
-			echo '<tr><th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label></th><td>';
-			if ( 0 === $min && 1 === $max ) {
-				// A switch is a checkbox; the hidden field sends 0 when it is unchecked.
-				echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="0"><input id="' . esc_attr( $id ) . '" type="checkbox" name="' . esc_attr( $name ) . '" value="1" data-default="' . (int) $default . '"' . ( 1 === $s[ $key ] ? ' checked' : '' ) . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) . '>';
-				if ( 'delete_data_on_uninstall' === $key && 1 !== $s[ $key ] ) {
-					// Typed confirmation, the same in every Captain plugin (S10); checked on the server.
-					echo '<p><label for="wfc-delete-confirm">' . esc_html__( 'Type DELETE to switch it on:', 'workflow-captain' ) . '</label> <input type="text" id="wfc-delete-confirm" name="' . esc_attr( Settings::OPTION . '[delete_data_on_uninstall_confirm]' ) . '" autocomplete="off" size="10" value=""></p>';
-				}
-			} elseif ( array() !== \WorkflowCaptain\SettingsRegistry::choices( $key ) ) {
+			$is_days                     = \WorkflowCaptain\SettingsRegistry::TYPE_DAYS === \WorkflowCaptain\SettingsRegistry::field( $key )['type'];
+			echo '<tr><th scope="row">' . ( $is_days ? esc_html( $label ) : '<label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label>' ) . '</th><td>';
+			if ( array() !== \WorkflowCaptain\SettingsRegistry::choices( $key ) ) {
 				$locked = 'test_mode' === $key && \WorkflowCaptain\TestMode::forced();
 				echo '<select id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" data-default="' . (int) $default . '"' . ( $locked ? ' disabled' : '' ) . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . '>';
 				foreach ( \WorkflowCaptain\SettingsRegistry::choices( $key ) as $value => $choice ) {
@@ -153,6 +148,20 @@ final class SettingsPage {
 				if ( $locked ) {
 					// A disabled select is not sent; keep the stored value.
 					echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . (int) $s[ $key ] . '"><p class="description">' . esc_html__( 'Set by WORKFLOW_CAPTAIN_TEST_MODE in wp-config.php.', 'workflow-captain' ) . '</p>';
+				}
+			} elseif ( \WorkflowCaptain\SettingsRegistry::TYPE_DAYS === \WorkflowCaptain\SettingsRegistry::field( $key )['type'] ) {
+				// Weekdays as checkboxes in a group; the hidden field marks the list as sent (no day = error, SET-WC-07).
+				echo '<fieldset id="' . esc_attr( $id ) . '"' . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) . '><legend class="screen-reader-text">' . esc_html( $label ) . '</legend><input type="hidden" name="' . esc_attr( $name . '[]' ) . '" value="">';
+				foreach ( \WorkflowCaptain\SettingsRegistry::weekdays() as $day => $day_name ) {
+					echo '<label style="margin-right:1em"><input type="checkbox" name="' . esc_attr( $name . '[]' ) . '" value="' . (int) $day . '" data-default="' . ( 0 !== ( (int) $default & ( 1 << ( $day - 1 ) ) ) ? '1' : '0' ) . '"' . ( 0 !== ( $s[ $key ] & ( 1 << ( $day - 1 ) ) ) ? ' checked' : '' ) . '> ' . esc_html( $day_name ) . '</label> ';
+				}
+				echo '</fieldset>';
+			} elseif ( 0 === $min && 1 === $max ) {
+				// A switch is a checkbox; the hidden field sends 0 when it is unchecked.
+				echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="0"><input id="' . esc_attr( $id ) . '" type="checkbox" name="' . esc_attr( $name ) . '" value="1" data-default="' . (int) $default . '"' . ( 1 === $s[ $key ] ? ' checked' : '' ) . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) . '>';
+				if ( 'delete_data_on_uninstall' === $key && 1 !== $s[ $key ] ) {
+					// Typed confirmation, the same in every Captain plugin (S10); checked on the server.
+					echo '<p><label for="wfc-delete-confirm">' . esc_html__( 'Type DELETE to switch it on:', 'workflow-captain' ) . '</label> <input type="text" id="wfc-delete-confirm" name="' . esc_attr( Settings::OPTION . '[delete_data_on_uninstall_confirm]' ) . '" autocomplete="off" size="10" value=""></p>';
 				}
 			} else {
 				echo '<input id="' . esc_attr( $id ) . '" type="number" required min="' . (int) $min . '" max="' . (int) $max . '" name="' . esc_attr( $name ) . '" value="' . (int) $s[ $key ] . '" data-default="' . (int) $default . '" class="small-text"' . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) is escaped above.
@@ -225,6 +234,14 @@ final class SettingsPage {
 		$f = \WorkflowCaptain\SettingsRegistry::field( $key );
 		if ( null !== $f && \WorkflowCaptain\SettingsRegistry::TYPE_BOOL === $f['type'] && is_scalar( $value ) ) {
 			return 1 === (int) $value ? __( 'on', 'workflow-captain' ) : __( 'off', 'workflow-captain' );
+		}
+		if ( null !== $f && \WorkflowCaptain\SettingsRegistry::TYPE_DAYS === $f['type'] && is_scalar( $value ) ) {
+			$names = array_intersect_key( \WorkflowCaptain\SettingsRegistry::weekdays(), array_flip( \WorkflowCaptain\SettingsRegistry::days_list( (int) $value ) ) );
+			return implode( ', ', $names );
+		}
+		$choices = \WorkflowCaptain\SettingsRegistry::choices( $key );
+		if ( array() !== $choices && is_scalar( $value ) && isset( $choices[ (int) $value ] ) ) {
+			return $choices[ (int) $value ];
 		}
 		if ( null !== $f && \WorkflowCaptain\SettingsRegistry::TYPE_KINDS === $f['type'] && is_array( $value ) ) {
 			$labels = self::kind_labels();
@@ -573,7 +590,7 @@ final class SettingsPage {
 	public function handle_reset(): void {
 		self::guard( 'workflow_captain_settings_reset' );
 		$tab = isset( $_POST['tab'] ) ? sanitize_key( wp_unslash( $_POST['tab'] ) ) : '';
-		$tab = in_array( $tab, array( 'execution', 'notify', 'privacy' ), true ) ? $tab : '';
+		$tab = in_array( $tab, array( 'execution', 'messages', 'notify', 'privacy' ), true ) ? $tab : '';
 		$changed = \WorkflowCaptain\SettingsTransfer::apply( \WorkflowCaptain\SettingsTransfer::reset_values( '' === $tab ? null : $tab ), 'reset' );
 		/* translators: %d: number of changed settings */
 		add_settings_error( Settings::OPTION, 'wfc-reset', sprintf( __( '%d settings reset to defaults. You can undo this for 30 days, until the next import or reset.', 'workflow-captain' ), count( $changed ) ), 'success' );

@@ -23,7 +23,7 @@ use WorkflowCaptain\Store\EventStore;
 use WorkflowCaptain\Store\WpdbEventStore;
 
 /** A site with consumer and engine wired like Plugin does. */
-function engine_site( string $tz = 'UTC', ?PDO $pdo = null, string $prefix = 'wp_', int $blog_id = 1 ): object {
+function engine_site( string $tz = 'UTC', ?PDO $pdo = null, string $prefix = 'wp_', int $blog_id = 1, ?\Closure $pacing = null ): object {
 	$pdo = $pdo ?? FakeWpdb::memory();
 	$db  = new FakeWpdb( $pdo, $prefix );
 	$db->create_tables();
@@ -36,7 +36,7 @@ function engine_site( string $tz = 'UTC', ?PDO $pdo = null, string $prefix = 'wp
 	$e->events    = new WpdbEventStore( $db );
 	$e->actions   = new ActionRegistry();
 	$e->actions->add( new NotifyAdmin( $e->dir ) );
-	$e->actions->add( new NotifyUser( $e->dir ) );
+	$e->actions->add( new NotifyUser( $e->dir, null === $pacing ? null : new \WorkflowCaptain\Engine\Pacing( $e->store, $e->clock, $tz, $pacing ) ) );
 	$e->actions->add( new Tag( $e->store, $e->clock ) );
 	$e->actions->add( new Tag( $e->store, $e->clock, true ) );
 	$e->actions->add( new Note( $e->store, $e->clock ) );
@@ -582,10 +582,10 @@ check( 'settings: engine limits mapped', array( 'site' => 5, 'workflow' => 2, 'c
 // SET-WC-01: register of the settings.
 use WorkflowCaptain\SettingsRegistry;
 use WorkflowCaptain\Notifications;
-check( 'SET-WC-01 register: every value of both options is in the register, nothing else', array_keys( Settings::defaults() ) === SettingsRegistry::keys( Settings::OPTION ) && array( 'recipients', 'kinds', 'notify_admin_roles' ) === SettingsRegistry::keys( Notifications::OPTION ) && 18 === count( SettingsRegistry::SPEC ) );
+check( 'SET-WC-01 register: every value of both options is in the register, nothing else', array_keys( Settings::defaults() ) === SettingsRegistry::keys( Settings::OPTION ) && array( 'recipients', 'kinds', 'notify_admin_roles' ) === SettingsRegistry::keys( Notifications::OPTION ) && 23 === count( SettingsRegistry::SPEC ) );
 check( 'SET-WC-01 register: both options keep their settings group', 'workflow_captain' === SettingsRegistry::GROUPS[ Settings::OPTION ] && 'workflow_captain_notify' === SettingsRegistry::GROUPS[ Notifications::OPTION ] );
 check( 'SET-WC-01 register: every field has a label and every number field a help text', array() === array_diff( array_keys( SettingsRegistry::SPEC ), array_keys( SettingsRegistry::texts() ) ) && array() === array_filter( SettingsRegistry::keys( Settings::OPTION ), static fn( $k ) => '' === SettingsRegistry::texts()[ $k ][1] ) );
-check( 'SET-WC-01 register: defaults and ranges unchanged against 0.2.0', array( 'batch' => 25, 'max_site' => 5, 'max_workflow' => 2, 'catch_up_hours' => 24, 'max_seconds' => 20, 'test_mode' => 0, 'retry_attempts' => 8, 'max_chain_depth' => 3, 'retention_finished' => 30, 'retention_runs' => 30, 'retention_stuck' => 90, 'require_own_key' => 0, 'audit_keep' => 50, 'delete_data_on_uninstall' => 0, 'notify_daily' => 1 ) === Settings::defaults() && array( 1, 200 ) === array_slice( Settings::fields()['batch'], 1 ) );
+check( 'SET-WC-01 register: defaults and ranges unchanged against 0.2.0', array( 'batch' => 25, 'max_site' => 5, 'max_workflow' => 2, 'catch_up_hours' => 24, 'max_seconds' => 20, 'test_mode' => 0, 'retry_attempts' => 8, 'max_chain_depth' => 3, 'retention_finished' => 30, 'retention_runs' => 30, 'retention_stuck' => 90, 'require_own_key' => 0, 'audit_keep' => 50, 'delete_data_on_uninstall' => 0, 'quiet_hours_start' => -1, 'quiet_hours_end' => -1, 'send_days' => 127, 'daily_limit' => 0, 'daily_limit_action' => 0, 'notify_daily' => 1 ) === Settings::defaults() && array( 1, 200 ) === array_slice( Settings::fields()['batch'], 1 ) );
 check( 'SET-WC-01 register: stored option of 0.2.0 is read unchanged (no migration needed)', array( 'max_site' => 7, 'retention_stuck' => 45 ) === array_intersect_key( Settings::sanitize( array( 'max_site' => '7', 'retention_stuck' => 45, 'old' => 1 ) ), array( 'max_site' => 1, 'retention_stuck' => 1 ) ) && array( 'recipients' => 'a@example.org', 'kinds' => array( 'paused' ), 'notify_admin_roles' => array() ) === Notifications::sanitize( array( 'recipients' => 'A@example.org', 'kinds' => array( 'paused' ) ) ) );
 add_filter( 'workflow_captain_setting_max_site', static fn( $v ) => 12 );
 add_filter( 'workflow_captain_setting_batch', static fn( $v ) => 5000 );

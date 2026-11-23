@@ -350,6 +350,21 @@ final class Engine implements Dispatcher {
 					return;
 			}
 			$this->stop( $step, $owner, $run, EngineStore::STEP_ACTION_REQUIRED, EngineStore::RUN_ACTION_REQUIRED, 'unknown_node_type', $attempts );
+		} catch ( Deferred $d ) {
+			// Not yet (sending window, daily limit; SET-WC-07/-08): nothing happened. Back to the queue until the
+			// window opens, without counting an attempt; the reason and time are visible in the step log.
+			$this->finish(
+				$step,
+				$owner,
+				EngineStore::STEP_QUEUED,
+				array(
+					'attempts'   => $attempts - 1,
+					'due_at'     => $this->clock->mysql( max( $d->until, $this->clock->now() + MINUTE_IN_SECONDS ) ),
+					'effect'     => EngineStore::EFFECT_NONE,
+					'last_error' => null,
+					'result'     => array( 'deferred' => self::code( $d->reason ), 'until' => $this->clock->rfc3339( $d->until ) ),
+				)
+			);
 		} catch ( PermanentFailure $e ) {
 			$this->stop(
 				$step,

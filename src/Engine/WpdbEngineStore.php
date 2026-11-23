@@ -11,7 +11,7 @@ defined( 'ABSPATH' ) || exit;
 
 final class WpdbEngineStore implements EngineStore {
 
-	const TABLES = array( 'workflows', 'versions', 'runs', 'steps', 'tags', 'notes' );
+	const TABLES = array( 'workflows', 'versions', 'runs', 'steps', 'tags', 'notes', 'sends' );
 
 	/** @var \wpdb */
 	private $db;
@@ -617,5 +617,31 @@ final class WpdbEngineStore implements EngineStore {
 			'created_at' => (string) $row['created_at'],
 			'updated_at' => (string) $row['updated_at'],
 		);
+	}
+
+	// ----- Daily limit per recipient (SET-WC-08) ----------------------------------------------------------------
+
+	public function take_send_slot( string $day, int $user_id, int $max ): bool {
+		if ( $max <= 0 || $user_id <= 0 ) {
+			return $max <= 0;
+		}
+		// The row may exist already (primary key day + user): the failed insert is expected and silent.
+		$suppress = $this->db->suppress_errors( true );
+		$this->db->insert( $this->t( 'sends' ), array( 'day' => $day, 'user_id' => $user_id, 'sent' => 0 ) );
+		$this->db->suppress_errors( $suppress );
+		// One statement decides: two workers cannot both take the last slot.
+		return 1 === (int) $this->db->query( $this->db->prepare( "UPDATE {$this->t( 'sends' )} SET sent = sent + 1 WHERE day = %s AND user_id = %d AND sent < %d", $day, $user_id, $max ) );
+	}
+
+	public function release_send_slot( string $day, int $user_id ): void {
+		$this->db->query( $this->db->prepare( "UPDATE {$this->t( 'sends' )} SET sent = sent - 1 WHERE day = %s AND user_id = %d AND sent > 0", $day, $user_id ) );
+	}
+
+	public function purge_send_counts( string $day ): int {
+		return (int) $this->db->query( $this->db->prepare( "DELETE FROM {$this->t( 'sends' )} WHERE day < %s", $day ) );
+	}
+
+	public function erase_send_counts( int $user_id ): int {
+		return (int) $this->db->query( $this->db->prepare( "DELETE FROM {$this->t( 'sends' )} WHERE user_id = %d", $user_id ) );
 	}
 }

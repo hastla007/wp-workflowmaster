@@ -7,7 +7,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | Option | Inhalt | Standard | Geschrieben von | Gelöscht bei Deinstallation (nur mit `delete_data_on_uninstall`, SET-WC-05) |
 |---|---|---|---|---|
 | `workflow_captain_db_version` | Version des Datenbankschemas | Version des Plugins | `Install::create_tables()` | ja |
-| `workflow_captain_settings` | Batchgröße, Parallelität, Nachholgrenze, Aufbewahrungsfristen, tägliche Hinweis-Mail | Register (`SettingsRegistry`, unten) | Einstellungsseite (`manage_workflow_captain`) | ja |
+| `workflow_captain_settings` | Batchgröße, Parallelität, Nachholgrenze, Aufbewahrungsfristen, Ruhezeit und Tagesgrenze der Nachrichten, tägliche Hinweis-Mail | Register (`SettingsRegistry`, unten) | Einstellungsseite (`manage_workflow_captain`) | ja |
 | `workflow_captain_emergency_pause` | Notfallpause: aktiv, seit, von Benutzer | aus | Übersicht, `wp workflow-captain pause` | ja |
 | `workflow_captain_adapters` | Produkte, deren Adapter zuletzt angemeldet waren (für das Pausieren bei Wegfall, C-15) | leer | `Plugin::register_adapters()` | ja |
 | `workflow_captain_audit` | letzte 50 (einstellbar 10–500, `audit_keep`) sicherheitsrelevante Änderungen: Zeit, Benutzer-ID, Art (Einstellungen, Rechte, Notfallpause), geänderte Schlüssel | leer | `Audit::record()` | ja |
@@ -35,6 +35,11 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `require_own_key` | `workflow_captain_settings` | ja/nein | nein | – | Datenschutz & Aufbewahrung | nein (hängt an `wp-config.php` dieser Installation) |
 | `audit_keep` | `workflow_captain_settings` | Zahl | 50 | 10–500 | Datenschutz & Aufbewahrung | ja |
 | `delete_data_on_uninstall` | `workflow_captain_settings` | ja/nein | nein (Daten behalten, E-S6; einschalten nur mit dem Wort LÖSCHEN, LOESCHEN oder DELETE, im Formular und mit `--confirm` in WP-CLI, wie in allen Captain-Plugins, S10) | – | Datenschutz & Aufbewahrung | nein (gilt nur für diese Installation) |
+| `quiet_hours_start` | `workflow_captain_settings` | Auswahl (volle Stunde) | −1 = aus | −1–23 | Nachrichten | ja |
+| `quiet_hours_end` | `workflow_captain_settings` | Auswahl (volle Stunde) | −1 = aus | −1–23 (über Mitternacht erlaubt, z. B. 22–7) | Nachrichten | ja |
+| `send_days` | `workflow_captain_settings` | Wochentage (Bitmaske, 1 = Montag … 64 = Sonntag; WP-CLI auch `1,2,3,4,5`) | 127 = alle | 1–127 | Nachrichten | ja |
+| `daily_limit` | `workflow_captain_settings` | Zahl | 0 = keine Grenze | 0–20 je Kunde und Kalendertag | Nachrichten | ja |
+| `daily_limit_action` | `workflow_captain_settings` | Auswahl | 0 = am nächsten Tag senden (1 = überspringen) | 0–1 | Nachrichten | ja |
 | `notify_daily` | `workflow_captain_settings` | ja/nein | ja | – | Benachrichtigungen | ja |
 | `recipients` | `workflow_captain_notify` | Adressen | leer = Adresse der Website | bis 10 | Benachrichtigungen | nein (personenbezogen, an die Installation gebunden) |
 | `notify_admin_roles` | `workflow_captain_notify` | Rollen | keine | bis 20 Rollen dieser Website | Benachrichtigungen | ja |
@@ -57,11 +62,13 @@ Capabilities bei Aktivierung für Administratoren: `manage_workflow_captain`, `e
 | `runs` | Lauf mit Kopie des Umschlags | `actor_user_id` | erledigte Läufe 30 Tage (eigene Frist, einstellbar 1–180 Tage), offene bleiben |
 | `steps` | Schritte, Sperrfrist, Buchung des Seiteneffekts, redigiertes Ergebnis | keiner | mit dem Lauf |
 | `tags`, `notes` | Markierungen und Notizen an Objekten | nur wenn der Betreiber Personenbezug in eine Notiz schreibt | bis zur Löschung |
+| `sends` | Zähler der Tagesgrenze (SET-WC-08): Kalendertag, Benutzer-ID, Zahl der Nachrichten | Benutzer-ID | 2 Tage (tägliche Wartung); Löscher und gelöschter Benutzer entfernen sie sofort |
 
 ## Änderungssemantik (WF-SET-14)
 
 - Neue Standardwerte und geänderte Einstellungen ändern **keine** veröffentlichte Version und keinen laufenden Lauf. Läufe behalten Graph, Ereignis und `authorized_by_user_id` ihrer Version (WF-CORE-02).
 - Grenzen der Ausführung (Batch, Parallelität, Nachholgrenze) gelten ab dem nächsten Worker-Durchlauf für alle Schritte.
+- Ruhezeit, Sendetage und Tagesgrenze (SET-WC-07/-08) gelten für `notify.user` (Nachrichten an Kunden, Transaktion und Werbung) ab dem nächsten Schritt, auch in laufenden Läufen; Nachrichten an den Betreiber (`notify.admin`) werden nie zurückgehalten. Eine Nachricht außerhalb des Fensters wartet bis zum Beginn der nächsten erlaubten vollen Stunde (Zeitzone der Website, Sommerzeit eingerechnet); kein Versuch wird gezählt, im Schrittprotokoll steht `deferred` mit Grund und Zeit. Über der Tagesgrenze wartet sie bis zum nächsten Kalendertag (und dessen Fenster) oder wird mit `skipped: daily_limit` übersprungen. Der Platz wird atomar in der Tabelle `sends` belegt; scheitert der Versand, wird er zurückgegeben.
 - Kürzere Aufbewahrungsfristen wirken bei der nächsten täglichen Wartung, auch auf ältere Einträge.
 - Eine neue Plugin-Version ändert das Schema nur im Admin, per Cron oder per WP-CLI; ein neueres Schema bleibt nach einem Downgrade unberührt.
 

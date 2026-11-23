@@ -27,6 +27,8 @@ final class SettingsRegistry {
 	const TYPE_EMAILS = 'emails';
 	const TYPE_KINDS  = 'kinds';
 	const TYPE_ROLES  = 'roles';
+	/** Weekdays as a bit mask stored as a number: 1 = Monday … 64 = Sunday (SET-WC-07). */
+	const TYPE_DAYS   = 'days';
 
 	/**
 	 * key => array( option, type, default, min, max, tab, export ). `export` false: the value is tied to this
@@ -47,6 +49,11 @@ final class SettingsRegistry {
 		'require_own_key'    => array( Settings::OPTION, self::TYPE_BOOL, 0, 0, 1, 'privacy', false ),
 		'audit_keep'         => array( Settings::OPTION, self::TYPE_INT, 50, 10, 500, 'privacy', true ),
 		'delete_data_on_uninstall' => array( Settings::OPTION, self::TYPE_BOOL, 0, 0, 1, 'privacy', false ),
+		'quiet_hours_start'  => array( Settings::OPTION, self::TYPE_INT, -1, -1, 23, 'messages', true ),
+		'quiet_hours_end'    => array( Settings::OPTION, self::TYPE_INT, -1, -1, 23, 'messages', true ),
+		'send_days'          => array( Settings::OPTION, self::TYPE_DAYS, 127, 1, 127, 'messages', true ),
+		'daily_limit'        => array( Settings::OPTION, self::TYPE_INT, 0, 0, 20, 'messages', true ),
+		'daily_limit_action' => array( Settings::OPTION, self::TYPE_INT, 0, 0, 1, 'messages', true ),
 		'notify_daily'       => array( Settings::OPTION, self::TYPE_BOOL, 1, 0, 1, 'notify', true ),
 		'recipients'         => array( Notifications::OPTION, self::TYPE_EMAILS, '', 0, 10, 'notify', false ),
 		'kinds'              => array( Notifications::OPTION, self::TYPE_KINDS, Notifications::KINDS, 0, 0, 'notify', true ),
@@ -106,6 +113,9 @@ final class SettingsRegistry {
 			case self::TYPE_INT:
 			case self::TYPE_BOOL:
 				return is_numeric( $value ) ? max( $f['min'], min( $f['max'], (int) $value ) ) : $f['default'];
+			case self::TYPE_DAYS:
+				$value = is_array( $value ) ? self::days_mask( $value ) : $value;
+				return is_numeric( $value ) && (int) $value >= $f['min'] && (int) $value <= $f['max'] ? (int) $value : $f['default'];
 			case self::TYPE_EMAILS:
 				$list = array();
 				foreach ( preg_split( '/[\s,;]+/', is_scalar( $value ) ? (string) $value : '' ) ?: array() as $address ) {
@@ -129,6 +139,19 @@ final class SettingsRegistry {
 	 * @return array<int,string>
 	 */
 	public static function choices( string $key ): array {
+		if ( 'quiet_hours_start' === $key || 'quiet_hours_end' === $key ) {
+			$out = array( -1 => __( 'Off', 'workflow-captain' ) );
+			for ( $h = 0; $h < 24; $h++ ) {
+				$out[ $h ] = sprintf( '%02d:00', $h );
+			}
+			return $out;
+		}
+		if ( 'daily_limit_action' === $key ) {
+			return array(
+				\WorkflowCaptain\Engine\Pacing::LIMIT_DEFER => __( 'Send on the next day', 'workflow-captain' ),
+				\WorkflowCaptain\Engine\Pacing::LIMIT_SKIP  => __( 'Skip the message', 'workflow-captain' ),
+			);
+		}
 		if ( 'test_mode' === $key ) {
 			return array(
 				TestMode::OFF      => __( 'Off', 'workflow-captain' ),
@@ -137,6 +160,39 @@ final class SettingsRegistry {
 			);
 		}
 		return array();
+	}
+
+	/**
+	 * Names of the weekdays by ISO number (1 = Monday), translated.
+	 *
+	 * @return array<int,string>
+	 */
+	public static function weekdays(): array {
+		return array(
+			1 => __( 'Monday', 'workflow-captain' ),
+			2 => __( 'Tuesday', 'workflow-captain' ),
+			3 => __( 'Wednesday', 'workflow-captain' ),
+			4 => __( 'Thursday', 'workflow-captain' ),
+			5 => __( 'Friday', 'workflow-captain' ),
+			6 => __( 'Saturday', 'workflow-captain' ),
+			7 => __( 'Sunday', 'workflow-captain' ),
+		);
+	}
+
+	/** Bit mask of a list of ISO weekday numbers (1 to 7); other entries are ignored. */
+	public static function days_mask( array $days ): int {
+		$mask = 0;
+		foreach ( $days as $day ) {
+			if ( is_scalar( $day ) && preg_match( '/^[1-7]$/', trim( (string) $day ) ) ) {
+				$mask |= 1 << ( (int) $day - 1 );
+			}
+		}
+		return $mask;
+	}
+
+	/** @return int[] ISO weekday numbers of a bit mask. */
+	public static function days_list( int $mask ): array {
+		return array_values( array_filter( range( 1, 7 ), static fn( int $d ): bool => 0 !== ( $mask & ( 1 << ( $d - 1 ) ) ) ) );
 	}
 
 	/** A role slug of this site (any well-formed slug where WordPress is not loaded, as in the tests). */
@@ -167,6 +223,8 @@ final class SettingsRegistry {
 				return is_numeric( $filtered ) ? self::clean( $key, $filtered ) : $value;
 			case self::TYPE_INT:
 				return is_numeric( $filtered ) ? self::clean( $key, $filtered ) : $value;
+			case self::TYPE_DAYS:
+				return is_numeric( $filtered ) || is_array( $filtered ) ? self::clean( $key, $filtered ) : $value;
 			case self::TYPE_EMAILS:
 				if ( is_array( $filtered ) ) {
 					$filtered = implode( ', ', array_filter( $filtered, 'is_scalar' ) );
@@ -200,6 +258,11 @@ final class SettingsRegistry {
 			'require_own_key'    => array( __( 'Store secrets only with your own key', 'workflow-captain' ), __( 'On: Credentials (for example from an add-on\'s connections) are only stored if WORKFLOW_CAPTAIN_SECRET_KEY is set in wp-config.php. Without your own key, encryption depends on the WordPress salts; if they change, stored secrets are lost. Stored values remain readable.', 'workflow-captain' ) ),
 			'audit_keep'         => array( __( 'Change log entries', 'workflow-captain' ), __( 'This many of the latest changes (settings, capabilities, emergency pause, approvals) stay visible in the Status tab. Older ones are dropped. The log contains user IDs but no event content.', 'workflow-captain' ) ),
 			'delete_data_on_uninstall' => array( __( 'Delete all data when the plugin is deleted', 'workflow-captain' ), __( 'Off (default): When the plugin is deleted, events, runs, workflows and settings are kept so that a reinstall can pick up where it left off. On: When the plugin is deleted, all Workflow Captain tables, settings and capabilities on this site are permanently removed. Type DELETE to switch it on.', 'workflow-captain' ) ),
+			'quiet_hours_start'  => array( __( 'Quiet time from', 'workflow-captain' ), __( 'Messages from workflows to customers (“Message to user”) are not sent during the quiet time; they wait until it ends. Off, or the same hour as “until”: no quiet time. Times in the site’s time zone. Messages to the site operator are not held back.', 'workflow-captain' ) ),
+			'quiet_hours_end'    => array( __( 'Quiet time until', 'workflow-captain' ), __( 'The quiet time may span midnight, for example 22:00 to 07:00.', 'workflow-captain' ) ),
+			'send_days'          => array( __( 'Sending days', 'workflow-captain' ), __( 'On other days, messages to customers wait for the next sending day. At least one day.', 'workflow-captain' ) ),
+			'daily_limit'        => array( __( 'Messages per customer and day', 'workflow-captain' ), __( 'At most this many messages from all workflows together to one customer per calendar day of the site. 0: no limit.', 'workflow-captain' ) ),
+			'daily_limit_action' => array( __( 'When the limit is reached', 'workflow-captain' ), __( '“Send on the next day” keeps every message; “Skip” drops the surplus and notes it in the run.', 'workflow-captain' ) ),
 			'notify_daily'       => array( __( 'Daily notice email to the site operator address', 'workflow-captain' ), __( 'Only sent when decisions are waiting, events have failed, work is stuck or the emergency pause is on. Without event contents.', 'workflow-captain' ) ),
 			'recipients'         => array( __( 'Recipients', 'workflow-captain' ), __( 'Up to ten addresses, separated by commas. Empty: the site\'s address.', 'workflow-captain' ) ),
 			'kinds'              => array( __( 'Notice types', 'workflow-captain' ), '' ),

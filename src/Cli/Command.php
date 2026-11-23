@@ -289,6 +289,9 @@ final class Command {
 				if ( in_array( $f['type'], array( \WorkflowCaptain\SettingsRegistry::TYPE_KINDS, \WorkflowCaptain\SettingsRegistry::TYPE_ROLES ), true ) ) {
 					$value = '' === $value ? array() : array_map( 'trim', explode( ',', (string) $value ) );
 				}
+				if ( \WorkflowCaptain\SettingsRegistry::TYPE_DAYS === $f['type'] && preg_match( '/^\s*[1-7]\s*(,\s*[1-7]\s*)*$/', (string) $value ) ) {
+					$value = array_map( 'trim', explode( ',', (string) $value ) ); // Weekdays 1 (Monday) to 7, e.g. 1,2,3,4,5; another number is the bit mask.
+				}
 				list( $ok, $clean, $code ) = \WorkflowCaptain\SettingsTransfer::check( $key, $value );
 				if ( ! $ok ) {
 					\WP_CLI::error( sprintf( '%s: %s (allowed: %s). Nothing was changed.', $key, $code, 'int' === $f['type'] ? $f['min'] . '-' . $f['max'] : $f['type'] ) );

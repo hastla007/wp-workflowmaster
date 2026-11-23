@@ -80,6 +80,19 @@ final class SettingsTransfer {
 					return array( false, null, 'out_of_range' );
 				}
 				return array( true, $value, '' );
+			case SettingsRegistry::TYPE_DAYS:
+				// A number (bit mask, as exported) or a list of ISO weekdays 1 to 7 (WP-CLI: "1,2,3,4,5").
+				if ( is_array( $value ) ) {
+					if ( count( array_filter( $value, static fn( $d ): bool => is_scalar( $d ) && 1 === preg_match( '/^[1-7]$/', trim( (string) $d ) ) ) ) !== count( $value ) ) {
+						return array( false, null, 'unknown_day' );
+					}
+					$value = SettingsRegistry::days_mask( $value );
+				}
+				if ( ! is_int( $value ) && ! ( is_string( $value ) && preg_match( '/^\d+$/', trim( $value ) ) ) ) {
+					return array( false, null, 'not_a_number' );
+				}
+				$value = (int) $value;
+				return $value < $f['min'] || $value > $f['max'] ? array( false, null, 'out_of_range' ) : array( true, $value, '' );
 			case SettingsRegistry::TYPE_EMAILS:
 				if ( ! is_scalar( $value ) ) {
 					return array( false, null, 'invalid_address' );

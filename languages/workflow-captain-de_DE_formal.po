@@ -2703,3 +2703,45 @@ msgstr "Abmelden"
 #: src/Unsubscribe.php:81
 msgid "You will no longer receive promotional messages from this site. Messages about your orders and bookings are not affected."
 msgstr "Sie erhalten keine Werbenachrichten dieser Website mehr. Nachrichten zu Ihren Bestellungen und Buchungen sind davon nicht betroffen."
+
+msgid "At most this many messages from all workflows together to one customer per calendar day of the site. 0: no limit."
+msgstr "Höchstens so viele Nachrichten aller Workflows zusammen an einen Kunden je Kalendertag der Website. 0: keine Grenze."
+
+msgid "Messages"
+msgstr "Nachrichten"
+
+msgid "Messages from workflows to customers (“Message to user”) are not sent during the quiet time; they wait until it ends. Off, or the same hour as “until”: no quiet time. Times in the site’s time zone. Messages to the site operator are not held back."
+msgstr "Nachrichten aus Workflows an Kunden („Nachricht an Benutzer“) werden in der Ruhezeit nicht gesendet; sie warten, bis sie endet. Aus oder dieselbe Stunde wie bei „bis“: keine Ruhezeit. Zeiten in der Zeitzone der Website. Nachrichten an den Betreiber werden nicht zurückgehalten."
+
+msgid "Messages per customer and day"
+msgstr "Nachrichten je Kunde und Tag"
+
+msgid "On other days, messages to customers wait for the next sending day. At least one day."
+msgstr "An anderen Tagen warten Nachrichten an Kunden bis zum nächsten Sendetag. Mindestens ein Tag."
+
+msgid "Quiet time from"
+msgstr "Ruhezeit von"
+
+msgid "Quiet time until"
+msgstr "Ruhezeit bis"
+
+msgid "Send on the next day"
+msgstr "Am nächsten Tag senden"
+
+msgid "Sending days"
+msgstr "Sendetage"
+
+msgid "Skip the message"
+msgstr "Nachricht überspringen"
+
+msgid "The quiet time may span midnight, for example 22:00 to 07:00."
+msgstr "Die Ruhezeit darf über Mitternacht gehen, zum Beispiel 22:00 bis 07:00."
+
+msgid "When the limit is reached"
+msgstr "Wenn die Grenze erreicht ist"
+
+msgid "“Send on the next day” keeps every message; “Skip” drops the surplus and notes it in the run."
+msgstr "„Am nächsten Tag senden“ behält jede Nachricht; „Überspringen“ verwirft den Überschuss und vermerkt das im Lauf."
+
+msgid "Choose at least one sending day. The days were not changed."
+msgstr "Wählen Sie mindestens einen Sendetag. Die Tage wurden nicht geändert."

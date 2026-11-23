@@ -8,6 +8,9 @@
  * workflow_captain_has_consent_v1), never to a user who unsubscribed, and always with an unsubscribe link and the
  * List-Unsubscribe headers (SET-WC-04). Otherwise the step runs and sends nothing, with the reason in the log.
  *
+ * Both kinds respect the sending window and the daily limit per recipient of the site (SET-WC-07/-08, Pacing): a
+ * message outside the window waits, over the limit it waits for the next day or is skipped.
+ *
  * @package WorkflowCaptain
  */
 
@@ -19,6 +22,7 @@ use WorkflowCaptain\Engine\ActionContext;
 use WorkflowCaptain\Engine\Directory;
 use WorkflowCaptain\Engine\Marketing;
 use WorkflowCaptain\Engine\NetworkSafe;
+use WorkflowCaptain\Engine\Pacing;
 use WorkflowCaptain\Engine\SiteMembers;
 use WorkflowCaptain\Engine\Template;
 
@@ -29,7 +33,7 @@ final class NotifyUser implements Action, NetworkSafe {
 	const PURPOSE_TRANSACTIONAL = 'transactional';
 	const PURPOSE_PROMOTIONAL   = 'promotional';
 
-	public function __construct( private Directory $directory ) {}
+	public function __construct( private Directory $directory, private ?Pacing $pacing = null ) {}
 
 	public function key(): string {
 		return 'notify.user';
@@ -108,10 +112,24 @@ final class NotifyUser implements Action, NetworkSafe {
 		if ( self::PURPOSE_PROMOTIONAL === ( $context->config['purpose'] ?? self::PURPOSE_TRANSACTIONAL ) ) {
 			return $this->promotional( (int) $user_id, $address, $subject, $message, $context );
 		}
+		$skip = $this->admit( (int) $user_id );
+		if ( null !== $skip ) {
+			return array( 'sent' => 0, 'skipped' => $skip );
+		}
 		if ( ! $this->directory->mail( $address, $subject, $message ) ) {
+			$this->pacing?->release( (int) $user_id );
 			throw new TransientFailure( 'mail_failed' );
 		}
 		return array( 'sent' => 1 );
+	}
+
+	/**
+	 * Sending window and daily limit (SET-WC-07/-08). Throws Deferred to wait; returns a skip reason or null.
+	 *
+	 * @throws \WorkflowCaptain\Engine\Deferred
+	 */
+	private function admit( int $user_id ): ?string {
+		return null === $this->pacing ? null : $this->pacing->admit( $user_id );
 	}
 
 	/** Consent first, then the unsubscribe list; the link line is added to the text (wording: legal review). */
@@ -123,10 +141,15 @@ final class NotifyUser implements Action, NetworkSafe {
 		if ( $m->unsubscribed( $user_id ) ) {
 			return array( 'sent' => 0, 'skipped' => 'unsubscribed', 'purpose' => self::PURPOSE_PROMOTIONAL );
 		}
+		$skip = $this->admit( $user_id );
+		if ( null !== $skip ) {
+			return array( 'sent' => 0, 'skipped' => $skip, 'purpose' => self::PURPOSE_PROMOTIONAL );
+		}
 		$url = $m->unsubscribe_url( $user_id );
 		/* translators: %s: unsubscribe link */
 		$message .= "\n\n-- \n" . sprintf( __( 'To stop receiving these messages: %s', 'workflow-captain' ), $url );
 		if ( ! $m->mail_promotional( $address, $subject, $message, $url ) ) {
+			$this->pacing?->release( $user_id );
 			throw new TransientFailure( 'mail_failed' );
 		}
 		return array( 'sent' => 1, 'purpose' => self::PURPOSE_PROMOTIONAL );
