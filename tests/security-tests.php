@@ -211,7 +211,7 @@ check( 'SafeHttp n8n: cloud metadata blocked even with an exception', ! $http->a
 $replies = array( array( 'error' => 'http_request_failed: https://hooks.example.com/secret?token=abc' ) );
 $r       = $http->request( 'webhook', 'POST', 'https://hooks.example.com/x' );
 check( 'SafeHttp: transport errors become fixed codes without URL or token', ! str_contains( $r['error'], 'token' ) && ! str_contains( $r['error'], 'example' ) );
-check( 'SafeHttp: hint for localhost explains it is the WordPress server', str_contains( SafeHttp::local_hint( 'http://localhost:5678' ), 'WordPress-Server' ) && '' === SafeHttp::local_hint( 'https://hooks.example.com' ) );
+check( 'SafeHttp: hint for localhost explains it is the WordPress server', str_contains( SafeHttp::local_hint( 'http://localhost:5678' ), 'WordPress server' ) && '' === SafeHttp::local_hint( 'https://hooks.example.com' ) );
 
 // ----- WF-SEC-03: inbound guard (HMAC, window, replay, rate limit, allowlist) ----------------------------------
 

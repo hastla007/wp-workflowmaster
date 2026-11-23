@@ -97,15 +97,15 @@ final class ProvidersPage {
 		$types  = is_array( $fields[ $type ] ?? null ) ? $fields[ $type ] : array();
 		$report = self::test_event( $type, $types, $this->plugin->engine()->store(), $this->plugin->engine()->actions() );
 		/* translators: %s: event type */
-		echo '<div class="notice notice-info inline"><p>' . esc_html( sprintf( __( 'Testereignis %s mit Beispielwerten, als Testlauf ohne Seiteneffekte:', 'workflow-captain' ), $type ) ) . '</p>';
+		echo '<div class="notice notice-info inline"><p>' . esc_html( sprintf( __( 'Test event %s with sample values, as a test run without side effects:', 'workflow-captain' ), $type ) ) . '</p>';
 		if ( array() === $report ) {
-			echo '<p>' . esc_html__( 'Kein aktiver Workflow hört auf dieses Ereignis.', 'workflow-captain' ) . '</p></div>';
+			echo '<p>' . esc_html__( 'No active workflow listens for this event.', 'workflow-captain' ) . '</p></div>';
 			return;
 		}
 		echo '<ul>';
 		foreach ( $report as $r ) {
 			/* translators: 1: workflow number, 2: outcome code, 3: number of steps */
-			echo '<li>' . esc_html( sprintf( __( 'Workflow %1$d: %2$s nach %3$d Schritten', 'workflow-captain' ), $r['workflow_id'], $r['outcome'], $r['steps'] ) ) . '</li>';
+			echo '<li>' . esc_html( sprintf( __( 'Workflow %1$d: %2$s after %3$d steps', 'workflow-captain' ), $r['workflow_id'], $r['outcome'], $r['steps'] ) ) . '</li>';
 		}
 		echo '</ul></div>';
 	}
@@ -116,21 +116,21 @@ final class ProvidersPage {
 		}
 		$rows   = self::rows( $this->plugin->adapters(), $this->plugin->store(), $this->plugin->engine()->store() );
 		$labels = array(
-			'registered' => __( 'angemeldet', 'workflow-captain' ),
-			'refused'    => __( 'abgelehnt', 'workflow-captain' ),
-			'missing'    => __( 'kein Adapter (Add-on fehlt, inaktiv oder ohne Lizenz)', 'workflow-captain' ),
+			'registered' => __( 'registered', 'workflow-captain' ),
+			'refused'    => __( 'rejected', 'workflow-captain' ),
+			'missing'    => __( 'no adapter (add-on missing, inactive or unlicensed)', 'workflow-captain' ),
 		);
 		echo '<div class="wrap"><h1>' . esc_html__( 'Provider', 'workflow-captain' ) . '</h1>';
 		$test = isset( $_GET['test'], $_GET['_wpnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'workflow_captain_test_event' ) ? sanitize_text_field( wp_unslash( $_GET['test'] ) ) : '';
 		if ( '' !== $test && preg_match( \WorkflowCaptain\Envelope\Validator::TYPE, $test ) ) {
 			$this->render_test( $test );
 		}
-		echo '<p class="description">' . esc_html__( 'Ereignisse der Captain-Produkte kommen über Adapter aus den Pro-Add-ons. Die Adapter für WordPress und WooCommerce (ab Version 11.2.2) sind eingebaut und brauchen keine Lizenz. Ohne Adapter werden offene Ereignisse pausiert, nicht gelöscht.', 'workflow-captain' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Events from the Captain products come through adapters in the Pro add-ons. The adapters for WordPress and WooCommerce (from version 11.2.2) are built in and need no license. Without an adapter, open events are paused, not deleted.', 'workflow-captain' ) . '</p>';
 		if ( array() === $rows ) {
-			echo '<p>' . esc_html__( 'Noch kein Adapter angemeldet und keine Ereignisse gespeichert.', 'workflow-captain' ) . '</p></div>';
+			echo '<p>' . esc_html__( 'No adapter registered yet and no events stored.', 'workflow-captain' ) . '</p></div>';
 			return;
 		}
-		echo '<table class="widefat striped" tabindex="0"><thead><tr><th>' . esc_html__( 'Produkt', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Adapter', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Plugin / Vertrag', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Ereignistypen', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Gespeicherte Ereignisse', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Aktive Workflows', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" tabindex="0"><thead><tr><th>' . esc_html__( 'Product', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Adapter', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Plugin / contract', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Event types', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Stored events', 'workflow-captain' ) . '</th><th>' . esc_html__( 'Active workflows', 'workflow-captain' ) . '</th></tr></thead><tbody>';
 		foreach ( $rows as $r ) {
 			$events = array();
 			foreach ( $r['events'] as $state => $n ) {
@@ -142,7 +142,7 @@ final class ProvidersPage {
 			}
 			$links = array();
 			foreach ( $r['types'] as $type ) {
-				$links[] = '<a href="' . esc_url( wp_nonce_url( add_query_arg( array( 'page' => self::SLUG, 'test' => $type ), admin_url( 'admin.php' ) ), 'workflow_captain_test_event' ) ) . '" title="' . esc_attr__( 'Testereignis', 'workflow-captain' ) . '">' . esc_html( $type ) . '</a>';
+				$links[] = '<a href="' . esc_url( wp_nonce_url( add_query_arg( array( 'page' => self::SLUG, 'test' => $type ), admin_url( 'admin.php' ) ), 'workflow_captain_test_event' ) ) . '" title="' . esc_attr__( 'Test event', 'workflow-captain' ) . '">' . esc_html( $type ) . '</a>';
 			}
 			echo '<tr><td><code>' . esc_html( $r['product'] ) . '</code></td><td>' . esc_html( $labels[ $r['status'] ] . ( $r['reason'] ? ' – ' . $r['reason'] : '' ) ) . '</td><td>' . esc_html( ( $r['core_version'] ?? '–' ) . ' / ' . ( $r['contract_version'] ?? '–' ) ) . '</td><td>' . wp_kses( implode( ', ', $links ), array( 'a' => array( 'href' => true, 'title' => true ) ) ) . '</td><td>' . esc_html( implode( ', ', $events ) ) . '</td><td>' . esc_html( implode( ', ', $active ) ) . '</td></tr>';
 		}

@@ -24,7 +24,7 @@ final class Tag implements Action, NetworkSafe {
 	}
 
 	public function label(): string {
-		return $this->remove ? __( 'Markierung entfernen', 'workflow-captain' ) : __( 'Markierung setzen', 'workflow-captain' );
+		return $this->remove ? __( 'Remove tag', 'workflow-captain' ) : __( 'Set tag', 'workflow-captain' );
 	}
 
 	public function capability(): ?string {

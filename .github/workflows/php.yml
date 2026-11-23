@@ -66,3 +66,5 @@ jobs:
           exit $rc
       - name: Translation template up to date
         run: php bin/make-pot.php --check
+      - name: German translations (de_DE du, de_DE_formal Sie) complete and compiled
+        run: php bin/make-l10n.php --check

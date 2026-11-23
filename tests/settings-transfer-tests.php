@@ -162,7 +162,7 @@ check( 'P1 backup: an expired backup (holds addresses) is deleted by the mainten
 $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time(), 'user' => 1, 'source' => 'reset', 'values' => array() );
 check( 'P1 backup: a backup within 30 days stays for undo', false === SettingsTransfer::purge_expired_backup() && isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ], $GLOBALS['wfc_test_options']['workflow_captain_audit'] );
-check( 'P1 import: "Übernehmen" after the preview expired says so instead of "Import verworfen"', 1 === preg_match( "/elseif \\( ! is_array\\( \\\$preview \\) .*?Die Vorschau ist abgelaufen/s", $wfc_p1_page ) );
+check( 'P1 import: "Apply" after the preview expired says so instead of "Import verworfen"', 1 === preg_match( "/elseif \\( ! is_array\\( \\\$preview \\) .*?The preview has expired/s", $wfc_p1_page ) );
 
 // P6: every hook of the core is part of the public contract and listed in docs/SDK.md, section 5 (the setting filters
 // as workflow_captain_setting_<feld>); found: the new setting filters and three older hooks were missing there.
@@ -184,7 +184,7 @@ check( 'P5 recipients: invalid and surplus addresses are named, kept ones are no
 // - Import preview, import errors and the log showed register keys and 1/0; they now show the names of the tabs.
 $wfc_page = \WorkflowCaptain\Admin\SettingsPage::class;
 check( 'P5 preview/log: a setting is shown by the label of its tab, unknown keys as they are', SettingsRegistry::texts()['batch'][0] === $wfc_page::field_label( 'batch' ) && 'evil' === $wfc_page::field_label( 'evil' ) );
-check( 'P5 preview/log: switches read ein/aus, notice kinds by name, numbers unchanged', 'ein' === $wfc_page::display_value( 'notify_daily', 1 ) && 'aus' === $wfc_page::display_value( 'notify_daily', 0 ) && $wfc_page::kind_labels()['failed'] . ', ' . $wfc_page::kind_labels()['pause'] === $wfc_page::display_value( 'kinds', array( 'failed', 'pause' ) ) && 'keine' === $wfc_page::display_value( 'kinds', array() ) && '40' === $wfc_page::display_value( 'batch', 40 ) );
+check( 'P5 preview/log: switches read ein/aus, notice kinds by name, numbers unchanged', 'on' === $wfc_page::display_value( 'notify_daily', 1 ) && 'off' === $wfc_page::display_value( 'notify_daily', 0 ) && $wfc_page::kind_labels()['failed'] . ', ' . $wfc_page::kind_labels()['pause'] === $wfc_page::display_value( 'kinds', array( 'failed', 'pause' ) ) && 'none' === $wfc_page::display_value( 'kinds', array() ) && '40' === $wfc_page::display_value( 'batch', 40 ) );
 check( 'P5 the notification tab and the preview use the same kind names as the register', Notifications::KINDS === array_keys( $wfc_page::kind_labels() ) );
 
 // S10: switching on "delete data on uninstall" needs the typed word, as in Pass Captain and Form Captain.

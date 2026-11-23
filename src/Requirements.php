@@ -100,7 +100,7 @@ final class Requirements {
 	public static function message( $php, $wordpress ) {
 		return sprintf(
 			/* translators: 1: minimum PHP version, 2: minimum WordPress version, 3: PHP version of this site, 4: WordPress version of this site */
-			__( 'Workflow Captain braucht PHP %1$s und WordPress %2$s oder neuer; diese Website nutzt PHP %3$s und WordPress %4$s. Das Plugin bleibt inaktiv, gespeicherte Daten bleiben erhalten.', 'workflow-captain' ),
+			__( 'Workflow Captain requires PHP %1$s and WordPress %2$s or newer; this site uses PHP %3$s and WordPress %4$s. The plugin stays inactive; saved data is kept.', 'workflow-captain' ),
 			self::PHP,
 			self::WORDPRESS,
 			(string) $php,

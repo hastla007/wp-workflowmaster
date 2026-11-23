@@ -841,7 +841,7 @@ check( 'consistency: reporting changes nothing', 1 === count( $e->store->find_ru
 
 $cards = \WorkflowCaptain\Admin\OverviewPage::cards( array( 'environment' => array( 'next_worker_run' => gmdate( 'Y-m-d\TH:i:s\Z', time() + 30 ), 'secret_key_own' => true ), 'workflows' => array( 'active' => 3 ), 'runs' => array( 'running' => 2, 'action_required' => 1, 'paused' => 1 ), 'events' => array( 'dead_letter' => 0 ), 'stuck' => array( 'expired_leases' => 0, 'runs_without_steps' => 0 ) ) );
 $by    = array_column( $cards, null, 'label' );
-check( 'overview: counts and tones', 3 === $by['Aktive Workflows']['value'] && 2 === $by['Brauchen eine Entscheidung']['value'] && 'warn' === $by['Brauchen eine Entscheidung']['tone'] && 'ok' === $by['Fehlgeschlagene Ereignisse']['tone'] && 'läuft' === $by['Worker']['value'] );
+check( 'overview: counts and tones', 3 === $by['Active workflows']['value'] && 2 === $by['Need a decision']['value'] && 'warn' === $by['Need a decision']['tone'] && 'ok' === $by['Failed events']['tone'] && 'running' === $by['Worker']['value'] );
 
 // ----- WF-SET-11: emergency pause ------------------------------------------------------------------------------
 
@@ -884,7 +884,7 @@ foreach ( glob( WORKFLOW_CAPTAIN_PATH . 'docs/recipes/*.json' ) as $file ) {
 $e   = engine_site();
 $id  = publish( $e, sample_graph(), 'Original' );
 $dup = $e->workflows->duplicate( $id );
-check( 'duplicate: new draft with the same graph', 'Original (Kopie)' === $e->store->get_workflow( $dup )['name'] && EngineStore::WF_DRAFT === $e->store->get_workflow( $dup )['status'] && $e->store->get_workflow( $dup )['draft'] == $e->store->get_workflow( $id )['draft'] );
+check( 'duplicate: new draft with the same graph', 'Original (copy)' === $e->store->get_workflow( $dup )['name'] && EngineStore::WF_DRAFT === $e->store->get_workflow( $dup )['status'] && $e->store->get_workflow( $dup )['draft'] == $e->store->get_workflow( $id )['draft'] );
 $e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'before' ) );
 $e->consumer->process();
 check( 'archive: archived workflow keeps its runs', $e->workflows->archive( $id ) && 1 === count( $e->store->find_runs( array( 'workflow_id' => $id ), 10, 0 ) ) );
@@ -899,7 +899,7 @@ check( 'restore: published workflow comes back paused', $e->workflows->restore( 
 
 check( 'notice: nothing open, no mail', null === Notifications::digest( array( 'runs' => array(), 'events' => array(), 'stuck' => array(), 'environment' => array() ), 'https://x/wp-admin/' ) );
 $mail = Notifications::digest( array( 'runs' => array( 'action_required' => 2 ), 'events' => array( 'dead_letter' => 1 ), 'stuck' => array(), 'environment' => array( 'emergency_pause' => true ) ), 'https://x/wp-admin/admin.php?page=workflow-captain' );
-check( 'notice: lists counts, pause and link, no event content', str_contains( $mail['message'], '- 2 Läufe brauchen eine Entscheidung' ) && str_contains( $mail['message'], '- 1 Ereignisse sind fehlgeschlagen' ) && str_contains( $mail['message'], 'Notfallpause' ) && str_contains( $mail['message'], 'page=workflow-captain' ) );
+check( 'notice: lists counts, pause and link, no event content', str_contains( $mail['message'], '- 2 Runs need a decision' ) && str_contains( $mail['message'], '- 1 Events have failed' ) && str_contains( $mail['message'], 'emergency pause is active' ) && str_contains( $mail['message'], 'page=workflow-captain' ) );
 check( 'settings: notify_daily is 0 or 1, default on', 1 === Settings::defaults()['notify_daily'] && 1 === Settings::sanitize( array( 'notify_daily' => 5 ) )['notify_daily'] && 0 === Settings::sanitize( array( 'notify_daily' => 0 ) )['notify_daily'] );
 
 // ----- WF-SET-05: Action Scheduler or WP-Cron, never both ------------------------------------------------------
@@ -981,7 +981,7 @@ $cfg = Notifications::sanitize( array( 'recipients' => 'a@example.org, kaputt, B
 check( 'WF-SET-06 notify: valid unique recipients, unknown kinds dropped', 'a@example.org, b@example.org' === $cfg['recipients'] && array( 'failed' ) === $cfg['kinds'] );
 check( 'WF-SET-06 notify: fallback to the site address, all kinds by default', array( 'admin@x' ) === Notifications::recipients( Notifications::sanitize( array() ), 'admin@x' ) && Notifications::KINDS === Notifications::sanitize( array() )['kinds'] );
 $only = Notifications::digest( array( 'runs' => array( 'action_required' => 2 ), 'events' => array( 'dead_letter' => 1 ), 'stuck' => array(), 'adapters' => array( 'refused' => array( 'pass-captain' => 'contract_too_old' ) ), 'environment' => array() ), 'u', array( 'failed', 'providers' ) );
-check( 'WF-SET-06 notify: only chosen kinds, refused providers reported', null !== $only && ! str_contains( $only['message'], 'Entscheidung' ) && str_contains( $only['message'], 'Provider' ) && str_contains( $only['message'], 'fehlgeschlagen' ) );
+check( 'WF-SET-06 notify: only chosen kinds, refused providers reported', null !== $only && ! str_contains( $only['message'], 'decision' ) && str_contains( $only['message'], 'Provider' ) && str_contains( $only['message'], 'failed' ) );
 check( 'WF-SET-06 notify: no kinds chosen, no mail', null === Notifications::digest( array( 'runs' => array( 'action_required' => 2 ) ), 'u', array() ) );
 check( 'WF-SET-06 notify: test mail carries no event data', ! str_contains( Notifications::test_mail( 'Shop' )['message'], '{{' ) );
 

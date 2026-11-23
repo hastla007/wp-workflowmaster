@@ -24,24 +24,24 @@ final class SchedulesPage {
 	}
 
 	public function menu(): void {
-		add_submenu_page( OverviewPage::SLUG, __( 'Zeitpläne', 'workflow-captain' ), __( 'Zeitpläne', 'workflow-captain' ), 'view_workflow_logs', self::SLUG, array( $this, 'render' ) );
+		add_submenu_page( OverviewPage::SLUG, __( 'Schedules', 'workflow-captain' ), __( 'Schedules', 'workflow-captain' ), 'view_workflow_logs', self::SLUG, array( $this, 'render' ) );
 	}
 
 	/** Readable rule of a schedule, e.g. "wöchentlich, Montag, 07:30". */
 	public static function describe( array $schedule ): string {
 		$freq = array(
-			'daily'   => __( 'täglich', 'workflow-captain' ),
-			'weekly'  => __( 'wöchentlich', 'workflow-captain' ),
-			'monthly' => __( 'monatlich', 'workflow-captain' ),
+			'daily'   => __( 'daily', 'workflow-captain' ),
+			'weekly'  => __( 'weekly', 'workflow-captain' ),
+			'monthly' => __( 'monthly', 'workflow-captain' ),
 		);
-		$days = array( 1 => __( 'Montag', 'workflow-captain' ), __( 'Dienstag', 'workflow-captain' ), __( 'Mittwoch', 'workflow-captain' ), __( 'Donnerstag', 'workflow-captain' ), __( 'Freitag', 'workflow-captain' ), __( 'Samstag', 'workflow-captain' ), __( 'Sonntag', 'workflow-captain' ) );
+		$days = array( 1 => __( 'Monday', 'workflow-captain' ), __( 'Tuesday', 'workflow-captain' ), __( 'Wednesday', 'workflow-captain' ), __( 'Thursday', 'workflow-captain' ), __( 'Friday', 'workflow-captain' ), __( 'Saturday', 'workflow-captain' ), __( 'Sunday', 'workflow-captain' ) );
 		$parts = array( $freq[ $schedule['frequency'] ?? '' ] ?? '?' );
 		if ( 'weekly' === ( $schedule['frequency'] ?? '' ) ) {
 			$parts[] = $days[ (int) ( $schedule['weekday'] ?? 0 ) ] ?? '?';
 		}
 		if ( 'monthly' === ( $schedule['frequency'] ?? '' ) ) {
 			/* translators: %d: day of the month */
-			$parts[] = sprintf( __( 'am %d.', 'workflow-captain' ), (int) ( $schedule['day'] ?? 0 ) );
+			$parts[] = sprintf( __( 'on day %d', 'workflow-captain' ), (int) ( $schedule['day'] ?? 0 ) );
 		}
 		$parts[] = is_string( $schedule['time'] ?? null ) ? $schedule['time'] : '?';
 		return implode( ', ', $parts );
@@ -69,7 +69,7 @@ final class SchedulesPage {
 	 */
 	public static function time_cell( ?int $ts, callable $format, string $pattern = self::FALLBACK_FORMAT ): string {
 		if ( null === $ts ) {
-			return '<span aria-hidden="true">–</span><span class="screen-reader-text">' . esc_html__( 'keine Angabe', 'workflow-captain' ) . '</span>';
+			return '<span aria-hidden="true">–</span><span class="screen-reader-text">' . esc_html__( 'not specified', 'workflow-captain' ) . '</span>';
 		}
 		return '<time datetime="' . esc_attr( gmdate( 'Y-m-d\TH:i:s\Z', $ts ) ) . '">' . esc_html( $format( $pattern, $ts ) ) . '</time>';
 	}
@@ -90,16 +90,16 @@ final class SchedulesPage {
 			if ( $editor ) {
 				$name = '<a href="' . esc_url( WorkflowsPage::url( WorkflowsPage::SLUG_WORKFLOWS, array( 'edit' => $r['workflow_id'] ) ) ) . '">' . $name . '</a>';
 			}
-			$state = EngineStore::WF_ACTIVE === $r['status'] ? esc_html__( 'Aktiv', 'workflow-captain' ) : esc_html__( 'Pausiert', 'workflow-captain' );
+			$state = EngineStore::WF_ACTIVE === $r['status'] ? esc_html__( 'Active', 'workflow-captain' ) : esc_html__( 'Paused', 'workflow-captain' );
 			/* translators: %d: version number */
 			$state .= ' · ' . esc_html( sprintf( __( 'Version %d', 'workflow-captain' ), (int) $r['version'] ) );
 			if ( $r['draft_differs'] ) {
-				$state .= '<br><span class="description">' . esc_html__( 'Der Entwurf weicht ab; es gilt die veröffentlichte Version.', 'workflow-captain' ) . '</span>';
+				$state .= '<br><span class="description">' . esc_html__( 'The draft differs; the published version applies.', 'workflow-captain' ) . '</span>';
 			}
-			$next = null === $r['next'] && EngineStore::WF_ACTIVE !== $r['status'] ? esc_html__( 'keiner (pausiert)', 'workflow-captain' ) : self::time_cell( $r['next'], $format, $pattern );
+			$next = null === $r['next'] && EngineStore::WF_ACTIVE !== $r['status'] ? esc_html__( 'none (paused)', 'workflow-captain' ) : self::time_cell( $r['next'], $format, $pattern );
 			$last = self::time_cell( $r['last_fired'], $format, $pattern );
 			if ( null !== $r['last_fired'] ) {
-				$last .= ' (<a class="wfc-text-link" href="' . esc_url( WorkflowsPage::url( WorkflowsPage::SLUG_RUNS, array( 'workflow' => $r['workflow_id'] ) ) ) . '">' . esc_html__( 'Läufe', 'workflow-captain' ) . '</a>)';
+				$last .= ' (<a class="wfc-text-link" href="' . esc_url( WorkflowsPage::url( WorkflowsPage::SLUG_RUNS, array( 'workflow' => $r['workflow_id'] ) ) ) . '">' . esc_html__( 'Runs', 'workflow-captain' ) . '</a>)';
 			}
 			$out[] = '<tr><th scope="row">' . $name . '</th><td>' . $state . '</td><td>' . esc_html( self::describe( $r['schedule'] ) ) . '</td><td>' . $next . '</td><td>' . $last . '</td></tr>';
 		}
@@ -113,13 +113,13 @@ final class SchedulesPage {
 		$engine = $this->plugin->engine();
 		$tz     = $engine->timezone();
 		$rows   = $engine->schedules( (array) get_option( 'workflow_captain_schedule_fired', array() ) );
-		echo '<div class="wrap"><h1>' . esc_html__( 'Zeitpläne', 'workflow-captain' ) . '</h1>';
+		echo '<div class="wrap"><h1>' . esc_html__( 'Schedules', 'workflow-captain' ) . '</h1>';
 		/* translators: %s: time zone of the site */
-		echo '<p class="description">' . esc_html( sprintf( __( 'Workflows mit dem Auslöser „Zeitplan“, nach Name. Alle Zeiten in der Zeitzone der Website (%s). Ein verpasster Termin wird höchstens einmal nachgeholt.', 'workflow-captain' ), $tz ) ) . '</p>';
-		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Zeitpläne der Workflows', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Workflow', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Zustand', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Zeitplan', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Nächster Termin', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Zuletzt ausgelöst', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		echo '<p class="description">' . esc_html( sprintf( __( 'Workflows with the trigger “Schedule”, by name. All times in the site\'s time zone (%s). A missed date is made up for at most once.', 'workflow-captain' ), $tz ) ) . '</p>';
+		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Workflow schedules', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Workflow', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'State', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Schedule', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Next date', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Last triggered', 'workflow-captain' ) . '</th></tr></thead><tbody>';
 		$lines = self::table_rows( $rows, static fn( string $f, int $ts ): string => (string) wp_date( $f, $ts ), current_user_can( 'edit_workflows' ), self::site_format( (string) get_option( 'date_format' ), (string) get_option( 'time_format' ) ) );
 		if ( array() === $lines ) {
-			echo '<tr><td colspan="5">' . esc_html__( 'Kein aktiver oder pausierter Workflow startet nach Zeitplan. Ein Entwurf zählt erst nach dem Veröffentlichen.', 'workflow-captain' ) . '</td></tr>';
+			echo '<tr><td colspan="5">' . esc_html__( 'No active or paused workflow starts on a schedule. A draft only counts once it is published.', 'workflow-captain' ) . '</td></tr>';
 		}
 		echo implode( '', $lines ) . '</tbody></table></div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- table_rows() escapes.
 	}

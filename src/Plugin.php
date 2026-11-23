@@ -54,7 +54,7 @@ final class Plugin {
 				'admin_notices',
 				static function (): void {
 					if ( current_user_can( 'view_workflow_logs' ) ) {
-						echo '<div class="notice notice-warning"><p>' . esc_html__( 'Workflow Captain: Die Notfallpause ist aktiv. Ereignisse werden gespeichert, aber kein Schritt wird ausgeführt.', 'workflow-captain' ) . '</p></div>';
+						echo '<div class="notice notice-warning"><p>' . esc_html__( 'Workflow Captain: The emergency pause is active. Events are saved, but no step is executed.', 'workflow-captain' ) . '</p></div>';
 					}
 				}
 			);
@@ -64,7 +64,7 @@ final class Plugin {
 				'admin_notices',
 				static function (): void {
 					if ( current_user_can( 'view_workflow_logs' ) ) {
-						echo '<div class="notice notice-warning"><p><strong>' . esc_html( TestMode::DRY === TestMode::mode() ? __( 'Workflow Captain: Testmodus „Nichts ausführen“ ist aktiv. Workflows laufen, aber kein Schritt wirkt.', 'workflow-captain' ) : __( 'Workflow Captain: Testmodus „Nachrichten umleiten“ ist aktiv. Nachrichten aus Workflows gehen an die Testadresse.', 'workflow-captain' ) ) . '</strong></p></div>';
+						echo '<div class="notice notice-warning"><p><strong>' . esc_html( TestMode::DRY === TestMode::mode() ? __( 'Workflow Captain: Test mode “Execute nothing” is active. Workflows run, but no step has any effect.', 'workflow-captain' ) : __( 'Workflow Captain: Test mode “Redirect messages” is active. Messages from workflows go to the test address.', 'workflow-captain' ) ) . '</strong></p></div>';
 					}
 				}
 			);
@@ -74,7 +74,7 @@ final class Plugin {
 				'admin_notices',
 				static function (): void {
 					if ( current_user_can( 'manage_workflow_captain' ) ) {
-						echo '<div class="notice notice-error"><p>' . esc_html__( 'Workflow Captain: Die Datenbank stammt von einer neueren Version des Plugins. Ereignisse und Schritte werden nicht verarbeitet, bis die neuere Version wieder installiert ist. Es wurde nichts gelöscht.', 'workflow-captain' ) . '</p></div>';
+						echo '<div class="notice notice-error"><p>' . esc_html__( 'Workflow Captain: The database comes from a newer version of the plugin. Events and steps are not processed until the newer version is installed again. Nothing was deleted.', 'workflow-captain' ) . '</p></div>';
 					}
 				}
 			);
@@ -410,7 +410,7 @@ final class Plugin {
 
 	public function handle_pause(): void {
 		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
-			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+			wp_die( esc_html__( 'You do not have permission to do this.', 'workflow-captain' ), 403 );
 		}
 		check_admin_referer( 'workflow_captain_pause' );
 		$on = ! empty( $_POST['pause'] );
@@ -425,7 +425,7 @@ final class Plugin {
 
 	public function download_diagnostics(): void {
 		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
-			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+			wp_die( esc_html__( 'You do not have permission to do this.', 'workflow-captain' ), 403 );
 		}
 		check_admin_referer( 'workflow_captain_diagnostics' );
 		nocache_headers();
@@ -446,7 +446,7 @@ final class Plugin {
 	public static function cron_schedules( array $schedules ): array {
 		$schedules['workflow_captain_minute'] = array(
 			'interval' => MINUTE_IN_SECONDS,
-			'display'  => __( 'Jede Minute (Workflow Captain)', 'workflow-captain' ),
+			'display'  => __( 'Every minute (Workflow Captain)', 'workflow-captain' ),
 		);
 		return $schedules;
 	}

@@ -27,7 +27,7 @@ final class NotifyUser implements Action, NetworkSafe {
 	}
 
 	public function label(): string {
-		return __( 'Nachricht an Benutzer', 'workflow-captain' );
+		return __( 'Message to user', 'workflow-captain' );
 	}
 
 	public function capability(): ?string {

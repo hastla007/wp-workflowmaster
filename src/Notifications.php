@@ -69,7 +69,7 @@ final class Notifications {
 			$codes = function_exists( 'get_settings_errors' ) ? array_column( get_settings_errors( Settings::OPTION ), 'code' ) : array();
 			if ( ! in_array( 'wfc-recipients', $codes, true ) ) {
 				/* translators: %s: list of addresses */
-				add_settings_error( Settings::OPTION, 'wfc-recipients', sprintf( __( 'Nicht gespeichert (ungültig oder mehr als zehn Adressen): %s. Die übrigen Adressen wurden gespeichert.', 'workflow-captain' ), implode( ', ', $dropped ) ), 'error' );
+				add_settings_error( Settings::OPTION, 'wfc-recipients', sprintf( __( 'Not saved (invalid or more than ten addresses): %s. The other addresses were saved.', 'workflow-captain' ), implode( ', ', $dropped ) ), 'error' );
 			}
 		}
 		return $clean;
@@ -109,20 +109,20 @@ final class Notifications {
 				$lines[] = sprintf( '- %d %s', $n, $text );
 			}
 		};
-		$add( 'decisions', (int) ( $d['runs']['action_required'] ?? 0 ), __( 'Läufe brauchen eine Entscheidung', 'workflow-captain' ) );
-		$add( 'paused', (int) ( $d['runs']['paused'] ?? 0 ), __( 'Läufe sind pausiert', 'workflow-captain' ) );
-		$add( 'failed', (int) ( $d['events']['dead_letter'] ?? 0 ), __( 'Ereignisse sind fehlgeschlagen', 'workflow-captain' ) );
-		$add( 'stuck', (int) ( $d['stuck']['expired_leases'] ?? 0 ) + (int) ( $d['stuck']['runs_without_steps'] ?? 0 ), __( 'Schritte oder Läufe hängen', 'workflow-captain' ) );
-		$add( 'providers', count( (array) ( $d['adapters']['refused'] ?? array() ) ), __( 'Provider wurden abgelehnt (zum Beispiel unpassende Vertragsversion)', 'workflow-captain' ) );
+		$add( 'decisions', (int) ( $d['runs']['action_required'] ?? 0 ), __( 'Runs need a decision', 'workflow-captain' ) );
+		$add( 'paused', (int) ( $d['runs']['paused'] ?? 0 ), __( 'Runs are paused', 'workflow-captain' ) );
+		$add( 'failed', (int) ( $d['events']['dead_letter'] ?? 0 ), __( 'Events have failed', 'workflow-captain' ) );
+		$add( 'stuck', (int) ( $d['stuck']['expired_leases'] ?? 0 ) + (int) ( $d['stuck']['runs_without_steps'] ?? 0 ), __( 'Steps or runs are stuck', 'workflow-captain' ) );
+		$add( 'providers', count( (array) ( $d['adapters']['refused'] ?? array() ) ), __( 'Providers were rejected (for example, mismatched contract version)', 'workflow-captain' ) );
 		if ( ! empty( $d['environment']['emergency_pause'] ) && in_array( 'pause', $kinds, true ) ) {
-			$lines[] = '- ' . __( 'Die Notfallpause ist aktiv.', 'workflow-captain' );
+			$lines[] = '- ' . __( 'The emergency pause is active.', 'workflow-captain' );
 		}
 		if ( array() === $lines ) {
 			return null;
 		}
 		return array(
-			'subject' => __( 'Workflow Captain: Bitte prüfen', 'workflow-captain' ),
-			'message' => implode( "\n", $lines ) . "\n\n" . $admin_url . "\n\n" . __( 'Diese Nachricht kommt einmal täglich, solange etwas offen ist. Abschalten unter Einstellungen → Benachrichtigungen.', 'workflow-captain' ),
+			'subject' => __( 'Workflow Captain: Please check', 'workflow-captain' ),
+			'message' => implode( "\n", $lines ) . "\n\n" . $admin_url . "\n\n" . __( 'This message is sent once a day as long as something is pending. Turn it off under Settings → Notifications.', 'workflow-captain' ),
 		);
 	}
 
@@ -130,8 +130,8 @@ final class Notifications {
 	public static function test_mail( string $site_name ): array {
 		return array(
 			/* translators: %s: site name */
-			'subject' => sprintf( __( 'Workflow Captain: Testnachricht von %s', 'workflow-captain' ), $site_name ),
-			'message' => __( 'Diese Testnachricht zeigt, dass Hinweise von Workflow Captain ankommen. Sie enthält keine Daten von Ereignissen oder Läufen.', 'workflow-captain' ),
+			'subject' => sprintf( __( 'Workflow Captain: Test message from %s', 'workflow-captain' ), $site_name ),
+			'message' => __( 'This test message shows that notices from Workflow Captain arrive. It contains no data from events or runs.', 'workflow-captain' ),
 		);
 	}
 }

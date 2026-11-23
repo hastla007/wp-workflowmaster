@@ -27,12 +27,12 @@ final class ConnectorsPage {
 	}
 
 	public function menu(): void {
-		add_submenu_page( OverviewPage::SLUG, __( 'Eigene Connectoren', 'workflow-captain' ), __( 'Eigene Connectoren', 'workflow-captain' ), self::CAP, self::SLUG, array( $this, 'render' ) );
+		add_submenu_page( OverviewPage::SLUG, __( 'Custom connectors', 'workflow-captain' ), __( 'Custom connectors', 'workflow-captain' ), self::CAP, self::SLUG, array( $this, 'render' ) );
 	}
 
 	public function handle(): void {
 		if ( ! current_user_can( self::CAP ) ) {
-			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+			wp_die( esc_html__( 'You do not have permission to do this.', 'workflow-captain' ), 403 );
 		}
 		$key = isset( $_POST['connector'] ) ? sanitize_key( wp_unslash( $_POST['connector'] ) ) : '';
 		check_admin_referer( 'workflow_captain_connector_' . $key );
@@ -71,15 +71,15 @@ final class ConnectorsPage {
 	/** Label of a status or reason code. */
 	public static function label( string $code ): string {
 		$labels = array(
-			'enabled'                                   => __( 'freigegeben', 'workflow-captain' ),
-			'disabled'                                  => __( 'nicht freigegeben', 'workflow-captain' ),
-			'refused'                                   => __( 'abgelehnt', 'workflow-captain' ),
-			ConnectorRegistry::INVALID_MANIFEST         => __( 'Manifest ungültig', 'workflow-captain' ),
-			ConnectorRegistry::REQUIRES_NEWER_CORE      => __( 'braucht eine neuere Version von Workflow Captain', 'workflow-captain' ),
-			ConnectorRegistry::CONTRACT_MAJOR           => __( 'für eine andere Hauptversion von Workflow Captain gebaut', 'workflow-captain' ),
-			ConnectorRegistry::RUNTIME_NOT_ALLOWED      => __( 'die Laufzeit für eigene Connectoren ist auf dieser Website nicht freigeschaltet (Workflow Captain Pro)', 'workflow-captain' ),
-			ConnectorRegistry::DUPLICATE                => __( 'Schlüssel doppelt angemeldet', 'workflow-captain' ),
-			ConnectorRegistry::NOT_ENABLED              => __( 'wartet auf Freigabe', 'workflow-captain' ),
+			'enabled'                                   => __( 'enabled', 'workflow-captain' ),
+			'disabled'                                  => __( 'not enabled', 'workflow-captain' ),
+			'refused'                                   => __( 'rejected', 'workflow-captain' ),
+			ConnectorRegistry::INVALID_MANIFEST         => __( 'Invalid manifest', 'workflow-captain' ),
+			ConnectorRegistry::REQUIRES_NEWER_CORE      => __( 'requires a newer version of Workflow Captain', 'workflow-captain' ),
+			ConnectorRegistry::CONTRACT_MAJOR           => __( 'built for a different major version of Workflow Captain', 'workflow-captain' ),
+			ConnectorRegistry::RUNTIME_NOT_ALLOWED      => __( 'the runtime for custom connectors is not unlocked on this site (Workflow Captain Pro)', 'workflow-captain' ),
+			ConnectorRegistry::DUPLICATE                => __( 'Key registered twice', 'workflow-captain' ),
+			ConnectorRegistry::NOT_ENABLED              => __( 'waiting to be enabled', 'workflow-captain' ),
 		);
 		return $labels[ $code ] ?? $code;
 	}
@@ -90,17 +90,17 @@ final class ConnectorsPage {
 		}
 		$registry = $this->plugin->connectors();
 		$rows     = $registry->rows();
-		echo '<div class="wrap"><h1>' . esc_html__( 'Eigene Connectoren', 'workflow-captain' ) . '</h1>';
+		echo '<div class="wrap"><h1>' . esc_html__( 'Custom connectors', 'workflow-captain' ) . '</h1>';
 		if ( isset( $_GET['done'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
 			$ok = '1' === sanitize_key( wp_unslash( $_GET['done'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
-			echo '<div class="notice notice-' . ( $ok ? 'success' : 'error' ) . '"><p>' . esc_html( $ok ? __( 'Freigabe gespeichert.', 'workflow-captain' ) : __( 'Dieser Connector ist nicht angemeldet.', 'workflow-captain' ) ) . '</p></div>';
+			echo '<div class="notice notice-' . ( $ok ? 'success' : 'error' ) . '"><p>' . esc_html( $ok ? __( 'Approval saved.', 'workflow-captain' ) : __( 'This connector is not registered.', 'workflow-captain' ) ) . '</p></div>';
 		}
-		echo '<p class="description">' . esc_html__( 'Ein Connector ist ein eigenes Plugin, das ein Projekt an Workflow Captain anbindet. Er bleibt aus, bis Sie ihn hier freigeben. Bis dahin werden seine Ereignisse nicht gespeichert und seine Aktionen nicht angeboten. Personenbezogene Felder bleiben auch nach der Freigabe aus, bis Sie sie einzeln einschalten.', 'workflow-captain' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'A connector is a separate plugin that connects a project to Workflow Captain. It stays off until you approve it here. Until then, its events are not stored and its actions are not offered. Personal data fields stay off even after approval until you switch them on one by one.', 'workflow-captain' ) . '</p>';
 		if ( array() === $rows ) {
-			echo '<p>' . esc_html__( 'Noch kein Connector angemeldet.', 'workflow-captain' ) . '</p></div>';
+			echo '<p>' . esc_html__( 'No connector registered yet.', 'workflow-captain' ) . '</p></div>';
 			return;
 		}
-		echo '<table class="widefat striped" tabindex="0"><thead><tr><th scope="col">' . esc_html__( 'Name', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Schlüssel', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Version', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Vertragsversion', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Status', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Grund', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Ereignistypen', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Aktionen', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Freigabe', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" tabindex="0"><thead><tr><th scope="col">' . esc_html__( 'Name', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Key', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Version', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Contract version', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Status', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Reason', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Event types', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Actions', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Approval', 'workflow-captain' ) . '</th></tr></thead><tbody>';
 		foreach ( $rows as $r ) {
 			$reason = null === $r['reason'] ? '–' : self::label( (string) $r['reason'] );
 			if ( array() !== $r['violations'] ) {
@@ -119,7 +119,7 @@ final class ConnectorsPage {
 	private function render_form( string $key, array $manifest, ConnectorRegistry $registry ): void {
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_connector"><input type="hidden" name="connector" value="' . esc_attr( $key ) . '">';
 		wp_nonce_field( 'workflow_captain_connector_' . $key );
-		echo '<label><input type="checkbox" name="enabled" value="1"' . ( $registry->is_enabled( $key ) ? ' checked' : '' ) . '> ' . esc_html__( 'Connector freigeben', 'workflow-captain' ) . '</label>';
+		echo '<label><input type="checkbox" name="enabled" value="1"' . ( $registry->is_enabled( $key ) ? ' checked' : '' ) . '> ' . esc_html__( 'Approve connector', 'workflow-captain' ) . '</label>';
 		$personal = array();
 		foreach ( (array) $manifest['events'] as $type => $spec ) {
 			foreach ( (array) $spec['fields'] as $field => $def ) {
@@ -129,12 +129,12 @@ final class ConnectorsPage {
 			}
 		}
 		if ( array() !== $personal ) {
-			echo '<fieldset style="margin-top:.5em"><legend>' . esc_html__( 'Personenbezogene Felder weitergeben:', 'workflow-captain' ) . '</legend>';
+			echo '<fieldset style="margin-top:.5em"><legend>' . esc_html__( 'Pass on personal fields:', 'workflow-captain' ) . '</legend>';
 			foreach ( $personal as list( $type, $field ) ) {
 				echo '<label style="display:block"><input type="checkbox" name="personal[' . esc_attr( $type ) . '][]" value="' . esc_attr( $field ) . '"' . ( $registry->personal_allowed( $key, $type, $field ) ? ' checked' : '' ) . '> <code>' . esc_html( $type . ' → ' . $field ) . '</code></label>';
 			}
 			echo '</fieldset>';
 		}
-		echo '<p><button class="button button-small">' . esc_html__( 'Speichern', 'workflow-captain' ) . '</button></p></form>';
+		echo '<p><button class="button button-small">' . esc_html__( 'Save', 'workflow-captain' ) . '</button></p></form>';
 	}
 }

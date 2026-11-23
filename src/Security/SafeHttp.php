@@ -99,11 +99,11 @@ final class SafeHttp {
 	public static function local_hint( string $url ): string {
 		$host = strtolower( trim( (string) wp_parse_url( $url, PHP_URL_HOST ), '[]' ) );
 		if ( in_array( $host, array( 'localhost', '127.0.0.1', '::1' ), true ) ) {
-			return __( '„localhost“ ist der WordPress-Server selbst, nicht Ihr Rechner. Läuft n8n in einem anderen Container oder auf einem anderen Gerät, dessen Namen oder Adresse im Netz eintragen (zum Beispiel den Docker-Dienstnamen).', 'workflow-captain' );
+			return __( '“localhost” is the WordPress server itself, not your computer. If n8n runs in a different container or on a different device, enter its name or network address (for example, the Docker service name).', 'workflow-captain' );
 		}
 		$ip = OutboundPolicy::normalize_ip( $host );
 		if ( null !== $ip || ! str_contains( $host, '.' ) ) {
-			return __( 'Private Adresse oder interner Name: Die Verbindung braucht eine Ausnahme für genau diesen Host und Port. Der Test läuft vom WordPress-Server aus; Firewall, Docker-Netz oder Reverse Proxy müssen ihn durchlassen.', 'workflow-captain' );
+			return __( 'Private address or internal name: the connection needs an exception for exactly this host and port. The test runs from the WordPress server; the firewall, Docker network or reverse proxy must let it through.', 'workflow-captain' );
 		}
 		return '';
 	}

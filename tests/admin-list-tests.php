@@ -88,11 +88,11 @@ check( 'list: invalid run correlation matches nothing', 0 === $e->store->count_r
 check( 'pagination: pages and offset', array( 'total' => 120, 'per_page' => 50, 'pages' => 3, 'paged' => 2, 'offset' => 50 ) === Pagination::state( 120, 50, 2 ) );
 check( 'pagination: page beyond the end is clamped to the last', 3 === Pagination::state( 120, 50, 9 )['paged'] && 100 === Pagination::state( 120, 50, 9 )['offset'] );
 check( 'pagination: empty list has one page', 1 === Pagination::state( 0, 50, 4 )['pages'] && 0 === Pagination::state( 0, 50, 4 )['offset'] );
-$html = Pagination::render( Pagination::state( 120, 50, 2 ), array( 'page' => 'workflow-captain-runs', 'state' => 'failed', 'correlation' => '', 'workflow' => 0 ), 'Seiten der Laufliste' );
-check( 'pagination: WordPress classes and total', str_contains( $html, 'class="tablenav bottom"' ) && str_contains( $html, 'class="tablenav-pages"' ) && str_contains( $html, '120 Einträge' ) && str_contains( $html, '2 von 3' ) );
+$html = Pagination::render( Pagination::state( 120, 50, 2 ), array( 'page' => 'workflow-captain-runs', 'state' => 'failed', 'correlation' => '', 'workflow' => 0 ), 'Run list pages' );
+check( 'pagination: WordPress classes and total', str_contains( $html, 'class="tablenav bottom"' ) && str_contains( $html, 'class="tablenav-pages"' ) && str_contains( $html, '120 entries' ) && str_contains( $html, '2 of 3' ) );
 check( 'pagination: links keep the filter and use paged', str_contains( $html, 'page=workflow-captain-runs&amp;state=failed&amp;paged=3' ) && ! str_contains( $html, 'correlation=' ) && ! str_contains( $html, 'workflow=' ) );
 check( 'pagination: page 1 link has no paged parameter', 1 === preg_match( '/class="prev-page button" href="[^"]*state=failed"/', $html ) );
-check( 'pagination: labelled navigation with screen reader texts', str_contains( $html, '<nav class="tablenav bottom" aria-label="Seiten der Laufliste">' ) && str_contains( $html, '<span class="screen-reader-text">Nächste Seite</span>' ) );
+check( 'pagination: labelled navigation with screen reader texts', str_contains( $html, '<nav class="tablenav bottom" aria-label="Run list pages">' ) && str_contains( $html, '<span class="screen-reader-text">Next page</span>' ) );
 $first = Pagination::render( Pagination::state( 120, 50, 1 ), array( 'page' => 'x' ), 'L' );
 check( 'pagination: first page disables first and previous', 2 === substr_count( $first, 'tablenav-pages-navspan button disabled' ) && str_contains( $first, 'class="next-page button"' ) );
 check( 'pagination: one page hides the links (one-page)', str_contains( Pagination::render( Pagination::state( 3, 50, 1 ), array( 'page' => 'x' ), 'L' ), 'tablenav-pages one-page' ) );
@@ -142,8 +142,8 @@ check( 'summary: errors before the window do not count', 0 === $e->store->workfl
 check( 'summary: empty list asks nothing', array() === $e->store->workflow_run_summary( array(), '2000-01-01 00:00:00' ) );
 check( 'summary: error window is 30 days', '2026-10-17 10:00:00' === WorkflowsPage::error_since( strtotime( '2026-11-16 10:00:00 UTC' ) ) );
 $cells = WorkflowsPage::summary_cells( $ids[0], $sum[ $ids[0] ] );
-check( 'summary cells: last run as time with link and state, errors linked to the runs of the workflow', str_contains( $cells, '<time datetime="' ) && str_contains( $cells, 'run=' . $runs_wf[0]['id'] ) && str_contains( $cells, 'wfc-run-state-bad' ) && str_contains( $cells, 'workflow=' . $ids[0] . '"' ) && str_contains( $cells, '<strong>2</strong>' ) && str_contains( $cells, 'aria-label="2 Läufe mit Fehler' ) );
-check( 'summary cells: no run gives a dash for screen readers and 0', str_contains( WorkflowsPage::summary_cells( 7, null ), 'keine Angabe' ) && str_ends_with( WorkflowsPage::summary_cells( 7, null ), '<td>0</td>' ) );
+check( 'summary cells: last run as time with link and state, errors linked to the runs of the workflow', str_contains( $cells, '<time datetime="' ) && str_contains( $cells, 'run=' . $runs_wf[0]['id'] ) && str_contains( $cells, 'wfc-run-state-bad' ) && str_contains( $cells, 'workflow=' . $ids[0] . '"' ) && str_contains( $cells, '<strong>2</strong>' ) && str_contains( $cells, 'aria-label="2 runs with an error' ) );
+check( 'summary cells: no run gives a dash for screen readers and 0', str_contains( WorkflowsPage::summary_cells( 7, null ), 'not specified' ) && str_ends_with( WorkflowsPage::summary_cells( 7, null ), '<td>0</td>' ) );
 
 // ----- Origin of events and actions (docs/UI-ENTWUERFE.md, section 2) -----------------------------------------
 
@@ -152,7 +152,7 @@ check( 'origin: event type maps to its adapter with plugin and contract version'
 check( 'origin: core actions belong to Workflow Captain, product actions to their product', 'workflow-captain' === $src['actions']['notify.admin'] && 'workflow-captain' === $src['actions']['workflow.tag.set'] && 'voucher-captain' === $src['actions']['voucher.code.issue'] && 'starter-connector' === $src['actions']['xstarterconnector.ping'] );
 check( 'origin: unknown action prefix has no origin; unregistered product is marked', ! isset( $src['actions']['webhook.send'] ) && false === $src['products']['voucher-captain']['registered'] );
 check( 'origin: product labels', 'WooCommerce' === \WorkflowCaptain\Admin\Provenance::label( 'woocommerce' ) && 'Starter Connector' === \WorkflowCaptain\Admin\Provenance::label( 'starter-connector' ) );
-check( 'origin: editor header line names product, version and contract', str_starts_with( (string) \WorkflowCaptain\Admin\Provenance::describe_event( $src, 'pass.ticket.checked_in' ), 'Pass Captain ' ) && str_ends_with( (string) \WorkflowCaptain\Admin\Provenance::describe_event( $src, 'pass.ticket.checked_in' ), ', Vertrag 1.1.0' ) && null === \WorkflowCaptain\Admin\Provenance::describe_event( $src, 'woocommerce.order.paid' ) );
+check( 'origin: editor header line names product, version and contract', str_starts_with( (string) \WorkflowCaptain\Admin\Provenance::describe_event( $src, 'pass.ticket.checked_in' ), 'Pass Captain ' ) && str_ends_with( (string) \WorkflowCaptain\Admin\Provenance::describe_event( $src, 'pass.ticket.checked_in' ), ', contract 1.1.0' ) && null === \WorkflowCaptain\Admin\Provenance::describe_event( $src, 'woocommerce.order.paid' ) );
 
 // ----- Run export (docs/UI-ENTWUERFE.md, section 5) -----------------------------------------------------------
 
@@ -202,7 +202,7 @@ check( 'range: invalid dates are ignored', array() === WorkflowsPage::period_fil
 
 $diag  = array( 'environment' => array( 'next_worker_run' => gmdate( 'Y-m-d\TH:i:s\Z', time() + 30 ), 'secret_key_own' => true ), 'workflows' => array( 'active' => 3 ), 'runs' => array(), 'events' => array(), 'stuck' => array() );
 $cards = \WorkflowCaptain\Admin\OverviewPage::cards( $diag, 1284 );
-check( 'overview: card "Läufe · 30 Tage" second, linked to the run list for 30 days', 'Läufe · 30 Tage' === $cards[1]['label'] && 1284 === $cards[1]['value'] && WorkflowsPage::SLUG_RUNS === $cards[1]['page'] && array( 'period' => '30' ) === $cards[1]['args'] && '2026-10-17 10:00:00' === WorkflowsPage::period_filter( $cards[1]['args']['period'], '', '', $now )['filter']['since'] );
+check( 'overview: card "Runs · 30 days" second, linked to the run list for 30 days', 'Runs · 30 days' === $cards[1]['label'] && 1284 === $cards[1]['value'] && WorkflowsPage::SLUG_RUNS === $cards[1]['page'] && array( 'period' => '30' ) === $cards[1]['args'] && '2026-10-17 10:00:00' === WorkflowsPage::period_filter( $cards[1]['args']['period'], '', '', $now )['filter']['since'] );
 check( 'overview: without the count the card is left out', 6 === count( \WorkflowCaptain\Admin\OverviewPage::cards( $diag ) ) && 7 === count( $cards ) );
 $prov_rows = array(
 	array( 'product' => 'pass-captain', 'status' => 'registered', 'types' => array( 'pass.ticket.checked_in', 'pass.order.paid' ) ),
@@ -214,11 +214,11 @@ $prov_src  = array(
 	'actions'  => array( 'voucher.code.issue' => 'voucher-captain', 'voucher.code.void' => 'voucher-captain', 'notify.admin' => 'workflow-captain' ),
 );
 $status    = \WorkflowCaptain\Admin\OverviewPage::provider_status( $prov_rows, $prov_src );
-check( 'provider status: label, state text, tone and counts per product', array( 'Pass Captain', 'angemeldet', 'ok', 2, 0 ) === array( $status[0]['label'], $status[0]['state'], $status[0]['tone'], $status[0]['events'], $status[0]['actions'] ) && array( 'kein Adapter', 'warn', 2 ) === array( $status[1]['state'], $status[1]['tone'], $status[1]['actions'] ) && 'bad' === $status[2]['tone'] );
+check( 'provider status: label, state text, tone and counts per product', array( 'Pass Captain', 'registered', 'ok', 2, 0 ) === array( $status[0]['label'], $status[0]['state'], $status[0]['tone'], $status[0]['events'], $status[0]['actions'] ) && array( 'no adapter', 'warn', 2 ) === array( $status[1]['state'], $status[1]['tone'], $status[1]['actions'] ) && 'bad' === $status[2]['tone'] );
 $ptable = \WorkflowCaptain\Admin\OverviewPage::provider_table( $status );
 $ptable1 = \WorkflowCaptain\Admin\OverviewPage::provider_table( array( array( 'product' => 'workflow-captain', 'label' => 'Workflow Captain', 'state' => 'angemeldet', 'tone' => 'ok', 'events' => 1, 'actions' => 1 ) ) );
-check( 'provider status table: singular for one event type and one action (E2E third run showed "1 Ereignistypen")', str_contains( $ptable1, '1 Ereignistyp · 1 Aktion<' ) );
-check( 'provider status table: caption, row headers, state as text (colour only repeats it)', str_contains( $ptable, '<caption class="screen-reader-text">Providerstatus</caption>' ) && str_contains( $ptable, '<th scope="row">Pass Captain</th>' ) && str_contains( $ptable, '</span>abgelehnt</td>' ) && str_contains( $ptable, '2 Ereignistypen · 0 Aktionen' ) && str_contains( $ptable, 'aria-hidden="true"' ) );
+check( 'provider status table: singular for one event type and one action (E2E third run showed "1 Ereignistypen")', str_contains( $ptable1, '1 event type · 1 action<' ) );
+check( 'provider status table: caption, row headers, state as text (colour only repeats it)', str_contains( $ptable, '<caption class="screen-reader-text">Provider status</caption>' ) && str_contains( $ptable, '<th scope="row">Pass Captain</th>' ) && str_contains( $ptable, '</span>rejected</td>' ) && str_contains( $ptable, '2 event types · 0 actions' ) && str_contains( $ptable, 'aria-hidden="true"' ) );
 
 // ----- Overview of all schedules (docs/UI-ENTWUERFE.md, section 4) ---------------------------------------------
 
@@ -251,11 +251,11 @@ check( 'schedules: next due time from Schedule::upcoming() in the site time zone
 check( 'schedules: paused workflow has no next due time', EngineStore::WF_PAUSED === $sched[ $w_pause ]['status'] && null === $sched[ $w_pause ]['next'] );
 check( 'schedules: last fired time from the option, none when never fired', strtotime( '2026-10-19 05:30:00 UTC' ) === $sched[ $w_week ]['last_fired'] && null === $sched[ $w_day ]['last_fired'] );
 check( 'schedules: a draft with another schedule is flagged, the published schedule counts', $sched[ $w_day ]['draft_differs'] && '02:30' === $sched[ $w_day ]['schedule']['time'] && ! $sched[ $w_week ]['draft_differs'] );
-check( 'schedules: readable rule', 'wöchentlich, Montag, 07:30' === \WorkflowCaptain\Admin\SchedulesPage::describe( $weekly ) && 'monatlich, am 1., 08:00' === \WorkflowCaptain\Admin\SchedulesPage::describe( $sched[ $w_pause ]['schedule'] ) && 'täglich, 02:30' === \WorkflowCaptain\Admin\SchedulesPage::describe( $sched[ $w_day ]['schedule'] ) );
+check( 'schedules: readable rule', 'weekly, Monday, 07:30' === \WorkflowCaptain\Admin\SchedulesPage::describe( $weekly ) && 'monthly, on day 1, 08:00' === \WorkflowCaptain\Admin\SchedulesPage::describe( $sched[ $w_pause ]['schedule'] ) && 'daily, 02:30' === \WorkflowCaptain\Admin\SchedulesPage::describe( $sched[ $w_day ]['schedule'] ) );
 $fmt   = static fn( string $f, int $ts ): string => ( new DateTimeImmutable( '@' . $ts ) )->setTimezone( new DateTimeZone( 'Europe/Berlin' ) )->format( $f );
 $lines = \WorkflowCaptain\Admin\SchedulesPage::table_rows( array_values( $sched ), $fmt, true );
-check( 'schedules table: row header links to the editor, times as time elements in the site time zone', 3 === count( $lines ) && str_contains( $lines[2], '<th scope="row"><a href="https://example.test/wp-admin/admin.php?page=workflow-captain-workflows&amp;edit=' . $w_week . '">Wochenbericht</a></th>' ) && str_contains( $lines[2], '<time datetime="2026-10-26T06:30:00Z">Mon, 26.10.2026 07:30</time>' ) && str_contains( $lines[2], 'workflow=' . $w_week . '">Läufe</a>' ) );
-check( 'schedules table: paused says so, never fired is a dash for screen readers, differing draft is noted', str_contains( $lines[1], 'keiner (pausiert)' ) && str_contains( $lines[0], 'keine Angabe' ) && str_contains( $lines[0], 'Der Entwurf weicht ab' ) );
+check( 'schedules table: row header links to the editor, times as time elements in the site time zone', 3 === count( $lines ) && str_contains( $lines[2], '<th scope="row"><a href="https://example.test/wp-admin/admin.php?page=workflow-captain-workflows&amp;edit=' . $w_week . '">Wochenbericht</a></th>' ) && str_contains( $lines[2], '<time datetime="2026-10-26T06:30:00Z">Mon, 26.10.2026 07:30</time>' ) && str_contains( $lines[2], 'workflow=' . $w_week . '">Runs</a>' ) );
+check( 'schedules table: paused says so, never fired is a dash for screen readers, differing draft is noted', str_contains( $lines[1], 'none (paused)' ) && str_contains( $lines[0], 'not specified' ) && str_contains( $lines[0], 'The draft differs' ) );
 check( 'schedules table: the link to the runs inside the cell text is underlined (WCAG 1.4.1, axe link-in-text-block in the E2E third run)', str_contains( $lines[2], '(<a class="wfc-text-link" href=' ) && str_contains( (string) file_get_contents( __DIR__ . '/../src/Plugin.php' ), 'a.wfc-text-link{text-decoration:underline}' ) );
 check( 'WCAG 1.4.10: text fields of the plugin pages stay inside the page on narrow screens (E2E: name field 1-2 px wider at 390 px)', str_contains( (string) file_get_contents( __DIR__ . '/../src/Plugin.php' ), '.wrap input.regular-text{max-width:calc(100% - 2px)}' ) );
 check( 'schedules table: without editor right no link', ! str_contains( \WorkflowCaptain\Admin\SchedulesPage::table_rows( array_values( $sched ), $fmt, false )[2], 'edit=' ) );
