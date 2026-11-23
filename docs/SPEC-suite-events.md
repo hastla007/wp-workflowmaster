@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| Version | **1.0.0-draft.8** |
-| Stand | 16.11.2026; Belege und Stände der anderen Repositories nachgetragen am 23.11.2026 (ohne Regeländerung, Abschnitt 16) |
+| Version | **1.0.0-draft.9** |
+| Stand | 23.11.2026 (1.0.0-draft.9: Review-Befehle nach F-23); Belege und Stände der anderen Repositories nachgetragen am 23.11.2026 (Abschnitt 16) |
 | Status | Entwurf zur Abnahme durch den Inhaber. Seit dem 16.11.2026 gebaut (Plugin `workflow-captain` 0.2.x, Abweichung von D12). |
 | Ort | `hastla007/wp-workflowmaster`, `docs/SPEC-suite-events.md` (Entscheidung D1) |
 | Maschinenlesbar | [`schema/suite-event-v1.schema.json`](schema/suite-event-v1.schema.json), Katalog [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json), Beispiele unter [`examples/`](examples/) |
@@ -11,7 +11,7 @@
 
 Dieses Dokument ist die eine gemeinsame Spezifikation dafür, wie die Plugins der Captain Suite zusammenarbeiten. Wo `konzept.md`, `TODO.md` oder ein Dokument eines anderen Repositorys etwas anderes sagt, gilt dieses Dokument.
 
-Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D12) und die Folgeentscheidungen vom Abend desselben Tages (D8b, D11b, D13). Jede Regel nennt die Entscheidung, aus der sie folgt. Regeln ohne Entscheidung sind Vorschläge dieser Spezifikation und in [`SPEC-open-questions.md`](SPEC-open-questions.md) aufgeführt.
+Grundlage sind die Entscheidungen des Inhabers vom 16.11.2026 (D1, D2, D4 bis D12) und die Folgeentscheidungen vom Abend desselben Tages (D8b, D11b, D13); dazu die Antworten auf offene Fragen, die die Regeln mit ihrer Nummer nennen (zum Beispiel F-23 vom 23.11.2026). Jede Regel nennt die Entscheidung, aus der sie folgt. Regeln ohne Entscheidung sind Vorschläge dieser Spezifikation und in [`SPEC-open-questions.md`](SPEC-open-questions.md) aufgeführt.
 
 ## 0. Sprache und Begriffe
 
@@ -461,8 +461,8 @@ Status sind die Werte von `RC:src/Domain/ReviewStatus.php` (`pending`, `approved
 - R-4.27 **Sterne.** Der Payload enthält keine Bewertung in Sternen. Der Adapter liest `rating_value`, `rating_scale_min` und `rating_scale_max` nach dem Ereignis über `ReviewCaptain\Plugin::instance()->reviews()->find_by_uuid()` (`RC:src/Repository/ReviewRepository.php:52`). Das ist eine Lesefunktion ohne Vertrag (8.1): nur lesend, nur diese drei Felder, alle übrigen Felder des gelesenen Objekts (Text, Name, E-Mail) verwirft er im selben Aufruf (R-5.3). Ist die Bewertung nicht lesbar oder hat sie keine Sterne, fehlen die drei Felder. `rating_value` steht auf der Originalskala der Plattform, nie umgerechnet. Bis Review Captain eine dokumentierte Lesefunktion oder die Sterne im Payload liefert (dort RC-4), nennt der Adapter diese Nutzung in seiner Kompatibilitätsangabe (R-13.4). **Stand 23.11.2026:** Ab Vertrag 1.1.0 (bisher nur Branch `claude/sleepy-gates-6mm217` `35af5e0`) trägt der Payload `review_captain.review.v1` die drei Felder; der Adapter SOLL sie dann aus dem Payload nehmen und die Lesefunktion ohne Vertrag nur unter 1.1.0 nutzen (Katalog `rating_fields_since`).
 - R-4.28 **Entfernt.** `review_captain_review_removed_v1` feuert beim Statuswechsel auf `removed` (Grabstein, zusätzlich zu `review.review.status_changed`) und beim endgültigen Löschen (Löschauftrag, Aufbewahrung, Rücknahme eines Imports, Abbruch eines Workflow-Entwurfs). Der Adapter unterscheidet beides mit derselben Lesefunktion: Ist die Bewertung noch lesbar, ist `removal` = `tombstoned`, sonst `deleted`. Ist die Lesefunktion nicht vorhanden, fehlt `removal` und der Diskriminator ist `occurred_at` auf die Sekunde. `review.review.removed` mit `removal` = `deleted` ist ein Löschsignal; der Consumer KANN gespeicherte Ereignisse mit demselben `subject` dann wie nach R-12.5 leeren. **Stand 23.11.2026:** Review Captain liefert `removal` (`tombstoned`/`deleted`) seit `main` `8c60c6f` selbst im Payload `review_captain.review.v1` (`RC:src/Events/Events.php:50`, `:81`); der Adapter SOLL dann diesen Wert nehmen und nur ohne ihn wie oben ermitteln.
 - R-4.29 **Kennungen der Quelle.** `context_id` geht nur weiter, wenn er aus Ziffern und höchstens drei Doppelpunkten besteht (`^\d{1,20}(:\d{1,20}){0,3}$`), sonst entfällt er. Aus `experience_id` (Format `<quelle>:<referenz>`, `RC:docs/contracts/experience-event-v1.md`) geht nur die Quelle als `experience_source` weiter (`^[a-z][a-z0-9_-]{0,31}$`, zum Beispiel `voucher`, `pass`, `pass-captain`, `woo`); die Referenz kann bei Voucher Captain die Gutscheinreferenz sein, die nach R-4.7 nicht weitergereicht wird.
-- R-4.30 **Keine Befehle.** Für Review Captain gibt es in Version 1 keinen Befehl mit Wirkung im Provider (8.1, D11b). Der Container-Service `workflow` von Review Captain (`RC:src/Workflow/WorkflowService.php`) bietet `create_draft()`, `cancel_draft()`, `plan_request()` und `cancel_request()`; ein Adapter DARF sie nicht als Workflow-Aktion anbieten (F-23). Lesend nutzbar sind `aggregates()` und `request_capabilities()` (8.1). Einwilligung, Opt-out, Sperrliste, Frequenzgrenze, Plattformziel und Moderation bleiben im Kern bzw. im Planer von Review Captain Pro; kein Weg dieser Spezifikation umgeht sie (8.2).
-- R-4.31 Eine Einladung zur Bewertung plant in Version 1 nicht ein Workflow, sondern Review Captain Pro nach seinen eigenen Regeln (Empfehlung zu F-08). Ein Workflow bekommt die Ereignisse `review.*` als Auslöser, zum Beispiel für eine Nachricht an den Betreiber bei einer neuen Bewertung mit wenigen Sternen (`notify.admin`).
+- R-4.30 **Zwei Befehle (F-23, entschieden am 23.11.2026).** Ein Workflow darf eine Einladung zur Bewertung planen und abbrechen: `review.request.plan` und `review.request.cancel` (8.1, 8.5). Beide bietet der Review-Adapter von Workflow Captain Pro an (`Suite\ReviewAdapter`), nicht der Kern von Workflow Captain und nicht Review Captain. Der Adapter führt sie über den Container-Service `workflow` von Review Captain aus (`ReviewCaptain\Plugin::instance()->workflow()`, `RC:src/Workflow/WorkflowService.php`): `plan_request()` bzw. `cancel_request()`, Rückgabe im Umschlag `{success, status, code, data}`, Vertrag `WorkflowService::CONTRACT` = `1.0`. Der Service delegiert an den Planer von Review Captain Pro, angemeldet am Filter `review_captain_request_planner_v1`. Ist kein Planer angemeldet, antwortet der Service `rc.contract.unavailable`; der Schritt scheitert dann endgültig mit diesem Code, ohne Wiederholung (R-8.13). Einwilligung, Opt-out, Sperrliste, Frequenzgrenze, Plattformziel und Moderation bleiben in Review Captain bzw. Review Captain Pro; ein Befehl kann sie nicht umgehen (8.2). Lizenz und Recht: Workflow Captain Pro und das Recht `review.review_requests` von Review Captain Pro (D6, 10.1). Idempotenzschlüssel ist der Schlüssel des Schritts (R-8.4); `review.request.plan` ist idempotent je Bestellung bzw. `subject` und Workflow-Schritt, `review.request.cancel` ist idempotent (ein zweiter Abbruch bewirkt nichts). Der Workflow übergibt keine Kontaktdaten; den Empfänger löst der Planer selbst auf (R-5.1, R-5.6). `create_draft()` und `cancel_draft()` bietet kein Adapter als Befehl an, weil ein Entwurf Bewertungstext und Namen bräuchte (R-5.1). Lesend nutzbar sind `aggregates()` und `request_capabilities()` (8.1).
+- R-4.31 Einladungen zur Bewertung plant Review Captain Pro weiter nach seinen eigenen Regeln und aus seinen eigenen Quellen (Empfehlung zu F-08). Ein Workflow kann zusätzlich über `review.request.plan` eine Einladung beim Planer anfragen und sie über `review.request.cancel` abbrechen (R-4.30); ob und wann die Einladung versendet wird, entscheidet allein der Planer. Ein Workflow bekommt die Ereignisse `review.*` als Auslöser, zum Beispiel für eine Nachricht an den Betreiber bei einer neuen Bewertung mit wenigen Sternen (`notify.admin`).
 
 #### 4.6.4 Course Captain (vorgemerkt)
 
@@ -670,7 +670,7 @@ Stand je Provider:
 
 Ein Befehl ist die einzige Art, auf die ein Workflow etwas in einem Provider bewirkt. Befehle führt der Adapter aus; er ruft dafür eine öffentliche Funktion des Providers auf.
 
-### 8.1 Erlaubte Befehle in Version 1 (D11, D11b)
+### 8.1 Erlaubte Befehle in Version 1 (D11, D11b, F-23)
 
 Ohne Wirkung im Provider:
 
@@ -682,7 +682,7 @@ Ohne Wirkung im Provider:
 | `workflow.tag.set`, `workflow.tag.remove` | Markierung an einem Objekt, gespeichert im Consumer | Consumer |
 | `workflow.note.add` | Notiz an einem Objekt, gespeichert im Consumer | Consumer |
 
-Mit Wirkung im Provider, genau vier, alle im Voucher-Kern (D11b):
+Mit Wirkung im Provider, genau sechs: vier im Voucher-Kern (D11b) und zwei in Review Captain (F-23, seit 1.0.0-draft.9):
 
 | Befehl | Wirkung |
 |---|---|
@@ -690,6 +690,8 @@ Mit Wirkung im Provider, genau vier, alle im Voucher-Kern (D11b):
 | `voucher.void` | einen Gutschein sperren |
 | `voucher.reactivate` | einen gesperrten Gutschein reaktivieren |
 | `voucher.redeem` | einen Gutschein ganz oder teilweise einlösen |
+| `review.request.plan` | eine Einladung zur Bewertung beim Planer von Review Captain Pro anfragen, über `plan_request()` des Service `workflow` (R-4.30); versendet nichts selbst |
+| `review.request.cancel` | eine geplante Einladung zur Bewertung abbrechen, über `cancel_request()` des Service `workflow` (R-4.30) |
 
 Lesefunktionen heute: Affiliate Captain hat `wpac_get_affiliate()`, `wpac_get_commission()` und `wpac_get_payout()` (`AC:docs/CONTRACT.md:7`, Vertrag seit 1.3.0, „Rückgabe stabil innerhalb von Version 1“, `AC:docs/CONTRACT.md:306-308`; geprüft am 16.11.2026, Z-07). Sie prüfen den angemeldeten Benutzer nicht. `wpac_get_affiliate()` liefert auch Name und E-Mail-Adresse, `wpac_get_payout()` auch `paypal_email` und `claim`; der Adapter liest daraus nur die Felder der Positivliste. Es fehlen Lesefunktionen für Gutschriften, Werbemittel, den Hauptcode eines Partners und Provisionen je Bestellung; `wpac_workflow_read()` gibt es nicht mehr (R-4.6). Review Captain hat im Container-Service `workflow` (`ReviewCaptain\Plugin::instance()->workflow()`, `RC:src/Workflow/WorkflowService.php`, Vertrag `WorkflowService::CONTRACT` = `1.0`) die lesenden Methoden `aggregates()` (Zähler je Plattform, Status und Monat, Zellen unter 5 maskiert, nie Texte, Namen oder Kennungen einzelner Bewertungen) und `request_capabilities()` (ob ein Planer von Review Captain Pro angemeldet ist); beide prüfen den angemeldeten Benutzer nicht. Eine dokumentierte Lesefunktion für eine einzelne Bewertung gibt es nicht; `reviews()->find_by_uuid()` ist eine Funktion ohne Vertrag (R-4.27, Anforderung RC-4). Im Lizenzserver gibt es seit dem 16.11.2026 die Lesefassade `WPLC\License\ReadFacade::get()` (Branch `claude/plugin-todo-liste-2a83v4`, noch nicht gemergt).
 
@@ -713,7 +715,7 @@ Folge: Für beide Kerne fehlt eine dokumentierte Lesefassade für Zustand, Konta
 
 Markierungen und Notizen liegen in Version 1 nur im Consumer. Eine Notiz im Provider ist kein Befehl der Version 1.
 
-### 8.2 Ausdrücklich verboten in Version 1 (D11, D11b)
+### 8.2 Ausdrücklich verboten in Version 1 (D11, D11b, F-23)
 
 Ein Workflow DARF NICHT, weder über einen Befehl noch auf einem anderen Weg:
 
@@ -726,7 +728,9 @@ Ein Workflow DARF NICHT, weder über einen Befehl noch auf einem anderen Weg:
 - eine Auszahlung anlegen, beanspruchen, abschließen oder stornieren,
 - den Status eines Partners ändern,
 - eine Lizenz, eine Aktivierung, ein Site-Limit, einen Tarif oder einen Lizenzschlüssel ändern oder ausgeben,
-- eine Mail eines Kerns unterdrücken, ersetzen oder erneut auslösen (Abschnitt 9).
+- eine Mail eines Kerns unterdrücken, ersetzen oder erneut auslösen (Abschnitt 9),
+- eine Bewertung anlegen, ändern, freigeben, ablehnen oder veröffentlichen, auch nicht als Entwurf (`create_draft()`, R-4.30),
+- eine Einladung zur Bewertung versenden oder planen, ohne den Planer von Review Captain Pro zu durchlaufen, oder dabei Einwilligung, Opt-out, Sperrliste, Frequenzgrenze, Plattformziel oder Moderation umgehen; erlaubt sind allein `review.request.plan` und `review.request.cancel` nach R-4.30.
 
 Ein Adapter, der einen dieser Wege anbietet, erfüllt diese Spezifikation nicht.
 
@@ -825,7 +829,7 @@ Ein Workflow läuft meist ohne angemeldeten Benutzer (Cron, Action Scheduler).
 
 - R-8.4 Jeder Befehl trägt einen Idempotenzschlüssel aus Workflow, Version des Workflows, `id` des auslösenden Ereignisses und Schritt. Eine Wiederholung desselben Schritts nutzt denselben Schlüssel.
 - R-8.5 Der Consumer DARF NICHT `wp_set_current_user()` aufrufen, um einem Lauf die Rechte eines Administrators zu geben.
-- R-8.6 Jeder schreibende Befehl nennt die Berechtigung, die ein Mensch für dieselbe Handlung bräuchte. Für `voucher.issue` ist das `vcap_manage_vouchers` (`VC:src/Issuer.php:940-942`); für Sperren `vcap_manage_vouchers`, für Reaktivieren `vcap_increase_balance` (die Prüfung des Kerns in `reactivate()`, `VC:src/Issuer.php:2077`), für Einlösen `vcap_redeem_api` (die Berechtigung der Einlöse-Ziele, `VC:src/API/V1/RestController.php:151`). Der Kern prüft beim Sperren und Einlösen in PHP heute nichts (Z-15, geklärt am 16.11.2026); die Prüfung leistet der Adapter nach R-8.8.
+- R-8.6 Jeder schreibende Befehl nennt die Berechtigung, die ein Mensch für dieselbe Handlung bräuchte. Für `voucher.issue` ist das `vcap_manage_vouchers` (`VC:src/Issuer.php:940-942`); für Sperren `vcap_manage_vouchers`, für Reaktivieren `vcap_increase_balance` (die Prüfung des Kerns in `reactivate()`, `VC:src/Issuer.php:2077`), für Einlösen `vcap_redeem_api` (die Berechtigung der Einlöse-Ziele, `VC:src/API/V1/RestController.php:151`). Der Kern prüft beim Sperren und Einlösen in PHP heute nichts (Z-15, geklärt am 16.11.2026); die Prüfung leistet der Adapter nach R-8.8. Für `review.request.plan` und `review.request.cancel` ist es `review_captain_manage_requests`, die Berechtigung der Einladungen in Review Captain Pro (`CP:addons/review-captain-pro/src/Requests/Module.php:34`, gelesen am 23.11.2026).
 - R-8.7 Beim Veröffentlichen eines Workflows MUSS der veröffentlichende Benutzer jede dieser Berechtigungen haben. Seine Benutzer-ID wird als `authorized_by_user_id` am Workflow gespeichert.
 - R-8.8 Bei jeder Ausführung prüft der Adapter mit `user_can( $authorized_by_user_id, … )`, ob dieser Benutzer noch existiert und die Berechtigung noch hat. Wenn nicht, wird der Schritt nicht ausgeführt und der Workflow pausiert mit Grund.
 - R-8.9 Lesende Abfragen und Befehle, die nur im Consumer schreiben, brauchen die Berechtigungen des Consumers beim Veröffentlichen, aber keine Prüfung bei jeder Ausführung.
@@ -846,12 +850,14 @@ Diese Tabelle fasst für jeden Befehl der Version 1 zusammen, was 8.1 bis 8.4, 7
 | `voucher.void` | wie `voucher.issue` | sperrt einen Gutschein, ohne Erstattung | wie `voucher.issue` | `vcap_manage_vouchers` (R-8.6) | wie `voucher.issue` | wie `voucher.issue` |
 | `voucher.reactivate` | wie `voucher.issue` | reaktiviert einen gesperrten Gutschein | wie `voucher.issue` | `vcap_increase_balance` (R-8.6) | wie `voucher.issue` | wie `voucher.issue` |
 | `voucher.redeem` | wie `voucher.issue` | löst einen Gutschein ganz oder teilweise ein | wie `voucher.issue` | `vcap_redeem_api` (R-8.6) | wie `voucher.issue` | wie `voucher.issue` |
+| `review.request.plan` | nach R-8.4 (Schlüssel des Schritts), an `plan_request()` übergeben; idempotent je Bestellung bzw. `subject` und Workflow-Schritt (R-4.30) | plant eine Einladung zur Bewertung im Planer von Review Captain Pro; versendet wird nach dessen Regeln (Einwilligung, Opt-out, Sperrliste, Frequenzgrenze, Plattformziel), nie am Planer vorbei (8.2) | ja, mit demselben Schlüssel, bei vorübergehenden Fehlern; `rc.contract.unavailable` (kein Planer) und Ablehnungen des Planers sind endgültig (R-8.13) | `review_captain_manage_requests` (R-8.6) | Workflow Captain Pro und Recht `review.review_requests` von Review Captain Pro (D6) | Laufprotokoll nach R-8.10 mit `status` und `code` des Umschlags, ohne Kontaktdaten; Protokoll des Planers |
+| `review.request.cancel` | wie `review.request.plan`, an `cancel_request()` übergeben; idempotent (ein zweiter Abbruch bewirkt nichts) | bricht eine geplante Einladung im Planer von Review Captain Pro ab; eine versendete Einladung holt er nicht zurück | wie `review.request.plan` | `review_captain_manage_requests` (R-8.6) | wie `review.request.plan` | wie `review.request.plan` |
 
 „Wie das auslösende Ereignis“ heißt: Kommt das Ereignis aus einem Captain-Produkt, gilt R-10.1; kommt es aus WordPress oder WooCommerce, braucht es keine Lizenz (F-20, 4.7). Maschinenlesbar: [`catalog/actions-v1.json`](catalog/actions-v1.json).
 
 - R-8.11 Ein Schritt wird höchstens so oft wiederholt wie ein Ereignis (8 Versuche, Abstände aus 7.4) und nur bei vorübergehenden Fehlern. Danach bleibt der Lauf mit Grund stehen; ein Mensch kann den Schritt erneut einreihen, mit demselben Idempotenzschlüssel.
 - R-8.12 Für `notify.admin` und `notify.user` bucht der Consumer den Idempotenzschlüssel als „wird gesendet“, bevor er die Mail übergibt, und danach als „gesendet“ oder „fehlgeschlagen“. Findet er einen Schlüssel im Zustand „wird gesendet“ (Abbruch während des Versands), sendet er nicht von selbst erneut, sondern zeigt den Schritt zur Entscheidung durch einen Menschen. Eine Mail lieber nicht als doppelt.
-- R-8.13 Lehnt der Voucher-Kern einen Befehl ab, weil eine Grenze erreicht, der Befehl abgeschaltet, die Währung nicht zugelassen oder die Berechtigung entzogen ist, wiederholt der Consumer nicht. Die Ablehnung steht im Laufprotokoll und im Protokoll des Kerns.
+- R-8.13 Lehnt der Voucher-Kern einen Befehl ab, weil eine Grenze erreicht, der Befehl abgeschaltet, die Währung nicht zugelassen oder die Berechtigung entzogen ist, wiederholt der Consumer nicht. Die Ablehnung steht im Laufprotokoll und im Protokoll des Kerns. Dasselbe gilt für `review.request.plan` und `review.request.cancel`, wenn Review Captain mit `success` = `false` und einem Ablehnungscode antwortet, insbesondere `rc.contract.unavailable` (kein Planer angemeldet, R-4.30): Der Schritt scheitert endgültig mit diesem Code.
 
 ## 9. Mails und Erinnerungen (D10)
 
@@ -877,6 +883,7 @@ Diese Tabelle fasst für jeden Befehl der Version 1 zusammen, was 8.1 bis 8.4, 7
 | Automation, die ein Ereignis **eines** Captain-Produkts nutzt (zum Beispiel Pass → Nachricht) | nötig | **nötig** | **nötig** (hier Pass Captain Pro) |
 | Automation über **zwei** Captain-Produkte (zum Beispiel Voucher → Affiliate) | nötig | **nötig** | **nötig für jedes beteiligte Produkt** |
 | Befehle `voucher.issue`, `voucher.void`, `voucher.reactivate`, `voucher.redeem` | nötig | **nötig** | **nötig** (Voucher Captain Pro) |
+| Befehle `review.request.plan`, `review.request.cancel` (F-23) | nötig | **nötig** | **nötig** (Review Captain Pro mit Recht `review.review_requests`, D6) |
 | Lizenzereignisse im Shop des Herstellers | nötig | **nötig** | – (der Lizenzserver hat kein Add-on) |
 
 - R-10.1 Eine Automation, die ein Ereignis oder einen Befehl eines Captain-Produkts nutzt, braucht Workflow Captain Pro **und** die Pro-Lizenz des Add-ons dieses Produkts (D6). Welches Recht des Produkts dafür steht, ist offen (F-09).
@@ -980,7 +987,7 @@ Drei Versionen sind voneinander unabhängig:
 - R-13.3 Der Consumer MUSS unbekannte Felder in `data` hinnehmen und unbekannte Ereignistypen speichern, ohne einen Workflow zu starten.
 - R-13.4 Ein Adapter nennt je Provider die niedrigste Vertragsversion, die er braucht, und die MAJOR-Version, die er kennt. Ist der Vertrag des Providers älter oder hat er eine höhere MAJOR-Version, meldet sich der Adapter nicht an und zeigt den Grund. In `captain-pro` geschieht das über `Feature::requires()` mit dem Eintrag `constants` (`CP:packages/addon-kernel/src/CoreCapabilities.php:35-36`, `:92`).
 - R-13.5 Ändert ein Provider eine Action des Katalogs additiv (neues Argument am Ende, neues Feld im Array), bleibt der Katalog gültig. Der Adapter gibt neue Werte erst weiter, wenn eine MINOR-Version dieser Spezifikation sie erlaubt (R-5.2).
-- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0 (erscheint ohne Workflow-Provider, D13); Form Captain mit Vertrag 1.0.0 (seit 1.0.0-draft.7, 4.6.1); Review Captain mit Vertrag 1.0.0 oder, solange `main` keine Konstante hat, Plugin 0.1.0-dev mit `Events::SCHEMA` = `review_captain.review.v1` (seit 1.0.0-draft.8, 4.6.3). Für die vier Gutschein-Befehle zusätzlich die Vertragsversion von Voucher Captain, die die Einstiegspunkte aus 8.3 bringt.
+- R-13.6 Mindestversionen für Version 1: Voucher Captain 1.2.0 mit Vertrag 1.1.0; Pass Captain 1.5.0 mit Vertrag 1.1.0; Affiliate Captain 0.15.0 mit Vertrag 1.4.0 (erscheint ohne Workflow-Provider, D13); Form Captain mit Vertrag 1.0.0 (seit 1.0.0-draft.7, 4.6.1); Review Captain mit Vertrag 1.0.0 oder, solange `main` keine Konstante hat, Plugin 0.1.0-dev mit `Events::SCHEMA` = `review_captain.review.v1` (seit 1.0.0-draft.8, 4.6.3). Für die vier Gutschein-Befehle zusätzlich die Vertragsversion von Voucher Captain, die die Einstiegspunkte aus 8.3 bringt. Für die zwei Review-Befehle zusätzlich `WorkflowService::CONTRACT` mit MAJOR 1, mindestens `1.0` (R-4.30).
 - R-13.7 Der Consumer führt selbst eine Vertragskonstante für die Schnittstelle, an der sich Adapter anmelden. Ihr Name ist offen (F-03).
 - R-13.8 Ein Dokument eines anderen Repositorys, das Ereignisse dieses Katalogs beschreibt, verweist auf diese Spezifikation und legt keine eigenen Namen, Umschläge oder Garantien für die Suite fest.
 
@@ -1013,7 +1020,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 | A-6 | Jedes erzeugte Ereignis besteht die Prüfung gegen das Schema |
 | A-7 | Zweimal dieselbe Action ergibt denselben Idempotenzschlüssel; zwei echte Ereignisse ergeben verschiedene (R-7.9) |
 | A-8 | Bei älterem Vertrag oder höherer MAJOR-Version des Providers meldet er sich nicht an (R-13.4) |
-| A-9 | Er bietet keinen Befehl aus 8.2 an; die vier Gutschein-Befehle rufen nur die Einstiegspunkte aus 8.3 auf, nie über einen Code, nie mit Erstattung |
+| A-9 | Er bietet keinen Befehl aus 8.2 an; die vier Gutschein-Befehle rufen nur die Einstiegspunkte aus 8.3 auf, nie über einen Code, nie mit Erstattung; die zwei Review-Befehle rufen nur `plan_request()`/`cancel_request()` des Service `workflow` auf, nie den Planer oder den Versand direkt, und scheitern ohne Planer endgültig mit `rc.contract.unavailable` (R-4.30) |
 | A-10 | Ein schreibender Befehl wird nicht ausgeführt, wenn `authorized_by_user_id` die Berechtigung nicht mehr hat (R-8.8) |
 | A-11 | Endet eine der beiden Lizenzen, werden die Callbacks entfernt; im Kern ändert sich nichts (R-10.5) |
 
@@ -1063,6 +1070,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 
 | Version | Datum | Änderung |
 |---|---|---|
+| 1.0.0-draft.9 | 23.11.2026 | MINOR nach R-13.1 (neue Befehle für einen vorhandenen Provider), nach F-23 (Antwort der Inhaberin vom 23.11.2026: ja): zwei Befehle `review.request.plan` und `review.request.cancel`, angeboten vom Review-Adapter von Workflow Captain Pro, ausgeführt über `plan_request()`/`cancel_request()` des Service `workflow` von Review Captain (Vertrag `WorkflowService::CONTRACT` 1.0), der an den Planer von Review Captain Pro am Filter `review_captain_request_planner_v1` delegiert; ohne Planer endgültig `rc.contract.unavailable`. Schutzregeln bleiben in Review Captain (Pro); Lizenz Workflow Captain Pro plus Recht `review.review_requests` (D6). Angepasst: R-4.30, R-4.31, 8.1, 8.2, R-8.6, 8.5, R-8.13, 10.1, A-9, R-13.6. Katalog `actions-v1.json`: zwei Befehle. |
 | 1.0.0-draft.8 (Nachtrag) | 23.11.2026 | Ohne Versionswechsel, keine Regel geändert: Stände aller Suite-Repositories nachgetragen (0, 3.1, 4.4, 4.6.1, 4.6.3, R-4.27, 4.6.4, 11). Lizenzserver mit Vertragskonstante 1.0.0 auf `main` (Katalog `min_contract` `1.0.0`), Form Captain 1.1.0 auf `main`, Voucher und Pass Captain auf `main` ohne Konstante, Review Captain 1.1.0 mit Sternen nur auf Branch (Katalog `rating_fields_since`), Course Captain mit Code auf Branch; neue Frage F-24. |
 | 1.0.0-draft.8 | 16.11.2026 | MINOR nach R-13.1 (neuer Provider), nach F-12 (wie D13): Katalog `review.*` mit 3 Ereignissen aus den öffentlichen Hooks der Stufe V von Review Captain (`main` `863b92b`, 4.6.3, R-4.27 bis R-4.31): Positivliste ohne Namen, E-Mail-Adressen, Texte und IP-Adressen; Sterne über eine Lesefunktion ohne Vertrag (R-4.27); Grabstein und endgültiges Löschen unterschieden (R-4.28); `experience_id` nur als Quelle (R-4.29). Keine Befehle für Review Captain in Version 1 (R-4.30, neue Frage F-23). Vertragskonstante `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.0.0` auf dem Branch von Review Captain (3.1, RC-2); ohne sie Rückfall nach R-3.3. Angepasst: 0 (Belege), 3.1, 6, 7.2, 7.3, 8.1, R-13.6. Katalog: 3 Ereignisse und Beispiele. |
 | 1.0.0-draft.7 (Nachtrag) | 16.11.2026 | Abschnitt 17: R-17.10 bis R-17.15 (Routing-Vertrag mit netzwerkfähigen Ereignissen und Datenschutzklassen, Netzwerkvertrag einer Aktion, Benutzer, Grenzen des Ziels, Betrieb je Website, Plätze je Unterwebsite). Keine Änderung am Umschlag, am Schema oder am Katalog. |
