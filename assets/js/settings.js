@@ -15,6 +15,15 @@
 		dirty = true;
 	};
 	forms.forEach( function ( form ) {
+		// Switching on a destructive option needs a confirmation (SET-WC-05): cancelling leaves it off.
+		form.querySelectorAll( 'input[type="checkbox"][data-confirm]' ).forEach( function ( box ) {
+			box.addEventListener( 'change', function () {
+				// eslint-disable-next-line no-alert -- a native confirmation is the accessible choice here.
+				if ( box.checked && ! window.confirm( box.getAttribute( 'data-confirm' ) ) ) {
+					box.checked = false;
+				}
+			} );
+		} );
 		form.addEventListener( 'input', markDirty );
 		form.addEventListener( 'change', markDirty );
 		form.addEventListener( 'submit', function () {

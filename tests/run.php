@@ -173,10 +173,11 @@ rmdir( $tmp );
 // Uninstall runs without the plugin's autoloader (WordPress includes only uninstall.php). Found in the E2E run
 // (docs/E2E-RESULTS.md): Install::deactivate() needed the Scheduler class, which uninstall.php did not load.
 
-$wfc_stub = sys_get_temp_dir() . '/wfc-uninstall-' . bin2hex( random_bytes( 4 ) ) . '.php';
-file_put_contents(
-	$wfc_stub,
-	'<?php
+$wfc_uninstall = static function ( string $settings ): array {
+	$stub = sys_get_temp_dir() . '/wfc-uninstall-' . bin2hex( random_bytes( 4 ) ) . '.php';
+	file_put_contents(
+		$stub,
+		'<?php
 define( "ABSPATH", "/" );
 define( "WP_UNINSTALL_PLUGIN", "workflow-captain/workflow-captain.php" );
 $GLOBALS["log"] = array();
@@ -184,6 +185,7 @@ final class Stub_Db { public $prefix = "wp_"; public function query( $q ) { $GLO
 final class Stub_Role { public function remove_cap( $c ) { $GLOBALS["log"][] = "cap:" . $c; } }
 $wpdb = new Stub_Db();
 function is_multisite() { return false; }
+function get_option( $o, $d = false ) { return "workflow_captain_settings" === $o ? ' . $settings . ' : $d; }
 function delete_option( $o ) { $GLOBALS["log"][] = "option:" . $o; return true; }
 function wp_roles() { return (object) array( "role_objects" => array( "administrator" => new Stub_Role() ) ); }
 function wp_clear_scheduled_hook( $h ) { $GLOBALS["log"][] = "cron:" . $h; return 0; }
@@ -191,11 +193,17 @@ function as_unschedule_all_actions( $h, $a = array(), $g = "" ) { $GLOBALS["log"
 require ' . var_export( dirname( __DIR__ ) . '/uninstall.php', true ) . ';
 echo json_encode( $GLOBALS["log"] );
 '
-);
-exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $wfc_stub ) . ' 2>&1', $wfc_out, $wfc_code );
-unlink( $wfc_stub );
-$wfc_log = json_decode( (string) end( $wfc_out ), true );
-check( 'uninstall.php runs without the plugin autoloader (drops tables, options, caps, clears both worker plans)', 0 === $wfc_code && is_array( $wfc_log ) && in_array( 'DROP TABLE IF EXISTS wp_workflow_captain_events', $wfc_log, true ) && in_array( 'option:workflow_captain_settings', $wfc_log, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log, true ) && in_array( 'as:workflow_captain_process_events:workflow-captain', $wfc_log, true ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
+	);
+	exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( $stub ) . ' 2>&1', $out, $code );
+	unlink( $stub );
+	return array( $code, json_decode( (string) end( $out ), true ) );
+};
+list( $wfc_code, $wfc_log ) = $wfc_uninstall( 'array( "delete_data_on_uninstall" => 1 )' );
+check( 'uninstall.php runs without the plugin autoloader (drops tables, options, caps, clears both worker plans when chosen)', 0 === $wfc_code && is_array( $wfc_log ) && in_array( 'DROP TABLE IF EXISTS wp_workflow_captain_events', $wfc_log, true ) && in_array( 'option:workflow_captain_settings', $wfc_log, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log, true ) && in_array( 'as:workflow_captain_process_events:workflow-captain', $wfc_log, true ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
+list( $wfc_code, $wfc_log ) = $wfc_uninstall( 'array( "batch" => 25 )' );
+check( 'SET-WC-05 uninstall keeps tables, options and caps by default (E-S6), clears only the worker plan', 0 === $wfc_code && is_array( $wfc_log ) && array() === array_filter( $wfc_log, static fn( $l ) => str_starts_with( $l, 'DROP' ) || str_starts_with( $l, 'option:' ) || str_starts_with( $l, 'cap:' ) ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
+list( $wfc_code, $wfc_log ) = $wfc_uninstall( 'false' );
+check( 'SET-WC-05 uninstall without any stored settings keeps the data too', 0 === $wfc_code && array() === array_filter( (array) $wfc_log, static fn( $l ) => str_starts_with( $l, 'DROP' ) ) );
 
 // ---------------------------------------------------------------------------------------------------------------
 // Multisite: a site created while the plugin is network-active gets its tables at once (wp_initialize_site). Found in

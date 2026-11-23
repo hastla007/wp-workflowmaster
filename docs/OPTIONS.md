@@ -4,7 +4,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 
 ## Optionen (je Website, `autoload = no`)
 
-| Option | Inhalt | Standard | Geschrieben von | Gelöscht bei Deinstallation |
+| Option | Inhalt | Standard | Geschrieben von | Gelöscht bei Deinstallation (nur mit `delete_data_on_uninstall`, SET-WC-05) |
 |---|---|---|---|---|
 | `workflow_captain_db_version` | Version des Datenbankschemas | Version des Plugins | `Install::create_tables()` | ja |
 | `workflow_captain_settings` | Batchgröße, Parallelität, Nachholgrenze, Aufbewahrungsfristen, tägliche Hinweis-Mail | Register (`SettingsRegistry`, unten) | Einstellungsseite (`manage_workflow_captain`) | ja |
@@ -31,6 +31,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `retention_finished` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–180 | Datenschutz & Aufbewahrung | ja |
 | `retention_runs` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–180 | Datenschutz & Aufbewahrung | ja |
 | `retention_stuck` | `workflow_captain_settings` | Zahl (Tage) | 90 | 1–180 | Datenschutz & Aufbewahrung | ja |
+| `delete_data_on_uninstall` | `workflow_captain_settings` | ja/nein | nein (Daten behalten, E-S6) | – | Datenschutz & Aufbewahrung | nein (gilt nur für diese Installation) |
 | `notify_daily` | `workflow_captain_settings` | ja/nein | ja | – | Benachrichtigungen | ja |
 | `recipients` | `workflow_captain_notify` | Adressen | leer = Adresse der Website | bis 10 | Benachrichtigungen | nein (personenbezogen, an die Installation gebunden) |
 | `kinds` | `workflow_captain_notify` | Auswahl | alle sechs Arten | – | Benachrichtigungen | ja |

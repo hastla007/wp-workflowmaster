@@ -341,8 +341,22 @@ final class Install {
 		return $tables;
 	}
 
-	/** Removes tables, options and capabilities of the current site (uninstall.php). */
+	/** Removes tables, options and capabilities of the current site when the operator chose so (uninstall.php). */
+	/**
+	 * Whether the operator chose to remove all data when the plugin is deleted (setting `delete_data_on_uninstall`,
+	 * SET-WC-05, E-S6). Default: keep. Reads the option directly: uninstall.php runs without the plugin's autoloader.
+	 */
+	public static function remove_data_wanted(): bool {
+		$settings = get_option( 'workflow_captain_settings', array() );
+		return is_array( $settings ) && 1 === (int) ( $settings['delete_data_on_uninstall'] ?? 0 );
+	}
+
 	public static function uninstall_site(): void {
+		if ( ! self::remove_data_wanted() ) {
+			// Keep tables, options and capabilities (E-S6); only the worker plan goes with the plugin.
+			self::deactivate();
+			return;
+		}
 		global $wpdb;
 		$tables = array( WpdbEventStore::events_table( $wpdb ), WpdbEventStore::causes_table( $wpdb ) );
 		foreach ( \WorkflowCaptain\Engine\WpdbEngineStore::TABLES as $name ) {

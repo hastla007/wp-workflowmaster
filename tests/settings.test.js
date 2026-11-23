@@ -23,6 +23,7 @@ const html = [
 	'<form class="wfc-settings-form" onsubmit="return false">',
 	'<input id="a" type="number" value="7" data-default="25" aria-invalid="true">',
 	'<input type="hidden" name="x" value="0"><input id="b" type="checkbox" data-default="1">',
+	'<input id="del" type="checkbox" data-default="0" data-confirm="Wirklich?">',
 	'<button type="button" class="wfc-reset-tab">Standardwerte</button><button id="s" type="submit">Speichern</button>',
 	'</form>',
 	'<script>window.workflowCaptainSettings = { unsaved: "U", reset: "R?" };</script>',
@@ -42,7 +43,7 @@ function check( label, ok ) {
 	const page = await browser.newPage();
 	const errors = [];
 	page.on( 'pageerror', ( e ) => errors.push( e.message ) );
-	const file = path.join( os.tmpdir(), 'wfc-settings-test.html' );
+	const file = path.join( os.tmpdir(), 'wfc-settings-test-' + process.pid + '.html' );
 	fs.writeFileSync( file, html );
 	await page.goto( 'file://' + file );
 	const value = () => page.$eval( '#a', ( x ) => x.value );
@@ -64,6 +65,15 @@ function check( label, ok ) {
 	check( 'confirmed reset sets the defaults of the tab', '25' === await value() && await page.$eval( '#b', ( x ) => x.checked ) );
 	check( 'reset clears the field error marker', null === await page.$eval( '#a', ( x ) => x.getAttribute( 'aria-invalid' ) ) );
 	check( 'unsaved changes warn before leaving', true === await blocked() );
+
+	answer = false;
+	await page.click( '#del' );
+	check( 'SET-WC-05 cancelled confirmation leaves "delete data" off', false === await page.$eval( '#del', ( x ) => x.checked ) );
+	answer = true;
+	await page.click( '#del' );
+	check( 'SET-WC-05 confirmed switch turns "delete data" on', true === await page.$eval( '#del', ( x ) => x.checked ) );
+	await page.click( '#del' );
+	check( 'SET-WC-05 switching it off needs no confirmation', false === await page.$eval( '#del', ( x ) => x.checked ) );
 
 	await page.click( '#s' );
 	check( 'no warning while the form is being saved', false === await blocked() );
