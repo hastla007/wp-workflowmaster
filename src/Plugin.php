@@ -87,6 +87,8 @@ final class Plugin {
 		add_action( Install::CRON_DAILY, array( $this, 'run_maintenance' ) );
 		add_filter( 'workflow_captain_retention_days', array( Settings::class, 'retention' ), 5, 2 );
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->register();
+		// SET-WC-04 (S11): the one public address, the unsubscribe link of promotional messages.
+		Unsubscribe::register();
 		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( '\WP_CLI' ) ) {
 			\WP_CLI::add_command( 'workflow-captain', \WorkflowCaptain\Cli\Command::class );
 		}

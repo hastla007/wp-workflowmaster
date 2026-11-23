@@ -128,6 +128,7 @@ Workflows entstehen im visuellen Editor (Admin „Workflows“); darunter steht 
 | `workflow_captain_connector_runtime_allowed_v1` | Filter | Laufzeit eigener Connectoren erlauben (ab Werk ja; für Pro, F-18a) |
 | `workflow_captain_retention_days` | Filter | Aufbewahrung in Tagen (`finished`, `stuck`, `runs`), seit 0.3.0 bis zur Obergrenze verlängerbar |
 | `workflow_captain_test_mode` | Filter | Testmodus der Website (0 aus, 1 Nachrichten umleiten, 2 nichts ausführen); Add-ons mit eigenen Wirkungen (Webhooks) SOLLEN ihn beachten |
+| `workflow_captain_has_consent_v1` | Filter | Einwilligung eines Benutzers in Werbenachrichten (`bool $consent = false, int $user_id, array $context` mit `workflow_id` und `event`); nur ein striktes `true` zählt. Workflow Captain speichert keine Einwilligung (SET-WC-03, E-S2, S11) |
 | `workflow_captain_retention_max_days` | Filter | Obergrenze der Aufbewahrung (180 im kostenlosen Kern; ein Add-on darf sie anheben) |
 | `workflow_captain_setting_<feld>` | Filter | Wert einer Einstellung des Registers (`docs/OPTIONS.md`); gewinnt, wird aber gegen Typ und Bereich geprüft |
 

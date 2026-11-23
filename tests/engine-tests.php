@@ -1338,3 +1338,25 @@ check( 'suite status: adapter, contract, active workflows, events and last corre
 check( 'suite status: unknown product is missing with zero counts, links present', 'missing' === \WorkflowCaptain\SuiteStatus::for_product( 'voucher-captain', $e->registry, $e->events, $e->store, fn( $p, $a = array() ) => $p )['adapter'] && isset( $st['links']['runs'] ) );
 check( 'suite status: link to the events of the last correlation and events link filtered by product', 'workflow-captain-events?correlation=' . $st['last_correlation_id'] === $st['links']['correlation'] && 'workflow-captain-events?product=pass-captain' === $st['links']['events'] );
 check( 'suite status: no event data or personal data in the result', ! str_contains( json_encode( $st ), 'checkin_source' ) && ! str_contains( json_encode( $st ), '@' ) );
+
+// ----- SET-WC-03 / SET-WC-04 (E-S2, S11): kind of message, consent, unsubscribe --------------------------------
+
+$wfc_dir = new FakeDirectory();
+$wfc_nu  = new NotifyUser( $wfc_dir );
+$wfc_ctx = static fn( array $config ) => new \WorkflowCaptain\Engine\ActionContext( array( 'type' => 'pass.ticket.checked_in', 'actor_user_id' => 17, 'subject' => array( 'id' => '5' ), 'data' => array() ), $config + array( 'subject' => 'Offer', 'message' => 'Text' ), 'k', 9, 1, 1, 1 );
+check( 'S11 a message without a kind is a transaction and goes out as before (published versions unchanged)', array( 'sent' => 1 ) === $wfc_nu->execute( $wfc_ctx( array() ) ) && ! str_contains( end( $wfc_dir->sent )[2], 'admin-post.php' ) );
+check( 'S11 the kind is checked at publish', array() === $wfc_nu->validate_config( array( 'subject' => 'S', 'message' => 'M', 'purpose' => 'promotional' ) ) && array( 'purpose:invalid' ) === $wfc_nu->validate_config( array( 'subject' => 'S', 'message' => 'M', 'purpose' => 'werbung' ) ) );
+check( 'S11 the editor offers the kind as a choice, transaction first', 'purpose' === $wfc_nu->builder_fields()[3]['key'] && 'transactional' === $wfc_nu->builder_fields()[3]['options'][0]['value'] );
+$wfc_before = count( $wfc_dir->sent );
+check( 'E-S2 a promotional message without consent is not sent and says why', array( 'sent' => 0, 'skipped' => 'no_consent', 'purpose' => 'promotional' ) === $wfc_nu->execute( $wfc_ctx( array( 'purpose' => 'promotional' ) ) ) && $wfc_before === count( $wfc_dir->sent ) );
+check( 'S11 the consent question names the workflow and the event, never the address', array( 'workflow_id' => 9, 'event' => 'pass.ticket.checked_in' ) === $wfc_dir->consent_context );
+$wfc_dir->consent = array( 17 );
+$wfc_res          = $wfc_nu->execute( $wfc_ctx( array( 'purpose' => 'promotional' ) ) );
+$wfc_mail         = end( $wfc_dir->sent );
+check( 'S11 with consent the message goes out with the unsubscribe link in the text and the List-Unsubscribe header', array( 'sent' => 1, 'purpose' => 'promotional' ) === $wfc_res && str_contains( $wfc_mail[2], "\n-- \n" ) && str_contains( $wfc_mail[2], 'action=workflow_captain_unsubscribe&u=17' ) && str_starts_with( (string) ( $wfc_mail[3] ?? '' ), 'List-Unsubscribe: <' ) );
+$wfc_dir->unsubscribed = array( 17 );
+$wfc_before            = count( $wfc_dir->sent );
+check( 'S11 after unsubscribing no promotional message goes out, even with consent', array( 'sent' => 0, 'skipped' => 'unsubscribed', 'purpose' => 'promotional' ) === $wfc_nu->execute( $wfc_ctx( array( 'purpose' => 'promotional' ) ) ) && $wfc_before === count( $wfc_dir->sent ) );
+check( 'S11 an unsubscribed user still gets transaction messages', array( 'sent' => 1 ) === $wfc_nu->execute( $wfc_ctx( array( 'purpose' => 'transactional' ) ) ) );
+check( 'S11 the unsubscribe signature is bound to the user and checked in constant time', \WorkflowCaptain\Unsubscribe::verify( 17, \WorkflowCaptain\Unsubscribe::token( 17 ) ) && ! \WorkflowCaptain\Unsubscribe::verify( 18, \WorkflowCaptain\Unsubscribe::token( 17 ) ) && ! \WorkflowCaptain\Unsubscribe::verify( 17, '' ) && ! \WorkflowCaptain\Unsubscribe::verify( 0, \WorkflowCaptain\Unsubscribe::token( 0 ) ) && 64 === strlen( \WorkflowCaptain\Unsubscribe::token( 17 ) ) && str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Unsubscribe.php' ), 'hash_equals(' ) );
+check( 'S11 opening the link only shows a button; only POST unsubscribes (link scanners)', 1 === preg_match( "/if \\( 'POST' === \\\$method \\) \\{\\s*self::unsubscribe\\(/", (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Unsubscribe.php' ) ) );

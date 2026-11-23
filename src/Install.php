@@ -371,6 +371,8 @@ final class Install {
 		}
 		// Short-lived transients per user (import preview, notices, dry run); fixed names, no input.
 		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '\\_transient\\_workflow\\_captain\\_%' OR option_name LIKE '\\_transient\\_timeout\\_workflow\\_captain\\_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fixed query on the plugin's own transients.
+		// Unsubscribes of this site (user option with the site prefix, S11); the literal name, uninstall.php has no autoloader.
+		$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => $wpdb->get_blog_prefix() . 'workflow_captain_unsubscribed' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 		foreach ( wp_roles()->role_objects as $role ) {
 			foreach ( self::CAPS as $cap ) {
 				$role->remove_cap( $cap );

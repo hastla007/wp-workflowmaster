@@ -9,7 +9,7 @@ namespace WorkflowCaptain\Engine;
 
 defined( 'ABSPATH' ) || exit;
 
-final class WpDirectory implements Directory, SiteMembers {
+final class WpDirectory implements Directory, SiteMembers, Marketing {
 
 	public function user_can( int $user_id, string $capability ): bool {
 		return $user_id > 0 && false !== get_userdata( $user_id ) && user_can( $user_id, $capability );
@@ -55,5 +55,38 @@ final class WpDirectory implements Directory, SiteMembers {
 			$subject = '[Test] ' . $subject;
 		}
 		return (bool) wp_mail( $to, $subject, $message );
+	}
+
+	/**
+	 * Consent comes from another plugin (shop, newsletter, form) through the filter; Workflow Captain stores none.
+	 * Only a strict true counts (E-S2: no consent, no promotional message).
+	 */
+	public function has_consent( int $user_id, array $context ): bool {
+		/**
+		 * Whether a user consented to promotional messages from this site.
+		 *
+		 * @since 0.3.0
+		 * @param bool  $consent Default false.
+		 * @param int   $user_id WordPress user ID.
+		 * @param array $context workflow_id and event (type of the triggering event).
+		 */
+		return true === apply_filters( 'workflow_captain_has_consent_v1', false, $user_id, $context );
+	}
+
+	public function unsubscribed( int $user_id ): bool {
+		return \WorkflowCaptain\Unsubscribe::is_unsubscribed( $user_id );
+	}
+
+	public function unsubscribe_url( int $user_id ): string {
+		return \WorkflowCaptain\Unsubscribe::url( $user_id );
+	}
+
+	public function mail_promotional( string $to, string $subject, string $message, string $unsubscribe_url ): bool {
+		if ( \WorkflowCaptain\TestMode::REDIRECT === \WorkflowCaptain\TestMode::mode() ) {
+			$to      = \WorkflowCaptain\TestMode::catch_address();
+			$subject = '[Test] ' . $subject;
+		}
+		$headers = array( 'List-Unsubscribe: <' . esc_url_raw( $unsubscribe_url ) . '>', 'List-Unsubscribe-Post: List-Unsubscribe=One-Click' );
+		return (bool) wp_mail( $to, $subject, $message, $headers );
 	}
 }

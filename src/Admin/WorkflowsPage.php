@@ -55,7 +55,6 @@ final class WorkflowsPage {
 		wp_enqueue_script( 'workflow-captain-builder', $base . 'js/builder.js', array(), WORKFLOW_CAPTAIN_VERSION, true );
 		$fields  = array(
 			'notify.admin'        => array( array( 'key' => 'subject', 'label' => __( 'Subject', 'workflow-captain' ) ), array( 'key' => 'message', 'label' => __( 'Message', 'workflow-captain' ), 'type' => 'textarea' ), array( 'key' => 'to', 'label' => __( 'Recipients (site_admin or capability)', 'workflow-captain' ) ) ),
-			'notify.user'         => array( array( 'key' => 'subject', 'label' => __( 'Subject', 'workflow-captain' ) ), array( 'key' => 'message', 'label' => __( 'Message', 'workflow-captain' ), 'type' => 'textarea' ), array( 'key' => 'user_field', 'label' => __( 'User from (actor_user_id or data.…_user_id)', 'workflow-captain' ) ) ),
 			'workflow.tag.set'    => array( array( 'key' => 'tag', 'label' => __( 'Tag', 'workflow-captain' ) ) ),
 			'workflow.tag.remove' => array( array( 'key' => 'tag', 'label' => __( 'Tag', 'workflow-captain' ) ) ),
 			'workflow.note.add'   => array( array( 'key' => 'text', 'label' => __( 'Note', 'workflow-captain' ), 'type' => 'textarea' ) ),

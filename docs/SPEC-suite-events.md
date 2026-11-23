@@ -860,6 +860,9 @@ Diese Tabelle fasst für jeden Befehl der Version 1 zusammen, was 8.1 bis 8.4, 7
 - R-9.3 Eine Übergabe der Zuständigkeit („Ownership-Handshake“) gibt es nicht. Kein Kern bekommt dafür einen Schalter.
 - R-9.4 Der Editor SOLL beim Anlegen einer zusätzlichen Nachricht anzeigen, welche Mail des Kerns zum selben Anlass ohnehin versendet wird.
 - R-9.5 Eine zusätzliche Nachricht an Kunden braucht dieselbe rechtliche Grundlage wie jede andere Mail des Betreibers. Diese Spezifikation regelt das nicht; es gehört in die Rechtsprüfung.
+- R-9.6 (S11, 23.11.2026) Jede Nachricht von `notify.user` ist eine **Transaktion** oder **Werbung** (Feld `purpose`: `transactional` oder `promotional`). Fehlt das Feld, gilt sie als Transaktion; veröffentlichte Versionen ohne das Feld ändern ihr Verhalten nicht (WF-SET-14).
+- R-9.7 Werbung geht nur hinaus, wenn ein anderes Plugin die Einwilligung über den Filter `workflow_captain_has_consent_v1` ausdrücklich mit `true` bestätigt (E-S2; Workflow Captain speichert keine Einwilligung), und nie an einen Benutzer, der sich abgemeldet hat. Sonst läuft der Schritt durch und sendet nichts (`skipped: no_consent` oder `unsubscribed`).
+- R-9.8 Jede Werbenachricht trägt einen Abmelde-Link und die Kopfzeilen `List-Unsubscribe` und `List-Unsubscribe-Post` (RFC 2369, RFC 8058). Der Link ist die einzige öffentliche Adresse des Kerns (`admin-post.php?action=workflow_captain_unsubscribe`, signiert je Benutzer); Öffnen zeigt eine Schaltfläche, erst ein POST meldet ab. Die Abmeldung gilt je Website und betrifft keine Transaktionen. Wortlaut der Linkzeile und der Seiten sowie die Rechtsgrundlage: Rechtsprüfung.
 
 ## 10. Lizenzmatrix (D6)
 

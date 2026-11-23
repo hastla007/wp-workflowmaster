@@ -68,6 +68,8 @@ Capabilities bei Aktivierung für Administratoren: `manage_workflow_captain`, `e
 ## Öffentliche und private Datenflächen (WF-SEO-01, -02, -03)
 
 - Workflow Captain gibt auf öffentlichen Seiten nichts aus: keine Hooks an `wp_head`, `wp_footer`, `template_redirect`, Inhalt, Titel, Robots oder Sitemaps, keine Shortcodes, Rewrite-Regeln, eigenen Beitragstypen und keine REST-Routen. Ein Test in `tests/security-tests.php` sichert das ab.
+- **Einzige öffentliche Adresse (S11, SET-WC-04):** der Abmelde-Link von Werbenachrichten, `wp-admin/admin-post.php?action=workflow_captain_unsubscribe&u=<Benutzer-ID>&t=<Signatur>` (`src/Unsubscribe.php`). Die Signatur ist ein HMAC-SHA256 mit einem Schlüssel aus den Salts der Website; ohne gültige Signatur antwortet die Adresse mit 400. Öffnen zeigt nur eine Schaltfläche, erst das POST meldet ab (auch das One-Click-POST nach RFC 8058). Antwort mit `X-Robots-Tag: noindex, nofollow`; kein Theme, keine weiteren Daten. Der Test in `tests/security-tests.php` lässt genau diese eine Aktion zu.
+- Benutzer-Option `workflow_captain_unsubscribed` (Zeitpunkt in UTC; im Netzwerk je Website mit deren Präfix): Abmeldung von Werbenachrichten; bleibt bei der Deinstallation erhalten, außer „Beim Löschen des Plugins alle Daten entfernen“ ist an. *Aufbewahrung und Auskunft: Rechtsprüfung.*
 - Alle Seiten liegen im Admin und verlangen die passende Capability; jede Aktion prüft zusätzlich eine Nonce.
 - Ausgehende Daten gibt es nur als Nachrichten der Aktionen `notify.admin` und `notify.user` an Empfänger der eigenen Website. Ausgehende HTTP-Aufrufe macht der Kern nicht.
 - Downloads (Diagnose, Export eines Workflows) liefert nur `admin-post.php` mit Capability und Nonce.

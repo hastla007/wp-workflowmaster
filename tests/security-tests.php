@@ -163,6 +163,13 @@ foreach ( array_merge( iterator_to_array( $it ), array( new SplFileInfo( WORKFLO
 	}
 }
 check( 'SEO-03 no front-end hooks, REST routes, shortcodes, rewrites, post types or sitemaps' . ( $hits ? ' (' . implode( '; ', $hits ) . ')' : '' ), array() === $hits );
+// S11 / SET-WC-04: the one public address is the unsubscribe action of src/Unsubscribe.php; nothing else is open to visitors.
+$nopriv = array();
+foreach ( array_merge( iterator_to_array( new RecursiveIteratorIterator( new RecursiveDirectoryIterator( WORKFLOW_CAPTAIN_PATH . 'src', FilesystemIterator::SKIP_DOTS ) ) ), array( new SplFileInfo( WORKFLOW_CAPTAIN_PATH . 'workflow-captain.php' ) ) ) as $file ) {
+	$nopriv[ basename( $file ) ] = preg_match_all( '/admin_post_nopriv_/', (string) file_get_contents( $file->getPathname() ) );
+}
+$nopriv = array_filter( $nopriv );
+check( 'S11 only the signed unsubscribe link is reachable without login', array( 'Unsubscribe.php' => 1 ) === $nopriv && 'workflow_captain_unsubscribe' === \WorkflowCaptain\Unsubscribe::ACTION );
 
 // ----- WF-SEO-04 / WF-SEO-05: no direct post writes, no coupling to Yoast internals ------------------------------
 
