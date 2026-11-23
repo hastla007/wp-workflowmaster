@@ -160,7 +160,7 @@ msgstr ""
 msgid "Aktionen"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:77 src/Admin/WorkflowsPage.php:815
+#: src/Admin/SchedulesPage.php:93 src/Admin/WorkflowsPage.php:815
 msgid "Aktiv"
 msgstr ""
 
@@ -456,7 +456,7 @@ msgstr ""
 msgid "Der Datenbankserver ist älter als MySQL 9.7 bzw. MariaDB 12.3. Workflow Captain arbeitet weiter, ältere Server werden aber nicht mehr getestet. Empfohlen: beim Hoster ein Update anfragen."
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:81
+#: src/Admin/SchedulesPage.php:97
 msgid "Der Entwurf weicht ab; es gilt die veröffentlichte Version."
 msgstr ""
 
@@ -1058,7 +1058,7 @@ msgstr ""
 msgid "Kein aktiver Workflow hört auf dieses Ereignis."
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:106
+#: src/Admin/SchedulesPage.php:122
 msgid "Kein aktiver oder pausierter Workflow startet nach Zeitplan. Ein Entwurf zählt erst nach dem Veröffentlichen."
 msgstr ""
 
@@ -1189,7 +1189,7 @@ msgstr ""
 msgid "Letzter Lauf:"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:86 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:524
+#: src/Admin/SchedulesPage.php:102 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:524
 msgid "Läufe"
 msgstr ""
 
@@ -1404,7 +1404,7 @@ msgstr ""
 msgid "Nächste Termine (Zeitzone der Website):"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103
+#: src/Admin/SchedulesPage.php:119
 msgid "Nächster Termin"
 msgstr ""
 
@@ -1428,7 +1428,7 @@ msgstr ""
 msgid "Pausieren"
 msgstr ""
 
-#: src/Admin/EventsPage.php:176 src/Admin/SchedulesPage.php:77 src/Admin/WorkflowsPage.php:806 src/Admin/WorkflowsPage.php:816 src/Admin/WorkflowsPage.php:830
+#: src/Admin/EventsPage.php:176 src/Admin/SchedulesPage.php:93 src/Admin/WorkflowsPage.php:806 src/Admin/WorkflowsPage.php:816 src/Admin/WorkflowsPage.php:830
 msgid "Pausiert"
 msgstr ""
 
@@ -1649,7 +1649,7 @@ msgid "Version"
 msgstr ""
 
 #. translators: %d: version number
-#: src/Admin/SchedulesPage.php:79
+#: src/Admin/SchedulesPage.php:95
 msgid "Version %d"
 msgstr ""
 
@@ -1686,7 +1686,7 @@ msgid "Vorgabe 30 Tage, höchstens 180. Welche Frist für Ihren Betrieb gilt, kl
 msgstr ""
 
 #: src/SettingsRegistry.php:175
-msgid "Vorgabe 30 Tage, höchstens 180; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf."
+msgid "Vorgabe 30 Tage, höchstens 180; gilt für erledigte, fehlgeschlagene und abgebrochene Läufe, offene bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf."
 msgstr ""
 
 #: src/SettingsRegistry.php:176
@@ -1786,7 +1786,7 @@ msgstr ""
 msgid "Worker"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:672
+#: src/Admin/SchedulesPage.php:119 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:672
 msgid "Workflow"
 msgstr ""
 
@@ -1891,7 +1891,7 @@ msgid "Workflows entwerfen"
 msgstr ""
 
 #. translators: %s: time zone of the site
-#: src/Admin/SchedulesPage.php:102
+#: src/Admin/SchedulesPage.php:118
 msgid "Workflows mit dem Auslöser „Zeitplan“, nach Name. Alle Zeiten in der Zeitzone der Website (%s). Ein verpasster Termin wird höchstens einmal nachgeholt."
 msgstr ""
 
@@ -1911,7 +1911,7 @@ msgstr ""
 msgid "Zeitleiste der Schritte"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103
+#: src/Admin/SchedulesPage.php:119
 msgid "Zeitplan"
 msgstr ""
 
@@ -1919,11 +1919,11 @@ msgstr ""
 msgid "Zeitplan (Zeitzone der Website)"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:100
+#: src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:116
 msgid "Zeitpläne"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103
+#: src/Admin/SchedulesPage.php:119
 msgid "Zeitpläne der Workflows"
 msgstr ""
 
@@ -1956,7 +1956,7 @@ msgstr ""
 msgid "Zu viele Regeln (höchstens %d)."
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103
+#: src/Admin/SchedulesPage.php:119
 msgid "Zuletzt ausgelöst"
 msgstr ""
 
@@ -1976,7 +1976,7 @@ msgstr ""
 msgid "Zurücksetzen"
 msgstr ""
 
-#: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:698 src/Privacy/Privacy.php:88 src/Privacy/Privacy.php:109
+#: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:119 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:698 src/Privacy/Privacy.php:88 src/Privacy/Privacy.php:109
 msgid "Zustand"
 msgstr ""
 
@@ -2085,7 +2085,7 @@ msgstr ""
 msgid "kein Adapter (Add-on fehlt, inaktiv oder ohne Lizenz)"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:57 src/Admin/WorkflowsPage.php:794
+#: src/Admin/SchedulesPage.php:72 src/Admin/WorkflowsPage.php:794
 msgid "keine Angabe"
 msgstr ""
 
@@ -2105,7 +2105,7 @@ msgstr ""
 msgid "keine offen"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:83
+#: src/Admin/SchedulesPage.php:99
 msgid "keiner (pausiert)"
 msgstr ""
 

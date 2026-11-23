@@ -89,6 +89,8 @@ check( 'P4 upload: only PHP\'s temp file of this request is read (no path from t
 check( 'P4 transfer actions only by POST (admin-post.php also runs them for GET)', \WorkflowCaptain\Admin\SettingsPage::is_post( array( 'REQUEST_METHOD' => 'POST' ) ) && ! \WorkflowCaptain\Admin\SettingsPage::is_post( array( 'REQUEST_METHOD' => 'GET' ) ) && ! \WorkflowCaptain\Admin\SettingsPage::is_post( array() ) && ! \WorkflowCaptain\Admin\SettingsPage::is_post( array( 'REQUEST_METHOD' => array( 'POST' ) ) ) );
 $wfc_page = (string) file_get_contents( dirname( __DIR__ ) . '/src/Admin/SettingsPage.php' );
 check( 'P4 export, import, reset and undo all pass the guard (capability, POST, own nonce)', 4 === preg_match_all( "/public function handle_(export|import|reset|undo)\\(\\): void \\{\\s*self::guard\\( 'workflow_captain_settings_\\1' \\);/", $wfc_page ) );
+$GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time() - 29 * 86400, 'values' => array( 'batch' => 1 ) );
+check( 'P3 a backup within 30 days stays', false === SettingsTransfer::purge_expired_backup() && isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] );
 $wfc_av = new ReflectionMethod( \WorkflowCaptain\Admin\SettingsPage::class, 'audit_value' );
 check( 'SET-WC-12 audit view prints list values (notice kinds) without "Array to string" (found in the PHP 8.5 run)', 'failed, pause → failed' === $wfc_av->invoke( null, array( array( 'failed', 'pause' ), array( 'failed' ) ) ) && '7 → 9' === $wfc_av->invoke( null, array( 7, 9 ) ) );

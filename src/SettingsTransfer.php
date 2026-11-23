@@ -240,9 +240,16 @@ final class SettingsTransfer {
 		return null;
 	}
 
-	/** Daily maintenance: removes a backup whose undo period is over (it holds the recipient addresses). */
-	public static function purge_expired_backup(): void {
-		self::backup();
+	/**
+	 * Deletes a backup that can no longer be restored (daily maintenance). It may hold the notification addresses,
+	 * so it should not outlive the 30 days the page promises (P3).
+	 */
+	public static function purge_expired_backup(): bool {
+		if ( ! function_exists( 'get_option' ) || false === get_option( self::BACKUP_OPTION, false ) || null !== self::backup() ) {
+			return false;
+		}
+		delete_option( self::BACKUP_OPTION );
+		return true;
 	}
 
 	/** Restores the backup once. Returns the changed keys, or null when there is nothing to undo. */

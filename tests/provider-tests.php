@@ -263,7 +263,8 @@ foreach ( provider_envelopes( $p ) as $envelope ) {
 	$by[ $envelope['type'] ] = $envelope;
 }
 check( 'guest order: customer_user_id is null, never 0', array_key_exists( 'customer_user_id', $by['woocommerce.order.created']['data'] ?? array() ) && null === $by['woocommerce.order.created']['data']['customer_user_id'] );
-check( 'price decimals from wc_get_price_decimals()', 1500 === ( $by['woocommerce.order.created']['data']['total_minor'] ?? null ) );
+check( 'JPY with shop price decimals 0: 1500 yen are 1500 minor units', 1500 === ( $by['woocommerce.order.created']['data']['total_minor'] ?? null ) );
+
 check( 'full refund recognised', true === ( $by['woocommerce.order.refunded']['data']['full_refund'] ?? null ) && Validator::is_valid( $by['woocommerce.order.refunded'] ?? array() ) );
 
 $GLOBALS['wfc_current_user'] = 0;
@@ -448,3 +449,19 @@ check( 'kit: other unknown form fields and a bare prefix are refused', 2 === cou
 $bad                         = $form_event;
 $bad['data']['answer_email'] = 'x';
 check( 'kit: a released answer named like an e-mail field fails the schema', array() !== AdapterConformance::check_event( $form_adapter, $bad ) );
+
+// Minor units follow ISO 4217 for the order's currency, not the shop's price decimals (P3, R-5.1a): WooCommerce
+// keeps 2 price decimals for JPY unless changed, which made 1500 yen 150000; a shop showing whole euros made 15 EUR 15.
+$minor_case = static function ( int $decimals, string $currency, string $total ): ?int {
+	provider_reset();
+	$p                          = provider_site();
+	$GLOBALS['wfc_wc_decimals'] = $decimals;
+	$GLOBALS['wfc_wc_orders']   = array( 90 => new WC_Order( array( 'id' => 90, 'currency' => $currency, 'total' => $total ) ) );
+	$p->wc->on_new_order( 90 );
+	$env = provider_envelopes( $p )[0] ?? array();
+	return Validator::is_valid( $env ) ? ( $env['data']['total_minor'] ?? null ) : null;
+};
+check( 'minor units: JPY with the WooCommerce default of 2 price decimals stays 1500 (was 150000)', 1500 === $minor_case( 2, 'JPY', '1500.00' ) );
+check( 'minor units: EUR in a shop with 0 price decimals is in cents (15 EUR = 1500, was 15)', 1500 === $minor_case( 0, 'EUR', '15' ) );
+check( 'minor units: CHF 12.35 = 1235, KWD 1.234 = 1234 (three decimals), EUR 19.99 = 1999 without float loss', 1235 === $minor_case( 2, 'chf', '12.35' ) && 1234 === $minor_case( 2, 'KWD', '1.234' ) && 1999 === $minor_case( 2, 'EUR', '19.99' ) );
+check( 'Money: ISO 4217 exponents, 2 for unknown codes', 0 === \WorkflowCaptain\Money::exponent( 'JPY' ) && 0 === \WorkflowCaptain\Money::exponent( 'krw' ) && 3 === \WorkflowCaptain\Money::exponent( 'BHD' ) && 4 === \WorkflowCaptain\Money::exponent( 'CLF' ) && 2 === \WorkflowCaptain\Money::exponent( 'CHF' ) && 2 === \WorkflowCaptain\Money::exponent( 'EUR' ) && 2 === \WorkflowCaptain\Money::exponent( 'XYZ' ) );

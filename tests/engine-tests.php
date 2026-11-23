@@ -964,6 +964,9 @@ $e->clock->advance( 6 * DAY_IN_SECONDS );
 ( new \WorkflowCaptain\Privacy\Privacy( fn() => $e->events, $e->clock, fn() => $e->store ) )->apply_retention();
 check( 'retention: runs after 5 days gone, the event (30 days) stays', array() === $e->store->find_runs( array(), 10, 0 ) && 1 === count( $e->events->find( array(), 10, 0 ) ) );
 $GLOBALS['wfc_test_filters']['workflow_captain_retention_days'] = array();
+// P3: readme and the deletion code agree (the readme said "failed ones after 90 days", but failed runs go after 30).
+$readme = (string) file_get_contents( __DIR__ . '/../readme.txt' );
+check( 'P3 readme: periods match the code (events 30/90, finished, failed and cancelled runs 30, open runs kept, change log 50)', 30 === \WorkflowCaptain\Privacy\Privacy::RETENTION_DAYS['finished'] && 90 === \WorkflowCaptain\Privacy\Privacy::RETENTION_DAYS['stuck'] && 30 === Settings::defaults()['retention_runs'] && 50 === \WorkflowCaptain\Audit::KEEP && str_contains( $readme, 'Finished events are deleted after 30 days, failed and paused events after 90 days. Finished, failed and cancelled runs with their step log are deleted 30 days after they end; runs that still wait, are paused or need an action are kept until they end.' ) && str_contains( $readme, 'the change log keeps the last 50 changes' ) && ! str_contains( $readme, 'failed ones after 90 days' ) );
 
 // ----- WF-SET-13: audit trail of security-relevant changes
 $log = array();
