@@ -28,6 +28,7 @@ $patterns = array(
 	'/licen[sc]e_key/i'                                                       => 'license key handling',
 	'/\b(voucher|pass|affiliate|form|review|course|workflow)-captain-pro\b/' => 'product key of an add-on',
 	'/\b(suite_integrations|custom_connectors|multisite_network|event_correlation|advanced_logic|recipe_templates|extended_logs)\b/' => 'Pro right',
+	'/\bworkflow\.(webhooks|branding)\b/'                                   => 'Pro right (workflow.webhooks; workflow.branding reserved by E-S8)',
 	'/\bwp_set_current_user\s*\(/'                                            => 'wp_set_current_user() (C-11, R-8.5)',
 	'/[\'"](pre_wp_mail|wp_mail)[\'"]/'                                       => 'mail filter (C-12, R-9.2)',
 );
