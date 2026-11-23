@@ -38,16 +38,16 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of changed settings
-#: src/Admin/SettingsPage.php:454
+#: src/Admin/SettingsPage.php:457
 msgid "%d Einstellungen auf Standard gesetzt. Rückgängig ist 30 Tage lang möglich."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:468
+#: src/Admin/SettingsPage.php:471
 msgid "%d Einstellungen wiederhergestellt."
 msgstr ""
 
 #. translators: %d: number of changed settings
-#: src/Admin/SettingsPage.php:407
+#: src/Admin/SettingsPage.php:410
 msgid "%d Einstellungen übernommen. Rückgängig ist 30 Tage lang möglich."
 msgstr ""
 
@@ -116,7 +116,7 @@ msgstr ""
 msgid "Abgebrochen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:506
+#: src/Admin/SettingsPage.php:509
 msgid "Abgebrochene Datenbank-Aktualisierung wiederholt"
 msgstr ""
 
@@ -323,7 +323,7 @@ msgstr ""
 msgid "Benachrichtigungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:527
+#: src/Admin/SettingsPage.php:530
 msgid "Benutzer"
 msgstr ""
 
@@ -474,7 +474,7 @@ msgstr ""
 msgid "Die Datei enthält alle Einstellungen außer den Empfänger-Adressen; Geheimnisse und Zugangsdaten sind nie darin. Ein Import zeigt zuerst, was sich ändert."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:419
+#: src/Admin/SettingsPage.php:422
 msgid "Die Datei wurde nicht übernommen:"
 msgstr ""
 
@@ -516,6 +516,10 @@ msgstr ""
 
 #: src/Admin/SiteHealth.php:75
 msgid "Die Version des Datenbankservers ließ sich nicht lesen."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:406
+msgid "Die Vorschau ist abgelaufen (nach 15 Minuten). Nichts wurde geändert; bitte die Datei erneut wählen."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:366
@@ -622,7 +626,7 @@ msgstr ""
 msgid "Einstellung"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:496
 msgid "Einstellung per WP-CLI geändert"
 msgstr ""
 
@@ -630,7 +634,7 @@ msgstr ""
 msgid "Einstellungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:491
+#: src/Admin/SettingsPage.php:494
 msgid "Einstellungen auf Standard gesetzt"
 msgstr ""
 
@@ -638,15 +642,15 @@ msgstr ""
 msgid "Einstellungen exportieren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:489
+#: src/Admin/SettingsPage.php:492
 msgid "Einstellungen geändert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:490
+#: src/Admin/SettingsPage.php:493
 msgid "Einstellungen importiert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:492
+#: src/Admin/SettingsPage.php:495
 msgid "Einstellungen wiederhergestellt"
 msgstr ""
 
@@ -658,7 +662,7 @@ msgstr ""
 msgid "Einstellungen, Notfallpause, Diagnose"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:527
+#: src/Admin/SettingsPage.php:530
 msgid "Einzelheiten"
 msgstr ""
 
@@ -731,7 +735,7 @@ msgstr ""
 msgid "Ereignisse und Schritte je Worker-Durchlauf"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:498
+#: src/Admin/SettingsPage.php:501
 msgid "Ereignisse wieder eingereiht"
 msgstr ""
 
@@ -786,7 +790,7 @@ msgid "Erste Seite"
 msgstr ""
 
 #. translators: 1: number, 2: option name
-#: src/Admin/SettingsPage.php:537
+#: src/Admin/SettingsPage.php:540
 msgid "Es bleiben die letzten %1$d Einträge in der Option %2$s."
 msgstr ""
 
@@ -795,7 +799,7 @@ msgid "Es gibt fehlgeschlagene Ereignisse, hängende Schritte oder Läufe, die e
 msgstr ""
 
 #. translators: %d: number of restored settings
-#: src/Admin/SettingsPage.php:468
+#: src/Admin/SettingsPage.php:471
 msgid "Es gibt nichts rückgängig zu machen."
 msgstr ""
 
@@ -856,7 +860,7 @@ msgstr ""
 msgid "Filtern"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:433
+#: src/Admin/SettingsPage.php:436
 msgid "Formatnummer fehlt"
 msgstr ""
 
@@ -868,7 +872,7 @@ msgstr ""
 msgid "Freigabe"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:497
+#: src/Admin/SettingsPage.php:500
 msgid "Freigabe eines eigenen Connectors geändert"
 msgstr ""
 
@@ -1019,7 +1023,7 @@ msgstr ""
 msgid "Kein eigener Schlüssel gesetzt; Geheimnisse hängen an den WordPress-Salts. Empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:381 src/Admin/SettingsPage.php:395 src/Admin/SettingsPage.php:447 src/Admin/SettingsPage.php:463
+#: src/Admin/SettingsPage.php:381 src/Admin/SettingsPage.php:395 src/Admin/SettingsPage.php:450 src/Admin/SettingsPage.php:466
 msgid "Keine Berechtigung."
 msgstr ""
 
@@ -1093,7 +1097,7 @@ msgstr ""
 msgid "Lauf abbrechen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:499
+#: src/Admin/SettingsPage.php:502
 msgid "Lauf abgebrochen"
 msgstr ""
 
@@ -1101,7 +1105,7 @@ msgstr ""
 msgid "Lauf exportieren (JSON, redigiert)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:507
+#: src/Admin/SettingsPage.php:510
 msgid "Lauf exportiert"
 msgstr ""
 
@@ -1125,7 +1129,7 @@ msgstr ""
 msgid "Letzte Seite"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:521 src/Admin/SettingsPage.php:527
+#: src/Admin/SettingsPage.php:524 src/Admin/SettingsPage.php:530
 msgid "Letzte sicherheitsrelevante Änderungen"
 msgstr ""
 
@@ -1274,7 +1278,7 @@ msgstr ""
 msgid "Noch kein Provider bekannt."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:524
+#: src/Admin/SettingsPage.php:527
 msgid "Noch keine Einträge."
 msgstr ""
 
@@ -1294,7 +1298,7 @@ msgstr ""
 msgid "Notfallpause aktivieren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:496
+#: src/Admin/SettingsPage.php:499
 msgid "Notfallpause aufgehoben"
 msgstr ""
 
@@ -1302,7 +1306,7 @@ msgstr ""
 msgid "Notfallpause aufheben"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:495
+#: src/Admin/SettingsPage.php:498
 msgid "Notfallpause eingeschaltet"
 msgstr ""
 
@@ -1417,7 +1421,7 @@ msgstr ""
 msgid "Prüfen und veröffentlichen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:494
+#: src/Admin/SettingsPage.php:497
 msgid "Rechte der Rollen geändert"
 msgstr ""
 
@@ -1467,7 +1471,7 @@ msgstr ""
 msgid "Schritt %s fortsetzen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:500
+#: src/Admin/SettingsPage.php:503
 msgid "Schritt fortgesetzt"
 msgstr ""
 
@@ -1519,7 +1523,7 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:534
+#: src/Admin/SettingsPage.php:537
 msgid "System/WP-CLI"
 msgstr ""
 
@@ -1741,11 +1745,11 @@ msgstr ""
 msgid "Workflow archivieren? Er startet keine neuen Läufe mehr; Läufe und Protokolle bleiben erhalten."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:502
+#: src/Admin/SettingsPage.php:505
 msgid "Workflow archiviert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:505
+#: src/Admin/SettingsPage.php:508
 msgid "Workflow fortgesetzt"
 msgstr ""
 
@@ -1757,15 +1761,15 @@ msgstr ""
 msgid "Workflow nicht gefunden."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:504
+#: src/Admin/SettingsPage.php:507
 msgid "Workflow pausiert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:501
+#: src/Admin/SettingsPage.php:504
 msgid "Workflow veröffentlicht"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:503
+#: src/Admin/SettingsPage.php:506
 msgid "Workflow wiederhergestellt"
 msgstr ""
 
@@ -1799,7 +1803,7 @@ msgstr ""
 msgid "Workflows, neueste zuerst"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:527
+#: src/Admin/SettingsPage.php:530
 msgid "Zeit (UTC)"
 msgstr ""
 
@@ -1913,7 +1917,7 @@ msgstr ""
 msgid "aus dem Lauf"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:436
+#: src/Admin/SettingsPage.php:439
 msgid "außerhalb des erlaubten Bereichs"
 msgstr ""
 
@@ -1925,11 +1929,11 @@ msgstr ""
 msgid "braucht eine neuere Version von Workflow Captain"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:432
+#: src/Admin/SettingsPage.php:435
 msgid "die Datei gehört zu einem anderen Plugin"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:434
+#: src/Admin/SettingsPage.php:437
 msgid "die Datei stammt von einer neueren Version; bitte Workflow Captain aktualisieren"
 msgstr ""
 
@@ -1985,15 +1989,15 @@ msgstr ""
 msgid "keine Angabe"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:431
+#: src/Admin/SettingsPage.php:434
 msgid "keine Einstellungsdatei von Workflow Captain"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:437
+#: src/Admin/SettingsPage.php:440
 msgid "keine Liste"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:435
+#: src/Admin/SettingsPage.php:438
 msgid "keine ganze Zahl"
 msgstr ""
 
@@ -2063,11 +2067,11 @@ msgstr ""
 msgid "täglich"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:438
+#: src/Admin/SettingsPage.php:441
 msgid "unbekannte Art"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:439
+#: src/Admin/SettingsPage.php:442
 msgid "ungültige Adresse"
 msgstr ""
 
@@ -2087,7 +2091,7 @@ msgstr ""
 msgid "wöchentlich"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:527
+#: src/Admin/SettingsPage.php:530
 msgid "Änderung"
 msgstr ""
 

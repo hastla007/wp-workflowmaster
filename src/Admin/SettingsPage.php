@@ -399,8 +399,11 @@ final class SettingsPage {
 		if ( isset( $_POST['confirm'] ) ) {
 			$preview = get_transient( $key );
 			delete_transient( $key );
-			if ( isset( $_POST['discard'] ) || ! is_array( $preview ) || ! isset( $preview['values'] ) ) {
+			if ( isset( $_POST['discard'] ) ) {
 				add_settings_error( Settings::OPTION, 'wfc-import', __( 'Import verworfen. Nichts wurde geändert.', 'workflow-captain' ), 'info' );
+			} elseif ( ! is_array( $preview ) || ! isset( $preview['values'] ) ) {
+				// The preview lives 15 minutes; "Übernehmen" after that must not read as a discard by the operator.
+				add_settings_error( Settings::OPTION, 'wfc-import', __( 'Die Vorschau ist abgelaufen (nach 15 Minuten). Nichts wurde geändert; bitte die Datei erneut wählen.', 'workflow-captain' ), 'error' );
 			} else {
 				$changed = \WorkflowCaptain\SettingsTransfer::apply( $preview['values'], 'import' );
 				/* translators: %d: number of changed settings */

@@ -115,3 +115,4 @@ check( 'P1 backup: an expired backup (holds addresses) is deleted by the mainten
 $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time(), 'user' => 1, 'source' => 'reset', 'values' => array() );
 check( 'P1 backup: a backup within 30 days stays for undo', false === SettingsTransfer::purge_backup() && isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ], $GLOBALS['wfc_test_options']['workflow_captain_audit'] );
+check( 'P1 import: "Übernehmen" after the preview expired says so instead of "Import verworfen"', 1 === preg_match( "/elseif \\( ! is_array\\( \\\$preview \\) .*?Die Vorschau ist abgelaufen/s", $wfc_p1_page ) );
