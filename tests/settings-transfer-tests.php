@@ -73,3 +73,12 @@ check( 'SET-WC-23 a backup older than 30 days cannot be restored', null === Sett
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] );
 $wfc_av = new ReflectionMethod( \WorkflowCaptain\Admin\SettingsPage::class, 'audit_value' );
 check( 'SET-WC-12 audit view prints list values (notice kinds) without "Array to string" (found in the PHP 8.5 run)', 'failed, pause → failed' === $wfc_av->invoke( null, array( array( 'failed', 'pause' ), array( 'failed' ) ) ) && '7 → 9' === $wfc_av->invoke( null, array( 7, 9 ) ) );
+
+// P5 (Bedienung, Sprache, Barrierefreiheit), found in the browser run against the settings page.
+// - Invalid or surplus addresses were dropped without a word; the page now names them at the field.
+check( 'P5 recipients: invalid and surplus addresses are named, kept ones are not', array( 'kaputt', 'x@' ) === Notifications::dropped_addresses( array( 'recipients' => 'Ops@example.org, kaputt; x@' ) ) && array() === Notifications::dropped_addresses( array( 'recipients' => 'a@example.org, b@example.org' ) ) && array( 'k@example.org' ) === Notifications::dropped_addresses( array( 'recipients' => implode( ',', array_map( static fn( $c ) => $c . '@example.org', range( 'a', 'k' ) ) ) ) ) );
+// - Import preview, import errors and the log showed register keys and 1/0; they now show the names of the tabs.
+$wfc_page = \WorkflowCaptain\Admin\SettingsPage::class;
+check( 'P5 preview/log: a setting is shown by the label of its tab, unknown keys as they are', SettingsRegistry::texts()['batch'][0] === $wfc_page::field_label( 'batch' ) && 'evil' === $wfc_page::field_label( 'evil' ) );
+check( 'P5 preview/log: switches read ein/aus, notice kinds by name, numbers unchanged', 'ein' === $wfc_page::display_value( 'notify_daily', 1 ) && 'aus' === $wfc_page::display_value( 'notify_daily', 0 ) && $wfc_page::kind_labels()['failed'] . ', ' . $wfc_page::kind_labels()['pause'] === $wfc_page::display_value( 'kinds', array( 'failed', 'pause' ) ) && 'keine' === $wfc_page::display_value( 'kinds', array() ) && '40' === $wfc_page::display_value( 'batch', 40 ) );
+check( 'P5 the notification tab and the preview use the same kind names as the register', Notifications::KINDS === array_keys( $wfc_page::kind_labels() ) );

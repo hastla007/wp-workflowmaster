@@ -36,6 +36,39 @@ final class Notifications {
 		);
 	}
 
+	/**
+	 * Addresses of the input that are not kept: invalid ones and those after the tenth.
+	 *
+	 * @return string[]
+	 */
+	public static function dropped_addresses( $input ): array {
+		$raw  = is_array( $input ) && is_scalar( $input['recipients'] ?? null ) ? (string) $input['recipients'] : '';
+		$kept = array_filter( explode( ', ', SettingsRegistry::clean( 'recipients', $raw ) ) );
+		$out  = array();
+		foreach ( preg_split( '/[\s,;]+/', $raw ) ?: array() as $address ) {
+			$address = trim( $address );
+			if ( '' !== $address && ! in_array( strtolower( $address ), $kept, true ) && ! in_array( $address, $out, true ) ) {
+				$out[] = $address;
+			}
+		}
+		return $out;
+	}
+
+	/** Sanitize callback of the settings page: like sanitize(), and says which addresses were not kept (P5). */
+	public static function sanitize_and_report( $input ): array {
+		$clean   = self::sanitize( $input );
+		$dropped = self::dropped_addresses( $input );
+		if ( array() !== $dropped && function_exists( 'add_settings_error' ) ) {
+			// WordPress may run the callback twice (add_option after update_option); report once.
+			$codes = function_exists( 'get_settings_errors' ) ? array_column( get_settings_errors( Settings::OPTION ), 'code' ) : array();
+			if ( ! in_array( 'wfc-recipients', $codes, true ) ) {
+				/* translators: %s: list of addresses */
+				add_settings_error( Settings::OPTION, 'wfc-recipients', sprintf( __( 'Nicht gespeichert (ungültig oder mehr als zehn Adressen): %s. Die übrigen Adressen wurden gespeichert.', 'workflow-captain' ), implode( ', ', $dropped ) ), 'error' );
+			}
+		}
+		return $clean;
+	}
+
 	/** @return string[] The chosen addresses, else the address of the site administrator. */
 	public static function recipients( array $config, string $fallback ): array {
 		$list = array_filter( array_map( 'trim', explode( ',', $config['recipients'] ) ) );
