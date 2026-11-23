@@ -372,12 +372,49 @@ final class SettingsPage {
 		}
 	}
 
-	/** Sends the export file (SET-WC-11). */
-	public function handle_export(): void {
+	/**
+	 * Capability, POST and nonce for the transfer actions (export, import, reset, undo). admin-post.php also runs
+	 * its hooks for GET; a changing action is only taken from the form, never from a link.
+	 */
+	private static function guard( string $action ): void {
 		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
 			wp_die( esc_html__( 'Keine Berechtigung.', 'workflow-captain' ), 403 );
 		}
-		check_admin_referer( 'workflow_captain_settings_export' );
+		if ( ! self::is_post( $_SERVER ) ) {
+			wp_die( esc_html__( 'Diese Aktion ist nur über das Formular möglich.', 'workflow-captain' ), 405 );
+		}
+		check_admin_referer( $action );
+	}
+
+	/** @param array<string,mixed> $server */
+	public static function is_post( array $server ): bool {
+		return 'POST' === strtoupper( is_string( $server['REQUEST_METHOD'] ?? null ) ? $server['REQUEST_METHOD'] : '' );
+	}
+
+	/**
+	 * Text of the uploaded settings file, or '' when there is none, it failed, is too large or not an upload. Reads
+	 * only PHP's temp file of this request; nothing is written.
+	 *
+	 * @param mixed $file Entry of $_FILES.
+	 */
+	public static function uploaded_text( $file, int $max = 65536 ): string {
+		if ( ! is_array( $file ) || ! is_string( $file['tmp_name'] ?? null ) || ! is_int( $file['error'] ?? null ) || UPLOAD_ERR_OK !== $file['error'] ) {
+			return '';
+		}
+		$tmp = $file['tmp_name'];
+		if ( '' === $tmp || ! is_uploaded_file( $tmp ) ) {
+			return '';
+		}
+		$size = filesize( $tmp );
+		if ( false === $size || $size < 1 || $size > $max ) {
+			return '';
+		}
+		return (string) file_get_contents( $tmp, false, null, 0, $max ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- uploaded temp file.
+	}
+
+	/** Sends the export file (SET-WC-11). */
+	public function handle_export(): void {
+		self::guard( 'workflow_captain_settings_export' );
 		$json = (string) wp_json_encode( \WorkflowCaptain\SettingsTransfer::export( \WorkflowCaptain\SettingsTransfer::current(), WORKFLOW_CAPTAIN_VERSION ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 		nocache_headers();
 		header( 'Content-Type: application/json; charset=utf-8' );
@@ -388,10 +425,7 @@ final class SettingsPage {
 
 	/** Step 1: upload and preview; step 2: confirm or discard (SET-WC-11). */
 	public function handle_import(): void {
-		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
-			wp_die( esc_html__( 'Keine Berechtigung.', 'workflow-captain' ), 403 );
-		}
-		check_admin_referer( 'workflow_captain_settings_import' );
+		self::guard( 'workflow_captain_settings_import' );
 		$key = 'workflow_captain_settings_import_' . get_current_user_id();
 		if ( isset( $_POST['confirm'] ) ) {
 			$preview = get_transient( $key );
@@ -404,9 +438,7 @@ final class SettingsPage {
 				add_settings_error( Settings::OPTION, 'wfc-import', sprintf( __( '%d Einstellungen übernommen. Rückgängig ist 30 Tage lang möglich.', 'workflow-captain' ), count( $changed ) ), 'success' );
 			}
 		} else {
-			$tmp  = isset( $_FILES['settings_file']['tmp_name'] ) ? (string) $_FILES['settings_file']['tmp_name'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- path of the uploaded temp file, only read.
-			$size = isset( $_FILES['settings_file']['size'] ) ? (int) $_FILES['settings_file']['size'] : 0;
-			$text = '' !== $tmp && is_uploaded_file( $tmp ) && $size > 0 && $size <= 65536 ? (string) file_get_contents( $tmp ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- uploaded temp file.
+			$text = self::uploaded_text( $_FILES['settings_file'] ?? null ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only PHP's temp file of this upload is read (is_uploaded_file), its content is checked by parse().
 			$parsed = \WorkflowCaptain\SettingsTransfer::parse( $text );
 			if ( array() !== $parsed['errors'] ) {
 				$messages = array();
@@ -440,10 +472,7 @@ final class SettingsPage {
 
 	/** Resets one tab or all settings on the server, with a backup for undo (SET-WC-23). */
 	public function handle_reset(): void {
-		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
-			wp_die( esc_html__( 'Keine Berechtigung.', 'workflow-captain' ), 403 );
-		}
-		check_admin_referer( 'workflow_captain_settings_reset' );
+		self::guard( 'workflow_captain_settings_reset' );
 		$tab = isset( $_POST['tab'] ) ? sanitize_key( wp_unslash( $_POST['tab'] ) ) : '';
 		$tab = in_array( $tab, array( 'execution', 'notify', 'privacy' ), true ) ? $tab : '';
 		$changed = \WorkflowCaptain\SettingsTransfer::apply( \WorkflowCaptain\SettingsTransfer::reset_values( '' === $tab ? null : $tab ), 'reset' );
@@ -456,10 +485,7 @@ final class SettingsPage {
 
 	/** Restores the backup of the last reset or import once (SET-WC-23). */
 	public function handle_undo(): void {
-		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
-			wp_die( esc_html__( 'Keine Berechtigung.', 'workflow-captain' ), 403 );
-		}
-		check_admin_referer( 'workflow_captain_settings_undo' );
+		self::guard( 'workflow_captain_settings_undo' );
 		$changed = \WorkflowCaptain\SettingsTransfer::undo();
 		/* translators: %d: number of restored settings */
 		add_settings_error( Settings::OPTION, 'wfc-undo', null === $changed ? __( 'Es gibt nichts rückgängig zu machen.', 'workflow-captain' ) : sprintf( __( '%d Einstellungen wiederhergestellt.', 'workflow-captain' ), count( $changed ) ), null === $changed ? 'error' : 'success' );

@@ -70,6 +70,25 @@ check( 'SET-WC-12 an address change is logged without the address', 'settings_cl
 check( 'SET-WC-12 check: CLI values are checked like the form (out of range refused)', array( false, null, 'out_of_range' ) === SettingsTransfer::check( 'max_workflow', '11' ) && array( true, 3, '' ) === SettingsTransfer::check( 'max_workflow', '3' ) && false === SettingsTransfer::check( 'recipients', 'a@example.org, kaputt' )[0] );
 $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ]['at'] = time() - 31 * 86400;
 check( 'SET-WC-23 a backup older than 30 days cannot be restored', null === SettingsTransfer::backup() );
+check( 'P4 a backup older than 30 days is deleted, not only hidden (it holds the recipient addresses)', ! isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
+$GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time() - 31 * 86400, 'user' => 1, 'source' => 'import', 'values' => array( 'recipients' => 'ops@example.org' ) );
+SettingsTransfer::purge_expired_backup();
+check( 'P4 daily maintenance removes an expired backup', ! isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
+$GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time() - 86400, 'user' => 1, 'source' => 'import', 'values' => array( 'recipients' => 'ops@example.org' ) );
+SettingsTransfer::purge_expired_backup();
+check( 'P4 daily maintenance keeps a backup within the undo period', isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
+unset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] );
+$wfc_warnings = array();
+set_error_handler( static function ( int $no, string $msg ) use ( &$wfc_warnings ): bool { $wfc_warnings[] = $msg; return true; } ); // phpcs:ignore
+$wfc_nested = SettingsTransfer::parse( array( 'format' => 1, 'plugin' => 'workflow-captain', 'settings' => array( 'kinds' => array( array( 'failed' ), array( 'x' => 1 ) ), 'batch' => array( 1 ) ) ) );
+$wfc_clean  = SettingsRegistry::clean( 'kinds', array( 'failed', array( 'pause' ) ) );
+$wfc_upload = array( \WorkflowCaptain\Admin\SettingsPage::uploaded_text( array( 'tmp_name' => array( 'a' ), 'error' => array( 0 ), 'size' => array( 1 ) ) ), \WorkflowCaptain\Admin\SettingsPage::uploaded_text( array( 'tmp_name' => '/etc/passwd', 'error' => 0, 'size' => 10 ) ), \WorkflowCaptain\Admin\SettingsPage::uploaded_text( null ), \WorkflowCaptain\Admin\SettingsPage::uploaded_text( array( 'tmp_name' => '', 'error' => UPLOAD_ERR_INI_SIZE ) ) );
+restore_error_handler();
+check( 'P4 manipulated import file: nested lists are errors without "Array to string" warnings', 'unknown_kind' === ( $wfc_nested['errors']['kinds'] ?? '' ) && 'not_a_number' === ( $wfc_nested['errors']['batch'] ?? '' ) && array( 'failed' ) === $wfc_clean && array() === $wfc_warnings );
+check( 'P4 upload: only PHP\'s temp file of this request is read (no path from the request, no array, no failed upload)', array( '', '', '', '' ) === $wfc_upload );
+check( 'P4 transfer actions only by POST (admin-post.php also runs them for GET)', \WorkflowCaptain\Admin\SettingsPage::is_post( array( 'REQUEST_METHOD' => 'POST' ) ) && ! \WorkflowCaptain\Admin\SettingsPage::is_post( array( 'REQUEST_METHOD' => 'GET' ) ) && ! \WorkflowCaptain\Admin\SettingsPage::is_post( array() ) && ! \WorkflowCaptain\Admin\SettingsPage::is_post( array( 'REQUEST_METHOD' => array( 'POST' ) ) ) );
+$wfc_page = (string) file_get_contents( dirname( __DIR__ ) . '/src/Admin/SettingsPage.php' );
+check( 'P4 export, import, reset and undo all pass the guard (capability, POST, own nonce)', 4 === preg_match_all( "/public function handle_(export|import|reset|undo)\\(\\): void \\{\\s*self::guard\\( 'workflow_captain_settings_\\1' \\);/", $wfc_page ) );
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] );
 $wfc_av = new ReflectionMethod( \WorkflowCaptain\Admin\SettingsPage::class, 'audit_value' );
 check( 'SET-WC-12 audit view prints list values (notice kinds) without "Array to string" (found in the PHP 8.5 run)', 'failed, pause → failed' === $wfc_av->invoke( null, array( array( 'failed', 'pause' ), array( 'failed' ) ) ) && '7 → 9' === $wfc_av->invoke( null, array( 7, 9 ) ) );

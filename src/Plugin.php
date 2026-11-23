@@ -364,6 +364,7 @@ final class Plugin {
 			}
 		}
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->apply_retention();
+		SettingsTransfer::purge_expired_backup();
 		$this->consumer()->store()->purge_causes( ( new Clock() )->mysql() );
 	}
 

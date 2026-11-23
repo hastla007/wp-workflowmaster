@@ -12,7 +12,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `workflow_captain_adapters` | Produkte, deren Adapter zuletzt angemeldet waren (für das Pausieren bei Wegfall, C-15) | leer | `Plugin::register_adapters()` | ja |
 | `workflow_captain_audit` | letzte 50 (einstellbar 10–500, `audit_keep`) sicherheitsrelevante Änderungen: Zeit, Benutzer-ID, Art (Einstellungen, Rechte, Notfallpause), geänderte Schlüssel | leer | `Audit::record()` | ja |
 | `workflow_captain_notify` | Empfänger (bis zu zehn Adressen) und Arten der täglichen Hinweis-Mail | leer = Adresse der Website, alle Arten | Einstellungen → Benachrichtigungen | ja |
-| `workflow_captain_settings_backup` | Stand vor dem letzten Import, Zurücksetzen oder Rückgängig der Einstellungen (Zeit, Benutzer-ID, Quelle, Werte inkl. Empfänger), 30 Tage für „Rückgängig“ | leer | `SettingsTransfer::apply()` | ja |
+| `workflow_captain_settings_backup` | Stand vor dem letzten Import, Zurücksetzen oder Rückgängig der Einstellungen (Zeit, Benutzer-ID, Quelle, Werte inkl. Empfänger), 30 Tage für „Rückgängig“, danach von der täglichen Wartung gelöscht | leer | `SettingsTransfer::apply()` | ja |
 | `workflow_captain_rejected` | Zahl abgelehnter Umschläge und die letzten Regelcodes, nie Werte | leer | `Plugin::record_rejection()` | ja |
 
 ### Register der Einstellungen (SET-WC-01)
@@ -40,7 +40,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `notify_admin_roles` | `workflow_captain_notify` | Rollen | keine | bis 20 Rollen dieser Website | Benachrichtigungen | ja |
 | `kinds` | `workflow_captain_notify` | Auswahl | alle sechs Arten | – | Benachrichtigungen | ja |
 
-**Übertragen (SET-WC-11, -12, -23):** Einstellungen → Status → „Einstellungen übertragen“ und `wp workflow-captain settings list|get|set|export|import|reset|undo`. Der Export (Format 1) enthält nur Felder mit „Export: ja“, nie Empfänger-Adressen oder Geheimnisse; ein Import prüft jedes Feld streng (Fehler statt stiller Korrektur), zeigt zuerst die Änderungen und lehnt eine neuere Formatnummer ab. Import, Zurücksetzen (je Tab oder alles) und WP-CLI schreiben einen Eintrag ins Änderungsprotokoll (Adressen ohne Wert) und sichern den vorigen Stand 30 Tage lang für einmaliges „Rückgängig“. Transient der Import-Vorschau: `workflow_captain_settings_import_{user}` (15 Minuten).
+**Übertragen (SET-WC-11, -12, -23):** Einstellungen → Status → „Einstellungen übertragen“ und `wp workflow-captain settings list|get|set|export|import|reset|undo`. Der Export (Format 1) enthält nur Felder mit „Export: ja“, nie Empfänger-Adressen oder Geheimnisse; ein Import prüft jedes Feld streng (Fehler statt stiller Korrektur), zeigt zuerst die Änderungen und lehnt eine neuere Formatnummer ab. Import, Zurücksetzen (je Tab oder alles) und WP-CLI schreiben einen Eintrag ins Änderungsprotokoll (Adressen ohne Wert) und sichern den vorigen Stand 30 Tage lang für einmaliges „Rückgängig“. Transient der Import-Vorschau: `workflow_captain_settings_import_{user}` (15 Minuten, ohne Adressen). Export, Import, Zurücksetzen und Rückgängig nehmen nur POST mit eigener Nonce und `manage_workflow_captain` an; die Deinstallation löscht auch die Transients `workflow_captain_*`.
 
 Kurzlebige Transients je Benutzer (60 bis 300 Sekunden): `workflow_captain_notice_{user}` (Ergebnis von Speichern und Import) und `workflow_captain_dryrun_{user}` (letzter Testlauf mit Beispieldaten). Sie enthalten nur, was der Benutzer selbst eingegeben hat.
 
