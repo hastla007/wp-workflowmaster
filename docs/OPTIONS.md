@@ -7,12 +7,30 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | Option | Inhalt | Standard | Geschrieben von | Gelöscht bei Deinstallation |
 |---|---|---|---|---|
 | `workflow_captain_db_version` | Version des Datenbankschemas | Version des Plugins | `Install::create_tables()` | ja |
-| `workflow_captain_settings` | Batchgröße, Parallelität, Nachholgrenze, Aufbewahrungsfristen, tägliche Hinweis-Mail | `Settings::FIELDS` | Einstellungsseite (`manage_workflow_captain`) | ja |
+| `workflow_captain_settings` | Batchgröße, Parallelität, Nachholgrenze, Aufbewahrungsfristen, tägliche Hinweis-Mail | Register (`SettingsRegistry`, unten) | Einstellungsseite (`manage_workflow_captain`) | ja |
 | `workflow_captain_emergency_pause` | Notfallpause: aktiv, seit, von Benutzer | aus | Übersicht, `wp workflow-captain pause` | ja |
 | `workflow_captain_adapters` | Produkte, deren Adapter zuletzt angemeldet waren (für das Pausieren bei Wegfall, C-15) | leer | `Plugin::register_adapters()` | ja |
 | `workflow_captain_audit` | letzte 50 sicherheitsrelevante Änderungen: Zeit, Benutzer-ID, Art (Einstellungen, Rechte, Notfallpause), geänderte Schlüssel | leer | `Audit::record()` | ja |
 | `workflow_captain_notify` | Empfänger (bis zu zehn Adressen) und Arten der täglichen Hinweis-Mail | leer = Adresse der Website, alle Arten | Einstellungen → Benachrichtigungen | ja |
 | `workflow_captain_rejected` | Zahl abgelehnter Umschläge und die letzten Regelcodes, nie Werte | leer | `Plugin::record_rejection()` | ja |
+
+### Register der Einstellungen (SET-WC-01)
+
+`src/SettingsRegistry.php` ist die einzige Quelle für Option, Typ, Vorgabe, Bereich, Tab, Beschriftung, Hilfetext, Recht und Export-Regel. Jeder Wert lässt sich mit dem Filter `workflow_captain_setting_<feld>` setzen; der Filter gewinnt, das Ergebnis wird trotzdem gegen Typ und Bereich geprüft. Ändern darf nur `manage_workflow_captain`. Ein Test prüft, dass diese Tabelle jedes Feld des Registers nennt.
+
+| Feld | Option | Typ | Vorgabe | Bereich | Tab | Export |
+|---|---|---|---|---|---|---|
+| `batch` | `workflow_captain_settings` | Zahl | 25 | 1–200 | Ausführung | ja |
+| `max_site` | `workflow_captain_settings` | Zahl | 5 | 1–20 | Ausführung | ja |
+| `max_workflow` | `workflow_captain_settings` | Zahl | 2 | 1–10 | Ausführung | ja |
+| `catch_up_hours` | `workflow_captain_settings` | Zahl | 24 | 1–168 | Ausführung | ja |
+| `max_seconds` | `workflow_captain_settings` | Zahl | 20 | 5–120 | Ausführung | ja |
+| `retention_finished` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–30 | Datenschutz & Aufbewahrung | ja |
+| `retention_runs` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–30 | Datenschutz & Aufbewahrung | ja |
+| `retention_stuck` | `workflow_captain_settings` | Zahl (Tage) | 90 | 1–90 | Datenschutz & Aufbewahrung | ja |
+| `notify_daily` | `workflow_captain_settings` | ja/nein | ja | – | Benachrichtigungen | ja |
+| `recipients` | `workflow_captain_notify` | Adressen | leer = Adresse der Website | bis 10 | Benachrichtigungen | nein (personenbezogen, an die Installation gebunden) |
+| `kinds` | `workflow_captain_notify` | Auswahl | alle sechs Arten | – | Benachrichtigungen | ja |
 
 Kurzlebige Transients je Benutzer (60 bis 300 Sekunden): `workflow_captain_notice_{user}` (Ergebnis von Speichern und Import) und `workflow_captain_dryrun_{user}` (letzter Testlauf mit Beispieldaten). Sie enthalten nur, was der Benutzer selbst eingegeben hat.
 

@@ -95,23 +95,11 @@ final class SettingsPage {
 			return;
 		}
 		$s      = Settings::get();
-		$fields = 'notify' === $tab
-			? array(
-				'notify_daily' => array( __( 'Tägliche Hinweis-Mail an die Betreiber-Adresse', 'workflow-captain' ), __( 'Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen.', 'workflow-captain' ) ),
-			)
-			: ( 'execution' === $tab
-			? array(
-				'batch'          => array( __( 'Ereignisse und Schritte je Worker-Durchlauf', 'workflow-captain' ), '' ),
-				'max_site'       => array( __( 'Höchstens gleichzeitig laufende Schritte auf dieser Website', 'workflow-captain' ), '' ),
-				'max_workflow'   => array( __( 'Höchstens gleichzeitig laufende Schritte je Workflow', 'workflow-captain' ), '' ),
-				'catch_up_hours' => array( __( 'Nachholgrenze in Stunden', 'workflow-captain' ), __( 'Ein Schritt, der länger überfällig ist (zum Beispiel weil WP-Cron nicht lief), wird nicht von selbst ausgeführt, sondern zur Entscheidung angezeigt.', 'workflow-captain' ) ),
-				'max_seconds'    => array( __( 'Laufzeit je Worker-Durchlauf in Sekunden', 'workflow-captain' ), __( 'Danach beginnt der Worker keinen neuen Schritt mehr; ein begonnener Schritt läuft zu Ende. Hält Seitenaufrufe kurz, wenn WP-Cron über Besucher läuft.', 'workflow-captain' ) ),
-			)
-			: array(
-				'retention_finished' => array( __( 'Erledigte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 30 Tage; nur kürzer möglich.', 'workflow-captain' ) ),
-				'retention_runs'     => array( __( 'Erledigte Läufe mit Schrittprotokoll löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 30 Tage; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf.', 'workflow-captain' ) ),
-				'retention_stuck'    => array( __( 'Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Höchstens 90 Tage; nur kürzer möglich. Die Fristen sind ein Vorschlag bis zur Rechtsprüfung.', 'workflow-captain' ) ),
-			) );
+		$texts  = \WorkflowCaptain\SettingsRegistry::texts();
+		$fields = array();
+		foreach ( \WorkflowCaptain\SettingsRegistry::tab( $tab, Settings::OPTION ) as $key ) {
+			$fields[ $key ] = $texts[ $key ];
+		}
 		echo '<form method="post" action="options.php" class="wfc-settings-form">';
 		settings_fields( 'workflow_captain' );
 		// Keep the values of the other tab: the option holds all fields.
@@ -126,7 +114,7 @@ final class SettingsPage {
 			$errors[ $error['code'] ] = $error['message'];
 		}
 		foreach ( $fields as $key => list( $label, $help ) ) {
-			list( $default, $min, $max ) = Settings::FIELDS[ $key ];
+			list( $default, $min, $max ) = Settings::fields()[ $key ];
 			$id                          = 'wfc-' . $key;
 			$name                        = Settings::OPTION . '[' . $key . ']';
 			$range                       = 0 === $min && 1 === $max ? '' : sprintf( /* translators: 1: lowest, 2: highest, 3: default value */ __( 'Erlaubt: %1$d bis %2$d. Standard: %3$d.', 'workflow-captain' ), $min, $max, $default );

@@ -19,22 +19,21 @@ final class Notifications {
 
 	/** @return array{recipients:string,kinds:string[]} */
 	public static function config(): array {
-		$c = function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array();
-		return self::sanitize( is_array( $c ) ? $c : array() );
+		$c      = function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array();
+		$config = self::sanitize( is_array( $c ) ? $c : array() );
+		foreach ( $config as $key => $value ) {
+			$config[ $key ] = SettingsRegistry::filtered( $key, $value );
+		}
+		return $config;
 	}
 
-	/** Keeps valid addresses (at most 10) and known kinds; all kinds when none is stored yet. */
+	/** Keeps valid addresses (at most 10) and known kinds; all kinds when none is stored yet (rules in the register). */
 	public static function sanitize( $input ): array {
 		$input = is_array( $input ) ? $input : array();
-		$list  = array();
-		foreach ( preg_split( '/[\s,;]+/', (string) ( $input['recipients'] ?? '' ) ) ?: array() as $address ) {
-			$address = strtolower( trim( $address ) );
-			if ( '' !== $address && false !== filter_var( $address, FILTER_VALIDATE_EMAIL ) && ! in_array( $address, $list, true ) ) {
-				$list[] = $address;
-			}
-		}
-		$kinds = isset( $input['kinds'] ) && is_array( $input['kinds'] ) ? array_values( array_intersect( self::KINDS, array_map( 'strval', $input['kinds'] ) ) ) : self::KINDS;
-		return array( 'recipients' => implode( ', ', array_slice( $list, 0, 10 ) ), 'kinds' => $kinds );
+		return array(
+			'recipients' => SettingsRegistry::clean( 'recipients', $input['recipients'] ?? '' ),
+			'kinds'      => SettingsRegistry::clean( 'kinds', $input['kinds'] ?? null ),
+		);
 	}
 
 	/** @return string[] The chosen addresses, else the address of the site administrator. */

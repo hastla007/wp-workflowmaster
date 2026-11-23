@@ -578,6 +578,25 @@ check( 'settings: values clamped to their range', 200 === Settings::sanitize( ar
 check( 'settings: retention cannot exceed the proposal', 90 === Settings::sanitize( array( 'retention_stuck' => 365 ) )['retention_stuck'] );
 check( 'settings: unknown keys dropped', ! isset( Settings::sanitize( array( 'evil' => 1 ) )['evil'] ) );
 check( 'settings: engine limits mapped', array( 'site' => 5, 'workflow' => 2, 'catch_up' => 86400, 'seconds' => 20 ) === Settings::engine_limits( Settings::defaults() ) );
+
+// SET-WC-01: register of the settings.
+use WorkflowCaptain\SettingsRegistry;
+use WorkflowCaptain\Notifications;
+check( 'SET-WC-01 register: every value of both options is in the register, nothing else', array_keys( Settings::defaults() ) === SettingsRegistry::keys( Settings::OPTION ) && array( 'recipients', 'kinds' ) === SettingsRegistry::keys( Notifications::OPTION ) && 11 === count( SettingsRegistry::SPEC ) );
+check( 'SET-WC-01 register: both options keep their settings group', 'workflow_captain' === SettingsRegistry::GROUPS[ Settings::OPTION ] && 'workflow_captain_notify' === SettingsRegistry::GROUPS[ Notifications::OPTION ] );
+check( 'SET-WC-01 register: every field has a label and every number field a help text', array() === array_diff( array_keys( SettingsRegistry::SPEC ), array_keys( SettingsRegistry::texts() ) ) && array() === array_filter( SettingsRegistry::keys( Settings::OPTION ), static fn( $k ) => '' === SettingsRegistry::texts()[ $k ][1] ) );
+check( 'SET-WC-01 register: defaults and ranges unchanged against 0.2.0', array( 'batch' => 25, 'max_site' => 5, 'max_workflow' => 2, 'catch_up_hours' => 24, 'max_seconds' => 20, 'retention_finished' => 30, 'retention_runs' => 30, 'retention_stuck' => 90, 'notify_daily' => 1 ) === Settings::defaults() && array( 1, 200 ) === array_slice( Settings::fields()['batch'], 1 ) );
+check( 'SET-WC-01 register: stored option of 0.2.0 is read unchanged (no migration needed)', array( 'max_site' => 7, 'retention_stuck' => 45 ) === array_intersect_key( Settings::sanitize( array( 'max_site' => '7', 'retention_stuck' => 45, 'old' => 1 ) ), array( 'max_site' => 1, 'retention_stuck' => 1 ) ) && array( 'recipients' => 'a@example.org', 'kinds' => array( 'paused' ) ) === Notifications::sanitize( array( 'recipients' => 'A@example.org', 'kinds' => array( 'paused' ) ) ) );
+add_filter( 'workflow_captain_setting_max_site', static fn( $v ) => 12 );
+add_filter( 'workflow_captain_setting_batch', static fn( $v ) => 5000 );
+add_filter( 'workflow_captain_setting_recipients', static fn( $v ) => 'ops@example.org, kaputt' );
+$GLOBALS['wfc_reg_settings'] = Settings::get();
+$GLOBALS['wfc_reg_notify']   = Notifications::config();
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_setting_max_site'], $GLOBALS['wfc_test_filters']['workflow_captain_setting_batch'], $GLOBALS['wfc_test_filters']['workflow_captain_setting_recipients'] );
+check( 'SET-WC-01 register: the filter of a field wins, within the range of the field', 12 === $GLOBALS['wfc_reg_settings']['max_site'] && 200 === $GLOBALS['wfc_reg_settings']['batch'] && 'ops@example.org' === $GLOBALS['wfc_reg_notify']['recipients'] );
+check( 'SET-WC-01 register: addresses are not exported (personal, tied to the installation)', false === SettingsRegistry::field( 'recipients' )['export'] && true === SettingsRegistry::field( 'batch' )['export'] && 'workflow_captain_setting_batch' === SettingsRegistry::field( 'batch' )['filter'] );
+$wfc_options_doc = (string) file_get_contents( dirname( __DIR__ ) . '/docs/OPTIONS.md' );
+check( 'SET-WC-01 register: docs/OPTIONS.md names every field of the register', array() === array_filter( array_keys( SettingsRegistry::SPEC ), static fn( $k ) => ! str_contains( $wfc_options_doc, '`' . $k . '`' ) ) );
 $e = new Engine( new WpdbEngineStore( new FakeWpdb( FakeWpdb::memory() ) ), new ActionRegistry(), new FakeDirectory(), new FixedClock(), 'UTC', array( 'site' => 9, 'bogus' => 3, 'workflow' => 0 ) );
 check( 'engine: limits taken from settings, invalid ignored', array( 'site' => 9, 'workflow' => 2, 'catch_up' => 86400, 'seconds' => 20 ) === $e->limits() );
 
@@ -878,7 +897,6 @@ check( 'restore: published workflow comes back paused', $e->workflows->restore( 
 
 // ----- WF-SET-06: daily notice ---------------------------------------------------------------------------------
 
-use WorkflowCaptain\Notifications;
 check( 'notice: nothing open, no mail', null === Notifications::digest( array( 'runs' => array(), 'events' => array(), 'stuck' => array(), 'environment' => array() ), 'https://x/wp-admin/' ) );
 $mail = Notifications::digest( array( 'runs' => array( 'action_required' => 2 ), 'events' => array( 'dead_letter' => 1 ), 'stuck' => array(), 'environment' => array( 'emergency_pause' => true ) ), 'https://x/wp-admin/admin.php?page=workflow-captain' );
 check( 'notice: lists counts, pause and link, no event content', str_contains( $mail['message'], '- 2 Läufe brauchen eine Entscheidung' ) && str_contains( $mail['message'], '- 1 Ereignisse sind fehlgeschlagen' ) && str_contains( $mail['message'], 'Notfallpause' ) && str_contains( $mail['message'], 'page=workflow-captain' ) );
