@@ -37,6 +37,20 @@ msgid_plural "%d Datenfelder sind ausgeblendet."
 msgstr[0] ""
 msgstr[1] ""
 
+#. translators: %d: number of changed settings
+#: src/Admin/SettingsPage.php:432
+msgid "%d Einstellungen auf Standard gesetzt. Rückgängig ist 30 Tage lang möglich."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:446
+msgid "%d Einstellungen wiederhergestellt."
+msgstr ""
+
+#. translators: %d: number of changed settings
+#: src/Admin/SettingsPage.php:385
+msgid "%d Einstellungen übernommen. Rückgängig ist 30 Tage lang möglich."
+msgstr ""
+
 #. translators: %d: number of events
 #: src/Admin/EventsPage.php:91
 msgid "%d Ereignisse wieder eingereiht."
@@ -57,12 +71,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: minutes
-#: src/Admin/SettingsPage.php:155
+#: src/Admin/SettingsPage.php:159
 msgid "%d Min."
 msgstr ""
 
 #. translators: %d: hours
-#: src/Admin/SettingsPage.php:155
+#: src/Admin/SettingsPage.php:159
 msgid "%d Std."
 msgstr ""
 
@@ -102,11 +116,11 @@ msgstr ""
 msgid "Abgebrochen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:316
+#: src/Admin/SettingsPage.php:472
 msgid "Abgebrochene Datenbank-Aktualisierung wiederholt"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:172
+#: src/Admin/SettingsPage.php:176
 msgid "Abgelehnte oder inkompatible Provider"
 msgstr ""
 
@@ -114,7 +128,7 @@ msgstr ""
 msgid "Ablauf (JSON)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:285
+#: src/Admin/SettingsPage.php:289
 msgid "Action Scheduler (von WooCommerce)"
 msgstr ""
 
@@ -122,7 +136,7 @@ msgstr ""
 msgid "Adapter"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:245
+#: src/Admin/SettingsPage.php:249
 msgid "Administratoren haben immer alle Rechte. Shop-Manager bekommen keine Rechte automatisch."
 msgstr ""
 
@@ -151,7 +165,7 @@ msgstr ""
 msgid "Aktiv seit %s (UTC). Kein Schritt wird ausgeführt; Ereignisse werden weiter gespeichert."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:171
+#: src/Admin/SettingsPage.php:175
 msgid "Aktive Notfallpause"
 msgstr ""
 
@@ -159,7 +173,7 @@ msgstr ""
 msgid "Aktive Workflows"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:283
+#: src/Admin/SettingsPage.php:287
 msgid "Aktualisierung der Datenbank"
 msgstr ""
 
@@ -179,7 +193,11 @@ msgstr ""
 msgid "Alle Angaben auf der Seite „Provider“"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:45
+#: src/Admin/SettingsPage.php:343
+msgid "Alle Einstellungen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:49
 msgid "Alle Felder dieses Tabs auf die Standardwerte setzen? Gespeichert wird erst mit „Änderungen speichern“."
 msgstr ""
 
@@ -187,11 +205,11 @@ msgstr ""
 msgid "Alle Läufe"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:211
+#: src/Admin/SettingsPage.php:215
 msgid "Alle Zeitpunkte werden in UTC gespeichert; Wartezeiten in Tagen richten sich nach der Zeitzone der Website."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:68
+#: src/Admin/SettingsPage.php:72
 msgid "Allgemein"
 msgstr ""
 
@@ -236,11 +254,15 @@ msgstr ""
 msgid "Archiviert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:179 src/Admin/SettingsPage.php:179 src/SettingsRegistry.php:139
+#: src/Admin/SettingsPage.php:183 src/Admin/SettingsPage.php:183 src/SettingsRegistry.php:139
 msgid "Arten"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:69
+#: src/Admin/SettingsPage.php:344
+msgid "Auf Standard setzen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:73 src/Admin/SettingsPage.php:343
 msgid "Ausführung"
 msgstr ""
 
@@ -297,11 +319,11 @@ msgstr ""
 msgid "Beispielereignis (JSON, mindestens \"data\")"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:70
+#: src/Admin/SettingsPage.php:74 src/Admin/SettingsPage.php:343
 msgid "Benachrichtigungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:337
+#: src/Admin/SettingsPage.php:493
 msgid "Benutzer"
 msgstr ""
 
@@ -309,17 +331,25 @@ msgstr ""
 msgid "Benutzer aus (actor_user_id oder data.…_user_id)"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:343
+msgid "Bereich"
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:57 src/Admin/WorkflowsPage.php:58
 msgid "Betreff"
 msgstr ""
 
 #. translators: %s: e-mail address of the site
-#: src/Admin/SettingsPage.php:178
+#: src/Admin/SettingsPage.php:182
 msgid "Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website (%s). Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress."
 msgstr ""
 
 #: src/SettingsRegistry.php:138
 msgid "Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:320
+msgid "Bisher"
 msgstr ""
 
 #: src/Admin/OverviewPage.php:44
@@ -330,7 +360,7 @@ msgstr ""
 msgid "Connector freigeben"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:195 src/Admin/SettingsPage.php:252 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:230 src/Admin/WorkflowsPage.php:241 src/Admin/WorkflowsPage.php:254 src/Admin/WorkflowsPage.php:260 src/Admin/WorkflowsPage.php:271 src/Admin/WorkflowsPage.php:287 src/Admin/WorkflowsPage.php:305 src/Admin/WorkflowsPage.php:334 src/Admin/WorkflowsPage.php:348 src/Plugin.php:403 src/Plugin.php:418
+#: src/Admin/ConnectorsPage.php:35 src/Admin/EventsPage.php:37 src/Admin/EventsPage.php:51 src/Admin/SettingsPage.php:199 src/Admin/SettingsPage.php:256 src/Admin/TemplatesPage.php:90 src/Admin/WorkflowsPage.php:230 src/Admin/WorkflowsPage.php:241 src/Admin/WorkflowsPage.php:254 src/Admin/WorkflowsPage.php:260 src/Admin/WorkflowsPage.php:271 src/Admin/WorkflowsPage.php:287 src/Admin/WorkflowsPage.php:305 src/Admin/WorkflowsPage.php:334 src/Admin/WorkflowsPage.php:348 src/Plugin.php:403 src/Plugin.php:418
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
@@ -350,19 +380,23 @@ msgstr ""
 msgid "Das ging nicht. Ein Schritt mit begonnener Nachricht braucht die Bestätigung, dass sie erneut gesendet werden darf."
 msgstr ""
 
+#: src/Admin/SettingsPage.php:336
+msgid "Datei mit Einstellungen"
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:146
 msgid "Daten des Ereignisses"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:282
+#: src/Admin/SettingsPage.php:286
 msgid "Datenbankschema"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:71
+#: src/Admin/SettingsPage.php:75 src/Admin/SettingsPage.php:343
 msgid "Datenschutz & Aufbewahrung"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:210
+#: src/Admin/SettingsPage.php:214
 msgid "Datumsformat"
 msgstr ""
 
@@ -403,11 +437,11 @@ msgstr ""
 msgid "Der Wert „%1$s“ liegt nicht zwischen %2$d und %3$d. Gespeichert wurde %4$d."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:158
+#: src/Admin/SettingsPage.php:162
 msgid "Der Worker läuft über Action Scheduler (von WooCommerce), jede Minute."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:158
+#: src/Admin/SettingsPage.php:162
 msgid "Der Worker läuft über WP-Cron, jede Minute. WP-Cron startet nur bei Seitenaufrufen; auf Websites mit wenig Besuch oder mit DISABLE_WP_CRON einen System-Cron einrichten: wp workflow-captain process (jede Minute)."
 msgstr ""
 
@@ -429,6 +463,18 @@ msgstr ""
 
 #: src/Admin/EventsPage.php:107
 msgid "Diagnose herunterladen (ohne persönliche Daten)"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:309
+msgid "Die Datei enthält alle Einstellungen außer den Empfänger-Adressen; Geheimnisse und Zugangsdaten sind nie darin. Ein Import zeigt zuerst, was sich ändert."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:397
+msgid "Die Datei wurde nicht übernommen:"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:318
+msgid "Die Datei ändert nichts."
 msgstr ""
 
 #: src/Admin/SiteHealth.php:68
@@ -459,12 +505,16 @@ msgstr ""
 msgid "Die Tabellen von Workflow Captain sind aktuell."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:200
+#: src/Admin/SettingsPage.php:204
 msgid "Die Testnachricht konnte nicht übergeben werden. Prüfen Sie den Mailversand der Website."
 msgstr ""
 
 #: src/Admin/SiteHealth.php:75
 msgid "Die Version des Datenbankservers ließ sich nicht lesen."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:344
+msgid "Die gewählten Einstellungen auf die Standardwerte setzen? Rückgängig ist 30 Tage lang möglich."
 msgstr ""
 
 #: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:126
@@ -499,7 +549,7 @@ msgstr ""
 msgid "Eigene Connectoren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:228
+#: src/Admin/SettingsPage.php:232
 msgid "Eigene Connectoren freigeben"
 msgstr ""
 
@@ -507,7 +557,7 @@ msgstr ""
 msgid "Eigene Daten gehen vor; ein Tag zählt von 00:00 bis 23:59 UTC."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:287
+#: src/Admin/SettingsPage.php:291
 msgid "Eigener Schlüssel für Geheimnisse"
 msgstr ""
 
@@ -527,7 +577,7 @@ msgstr ""
 msgid "Ein Schritt, der länger überfällig ist (zum Beispiel weil WP-Cron nicht lief), wird nicht von selbst ausgeführt, sondern zur Entscheidung angezeigt."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:190
+#: src/Admin/SettingsPage.php:194
 msgid "Ein Testereignis für einen Workflow gibt es im Editor als „Testlauf“."
 msgstr ""
 
@@ -563,19 +613,47 @@ msgstr ""
 msgid "Eingetreten"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:59 src/Admin/SettingsPage.php:59 src/Admin/SettingsPage.php:76
+#: src/Admin/SettingsPage.php:320
+msgid "Einstellung"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:459
+msgid "Einstellung per WP-CLI geändert"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:63 src/Admin/SettingsPage.php:63 src/Admin/SettingsPage.php:80
 msgid "Einstellungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:303
+#: src/Admin/SettingsPage.php:457
+msgid "Einstellungen auf Standard gesetzt"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:312
+msgid "Einstellungen exportieren"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:455
 msgid "Einstellungen geändert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:227
+#: src/Admin/SettingsPage.php:456
+msgid "Einstellungen importiert"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:458
+msgid "Einstellungen wiederhergestellt"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:308
+msgid "Einstellungen übertragen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:231
 msgid "Einstellungen, Notfallpause, Diagnose"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:337
+#: src/Admin/SettingsPage.php:493
 msgid "Einzelheiten"
 msgstr ""
 
@@ -583,7 +661,7 @@ msgstr ""
 msgid "Empfangen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:176 src/SettingsRegistry.php:138
+#: src/Admin/SettingsPage.php:180 src/SettingsRegistry.php:138
 msgid "Empfänger"
 msgstr ""
 
@@ -591,7 +669,7 @@ msgstr ""
 msgid "Empfänger (site_admin oder Berechtigung)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:174
+#: src/Admin/SettingsPage.php:178
 msgid "Empfänger und Arten"
 msgstr ""
 
@@ -648,7 +726,7 @@ msgstr ""
 msgid "Ereignisse und Schritte je Worker-Durchlauf"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:308
+#: src/Admin/SettingsPage.php:464
 msgid "Ereignisse wieder eingereiht"
 msgstr ""
 
@@ -670,7 +748,7 @@ msgid "Ergebnis: %s"
 msgstr ""
 
 #. translators: 1: lowest, 2: highest, 3: default value
-#: src/Admin/SettingsPage.php:120
+#: src/Admin/SettingsPage.php:124
 msgid "Erlaubt: %1$d bis %2$d. Standard: %3$d."
 msgstr ""
 
@@ -703,7 +781,7 @@ msgid "Erste Seite"
 msgstr ""
 
 #. translators: 1: number, 2: option name
-#: src/Admin/SettingsPage.php:347
+#: src/Admin/SettingsPage.php:503
 msgid "Es bleiben die letzten %1$d Einträge in der Option %2$s."
 msgstr ""
 
@@ -711,7 +789,12 @@ msgstr ""
 msgid "Es gibt fehlgeschlagene Ereignisse, hängende Schritte oder Läufe, die eine Entscheidung brauchen (Workflow Captain → Ereignisse und Läufe)."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:44
+#. translators: %d: number of restored settings
+#: src/Admin/SettingsPage.php:446
+msgid "Es gibt nichts rückgängig zu machen."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:48
 msgid "Es gibt ungespeicherte Änderungen. Seite trotzdem verlassen?"
 msgstr ""
 
@@ -740,7 +823,7 @@ msgstr ""
 msgid "Fehlgeschlagene Ereignisse"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:169
+#: src/Admin/SettingsPage.php:173
 msgid "Fehlgeschlagene Ereignisse (Queue-Ausfall)"
 msgstr ""
 
@@ -768,6 +851,10 @@ msgstr ""
 msgid "Filtern"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:411
+msgid "Formatnummer fehlt"
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:470 src/Admin/WorkflowsPage.php:717
 msgid "Fortsetzen"
 msgstr ""
@@ -776,7 +863,7 @@ msgstr ""
 msgid "Freigabe"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:307
+#: src/Admin/SettingsPage.php:463
 msgid "Freigabe eines eigenen Connectors geändert"
 msgstr ""
 
@@ -801,7 +888,7 @@ msgid "Für „in Liste“ Werte mit Komma getrennt angeben."
 msgstr ""
 
 #. translators: %s: option name
-#: src/Admin/SettingsPage.php:296
+#: src/Admin/SettingsPage.php:300
 msgid "Gespeichert in der Option %s."
 msgstr ""
 
@@ -846,11 +933,11 @@ msgstr ""
 msgid "Hält sofort alle Schritte an. Betroffen: %d laufende Läufe. Überfällige Schritte brauchen danach eine Entscheidung."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:288
+#: src/Admin/SettingsPage.php:292
 msgid "Hängende Schritte (Sperrfrist über einen Tag abgelaufen)"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:46 src/Admin/SettingsPage.php:170
+#: src/Admin/OverviewPage.php:46 src/Admin/SettingsPage.php:174
 msgid "Hängende Schritte und Läufe"
 msgstr ""
 
@@ -891,6 +978,10 @@ msgstr ""
 msgid "Im Editor zeigen"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:381
+msgid "Import verworfen. Nichts wurde geändert."
+msgstr ""
+
 #: src/Admin/EventsPage.php:170
 msgid "In Arbeit"
 msgstr ""
@@ -899,7 +990,7 @@ msgstr ""
 msgid "Ja, alle Abläufe anhalten"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:160
+#: src/Admin/SettingsPage.php:164
 msgid "Je Workflow lässt sich im Editor nur die Serialisierung (ein Lauf je Objekt nacheinander) einstellen; die Grenzen oben gelten für alle Workflows."
 msgstr ""
 
@@ -921,6 +1012,10 @@ msgstr ""
 
 #: src/Admin/SiteHealth.php:77
 msgid "Kein eigener Schlüssel gesetzt; Geheimnisse hängen an den WordPress-Salts. Empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:359 src/Admin/SettingsPage.php:373 src/Admin/SettingsPage.php:425 src/Admin/SettingsPage.php:441
+msgid "Keine Berechtigung."
 msgstr ""
 
 #: src/Admin/EventsPage.php:140
@@ -993,7 +1088,7 @@ msgstr ""
 msgid "Lauf abbrechen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:309
+#: src/Admin/SettingsPage.php:465
 msgid "Lauf abgebrochen"
 msgstr ""
 
@@ -1001,7 +1096,7 @@ msgstr ""
 msgid "Lauf exportieren (JSON, redigiert)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:317
+#: src/Admin/SettingsPage.php:473
 msgid "Lauf exportiert"
 msgstr ""
 
@@ -1025,7 +1120,7 @@ msgstr ""
 msgid "Letzte Seite"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:331 src/Admin/SettingsPage.php:337
+#: src/Admin/SettingsPage.php:487 src/Admin/SettingsPage.php:493
 msgid "Letzte sicherheitsrelevante Änderungen"
 msgstr ""
 
@@ -1058,7 +1153,7 @@ msgstr ""
 msgid "Läufe mit dieser Korrelation"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:289
+#: src/Admin/SettingsPage.php:293
 msgid "Läufe ohne offenen Schritt"
 msgstr ""
 
@@ -1066,7 +1161,7 @@ msgstr ""
 msgid "Läufe sind pausiert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:223
+#: src/Admin/SettingsPage.php:227
 msgid "Läufe und Ereignisse ansehen"
 msgstr ""
 
@@ -1074,7 +1169,7 @@ msgstr ""
 msgid "Läufe · 30 Tage"
 msgstr ""
 
-#: src/Admin/OverviewPage.php:148 src/Admin/SettingsPage.php:167
+#: src/Admin/OverviewPage.php:148 src/Admin/SettingsPage.php:171
 msgid "Läufe, die eine Entscheidung brauchen"
 msgstr ""
 
@@ -1142,7 +1237,7 @@ msgstr ""
 msgid "Netzwerk"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:376
+#: src/Admin/SettingsPage.php:320 src/Admin/WorkflowsPage.php:376
 msgid "Neu"
 msgstr ""
 
@@ -1174,7 +1269,7 @@ msgstr ""
 msgid "Noch kein Provider bekannt."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:334
+#: src/Admin/SettingsPage.php:490
 msgid "Noch keine Einträge."
 msgstr ""
 
@@ -1194,7 +1289,7 @@ msgstr ""
 msgid "Notfallpause aktivieren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:306
+#: src/Admin/SettingsPage.php:462
 msgid "Notfallpause aufgehoben"
 msgstr ""
 
@@ -1202,7 +1297,7 @@ msgstr ""
 msgid "Notfallpause aufheben"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:305
+#: src/Admin/SettingsPage.php:461
 msgid "Notfallpause eingeschaltet"
 msgstr ""
 
@@ -1253,7 +1348,7 @@ msgstr ""
 msgid "Nächster Termin:"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:284
+#: src/Admin/SettingsPage.php:288
 msgid "Nächster Worker-Lauf (UTC)"
 msgstr ""
 
@@ -1273,7 +1368,7 @@ msgstr ""
 msgid "Pausiert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:168
+#: src/Admin/SettingsPage.php:172
 msgid "Pausierte Läufe"
 msgstr ""
 
@@ -1281,7 +1376,7 @@ msgstr ""
 msgid "Personenbezogene Felder weitergeben:"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:285
+#: src/Admin/SettingsPage.php:289
 msgid "Planung des Workers"
 msgstr ""
 
@@ -1317,7 +1412,7 @@ msgstr ""
 msgid "Prüfen und veröffentlichen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:304
+#: src/Admin/SettingsPage.php:460
 msgid "Rechte der Rollen geändert"
 msgstr ""
 
@@ -1329,12 +1424,17 @@ msgstr ""
 msgid "Regelgruppen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:232
+#: src/Admin/SettingsPage.php:236
 msgid "Rolle"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:72
+#: src/Admin/SettingsPage.php:76
 msgid "Rollen & Rechte"
+msgstr ""
+
+#. translators: %s: date and time of the backup
+#: src/Admin/SettingsPage.php:351
+msgid "Rückgängig: Stand vom %s wiederherstellen"
 msgstr ""
 
 #: src/Admin/SchedulesPage.php:37 src/Admin/WorkflowsPage.php:130
@@ -1362,7 +1462,7 @@ msgstr ""
 msgid "Schritt %s fortsetzen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:310
+#: src/Admin/SettingsPage.php:466
 msgid "Schritt fortgesetzt"
 msgstr ""
 
@@ -1390,7 +1490,7 @@ msgstr ""
 msgid "Seiten der Workflow-Liste"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:157
+#: src/Admin/SettingsPage.php:161
 msgid "So läuft die Ausführung"
 msgstr ""
 
@@ -1402,19 +1502,19 @@ msgstr ""
 msgid "Speichern"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:211
+#: src/Admin/SettingsPage.php:215
 msgid "Speicherung"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:141
+#: src/Admin/SettingsPage.php:145
 msgid "Standardwerte dieses Tabs"
 msgstr ""
 
-#: src/Admin/ConnectorsPage.php:103 src/Admin/SettingsPage.php:73
+#: src/Admin/ConnectorsPage.php:103 src/Admin/SettingsPage.php:77
 msgid "Status"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:344
+#: src/Admin/SettingsPage.php:500
 msgid "System/WP-CLI"
 msgstr ""
 
@@ -1439,11 +1539,11 @@ msgstr ""
 msgid "Testlauf starten"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:190
+#: src/Admin/SettingsPage.php:194
 msgid "Testnachricht senden"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:200
+#: src/Admin/SettingsPage.php:204
 msgid "Testnachricht übergeben. Kommt sie nicht an, prüfen Sie den Mailversand der Website."
 msgstr ""
 
@@ -1484,6 +1584,10 @@ msgstr ""
 msgid "Vertragsversion"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:331
+msgid "Verwerfen"
+msgstr ""
+
 #: src/Admin/EventsPage.php:174
 msgid "Verworfen"
 msgstr ""
@@ -1508,16 +1612,24 @@ msgstr ""
 msgid "Vorlagen"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:337
+msgid "Vorschau anzeigen"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:316
+msgid "Vorschau des Imports"
+msgstr ""
+
 #. translators: %s: list of waiting times
-#: src/Admin/SettingsPage.php:159
+#: src/Admin/SettingsPage.php:163
 msgid "Vorübergehende Fehler werden nach festem Plan wiederholt: %s. Danach wird ein Ereignis als fehlgeschlagen angezeigt; ein Schritt braucht eine Entscheidung. Nachrichten werden nach einem unklaren Ausgang nie von selbst wiederholt."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:285
+#: src/Admin/SettingsPage.php:289
 msgid "WP-Cron"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:286
+#: src/Admin/SettingsPage.php:290
 msgid "WP-Cron abgeschaltet"
 msgstr ""
 
@@ -1565,7 +1677,7 @@ msgstr ""
 msgid "Wiederherstellen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:226
+#: src/Admin/SettingsPage.php:230
 msgid "Wiederholen, fortsetzen, abbrechen"
 msgstr ""
 
@@ -1624,11 +1736,11 @@ msgstr ""
 msgid "Workflow archivieren? Er startet keine neuen Läufe mehr; Läufe und Protokolle bleiben erhalten."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:312
+#: src/Admin/SettingsPage.php:468
 msgid "Workflow archiviert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:315
+#: src/Admin/SettingsPage.php:471
 msgid "Workflow fortgesetzt"
 msgstr ""
 
@@ -1640,15 +1752,15 @@ msgstr ""
 msgid "Workflow nicht gefunden."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:314
+#: src/Admin/SettingsPage.php:470
 msgid "Workflow pausiert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:311
+#: src/Admin/SettingsPage.php:467
 msgid "Workflow veröffentlicht"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:313
+#: src/Admin/SettingsPage.php:469
 msgid "Workflow wiederhergestellt"
 msgstr ""
 
@@ -1665,7 +1777,7 @@ msgstr ""
 msgid "Workflows"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:224
+#: src/Admin/SettingsPage.php:228
 msgid "Workflows entwerfen"
 msgstr ""
 
@@ -1674,7 +1786,7 @@ msgstr ""
 msgid "Workflows mit dem Auslöser „Zeitplan“, nach Name. Alle Zeiten in der Zeitzone der Website (%s). Ein verpasster Termin wird höchstens einmal nachgeholt."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:225
+#: src/Admin/SettingsPage.php:229
 msgid "Workflows veröffentlichen und pausieren"
 msgstr ""
 
@@ -1682,7 +1794,7 @@ msgstr ""
 msgid "Workflows, neueste zuerst"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:337
+#: src/Admin/SettingsPage.php:493
 msgid "Zeit (UTC)"
 msgstr ""
 
@@ -1718,15 +1830,15 @@ msgstr ""
 msgid "Zeitraum entfernen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:209
+#: src/Admin/SettingsPage.php:213
 msgid "Zeitzone"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:281
+#: src/Admin/SettingsPage.php:285
 msgid "Zeitzone der Website"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:217
+#: src/Admin/SettingsPage.php:221
 msgid "Zeitzone und Datumsformat in WordPress ändern"
 msgstr ""
 
@@ -1751,15 +1863,19 @@ msgstr ""
 msgid "Zuletzt geändert (UTC)"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:340
+msgid "Zurücksetzen"
+msgstr ""
+
 #: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:698 src/Privacy/Privacy.php:80 src/Privacy/Privacy.php:101
 msgid "Zustand"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:291
+#: src/Admin/SettingsPage.php:295
 msgid "Zustand der Installation"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:283
+#: src/Admin/SettingsPage.php:287
 msgid "abgebrochen – wird beim nächsten Aufruf im Admin, per Cron oder WP-CLI wiederholt"
 msgstr ""
 
@@ -1784,12 +1900,16 @@ msgstr ""
 msgid "angemeldet"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:209 src/Admin/SettingsPage.php:210
+#: src/Admin/SettingsPage.php:213 src/Admin/SettingsPage.php:214
 msgid "aus Einstellungen → Allgemein von WordPress"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:118
 msgid "aus dem Lauf"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:414
+msgid "außerhalb des erlaubten Bereichs"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:645
@@ -1798,6 +1918,14 @@ msgstr ""
 
 #: src/Admin/ConnectorsPage.php:78
 msgid "braucht eine neuere Version von Workflow Captain"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:410
+msgid "die Datei gehört zu einem anderen Plugin"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:412
+msgid "die Datei stammt von einer neueren Version; bitte Workflow Captain aktualisieren"
 msgstr ""
 
 #: src/Admin/ConnectorsPage.php:80
@@ -1824,11 +1952,11 @@ msgstr ""
 msgid "gesamt"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:287
+#: src/Admin/SettingsPage.php:291
 msgid "gesetzt"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:286
+#: src/Admin/SettingsPage.php:290
 msgid "ja – System-Cron nötig: wp workflow-captain process"
 msgstr ""
 
@@ -1852,7 +1980,19 @@ msgstr ""
 msgid "keine Angabe"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:283
+#: src/Admin/SettingsPage.php:409
+msgid "keine Einstellungsdatei von Workflow Captain"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:415
+msgid "keine Liste"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:413
+msgid "keine ganze Zahl"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:287
 msgid "keine offen"
 msgstr ""
 
@@ -1873,7 +2013,7 @@ msgstr ""
 msgid "läuft"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:283
+#: src/Admin/SettingsPage.php:287
 msgid "läuft gerade"
 msgstr ""
 
@@ -1881,7 +2021,7 @@ msgstr ""
 msgid "monatlich"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:286
+#: src/Admin/SettingsPage.php:290
 msgid "nein"
 msgstr ""
 
@@ -1889,11 +2029,11 @@ msgstr ""
 msgid "nicht freigegeben"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:284
+#: src/Admin/SettingsPage.php:288
 msgid "nicht geplant"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:287
+#: src/Admin/SettingsPage.php:291
 msgid "nicht gesetzt – empfohlen: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php"
 msgstr ""
 
@@ -1918,6 +2058,14 @@ msgstr ""
 msgid "täglich"
 msgstr ""
 
+#: src/Admin/SettingsPage.php:416
+msgid "unbekannte Art"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:417
+msgid "ungültige Adresse"
+msgstr ""
+
 #: src/Admin/TemplatesPage.php:79
 msgid "verfügbar"
 msgstr ""
@@ -1934,8 +2082,16 @@ msgstr ""
 msgid "wöchentlich"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:337
+#: src/Admin/SettingsPage.php:493
 msgid "Änderung"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:320
+msgid "Änderungen durch den Import"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:329
+msgid "Übernehmen"
 msgstr ""
 
 #: src/Admin/OverviewPage.php:28 src/Admin/OverviewPage.php:28

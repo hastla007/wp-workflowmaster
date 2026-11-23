@@ -27,6 +27,10 @@ final class SettingsPage {
 		add_action( 'admin_init', array( $this, 'register_setting' ) );
 		add_action( 'admin_post_workflow_captain_roles', array( $this, 'handle_roles' ) );
 		add_action( 'admin_post_workflow_captain_test_mail', array( $this, 'handle_test_mail' ) );
+		add_action( 'admin_post_workflow_captain_settings_export', array( $this, 'handle_export' ) );
+		add_action( 'admin_post_workflow_captain_settings_import', array( $this, 'handle_import' ) );
+		add_action( 'admin_post_workflow_captain_settings_reset', array( $this, 'handle_reset' ) );
+		add_action( 'admin_post_workflow_captain_settings_undo', array( $this, 'handle_undo' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		add_action( 'update_option_' . Settings::OPTION, array( Audit::class, 'settings_updated' ), 10, 2 );
 	}
@@ -294,13 +298,177 @@ final class SettingsPage {
 		}
 		echo '</tbody></table>';
 		echo '<p class="description">' . esc_html( sprintf( /* translators: %s: option name */ __( 'Gespeichert in der Option %s.', 'workflow-captain' ), Install::DB_OPTION ) ) . '</p>';
+		$this->transfer();
 		$this->audit();
+	}
+
+	/** Export, import with preview, reset of all settings and undo (SET-WC-11, SET-WC-23). */
+	private function transfer(): void {
+		$post = esc_url( admin_url( 'admin-post.php' ) );
+		echo '<h2>' . esc_html__( 'Einstellungen übertragen', 'workflow-captain' ) . '</h2>';
+		echo '<p>' . esc_html__( 'Die Datei enthält alle Einstellungen außer den Empfänger-Adressen; Geheimnisse und Zugangsdaten sind nie darin. Ein Import zeigt zuerst, was sich ändert.', 'workflow-captain' ) . '</p>';
+		echo '<form method="post" action="' . $post . '" style="display:inline-block;margin-right:1em"><input type="hidden" name="action" value="workflow_captain_settings_export">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
+		wp_nonce_field( 'workflow_captain_settings_export' );
+		submit_button( __( 'Einstellungen exportieren', 'workflow-captain' ), 'secondary', 'submit', false );
+		echo '</form>';
+		$preview = get_transient( 'workflow_captain_settings_import_' . get_current_user_id() );
+		if ( is_array( $preview ) && isset( $preview['values'], $preview['diff'] ) ) {
+			echo '<div class="notice notice-info inline"><p><strong>' . esc_html__( 'Vorschau des Imports', 'workflow-captain' ) . '</strong></p>';
+			if ( array() === $preview['diff'] ) {
+				echo '<p>' . esc_html__( 'Die Datei ändert nichts.', 'workflow-captain' ) . '</p>';
+			} else {
+				echo '<table class="widefat striped" tabindex="0" style="max-width:700px"><caption class="screen-reader-text">' . esc_html__( 'Änderungen durch den Import', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Einstellung', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Bisher', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Neu', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+				foreach ( $preview['diff'] as $key => $pair ) {
+					echo '<tr><td><code>' . esc_html( (string) $key ) . '</code></td><td>' . esc_html( is_array( $pair[0] ) ? implode( ', ', $pair[0] ) : (string) $pair[0] ) . '</td><td>' . esc_html( is_array( $pair[1] ) ? implode( ', ', $pair[1] ) : (string) $pair[1] ) . '</td></tr>';
+				}
+				echo '</tbody></table>';
+			}
+			echo '<form method="post" action="' . $post . '"><input type="hidden" name="action" value="workflow_captain_settings_import"><input type="hidden" name="confirm" value="1">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
+			wp_nonce_field( 'workflow_captain_settings_import' );
+			echo '<p>';
+			submit_button( __( 'Übernehmen', 'workflow-captain' ), 'primary', 'submit', false, array_merge( array() === $preview['diff'] ? array( 'disabled' => 'disabled' ) : array() ) );
+			echo ' ';
+			submit_button( __( 'Verwerfen', 'workflow-captain' ), 'secondary', 'discard', false );
+			echo '</p></form></div>';
+		} else {
+			echo '<form method="post" enctype="multipart/form-data" action="' . $post . '" style="display:inline-block"><input type="hidden" name="action" value="workflow_captain_settings_import">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
+			wp_nonce_field( 'workflow_captain_settings_import' );
+			echo '<label for="wfc-settings-file">' . esc_html__( 'Datei mit Einstellungen', 'workflow-captain' ) . '</label> <input id="wfc-settings-file" type="file" name="settings_file" accept="application/json,.json" required> ';
+			submit_button( __( 'Vorschau anzeigen', 'workflow-captain' ), 'secondary', 'submit', false );
+			echo '</form>';
+		}
+		echo '<h3>' . esc_html__( 'Zurücksetzen', 'workflow-captain' ) . '</h3>';
+		echo '<form method="post" action="' . $post . '" style="display:inline-block;margin-right:1em"><input type="hidden" name="action" value="workflow_captain_settings_reset">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
+		wp_nonce_field( 'workflow_captain_settings_reset' );
+		echo '<label for="wfc-reset-scope" class="screen-reader-text">' . esc_html__( 'Bereich', 'workflow-captain' ) . '</label><select id="wfc-reset-scope" name="tab"><option value="">' . esc_html__( 'Alle Einstellungen', 'workflow-captain' ) . '</option><option value="execution">' . esc_html__( 'Ausführung', 'workflow-captain' ) . '</option><option value="notify">' . esc_html__( 'Benachrichtigungen', 'workflow-captain' ) . '</option><option value="privacy">' . esc_html__( 'Datenschutz & Aufbewahrung', 'workflow-captain' ) . '</option></select> ';
+		submit_button( __( 'Auf Standard setzen', 'workflow-captain' ), 'secondary', 'submit', false, array( 'onclick' => 'return confirm(' . wp_json_encode( __( 'Die gewählten Einstellungen auf die Standardwerte setzen? Rückgängig ist 30 Tage lang möglich.', 'workflow-captain' ) ) . ')' ) );
+		echo '</form>';
+		$backup = \WorkflowCaptain\SettingsTransfer::backup();
+		if ( null !== $backup ) {
+			echo '<form method="post" action="' . $post . '" style="display:inline-block"><input type="hidden" name="action" value="workflow_captain_settings_undo">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
+			wp_nonce_field( 'workflow_captain_settings_undo' );
+			/* translators: %s: date and time of the backup */
+			submit_button( sprintf( __( 'Rückgängig: Stand vom %s wiederherstellen', 'workflow-captain' ), wp_date( (string) get_option( 'date_format' ) . ' ' . (string) get_option( 'time_format' ), (int) $backup['at'] ) ), 'secondary', 'submit', false );
+			echo '</form>';
+		}
+	}
+
+	/** Sends the export file (SET-WC-11). */
+	public function handle_export(): void {
+		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
+			wp_die( esc_html__( 'Keine Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		check_admin_referer( 'workflow_captain_settings_export' );
+		$json = (string) wp_json_encode( \WorkflowCaptain\SettingsTransfer::export( \WorkflowCaptain\SettingsTransfer::current(), WORKFLOW_CAPTAIN_VERSION ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+		nocache_headers();
+		header( 'Content-Type: application/json; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="workflow-captain-settings-' . gmdate( 'Y-m-d' ) . '.json"' );
+		echo $json; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON download, not HTML.
+		exit;
+	}
+
+	/** Step 1: upload and preview; step 2: confirm or discard (SET-WC-11). */
+	public function handle_import(): void {
+		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
+			wp_die( esc_html__( 'Keine Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		check_admin_referer( 'workflow_captain_settings_import' );
+		$key = 'workflow_captain_settings_import_' . get_current_user_id();
+		if ( isset( $_POST['confirm'] ) ) {
+			$preview = get_transient( $key );
+			delete_transient( $key );
+			if ( isset( $_POST['discard'] ) || ! is_array( $preview ) || ! isset( $preview['values'] ) ) {
+				add_settings_error( Settings::OPTION, 'wfc-import', __( 'Import verworfen. Nichts wurde geändert.', 'workflow-captain' ), 'info' );
+			} else {
+				$changed = \WorkflowCaptain\SettingsTransfer::apply( $preview['values'], 'import' );
+				/* translators: %d: number of changed settings */
+				add_settings_error( Settings::OPTION, 'wfc-import', sprintf( __( '%d Einstellungen übernommen. Rückgängig ist 30 Tage lang möglich.', 'workflow-captain' ), count( $changed ) ), 'success' );
+			}
+		} else {
+			$tmp  = isset( $_FILES['settings_file']['tmp_name'] ) ? (string) $_FILES['settings_file']['tmp_name'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- path of the uploaded temp file, only read.
+			$size = isset( $_FILES['settings_file']['size'] ) ? (int) $_FILES['settings_file']['size'] : 0;
+			$text = '' !== $tmp && is_uploaded_file( $tmp ) && $size > 0 && $size <= 65536 ? (string) file_get_contents( $tmp ) : ''; // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- uploaded temp file.
+			$parsed = \WorkflowCaptain\SettingsTransfer::parse( $text );
+			if ( array() !== $parsed['errors'] ) {
+				$messages = array();
+				foreach ( $parsed['errors'] as $field => $code ) {
+					$messages[] = '_file' === $field ? self::import_error( $code ) : $field . ': ' . self::import_error( $code );
+				}
+				add_settings_error( Settings::OPTION, 'wfc-import', __( 'Die Datei wurde nicht übernommen:', 'workflow-captain' ) . ' ' . implode( '; ', $messages ), 'error' );
+			} else {
+				set_transient( $key, array( 'values' => $parsed['values'], 'diff' => \WorkflowCaptain\SettingsTransfer::diff( \WorkflowCaptain\SettingsTransfer::current(), $parsed['values'] ) ), 15 * MINUTE_IN_SECONDS );
+			}
+		}
+		set_transient( 'settings_errors', get_settings_errors(), 30 );
+		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'status', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
+	private static function import_error( string $code ): string {
+		$texts = array(
+			'not_a_settings_file' => __( 'keine Einstellungsdatei von Workflow Captain', 'workflow-captain' ),
+			'other_plugin'        => __( 'die Datei gehört zu einem anderen Plugin', 'workflow-captain' ),
+			'no_format'           => __( 'Formatnummer fehlt', 'workflow-captain' ),
+			'newer_format'        => __( 'die Datei stammt von einer neueren Version; bitte Workflow Captain aktualisieren', 'workflow-captain' ),
+			'not_a_number'        => __( 'keine ganze Zahl', 'workflow-captain' ),
+			'out_of_range'        => __( 'außerhalb des erlaubten Bereichs', 'workflow-captain' ),
+			'not_a_list'          => __( 'keine Liste', 'workflow-captain' ),
+			'unknown_kind'        => __( 'unbekannte Art', 'workflow-captain' ),
+			'invalid_address'     => __( 'ungültige Adresse', 'workflow-captain' ),
+		);
+		return $texts[ $code ] ?? $code;
+	}
+
+	/** Resets one tab or all settings on the server, with a backup for undo (SET-WC-23). */
+	public function handle_reset(): void {
+		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
+			wp_die( esc_html__( 'Keine Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		check_admin_referer( 'workflow_captain_settings_reset' );
+		$tab = isset( $_POST['tab'] ) ? sanitize_key( wp_unslash( $_POST['tab'] ) ) : '';
+		$tab = in_array( $tab, array( 'execution', 'notify', 'privacy' ), true ) ? $tab : '';
+		$changed = \WorkflowCaptain\SettingsTransfer::apply( \WorkflowCaptain\SettingsTransfer::reset_values( '' === $tab ? null : $tab ), 'reset' );
+		/* translators: %d: number of changed settings */
+		add_settings_error( Settings::OPTION, 'wfc-reset', sprintf( __( '%d Einstellungen auf Standard gesetzt. Rückgängig ist 30 Tage lang möglich.', 'workflow-captain' ), count( $changed ) ), 'success' );
+		set_transient( 'settings_errors', get_settings_errors(), 30 );
+		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'status', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
+	/** Restores the backup of the last reset or import once (SET-WC-23). */
+	public function handle_undo(): void {
+		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
+			wp_die( esc_html__( 'Keine Berechtigung.', 'workflow-captain' ), 403 );
+		}
+		check_admin_referer( 'workflow_captain_settings_undo' );
+		$changed = \WorkflowCaptain\SettingsTransfer::undo();
+		/* translators: %d: number of restored settings */
+		add_settings_error( Settings::OPTION, 'wfc-undo', null === $changed ? __( 'Es gibt nichts rückgängig zu machen.', 'workflow-captain' ) : sprintf( __( '%d Einstellungen wiederhergestellt.', 'workflow-captain' ), count( $changed ) ), null === $changed ? 'error' : 'success' );
+		set_transient( 'settings_errors', get_settings_errors(), 30 );
+		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'status', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
+	/** One audit value as text: old → new pairs, lists (such as the notice kinds) comma separated, nothing nested. */
+	private static function audit_value( $value ): string {
+		if ( ! is_array( $value ) ) {
+			return is_scalar( $value ) || null === $value ? (string) $value : '';
+		}
+		$parts = array();
+		foreach ( $value as $part ) {
+			$parts[] = is_array( $part ) ? implode( ', ', array_map( static fn( $p ): string => is_scalar( $p ) ? (string) $p : '', $part ) ) : ( is_scalar( $part ) || null === $part ? (string) $part : '' );
+		}
+		return implode( ' → ', $parts );
 	}
 
 	/** The last security-relevant changes (WF-SET-13). */
 	private function audit(): void {
 		$labels = array(
 			'settings'  => __( 'Einstellungen geändert', 'workflow-captain' ),
+			'settings_import' => __( 'Einstellungen importiert', 'workflow-captain' ),
+			'settings_reset'  => __( 'Einstellungen auf Standard gesetzt', 'workflow-captain' ),
+			'settings_undo'   => __( 'Einstellungen wiederhergestellt', 'workflow-captain' ),
+			'settings_cli'    => __( 'Einstellung per WP-CLI geändert', 'workflow-captain' ),
 			'roles'     => __( 'Rechte der Rollen geändert', 'workflow-captain' ),
 			'pause_on'  => __( 'Notfallpause eingeschaltet', 'workflow-captain' ),
 			'pause_off' => __( 'Notfallpause aufgehoben', 'workflow-captain' ),
@@ -339,7 +507,7 @@ final class SettingsPage {
 			$user   = get_userdata( (int) $e['user'] );
 			$detail = array();
 			foreach ( (array) $e['detail'] as $key => $value ) {
-				$detail[] = $key . ': ' . ( is_array( $value ) ? implode( ' → ', array_map( 'strval', $value ) ) : (string) $value );
+				$detail[] = $key . ': ' . self::audit_value( $value );
 			}
 			echo '<tr><td>' . esc_html( (string) $e['at'] ) . '</td><td>' . esc_html( $user ? $user->display_name : ( 0 === (int) $e['user'] ? __( 'System/WP-CLI', 'workflow-captain' ) : '#' . (int) $e['user'] ) ) . '</td><td>' . esc_html( $labels[ $e['what'] ] ?? (string) $e['what'] ) . '</td><td>' . esc_html( implode( '; ', $detail ) ) . '</td></tr>';
 		}

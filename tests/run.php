@@ -612,6 +612,7 @@ require __DIR__ . '/security-tests.php';
 require __DIR__ . '/provider-tests.php';
 require __DIR__ . '/connector-tests.php';
 require __DIR__ . '/admin-list-tests.php';
+require __DIR__ . '/settings-transfer-tests.php';
 
 echo "\n{$passed} passed, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );
