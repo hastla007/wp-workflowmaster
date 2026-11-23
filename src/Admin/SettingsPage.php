@@ -693,6 +693,7 @@ final class SettingsPage {
 			'workflow_resume'  => __( 'Workflow resumed', 'workflow-captain' ),
 			'upgrade_resumed'  => __( 'Retried interrupted database update', 'workflow-captain' ),
 			'run_export'       => __( 'Run exported', 'workflow-captain' ),
+			'log_level_reverted' => __( 'Detailed step log switched back to normal after 7 days', 'workflow-captain' ),
 		);
 		/**
 		 * Labels of audit entries written by add-ons (key => label); core labels cannot be replaced.

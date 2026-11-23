@@ -10,6 +10,7 @@
 use WorkflowCaptain\Engine\EngineStore;
 use WorkflowCaptain\Engine\Pacing;
 use WorkflowCaptain\Engine\WpdbEngineStore;
+use WorkflowCaptain\LogLevel;
 use WorkflowCaptain\Messages;
 use WorkflowCaptain\Settings;
 use WorkflowCaptain\SettingsRegistry;
@@ -169,3 +170,27 @@ foreach ( glob( WORKFLOW_CAPTAIN_PATH . 'src/Admin/*.php' ) as $wfc_f ) {
 }
 check( 'SET-WC-31 no admin column or filter says UTC any more' . ( $wfc_utc_left ? ': ' . implode( ', ', $wfc_utc_left ) : '' ), array() === $wfc_utc_left );
 check( 'SET-WC-31 the date filter of the run list means whole local days', array( 'since' => '2026-10-31 23:00:00', 'until' => '2026-11-10 22:59:59' ) === \WorkflowCaptain\Admin\WorkflowsPage::period_filter( '', '2026-11-01', '2026-11-10', 0, 'Europe/Berlin' )['filter'] && '2026-11-01 00:00:00' === \WorkflowCaptain\Admin\WorkflowsPage::period_filter( '', '2026-11-01', '', 0 )['filter']['since'] );
+
+// ----- SET-WC-21 log level ---------------------------------------------------------------------------------------
+
+echo "\n# SET-WC-21 log level\n";
+check( 'SET-WC-21 normal by default; "detailed" is a choice and is not exported (temporary)', 0 === Settings::defaults()['log_level'] && 2 === count( SettingsRegistry::choices( 'log_level' ) ) && ! array_key_exists( 'log_level', SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ) );
+check( 'SET-WC-21 detailed lasts 7 days from switching it on, then counts as normal', LogLevel::in_period( 1, 1000, 1000 + 6 * DAY_IN_SECONDS ) && ! LogLevel::in_period( 1, 1000, 1000 + 7 * DAY_IN_SECONDS ) && ! LogLevel::in_period( 1, null, 1000 ) && ! LogLevel::in_period( 0, 1000, 1000 ) );
+$e = engine_site();
+$e->engine = new \WorkflowCaptain\Engine\Engine( $e->store, $e->actions, $e->dir, $e->clock, 'UTC', array( 'detailed' => true ) );
+$e->engine->set_consumer( $e->consumer );
+$e->consumer = new \WorkflowCaptain\Consumer\Consumer( $e->events, $e->registry, $e->engine, $e->clock, 1 );
+$e->engine->set_consumer( $e->consumer );
+publish( $e, sample_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+$wfc_steps = array_column( steps_of( $e ), 'result', 'node_id' );
+check( 'SET-WC-21 detailed: the condition step names each rule with field, operator and result, never the value', 'data.checkin_source eq: yes' === ( $wfc_steps['c']['rules'] ?? '' ) && ! str_contains( json_encode( $wfc_steps ), 'scanner' ) );
+check( 'SET-WC-21 detailed: every action step notes its duration in ms', array() !== array_filter( $wfc_steps, static fn( $r ) => is_int( $r['ms'] ?? null ) ) && ! isset( $wfc_steps['c']['ms'] ) );
+$e = engine_site();
+publish( $e, sample_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+check( 'SET-WC-21 normal: no rules and no durations in the log', ! str_contains( json_encode( array_column( steps_of( $e ), 'result' ) ), '"rules"' ) && ! str_contains( json_encode( array_column( steps_of( $e ), 'result' ) ), '"ms"' ) );
+check( 'SET-WC-21 explain lists rules of nested groups and a missing field', 'data.a eq: no; data.b exists: yes; data.zz gt: missing' === \WorkflowCaptain\Engine\Conditions::explain( array( 'op' => 'and', 'items' => array( array( 'field' => 'data.a', 'operator' => 'eq', 'value' => 1 ), array( 'op' => 'or', 'items' => array( array( 'field' => 'data.b', 'operator' => 'exists' ), array( 'field' => 'data.zz', 'operator' => 'gt', 'value' => 3 ) ) ) ) ), array( 'data' => array( 'a' => 2, 'b' => 'x' ) ) ) );
+check( 'SET-WC-21 the daily maintenance switches back and notes it; the period starts on every way of saving', str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Plugin.php' ), 'LogLevel::revert_if_expired(' ) && str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Plugin.php' ), "'update_option_' . Settings::OPTION, array( LogLevel::class, 'changed' )" ) );

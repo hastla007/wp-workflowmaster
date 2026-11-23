@@ -2798,3 +2798,18 @@ msgstr "eigene Einstellung im Reiter „Nachrichten“"
 
 msgid "Sender, footer and time zone"
 msgstr "Absender, Fußzeile und Zeitzone"
+
+msgid "Detailed (for 7 days)"
+msgstr "Ausführlich (für 7 Tage)"
+
+msgid "Detailed step log switched back to normal after 7 days"
+msgstr "Ausführliches Schrittprotokoll nach 7 Tagen auf normal zurückgestellt"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Step log"
+msgstr "Schrittprotokoll"
+
+msgid "“Detailed” additionally notes which rule of a condition held (field and operator, never the value) and how long each action took. For finding a problem; it switches back to “Normal” by itself after 7 days."
+msgstr "„Ausführlich“ vermerkt zusätzlich, welche Regel einer Bedingung zutraf (Feld und Operator, nie der Wert) und wie lange jede Aktion dauerte. Zur Fehlersuche; nach 7 Tagen stellt es sich von selbst auf „Normal“ zurück."

@@ -142,6 +142,7 @@ final class Settings {
 			'workflow' => $settings['max_workflow'],
 			'catch_up' => $settings['catch_up_hours'] * HOUR_IN_SECONDS,
 			'seconds'  => $settings['max_seconds'],
+			'detailed' => LogLevel::detailed( time() ), // SET-WC-21.
 		);
 	}
 

@@ -85,6 +85,9 @@ final class Plugin {
 		add_action( 'init', array( $this, 'register_connectors' ), 20 );
 		add_action( Install::CRON_PROCESS, array( $this, 'run_worker' ) );
 		add_action( Install::CRON_DAILY, array( $this, 'run_maintenance' ) );
+		// SET-WC-21: switching the log level on starts its 7-day period, whichever way the option is written.
+		add_action( 'update_option_' . Settings::OPTION, array( LogLevel::class, 'changed' ), 10, 2 );
+		add_action( 'add_option_' . Settings::OPTION, array( LogLevel::class, 'added' ), 10, 2 );
 		add_filter( 'workflow_captain_retention_days', array( Settings::class, 'retention' ), 5, 2 );
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->register();
 		// SET-WC-04 (S11): the one public address, the unsubscribe link of promotional messages.
@@ -367,6 +370,7 @@ final class Plugin {
 		}
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->apply_retention();
 		SettingsTransfer::purge_expired_backup();
+		LogLevel::revert_if_expired( time() );
 		$this->consumer()->store()->purge_causes( ( new Clock() )->mysql() );
 	}
 

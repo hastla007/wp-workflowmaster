@@ -50,6 +50,7 @@ final class SettingsRegistry {
 		'max_seconds'        => array( Settings::OPTION, self::TYPE_INT, 20, 5, 120, 'execution', true ),
 		'test_mode'          => array( Settings::OPTION, self::TYPE_INT, 0, 0, 2, 'execution', false ),
 		'retry_attempts'     => array( Settings::OPTION, self::TYPE_INT, 8, 1, 8, 'execution', true ),
+		'log_level'          => array( Settings::OPTION, self::TYPE_INT, 0, 0, 1, 'execution', false ),
 		'max_chain_depth'    => array( Settings::OPTION, self::TYPE_INT, 3, 1, 8, 'execution', true ),
 		'retention_finished' => array( Settings::OPTION, self::TYPE_INT, 30, 1, self::RETENTION_MAX, 'privacy', true ),
 		'retention_runs'     => array( Settings::OPTION, self::TYPE_INT, 30, 1, self::RETENTION_MAX, 'privacy', true ),
@@ -172,6 +173,12 @@ final class SettingsRegistry {
 			}
 			return $out;
 		}
+		if ( 'log_level' === $key ) {
+			return array(
+				LogLevel::NORMAL   => __( 'Normal', 'workflow-captain' ),
+				LogLevel::DETAILED => __( 'Detailed (for 7 days)', 'workflow-captain' ),
+			);
+		}
 		if ( 'daily_limit_action' === $key ) {
 			return array(
 				\WorkflowCaptain\Engine\Pacing::LIMIT_DEFER => __( 'Send on the next day', 'workflow-captain' ),
@@ -287,6 +294,7 @@ final class SettingsRegistry {
 			'max_seconds'        => array( __( 'Run time per worker pass in seconds', 'workflow-captain' ), __( 'After this, the worker does not start any new step; a step already started runs to completion. Keeps page loads short when WP-Cron runs on visitor traffic.', 'workflow-captain' ) ),
 			'test_mode'          => array( __( 'Test mode', 'workflow-captain' ), __( 'For test environments and trying things out. “Redirect messages”: every message from a workflow goes to the first recipient of the notice email (otherwise to the site’s address), with “[Test]” in the subject. “Do not execute anything”: workflows run, but no step takes effect; each step is only logged as skipped. The constant WORKFLOW_CAPTAIN_TEST_MODE in wp-config.php takes precedence.', 'workflow-captain' ) ),
 			'retry_attempts'     => array( __( 'Retries after a temporary error', 'workflow-captain' ), __( 'How often an event or step is retried after a temporary error, with growing intervals (1 min to 24 hrs). After that, an event is shown as failed and a step needs a decision. Messages with an unclear outcome are never retried automatically.', 'workflow-captain' ) ),
+			'log_level'          => array( __( 'Step log', 'workflow-captain' ), __( '“Detailed” additionally notes which rule of a condition held (field and operator, never the value) and how long each action took. For finding a problem; it switches back to “Normal” by itself after 7 days.', 'workflow-captain' ) ),
 			'max_chain_depth'    => array( __( 'Maximum depth of a chain of workflows', 'workflow-captain' ), __( 'When a workflow triggers an event that starts another workflow, a chain is created. More deeply nested events are stored but start nothing (loop protection).', 'workflow-captain' ) ),
 			'retention_finished' => array( __( 'Delete completed events after (days)', 'workflow-captain' ), __( 'Default 30 days, at most 180. Check with your legal advisor which retention period applies to your business.', 'workflow-captain' ) ),
 			'retention_runs'     => array( __( 'Delete completed runs with step log after (days)', 'workflow-captain' ), __( 'Default 30 days, at most 180; applies to completed, failed and canceled runs, open ones are kept. Logs contain no message content or event data except the copy in the run.', 'workflow-captain' ) ),
