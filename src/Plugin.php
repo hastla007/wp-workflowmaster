@@ -366,10 +366,8 @@ final class Plugin {
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->apply_retention();
 		SettingsTransfer::purge_expired_backup();
 		$this->consumer()->store()->purge_causes( ( new Clock() )->mysql() );
-		SettingsTransfer::purge_backup();
 	}
 
-	/** Stores how many envelopes were rejected and the last violation codes; never a value (R-5.5). */
 	/** Version string of the database server, e.g. "9.7.1" or "12.3.2-MariaDB"; "" when unknown. */
 	private static function database_server(): string {
 		global $wpdb;

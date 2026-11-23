@@ -158,9 +158,9 @@ $wfc_p1_page = (string) file_get_contents( dirname( __DIR__ ) . '/src/Admin/Sett
 check( 'P1 audit: the settings page hooks the audit of both options and of the first save', str_contains( $wfc_p1_page, 'Audit::watch_settings( true );' ) && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/src/Audit.php' ), "'add_option_' . \$option" ) );
 
 $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time() - 31 * 86400, 'user' => 1, 'source' => 'reset', 'values' => array( 'recipients' => 'ops@example.org' ) );
-check( 'P1 backup: an expired backup (holds addresses) is deleted by the maintenance, a fresh one is kept', true === SettingsTransfer::purge_backup() && ! isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) && false === SettingsTransfer::purge_backup() && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/src/Plugin.php' ), 'SettingsTransfer::purge_backup();' ) );
+check( 'P1 backup: an expired backup (holds addresses) is deleted by the maintenance, a fresh one is kept', true === SettingsTransfer::purge_expired_backup() && ! isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) && false === SettingsTransfer::purge_expired_backup() && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/src/Plugin.php' ), 'SettingsTransfer::purge_expired_backup();' ) );
 $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time(), 'user' => 1, 'source' => 'reset', 'values' => array() );
-check( 'P1 backup: a backup within 30 days stays for undo', false === SettingsTransfer::purge_backup() && isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
+check( 'P1 backup: a backup within 30 days stays for undo', false === SettingsTransfer::purge_expired_backup() && isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ], $GLOBALS['wfc_test_options']['workflow_captain_audit'] );
 check( 'P1 import: "Übernehmen" after the preview expired says so instead of "Import verworfen"', 1 === preg_match( "/elseif \\( ! is_array\\( \\\$preview \\) .*?Die Vorschau ist abgelaufen/s", $wfc_p1_page ) );
 

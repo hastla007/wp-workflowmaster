@@ -263,18 +263,6 @@ final class SettingsTransfer {
 		return true;
 	}
 
-	/**
-	 * Deletes a backup older than 30 days (daily maintenance). It holds the addresses of the recipients, which must not
-	 * stay longer than the undo period (P1 finding).
-	 */
-	public static function purge_backup(): bool {
-		if ( ! function_exists( 'get_option' ) || false === get_option( self::BACKUP_OPTION, false ) || null !== self::backup() ) {
-			return false;
-		}
-		delete_option( self::BACKUP_OPTION );
-		return true;
-	}
-
 	/** Restores the backup once. Returns the changed keys, or null when there is nothing to undo. */
 	public static function undo(): ?array {
 		$b = self::backup();
