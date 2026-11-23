@@ -248,24 +248,30 @@ final class Command {
 		$show    = static fn( $v ): string => is_array( $v ) ? implode( ',', $v ) : (string) $v;
 		switch ( $command ) {
 			case 'list':
-				$rows = array();
+				$forced = \WorkflowCaptain\SettingsRegistry::forced( $current );
+				$rows   = array();
 				foreach ( array_keys( \WorkflowCaptain\SettingsRegistry::SPEC ) as $key ) {
 					$f      = \WorkflowCaptain\SettingsRegistry::field( $key );
 					$rows[] = array(
-						'key'     => $key,
-						'value'   => $show( $current[ $key ] ),
-						'default' => $show( $f['default'] ),
-						'range'   => in_array( $f['type'], array( 'int' ), true ) ? $f['min'] . '-' . $f['max'] : $f['type'],
-						'tab'     => $f['tab'],
-						'export'  => $f['export'] ? 'yes' : 'no',
+						'key'       => $key,
+						'value'     => $show( $current[ $key ] ),
+						'effective' => $show( array_key_exists( $key, $forced ) ? $forced[ $key ] : $current[ $key ] ),
+						'default'   => $show( $f['default'] ),
+						'range'     => in_array( $f['type'], array( 'int' ), true ) ? $f['min'] . '-' . $f['max'] : $f['type'],
+						'tab'       => $f['tab'],
+						'export'    => $f['export'] ? 'yes' : 'no',
 					);
 				}
-				\WP_CLI\Utils\format_items( 'table', $rows, array( 'key', 'value', 'default', 'range', 'tab', 'export' ) );
+				\WP_CLI\Utils\format_items( 'table', $rows, array( 'key', 'value', 'effective', 'default', 'range', 'tab', 'export' ) );
 				return;
 			case 'get':
 				$key = (string) ( $args[1] ?? '' );
 				if ( ! array_key_exists( $key, $current ) ) {
 					\WP_CLI::error( 'Unknown setting. See: wp workflow-captain settings list' );
+				}
+				$forced = \WorkflowCaptain\SettingsRegistry::forced( array( $key => $current[ $key ] ) );
+				if ( array() !== $forced ) {
+					\WP_CLI::warning( sprintf( 'In effect: %s (set by the filter workflow_captain_setting_%s). Shown below: the stored value.', $show( $forced[ $key ] ), $key ) );
 				}
 				\WP_CLI::line( $show( $current[ $key ] ) );
 				return;

@@ -137,6 +137,7 @@ None. Workflow Captain does not call any external service.
 * Export a run as redacted JSON (without users and secrets); "Im Editor zeigen" (show in editor) jumps from the step to the marked node; workflow list with the last run and the errors of the last 30 days.
 * Schedule: a time in the repeated hour at the end of daylight saving time now also applies at its first occurrence east of UTC (before: one hour later).
 * Filter runs by period (last 24 hours to 90 days or custom dates); overview with the tile "runs · 30 days" and provider status; new page "Zeitpläne" (schedules) with the next time and the last firing in the site's time zone.
+* Settings: one register of all settings with a filter per field (workflow_captain_setting_<key>); export and import of the settings as a file with a preview, reset per tab, undo for 30 days, and "wp workflow-captain settings".
 * Editor: drag building blocks onto the flow; "+ Gruppe" (add group) in the condition form (one group level, at most 20 rules); warning sign at the node when a provider is missing, an output is open or rules are invalid; "last fired" in the schedule.
 
 = 0.1.0 =

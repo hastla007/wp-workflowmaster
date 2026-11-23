@@ -73,3 +73,26 @@ check( 'SET-WC-23 a backup older than 30 days cannot be restored', null === Sett
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] );
 $wfc_av = new ReflectionMethod( \WorkflowCaptain\Admin\SettingsPage::class, 'audit_value' );
 check( 'SET-WC-12 audit view prints list values (notice kinds) without "Array to string" (found in the PHP 8.5 run)', 'failed, pause → failed' === $wfc_av->invoke( null, array( array( 'failed', 'pause' ), array( 'failed' ) ) ) && '7 → 9' === $wfc_av->invoke( null, array( 7, 9 ) ) );
+
+// P6 (found 23.11.2026 on WordPress 7.1.4): the settings forms showed the filtered values, and the hidden fields of
+// the other tabs sent them back, so saving "Ausführung" stored a value a filter forced on "Datenschutz" for good.
+add_filter( 'workflow_captain_setting_retention_stuck', static fn( $v ) => 10 );
+$wfc_forced = SettingsRegistry::forced( array( 'batch' => 40, 'retention_stuck' => 45 ) );
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_setting_retention_stuck'] );
+check( 'P6 forced(): names only the fields a filter changes, with the value in effect', array( 'retention_stuck' => 10 ) === $wfc_forced && array() === SettingsRegistry::forced( array( 'batch' => 40, 'retention_stuck' => 45 ) ) );
+$wfc_page_src = (string) file_get_contents( dirname( __DIR__ ) . '/src/Admin/SettingsPage.php' );
+check( 'P6 settings forms send the stored values, never the filtered ones (Settings::get/Notifications::config only for effect)', ! str_contains( $wfc_page_src, '$s      = Settings::get()' ) && ! str_contains( $wfc_page_src, '$c      = Notifications::config()' ) && ! str_contains( $wfc_page_src, '$c     = Notifications::config()' ) && 3 === substr_count( $wfc_page_src, 'self::forced_note(' ) );
+// P6: every hook of the core is part of the public contract and listed in docs/SDK.md, section 5 (the setting filters
+// as workflow_captain_setting_<feld>); found: the new setting filters and three older hooks were missing there.
+$wfc_sdk   = (string) file_get_contents( dirname( __DIR__ ) . '/docs/SDK.md' );
+$wfc_nodoc = array();
+foreach ( array_merge( array( dirname( __DIR__ ) . '/workflow-captain.php' ), iterator_to_array( new RecursiveIteratorIterator( new RecursiveDirectoryIterator( dirname( __DIR__ ) . '/src', FilesystemIterator::SKIP_DOTS ) ) ) ) as $wfc_file ) {
+	preg_match_all( "/(?:apply_filters|do_action)\\(\\s*'(workflow_captain_[a-z0-9_]*)'(\\s*\\.)?/", (string) file_get_contents( (string) $wfc_file ), $wfc_m, PREG_SET_ORDER );
+	foreach ( $wfc_m as $wfc_hook ) {
+		$wfc_name = $wfc_hook[1] . ( isset( $wfc_hook[2] ) && '' !== $wfc_hook[2] ? '<feld>' : '' );
+		if ( ! str_contains( $wfc_sdk, '`' . $wfc_name . '`' ) ) {
+			$wfc_nodoc[] = $wfc_name;
+		}
+	}
+}
+check( 'P6 every hook of the core is documented in docs/SDK.md' . ( $wfc_nodoc ? ': ' . implode( ', ', array_unique( $wfc_nodoc ) ) : '' ), array() === $wfc_nodoc );

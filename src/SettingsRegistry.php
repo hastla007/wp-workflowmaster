@@ -115,8 +115,33 @@ final class SettingsRegistry {
 		if ( ! function_exists( 'apply_filters' ) ) {
 			return $value;
 		}
+		/**
+		 * Value of one setting (dynamic part: the key of the register, e.g. workflow_captain_setting_batch). The
+		 * result is checked against type and range of the field; forms keep showing and saving the stored value.
+		 *
+		 * @since 0.2.0
+		 * @param mixed $value Stored value (int; string of addresses for `recipients`; list for `kinds`).
+		 */
 		$filtered = apply_filters( 'workflow_captain_setting_' . $key, $value );
 		return $filtered === $value ? $value : self::clean( $key, $filtered );
+	}
+
+	/**
+	 * Fields whose filter sets another value than the stored one: key => effective value. Forms show and send the
+	 * stored value, so a save never writes what a filter forces (and a removed filter leaves the operator's value).
+	 *
+	 * @param array<string,mixed> $stored Stored values, e.g. SettingsTransfer::current().
+	 * @return array<string,mixed>
+	 */
+	public static function forced( array $stored ): array {
+		$out = array();
+		foreach ( $stored as $key => $value ) {
+			$effective = self::filtered( (string) $key, $value );
+			if ( $effective !== $value ) {
+				$out[ $key ] = $effective;
+			}
+		}
+		return $out;
 	}
 
 	/**

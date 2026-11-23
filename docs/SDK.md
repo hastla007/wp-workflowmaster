@@ -121,9 +121,13 @@ Workflows entstehen im visuellen Editor (Admin „Workflows“); darunter steht 
 | `workflow_captain_worker_batch` | Filter | Ereignisse und Schritte je Worker-Durchlauf (1 bis 200, Standard 25) |
 | `workflow_captain_event_processed_v1` | Action | Ereignis vom Worker verarbeitet (für Ausgangswarteschlangen von Add-ons, 4.10) |
 | `workflow_captain_inbound_triggers_v1` | Filter | Auslöser für eingehende Aufrufe anmelden; speichern mit `Consumer::capture_inbound()` |
+| `workflow_captain_register_connectors_v1` | Action | Eigenen Connector mit Manifest anmelden (`init`, Priorität 20, nach den Adaptern; [`CONNECTOR-CONTRACT.md`](CONNECTOR-CONTRACT.md)) |
+| `workflow_captain_templates` | Filter | weitere Vorlagen-Dateien (absolute Pfade zu JSON im Exportformat) für die Seite „Vorlagen“ |
+| `workflow_captain_secret_stores` | Filter | Speicher von Add-ons mit Geheimnissen im Tresor anmelden, damit sie nach einem Schlüsselwechsel neu verschlüsselt werden (`context`, `load`, `save`; `src/Security/SecretStores.php`) |
 | `workflow_captain_audit_labels_v1` | Filter | Beschriftungen für Audit-Einträge von Add-ons (Status-Tab) |
 | `workflow_captain_connector_runtime_allowed_v1` | Filter | Laufzeit eigener Connectoren erlauben (ab Werk ja; für Pro, F-18a) |
-| `workflow_captain_retention_days` | Filter | Aufbewahrung nur verkürzen (`finished`, `stuck`) |
+| `workflow_captain_retention_days` | Filter | Aufbewahrung nur verkürzen (`finished`, `stuck`, `runs`) |
+| `workflow_captain_setting_<feld>` | Filter | Wert einer Einstellung setzen (`<feld>` = Schlüssel des Registers, Liste in [`OPTIONS.md`](OPTIONS.md#register-der-einstellungen-set-wc-01)); ein Argument: der gespeicherte Wert. Der Filter gewinnt, das Ergebnis wird gegen Typ und Bereich des Feldes geprüft (`batch` zum Beispiel 1 bis 200). Die Einstellungsseite zeigt und speichert weiter den gespeicherten Wert und nennt am Feld den wirksamen; Export, `wp workflow-captain settings get` und `list` (Spalte `value`) zeigen den gespeicherten Wert, `list` in der Spalte `effective` und `get` als Warnung den wirksamen. Für `batch` wirkt danach noch `workflow_captain_worker_batch`; die Aufbewahrung kann `workflow_captain_retention_days` nur weiter verkürzen. Seit 0.2.0 |
 
 ## 5a. Bausteine für Webhooks und n8n (für Add-ons)
 

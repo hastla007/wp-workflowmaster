@@ -98,7 +98,9 @@ final class SettingsPage {
 			echo '</div>';
 			return;
 		}
-		$s      = Settings::get();
+		// The form shows and sends the stored values; a value a filter forces is named at the field, never saved.
+		$s      = Settings::sanitize( get_option( Settings::OPTION, array() ) );
+		$forced = \WorkflowCaptain\SettingsRegistry::forced( $s );
 		$texts  = \WorkflowCaptain\SettingsRegistry::texts();
 		$fields = array();
 		foreach ( \WorkflowCaptain\SettingsRegistry::tab( $tab, Settings::OPTION ) as $key ) {
@@ -135,6 +137,9 @@ final class SettingsPage {
 			if ( isset( $errors[ $id ] ) ) {
 				echo '<p id="' . esc_attr( $id . '-error' ) . '" class="wfc-field-error" style="color:#b32d2e">' . esc_html( $errors[ $id ] ) . '</p>';
 			}
+			if ( array_key_exists( $key, $forced ) ) {
+				echo wp_kses_post( self::forced_note( $key, $forced[ $key ] ) );
+			}
 			if ( '' !== $help ) {
 				echo '<p id="' . esc_attr( $id . '-help' ) . '" class="description">' . esc_html( $help ) . '</p>';
 			}
@@ -166,8 +171,9 @@ final class SettingsPage {
 
 	/** Recipients, kinds and a test mail (WF-SET-06). */
 	private function notify(): void {
-		$c     = Notifications::config();
-		$kinds = array(
+		$c      = Notifications::sanitize( get_option( Notifications::OPTION, array() ) );
+		$forced = \WorkflowCaptain\SettingsRegistry::forced( $c );
+		$kinds  = array(
 			'decisions' => __( 'Läufe, die eine Entscheidung brauchen', 'workflow-captain' ),
 			'paused'    => __( 'Pausierte Läufe', 'workflow-captain' ),
 			'failed'    => __( 'Fehlgeschlagene Ereignisse (Queue-Ausfall)', 'workflow-captain' ),
@@ -179,6 +185,9 @@ final class SettingsPage {
 		settings_fields( 'workflow_captain_notify' );
 		echo '<table class="form-table" role="presentation"><tr><th scope="row"><label for="wfc-recipients">' . esc_html__( 'Empfänger', 'workflow-captain' ) . '</label></th><td>';
 		echo '<input id="wfc-recipients" type="text" class="regular-text" name="' . esc_attr( Notifications::OPTION ) . '[recipients]" value="' . esc_attr( $c['recipients'] ) . '" aria-describedby="wfc-recipients-help">';
+		if ( array_key_exists( 'recipients', $forced ) ) {
+			echo wp_kses_post( self::forced_note( 'recipients', $forced['recipients'] ) );
+		}
 		echo '<p id="wfc-recipients-help" class="description">' . esc_html( sprintf( /* translators: %s: e-mail address of the site */ __( 'Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website (%s). Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress.', 'workflow-captain' ), (string) get_option( 'admin_email' ) ) ) . '</p></td></tr>';
 		echo '<tr><th scope="row">' . esc_html__( 'Arten', 'workflow-captain' ) . '</th><td><fieldset><legend class="screen-reader-text">' . esc_html__( 'Arten', 'workflow-captain' ) . '</legend>';
 		// An empty list must still reach the server, otherwise all kinds would come back.
@@ -186,7 +195,11 @@ final class SettingsPage {
 		foreach ( $kinds as $key => $label ) {
 			echo '<label><input type="checkbox" name="' . esc_attr( Notifications::OPTION ) . '[kinds][]" value="' . esc_attr( $key ) . '"' . ( in_array( $key, $c['kinds'], true ) ? ' checked' : '' ) . '> ' . esc_html( $label ) . '</label><br>';
 		}
-		echo '</fieldset></td></tr></table>';
+		echo '</fieldset>';
+		if ( array_key_exists( 'kinds', $forced ) ) {
+			echo wp_kses_post( self::forced_note( 'kinds', $forced['kinds'] ) );
+		}
+		echo '</td></tr></table>';
 		submit_button();
 		echo '</form>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_test_mail">';
@@ -447,6 +460,17 @@ final class SettingsPage {
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'status', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
 		exit;
+	}
+
+	/**
+	 * Note at a field whose value a filter sets (workflow_captain_setting_<key>): the form keeps the stored value.
+	 *
+	 * @param mixed $effective
+	 */
+	private static function forced_note( string $key, $effective ): string {
+		$shown = is_array( $effective ) ? implode( ', ', array_map( 'strval', $effective ) ) : (string) $effective;
+		/* translators: 1: value in effect, 2: filter name */
+		return '<p class="description wfc-forced"><strong>' . esc_html( sprintf( __( 'Wirksam ist „%1$s“: ein Plugin oder Code der Website setzt diesen Wert mit dem Filter %2$s. Gespeichert bleibt der Wert im Feld; er gilt wieder, wenn der Filter entfällt.', 'workflow-captain' ), $shown, 'workflow_captain_setting_' . $key ) ) . '</strong></p>';
 	}
 
 	/** One audit value as text: old → new pairs, lists (such as the notice kinds) comma separated, nothing nested. */
