@@ -31,6 +31,7 @@ final class SettingsPage {
 		add_action( 'admin_post_workflow_captain_settings_import', array( $this, 'handle_import' ) );
 		add_action( 'admin_post_workflow_captain_settings_reset', array( $this, 'handle_reset' ) );
 		add_action( 'admin_post_workflow_captain_settings_undo', array( $this, 'handle_undo' ) );
+		add_action( 'admin_post_workflow_captain_settings_profile', array( $this, 'handle_profile' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		// Form saves of both options, the first save of a site included (it creates the option).
 		Audit::watch_settings( true );
@@ -462,6 +463,7 @@ final class SettingsPage {
 		echo '</tbody></table>';
 		echo '<p class="description">' . esc_html( sprintf( /* translators: %s: option name */ __( 'Stored in the option %s.', 'workflow-captain' ), Install::DB_OPTION ) ) . '</p>';
 		$this->transfer();
+		$this->profiles();
 		$this->audit();
 	}
 
@@ -631,6 +633,7 @@ final class SettingsPage {
 			'not_a_list'          => __( 'not a list', 'workflow-captain' ),
 			'unknown_kind'        => __( 'unknown type', 'workflow-captain' ),
 			'invalid_address'     => __( 'invalid address', 'workflow-captain' ),
+			'not_in_profile'      => __( 'not part of this profile', 'workflow-captain' ),
 		);
 		return $texts[ $code ] ?? $code;
 	}
@@ -659,6 +662,74 @@ final class SettingsPage {
 		exit;
 	}
 
+	/**
+	 * Country profiles (SET-WC-17): choose a profile, see current and proposed values, select the ones to take over.
+	 * Choosing only shows a preview (GET, read-only); applying is a POST with nonce. Values that are not legally
+	 * checked are marked and never preselected (S8); nothing is overwritten without a selection (S9).
+	 */
+	private function profiles(): void {
+		$labels  = \WorkflowCaptain\CountryProfiles::labels();
+		$profile = isset( $_GET['wfc_profile'] ) ? strtoupper( sanitize_key( wp_unslash( $_GET['wfc_profile'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only preview, nothing is written.
+		$profile = \WorkflowCaptain\CountryProfiles::exists( $profile ) ? $profile : '';
+		echo '<h2 id="wfc-profiles">' . esc_html__( 'Country profile', 'workflow-captain' ) . '</h2>';
+		echo '<p>' . esc_html__( 'A country profile only proposes values. You see the current and the proposed value and choose which to take over; nothing is changed without your selection. Values marked “unchecked” have not been legally reviewed yet: check them with your legal advisor before you use them.', 'workflow-captain' ) . '</p>';
+		echo '<form method="get" action="' . esc_url( admin_url( 'admin.php' ) ) . '"><input type="hidden" name="page" value="' . esc_attr( self::SLUG ) . '"><input type="hidden" name="tab" value="status">';
+		echo '<label for="wfc-profile">' . esc_html__( 'Profile', 'workflow-captain' ) . '</label> <select id="wfc-profile" name="wfc_profile">';
+		foreach ( $labels as $key => $label ) {
+			echo '<option value="' . esc_attr( $key ) . '"' . selected( $profile, $key, false ) . '>' . esc_html( $label . ' (' . $key . ')' ) . '</option>';
+		}
+		echo '</select> ';
+		submit_button( __( 'Show proposal', 'workflow-captain' ), 'secondary', '', false, array( 'id' => 'wfc-profile-preview' ) );
+		echo '</form>';
+		if ( '' === $profile ) {
+			return;
+		}
+		$diff = \WorkflowCaptain\CountryProfiles::diff( $profile, \WorkflowCaptain\SettingsTransfer::current() );
+		echo '<div id="wfc-profile-proposal" class="notice notice-info inline" tabindex="-1" role="region" aria-labelledby="wfc-profile-title"><p><strong id="wfc-profile-title">' . esc_html( sprintf( /* translators: %s: name of the country profile */ __( 'Proposal of the profile %s', 'workflow-captain' ), $labels[ $profile ] ) ) . '</strong></p>';
+		if ( array() === $diff ) {
+			echo '<p>' . esc_html__( 'Your settings already match this profile. Nothing to change.', 'workflow-captain' ) . '</p></div>';
+			return;
+		}
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_settings_profile"><input type="hidden" name="profile" value="' . esc_attr( $profile ) . '">';
+		wp_nonce_field( 'workflow_captain_settings_profile' );
+		echo '<table class="widefat striped" tabindex="0" style="max-width:900px"><caption class="screen-reader-text">' . esc_html__( 'Proposed changes of the country profile', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Apply', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Setting', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Current', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Proposed', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Review', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		foreach ( $diff as $key => $row ) {
+			$id = 'wfc-profile-key-' . $key;
+			echo '<tr><td><input type="checkbox" id="' . esc_attr( $id ) . '" name="keys[]" value="' . esc_attr( (string) $key ) . '"' . checked( $row[2], true, false ) . '></td>';
+			echo '<th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( self::field_label( (string) $key ) ) . '</label> <code>' . esc_html( (string) $key ) . '</code></th>';
+			echo '<td>' . esc_html( self::display_value( (string) $key, $row[0] ) ) . '</td><td>' . esc_html( self::display_value( (string) $key, $row[1] ) ) . '</td>';
+			echo '<td>' . ( $row[2] ? esc_html__( 'no legal weight', 'workflow-captain' ) : '<span class="wfc-badge wfc-badge-unchecked" style="display:inline-block;padding:0 .5em;border-radius:3px;background:#fcf0f1;color:#8a2424;border:1px solid #d63638">' . esc_html__( 'unchecked – legal review', 'workflow-captain' ) . '</span>' ) . '</td></tr>';
+		}
+		echo '</tbody></table><p>';
+		submit_button( __( 'Apply selected values', 'workflow-captain' ), 'primary', 'submit', false, array( 'id' => 'wfc-profile-apply' ) );
+		echo '</p><p class="description">' . esc_html__( 'Only the selected values are changed. You can undo this for 30 days, until the next import, reset or profile.', 'workflow-captain' ) . '</p></form></div>';
+	}
+
+	/** Applies the values of a country profile the operator selected (SET-WC-17). */
+	public function handle_profile(): void {
+		self::guard( 'workflow_captain_settings_profile' );
+		$profile = isset( $_POST['profile'] ) ? strtoupper( sanitize_key( wp_unslash( $_POST['profile'] ) ) ) : '';
+		$keys    = isset( $_POST['keys'] ) && is_array( $_POST['keys'] ) ? array_map( 'sanitize_key', wp_unslash( $_POST['keys'] ) ) : array();
+		if ( array() === $keys ) {
+			add_settings_error( Settings::OPTION, 'wfc-profile', __( 'No value selected. Nothing was changed.', 'workflow-captain' ), 'info' );
+		} else {
+			list( $changed, $errors ) = \WorkflowCaptain\CountryProfiles::apply( $profile, $keys );
+			if ( array() !== $errors ) {
+				$messages = array();
+				foreach ( $errors as $field => $code ) {
+					$messages[] = '_profile' === $field ? __( 'unknown profile', 'workflow-captain' ) : self::field_label( (string) $field ) . ' (' . $field . '): ' . self::import_error( $code );
+				}
+				add_settings_error( Settings::OPTION, 'wfc-profile', __( 'The profile was not applied:', 'workflow-captain' ) . ' ' . implode( '; ', $messages ), 'error' );
+			} else {
+				/* translators: %d: number of changed settings */
+				add_settings_error( Settings::OPTION, 'wfc-profile', sprintf( __( '%d settings of the country profile applied. You can undo this for 30 days, until the next import, reset or profile.', 'workflow-captain' ), count( $changed ) ), 'success' );
+			}
+		}
+		set_transient( 'settings_errors', get_settings_errors(), 30 );
+		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'status', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
+		exit;
+	}
+
 	/** One audit value as text: old → new pairs, lists (such as the notice kinds) comma separated, nothing nested. */
 	private static function audit_value( $value ): string {
 		if ( ! is_array( $value ) ) {
@@ -679,6 +750,7 @@ final class SettingsPage {
 			'settings_reset'  => __( 'Settings reset to defaults', 'workflow-captain' ),
 			'settings_undo'   => __( 'Settings restored', 'workflow-captain' ),
 			'settings_cli'    => __( 'Setting changed via WP-CLI', 'workflow-captain' ),
+			'settings_profile' => __( 'Values of a country profile applied', 'workflow-captain' ),
 			'roles'     => __( 'Role capabilities changed', 'workflow-captain' ),
 			'pause_on'  => __( 'Emergency pause turned on', 'workflow-captain' ),
 			'pause_off' => __( 'Emergency pause lifted', 'workflow-captain' ),

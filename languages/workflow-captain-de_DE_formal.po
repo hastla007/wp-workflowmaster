@@ -2813,3 +2813,82 @@ msgstr "Schrittprotokoll"
 
 msgid "“Detailed” additionally notes which rule of a condition held (field and operator, never the value) and how long each action took. For finding a problem; it switches back to “Normal” by itself after 7 days."
 msgstr "„Ausführlich“ vermerkt zusätzlich, welche Regel einer Bedingung zutraf (Feld und Operator, nie der Wert) und wie lange jede Aktion dauerte. Zur Fehlersuche; nach 7 Tagen stellt es sich von selbst auf „Normal“ zurück."
+
+# SET-WC-17 country profiles
+
+msgid "Apply selected values"
+msgstr "Ausgewählte Werte übernehmen"
+
+msgid "Austria"
+msgstr "Österreich"
+
+msgid "Country profile"
+msgstr "Länderprofil"
+
+msgid "Current"
+msgstr "Aktuell"
+
+msgid "European Union (general)"
+msgstr "Europäische Union (allgemein)"
+
+msgid "Germany"
+msgstr "Deutschland"
+
+msgid "No value selected. Nothing was changed."
+msgstr "Kein Wert ausgewählt. Es wurde nichts geändert."
+
+msgid "Only the selected values are changed. You can undo this for 30 days, until the next import, reset or profile."
+msgstr "Geändert werden nur die ausgewählten Werte. Rückgängig ist 30 Tage lang möglich, bis zum nächsten Import, Zurücksetzen oder Profil."
+
+msgid "Other countries (neutral values)"
+msgstr "Andere Länder (neutrale Werte)"
+
+msgid "Profile"
+msgstr "Profil"
+
+#, php-format
+msgid "Proposal of the profile %s"
+msgstr "Vorschlag des Profils %s"
+
+msgid "Proposed"
+msgstr "Vorgeschlagen"
+
+msgid "Proposed changes of the country profile"
+msgstr "Vorgeschlagene Änderungen des Länderprofils"
+
+msgid "Review"
+msgstr "Prüfung"
+
+msgid "Show proposal"
+msgstr "Vorschlag anzeigen"
+
+msgid "Switzerland"
+msgstr "Schweiz"
+
+msgid "The profile was not applied:"
+msgstr "Das Profil wurde nicht übernommen:"
+
+msgid "Values of a country profile applied"
+msgstr "Werte eines Länderprofils übernommen"
+
+msgid "Your settings already match this profile. Nothing to change."
+msgstr "Ihre Einstellungen entsprechen schon diesem Profil. Nichts zu ändern."
+
+msgid "no legal weight"
+msgstr "ohne rechtliches Gewicht"
+
+msgid "not part of this profile"
+msgstr "nicht Teil dieses Profils"
+
+msgid "unchecked – legal review"
+msgstr "ungeprüft – rechtliche Prüfung"
+
+msgid "unknown profile"
+msgstr "unbekanntes Profil"
+
+#, php-format
+msgid "%d settings of the country profile applied. You can undo this for 30 days, until the next import, reset or profile."
+msgstr "%d Einstellungen des Länderprofils übernommen. Rückgängig ist 30 Tage lang möglich, bis zum nächsten Import, Zurücksetzen oder Profil."
+
+msgid "A country profile only proposes values. You see the current and the proposed value and choose which to take over; nothing is changed without your selection. Values marked “unchecked” have not been legally reviewed yet: check them with your legal advisor before you use them."
+msgstr "Ein Länderprofil schlägt Werte nur vor. Sie sehen den aktuellen und den vorgeschlagenen Wert und wählen aus, was Sie übernehmen; ohne Ihre Auswahl wird nichts geändert. Mit „ungeprüft“ markierte Werte sind noch nicht rechtlich geprüft: Klären Sie sie mit Ihrer Rechtsberatung, bevor Sie sie verwenden."
