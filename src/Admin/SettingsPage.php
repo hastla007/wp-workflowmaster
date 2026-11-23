@@ -186,7 +186,15 @@ final class SettingsPage {
 		foreach ( $kinds as $key => $label ) {
 			echo '<label><input type="checkbox" name="' . esc_attr( Notifications::OPTION ) . '[kinds][]" value="' . esc_attr( $key ) . '"' . ( in_array( $key, $c['kinds'], true ) ? ' checked' : '' ) . '> ' . esc_html( $label ) . '</label><br>';
 		}
-		echo '</fieldset></td></tr></table>';
+		echo '</fieldset></td></tr>';
+		// SET-WC-25: roles whose users can be chosen as recipients of "Nachricht an Betreiber".
+		list( $roles_label, $roles_help ) = \WorkflowCaptain\SettingsRegistry::texts()['notify_admin_roles'];
+		echo '<tr><th scope="row">' . esc_html( $roles_label ) . '</th><td><fieldset aria-describedby="wfc-roles-help"><legend class="screen-reader-text">' . esc_html( $roles_label ) . '</legend>';
+		echo '<input type="hidden" name="' . esc_attr( Notifications::OPTION ) . '[notify_admin_roles][]" value="">';
+		foreach ( wp_roles()->get_names() as $role => $name ) {
+			echo '<label><input type="checkbox" name="' . esc_attr( Notifications::OPTION ) . '[notify_admin_roles][]" value="' . esc_attr( $role ) . '"' . ( in_array( $role, $c['notify_admin_roles'], true ) ? ' checked' : '' ) . '> ' . esc_html( translate_user_role( $name ) ) . '</label><br>';
+		}
+		echo '<p id="wfc-roles-help" class="description">' . esc_html( $roles_help ) . '</p></fieldset></td></tr></table>';
 		submit_button();
 		echo '</form>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_test_mail">';

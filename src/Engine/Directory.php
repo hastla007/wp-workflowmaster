@@ -20,6 +20,9 @@ interface Directory {
 	/** @return string[] Addresses of users with this capability. */
 	public function emails_with_capability( string $capability ): array;
 
+	/** @return string[] Addresses of users with this role (SET-WC-25). */
+	public function emails_with_role( string $role ): array;
+
 	public function site_admin_email(): string;
 
 	/** Sends one plain text mail. */

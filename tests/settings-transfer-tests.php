@@ -73,3 +73,20 @@ check( 'SET-WC-23 a backup older than 30 days cannot be restored', null === Sett
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] );
 $wfc_av = new ReflectionMethod( \WorkflowCaptain\Admin\SettingsPage::class, 'audit_value' );
 check( 'SET-WC-12 audit view prints list values (notice kinds) without "Array to string" (found in the PHP 8.5 run)', 'failed, pause → failed' === $wfc_av->invoke( null, array( array( 'failed', 'pause' ), array( 'failed' ) ) ) && '7 → 9' === $wfc_av->invoke( null, array( 7, 9 ) ) );
+
+// SET-WC-25: notify.admin to the users of roles the operator released.
+$wfc_dir         = new FakeDirectory();
+$wfc_dir->roles  = array( 'editor' => array( 17 ) );
+$wfc_na          = new \WorkflowCaptain\Engine\Actions\NotifyAdmin( $wfc_dir );
+$wfc_na_ctx      = static fn( string $to ) => new \WorkflowCaptain\Engine\ActionContext( array( 'subject' => array( 'id' => '5' ), 'data' => array() ), array( 'subject' => 'S', 'message' => 'M', 'to' => $to ), 'k', 1, 1, 1, 1 );
+check( 'SET-WC-25 a role that is not released is refused at publish', array( 'to:invalid' ) === $wfc_na->validate_config( array( 'subject' => 'S', 'message' => 'M', 'to' => 'role:editor' ) ) );
+$GLOBALS['wfc_test_options'][ Notifications::OPTION ] = array( 'notify_admin_roles' => array( 'editor', 'editor', 'Böse Rolle' ) );
+check( 'SET-WC-25 released roles are kept unique and well-formed', array( 'editor' ) === Notifications::config()['notify_admin_roles'] );
+check( 'SET-WC-25 a released role is accepted at publish and offered in the editor', array() === $wfc_na->validate_config( array( 'subject' => 'S', 'message' => 'M', 'to' => 'role:editor' ) ) && in_array( 'role:editor', array_column( $wfc_na->builder_fields()[2]['options'], 'value' ), true ) && 'select' === $wfc_na->builder_fields()[2]['type'] );
+$wfc_na_res = $wfc_na->execute( $wfc_na_ctx( 'role:editor' ) );
+check( 'SET-WC-25 the users of the role get the message; the log names the group, no address', 1 === $wfc_na_res['sent'] && 'role:editor' === $wfc_na_res['to'] && ! str_contains( (string) json_encode( $wfc_na_res ), '@' ) );
+$GLOBALS['wfc_test_options'][ Notifications::OPTION ] = array();
+check( 'SET-WC-25 a role withdrawn after publishing sends nothing and says why', array( 'sent' => 0, 'skipped' => 'recipient_not_allowed' ) === $wfc_na->execute( $wfc_na_ctx( 'role:editor' ) ) );
+check( 'SET-WC-25 the fixed capabilities and the site address still work (published versions unchanged)', array() === $wfc_na->validate_config( array( 'subject' => 'S', 'message' => 'M', 'to' => 'manage_woocommerce' ) ) && array() === $wfc_na->validate_config( array( 'subject' => 'S', 'message' => 'M' ) ) );
+check( 'SET-WC-25 import accepts released roles and refuses malformed ones', array( true, array( 'editor' ), '' ) === SettingsTransfer::check( 'notify_admin_roles', array( 'editor' ) ) && 'unknown_role' === SettingsTransfer::check( 'notify_admin_roles', array( 'editor', '<x>' ) )[2] );
+unset( $GLOBALS['wfc_test_options'][ Notifications::OPTION ] );

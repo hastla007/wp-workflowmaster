@@ -86,6 +86,12 @@ final class SettingsTransfer {
 				$clean = SettingsRegistry::clean( $key, $value );
 				$given = array_filter( preg_split( '/[\s,;]+/', is_scalar( $value ) ? (string) $value : '' ) ?: array() );
 				return count( $given ) === count( array_filter( explode( ', ', (string) $clean ) ) ) ? array( true, $clean, '' ) : array( false, null, 'invalid_address' );
+			case SettingsRegistry::TYPE_ROLES:
+				if ( ! is_array( $value ) ) {
+					return array( false, null, 'not_a_list' );
+				}
+				$clean = SettingsRegistry::clean( $key, $value );
+				return count( $clean ) === count( array_unique( array_map( 'strval', $value ) ) ) ? array( true, $clean, '' ) : array( false, null, 'unknown_role' );
 			case SettingsRegistry::TYPE_KINDS:
 				if ( ! is_array( $value ) ) {
 					return array( false, null, 'not_a_list' );

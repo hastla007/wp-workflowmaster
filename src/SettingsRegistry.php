@@ -26,6 +26,7 @@ final class SettingsRegistry {
 	const TYPE_BOOL   = 'bool';
 	const TYPE_EMAILS = 'emails';
 	const TYPE_KINDS  = 'kinds';
+	const TYPE_ROLES  = 'roles';
 
 	/**
 	 * key => array( option, type, default, min, max, tab, export ). `export` false: the value is tied to this
@@ -46,6 +47,7 @@ final class SettingsRegistry {
 		'notify_daily'       => array( Settings::OPTION, self::TYPE_BOOL, 1, 0, 1, 'notify', true ),
 		'recipients'         => array( Notifications::OPTION, self::TYPE_EMAILS, '', 0, 10, 'notify', false ),
 		'kinds'              => array( Notifications::OPTION, self::TYPE_KINDS, Notifications::KINDS, 0, 0, 'notify', true ),
+		'notify_admin_roles' => array( Notifications::OPTION, self::TYPE_ROLES, array(), 0, 20, 'notify', true ),
 	);
 
 	/** Settings group of each option (register_setting; options.php resets the fields of a group it does not get). */
@@ -112,8 +114,18 @@ final class SettingsRegistry {
 				return implode( ', ', array_slice( $list, 0, $f['max'] ) );
 			case self::TYPE_KINDS:
 				return is_array( $value ) ? array_values( array_intersect( $f['default'], array_map( 'strval', $value ) ) ) : $f['default'];
+			case self::TYPE_ROLES:
+				return is_array( $value ) ? array_slice( array_values( array_filter( array_unique( array_map( 'strval', $value ) ), array( self::class, 'is_role' ) ) ), 0, $f['max'] ) : $f['default'];
 		}
 		return $f['default'];
+	}
+
+	/** A role slug of this site (any well-formed slug where WordPress is not loaded, as in the tests). */
+	public static function is_role( string $role ): bool {
+		if ( ! preg_match( '/^[a-z0-9_-]{1,60}$/', $role ) ) {
+			return false;
+		}
+		return function_exists( 'wp_roles' ) ? null !== wp_roles()->get_role( $role ) : true;
 	}
 
 	/** Applies the filter of a field to a stored value; the filter wins within type and range. */
@@ -146,6 +158,7 @@ final class SettingsRegistry {
 			'notify_daily'       => array( __( 'Tägliche Hinweis-Mail an die Betreiber-Adresse', 'workflow-captain' ), __( 'Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen.', 'workflow-captain' ) ),
 			'recipients'         => array( __( 'Empfänger', 'workflow-captain' ), __( 'Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website.', 'workflow-captain' ) ),
 			'kinds'              => array( __( 'Arten', 'workflow-captain' ), '' ),
+			'notify_admin_roles' => array( __( 'Rollen als Empfänger von „Nachricht an Betreiber“', 'workflow-captain' ), __( 'Im Workflow-Editor lassen sich dann zusätzlich alle Benutzer dieser Rollen als Empfänger wählen (höchstens 50 Adressen je Nachricht). Ohne Auswahl: die Adresse der Website oder die Inhaber der festen Rechte.', 'workflow-captain' ) ),
 		);
 	}
 }

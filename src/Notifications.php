@@ -17,7 +17,7 @@ final class Notifications {
 	/** Kinds of notices the operator can choose (WF-SET-06). */
 	const KINDS = array( 'decisions', 'paused', 'failed', 'stuck', 'pause', 'providers' );
 
-	/** @return array{recipients:string,kinds:string[]} */
+	/** @return array{recipients:string,kinds:string[],notify_admin_roles:string[]} */
 	public static function config(): array {
 		$c      = function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array();
 		$config = self::sanitize( is_array( $c ) ? $c : array() );
@@ -31,8 +31,9 @@ final class Notifications {
 	public static function sanitize( $input ): array {
 		$input = is_array( $input ) ? $input : array();
 		return array(
-			'recipients' => SettingsRegistry::clean( 'recipients', $input['recipients'] ?? '' ),
-			'kinds'      => SettingsRegistry::clean( 'kinds', $input['kinds'] ?? null ),
+			'recipients'         => SettingsRegistry::clean( 'recipients', $input['recipients'] ?? '' ),
+			'kinds'              => SettingsRegistry::clean( 'kinds', $input['kinds'] ?? null ),
+			'notify_admin_roles' => SettingsRegistry::clean( 'notify_admin_roles', $input['notify_admin_roles'] ?? null ),
 		);
 	}
 

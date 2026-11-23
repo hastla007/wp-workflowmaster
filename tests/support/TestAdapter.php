@@ -130,6 +130,13 @@ final class FakeDirectory implements \WorkflowCaptain\Engine\Directory, \Workflo
 		return $out;
 	}
 
+	/** @var array<string,int[]> role => user IDs */
+	public array $roles = array();
+
+	public function emails_with_role( string $role ): array {
+		return array_values( array_filter( array_map( fn( $id ) => $this->emails[ $id ] ?? null, $this->roles[ $role ] ?? array() ) ) );
+	}
+
 	public function site_admin_email(): string {
 		return 'site@example.com';
 	}

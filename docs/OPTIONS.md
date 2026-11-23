@@ -34,6 +34,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `delete_data_on_uninstall` | `workflow_captain_settings` | ja/nein | nein (Daten behalten, E-S6) | – | Datenschutz & Aufbewahrung | nein (gilt nur für diese Installation) |
 | `notify_daily` | `workflow_captain_settings` | ja/nein | ja | – | Benachrichtigungen | ja |
 | `recipients` | `workflow_captain_notify` | Adressen | leer = Adresse der Website | bis 10 | Benachrichtigungen | nein (personenbezogen, an die Installation gebunden) |
+| `notify_admin_roles` | `workflow_captain_notify` | Rollen | keine | bis 20 Rollen dieser Website | Benachrichtigungen | ja |
 | `kinds` | `workflow_captain_notify` | Auswahl | alle sechs Arten | – | Benachrichtigungen | ja |
 
 **Übertragen (SET-WC-11, -12, -23):** Einstellungen → Status → „Einstellungen übertragen“ und `wp workflow-captain settings list|get|set|export|import|reset|undo`. Der Export (Format 1) enthält nur Felder mit „Export: ja“, nie Empfänger-Adressen oder Geheimnisse; ein Import prüft jedes Feld streng (Fehler statt stiller Korrektur), zeigt zuerst die Änderungen und lehnt eine neuere Formatnummer ab. Import, Zurücksetzen (je Tab oder alles) und WP-CLI schreiben einen Eintrag ins Änderungsprotokoll (Adressen ohne Wert) und sichern den vorigen Stand 30 Tage lang für einmaliges „Rückgängig“. Transient der Import-Vorschau: `workflow_captain_settings_import_{user}` (15 Minuten).

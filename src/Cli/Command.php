@@ -276,7 +276,7 @@ final class Command {
 				if ( null === $f || null === $value ) {
 					\WP_CLI::error( 'Usage: wp workflow-captain settings set <key> <value>' );
 				}
-				if ( \WorkflowCaptain\SettingsRegistry::TYPE_KINDS === $f['type'] ) {
+				if ( in_array( $f['type'], array( \WorkflowCaptain\SettingsRegistry::TYPE_KINDS, \WorkflowCaptain\SettingsRegistry::TYPE_ROLES ), true ) ) {
 					$value = '' === $value ? array() : array_map( 'trim', explode( ',', (string) $value ) );
 				}
 				list( $ok, $clean, $code ) = \WorkflowCaptain\SettingsTransfer::check( $key, $value );
