@@ -14,6 +14,7 @@ Stand: Plugin 0.2.x, 16.11.2026. Aufgaben WF-INT-17, WF-BUILDER-12, WF-MS-23 und
 | C-4 Doppelte | automatisch | `tests/run.php` |
 | C-5 Wiederholungsplan, dead_letter sichtbar | automatisch | `tests/run.php` |
 | C-6 abgebrochener Worker | automatisch | `tests/run.php` |
+| Queue-Ausfall: Rückstau über 48 Stunden (120 Ereignisse), Absturz eines Workers mitten im Rückstau; Abarbeitung in Paketen, der Reihe nach, jedes Ereignis genau einmal | automatisch | `tests/run.php` („queue outage“); im Netzwerk `docs/E2E-SUITE.md` ms42–ms43 |
 | C-7 Gegenlesen | automatisch | `tests/run.php` |
 | C-8 Selbststart, Tiefe | automatisch | `tests/run.php`, `tests/engine-tests.php` (R-7.14 mit echter Engine) |
 | C-9 Kausalkette | automatisch | beide Testdateien (auch aus einer laufenden Aktion) |

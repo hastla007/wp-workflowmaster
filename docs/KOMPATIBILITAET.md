@@ -131,7 +131,7 @@ Im Prüfcontainer gibt es nur PHP 8.3 und MariaDB 10.11 – beides unter der Min
 
 Lokal am 16.11.2026 mit denselben Schritten gegen MariaDB 10.11 und PHP 8.3.6 (frische Datenbank, `http://127.0.0.1:8095`): 96 von 96 bestanden (historisch, vor MINVER-1).
 
-**Stand der CI (17.11.2026):** Matrix auf MINVER-1 umgestellt (PHP 8.5, 8.6 experimentell; MySQL 9.7, MariaDB 12.3; eine Zelle mit WordPress 7.0.8/WooCommerce 11.2.2). Das Ergebnis des ersten Laufs auf GitHub steht noch aus und wird hier eingetragen.
+**Stand der CI (17.11.2026):** Matrix auf MINVER-1 umgestellt (PHP 8.5, 8.6 experimentell; MySQL 9.7, MariaDB 12.3; eine Zelle mit WordPress 7.0.8/WooCommerce 11.2.2). **Ergebnis (nachgetragen am 23.11.2026):** Der Lauf auf `main` (`197c8e8`, Lauf 44035430887 vom 17.11.2026) ist in allen vier Zellen grün: MySQL 9.7/PHP 8.5, MariaDB 12.3/PHP 8.5, MySQL 9.7/PHP 8.6 (experimentell) und MariaDB 12.3 mit WordPress 7.0.8/WooCommerce 11.2.2 auf PHP 8.5.
 
 Hinweise aus dem Checkout-Test: `woocommerce.order.paid` hängt an `woocommerce_payment_complete`; Überweisung und Nachnahme lösen es in WooCommerce nie aus (auch nicht beim manuellen Wechsel auf „In Bearbeitung“), Workflows für diese Zahlarten nutzen den Statuswechsel. Der Block-Checkout erzeugt zusätzlich einen Statuswechsel `checkout-draft` → `pending`, der beim Gegenlesen verworfen wird (R-7.4).
 
