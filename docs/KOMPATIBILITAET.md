@@ -22,7 +22,19 @@ Prüfung am 23.11.2026 an allen Suite-Repositories (nur gelesen). Spalte „`mai
 | Course Captain | `5af78c3`, nur Dokumente | `claude/blissful-curie-tuuf7q` `c45e891`: Code, `COURSE_CAPTAIN_CONTRACT_VERSION` = `0.1.0`; feuert bisher nur `course_captain_loaded_v1` | – (kein Katalog `course.*`, 4.6.4) | – | keiner |
 | Eigene Connectoren | eigenes Plugin | BoatingSchool und LearnBoating: Branch `claude/plugin-todo-liste-2a83v4` (nicht auf `main`) | `contract` im Manifest (`CONNECTOR-CONTRACT.md`); Workflow Captain Pro als Laufzeit (Filter `workflow_captain_connector_runtime_allowed_v1`, F-18a); die eigene Lizenz prüft der Connector selbst | eigene Typen `x<präfix>.*` | im Kern, freigeschaltet durch Pro |
 
-**Workflow Captain Pro** liegt nur auf captain-pro Branch `claude/plugin-todo-liste-2a83v4` (`e004004`, 23 Commits vor `main`); auf `main` (`911c403`) gibt es weder das Add-on noch die Suite-Adapter. Es verlangt Workflow Captain ≥ 0.2.0 (für netzwerkweite Abläufe Schema 4 mit `ForeignRuns`) und für jedes Captain-Produkt zusätzlich dessen gültiges Pro-Add-on (Spezifikation 10.1; der Lizenzserver hat keines).
+**Nachtrag 23.11.2026, 13:45 (nach Merges anderer Sitzungen):**
+
+| Repository | `main` jetzt | Stand |
+|---|---|---|
+| `wp-couponmaster` | `b801e2e` (Pull Request #19 gemergt) | Plugin 1.3.0, `VCAP_CONTRACT_VERSION` = `1.4.0`, vorläufiger Provider entfernt – **kennt Workflow Captain** |
+| `wp-reviewmaster` | `8c60c6f` (Pull Request #6 gemergt) | `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.1.0` mit Sternen im Payload, RC-1 bis RC-4 – **kennt Workflow Captain** |
+| `captain-pro` | `a7cad7b` (Pull Request #14 gemergt) | Workflow Captain Pro 0.1.0 (zurückgehalten) mit allen Suite-Adaptern (Pass, Voucher, Affiliate, Lizenzserver, Form, Review), Netzwerk-Code und Tests – CP-3 erledigt; CP-1/CP-2 im Kernel weiter offen |
+| `boatingschool` | `e27a7de` (Pull Request #128 gemergt) | `integrations/boatingschool-workflow-connector` – KC-1 erledigt |
+| `wp-passmaster` | `b2b88ea` (unverändert) | offen: Pull Request #30 (`claude/woocommerce-ticket-plugin-8q4m8q`, Plugin 1.6.0, Vertrag 1.3.0, beide fehlenden Hooks, Lesefassade) wird von einer anderen Sitzung bearbeitet; enthält aber den eigenen Workflow-Provider mit Mail-Übergabe (`src/Workflow/*`, PC-7) |
+| `wp-coursemaster` | `5af78c3` (unverändert) | offen: Pull Request #3 wird von einer anderen Sitzung bearbeitet; kein Katalog `course.*` (CC-1 bis CC-4) |
+| `learnboating` | `9f37c77` (unverändert) | offen: Zusammenführungs-Branch `claude/loving-euler-c7h553` (450 Commits vor `main`, mit `learnboating-workflow-connector`) wird von einer anderen Sitzung bearbeitet, noch ohne Pull Request (KC-2) |
+
+**Workflow Captain Pro** ist seit dem 23.11.2026 auf captain-pro `main` (`a7cad7b`, zurückgehalten); vorher nur auf dem Branch `claude/plugin-todo-liste-2a83v4`. Es verlangt Workflow Captain ≥ 0.2.0 (für netzwerkweite Abläufe Schema 4 mit `ForeignRuns`) und für jedes Captain-Produkt zusätzlich dessen gültiges Pro-Add-on (Spezifikation 10.1; der Lizenzserver hat keines).
 
 **Ungeprüft:** ein Lauf der Adapter gegen genau diese Stände in einer echten WordPress-Installation (laut [`E2E-RESULTS.md`](E2E-RESULTS.md) liefen die Suite-Adapter von Pro dort nicht, weil Pro ohne Lizenz keine Funktion freigibt; Prüfung der Adapter bisher nur mit PHPUnit in `captain-pro`). Ältere Stände stehen unten als Verlauf.
 

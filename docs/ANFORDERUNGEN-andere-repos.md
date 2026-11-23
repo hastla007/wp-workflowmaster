@@ -27,6 +27,18 @@ Gelesen wurden `main` und alle Branches mit Bezug zu Workflow Captain. „Nur Br
 | `boatingschool`, `learnboating` | ohne Connector | nein | Connector-Branches mergen (siehe „Kundenconnectoren“) |
 | `wp-captainplugins` (Website) | `f0a0c8a` | ja, mit Abweichungen | WEB-1 bis WEB-4 |
 
+**Nachtrag 23.11.2026, 13:45 (nach Merges anderer Sitzungen):**
+
+| Repository | `main` jetzt | Stand |
+|---|---|---|
+| `wp-couponmaster` | `b801e2e` (Pull Request #19 gemergt) | Plugin 1.3.0, `VCAP_CONTRACT_VERSION` = `1.4.0`, vorläufiger Provider entfernt – **kennt Workflow Captain** |
+| `wp-reviewmaster` | `8c60c6f` (Pull Request #6 gemergt) | `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.1.0` mit Sternen im Payload, RC-1 bis RC-4 – **kennt Workflow Captain** |
+| `captain-pro` | `a7cad7b` (Pull Request #14 gemergt) | Workflow Captain Pro 0.1.0 (zurückgehalten) mit allen Suite-Adaptern (Pass, Voucher, Affiliate, Lizenzserver, Form, Review), Netzwerk-Code und Tests – CP-3 erledigt; CP-1/CP-2 im Kernel weiter offen |
+| `boatingschool` | `e27a7de` (Pull Request #128 gemergt) | `integrations/boatingschool-workflow-connector` – KC-1 erledigt |
+| `wp-passmaster` | `b2b88ea` (unverändert) | offen: Pull Request #30 (`claude/woocommerce-ticket-plugin-8q4m8q`, Plugin 1.6.0, Vertrag 1.3.0, beide fehlenden Hooks, Lesefassade) wird von einer anderen Sitzung bearbeitet; enthält aber den eigenen Workflow-Provider mit Mail-Übergabe (`src/Workflow/*`, PC-7) |
+| `wp-coursemaster` | `5af78c3` (unverändert) | offen: Pull Request #3 wird von einer anderen Sitzung bearbeitet; kein Katalog `course.*` (CC-1 bis CC-4) |
+| `learnboating` | `9f37c77` (unverändert) | offen: Zusammenführungs-Branch `claude/loving-euler-c7h553` (450 Commits vor `main`, mit `learnboating-workflow-connector`) wird von einer anderen Sitzung bearbeitet, noch ohne Pull Request (KC-2) |
+
 ## Voucher Captain (`wp-couponmaster`)
 
 | Nr. | Anforderung | Grundlage | Dringlichkeit | Angelegt |
