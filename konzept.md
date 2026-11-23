@@ -482,7 +482,7 @@ Mit Version 1 können Betreiber typische Geschäftsabläufe innerhalb von WordPr
 
 #### Workflow Captain Free 1.0
 
-- Coreplugin: WordPress 7.0+, PHP 8.5+; WooCommerce-Adapter optional ab WooCommerce 11.2; MySQL 9.7+ oder MariaDB 12.3+ empfohlen (älterer Server nur Warnung). Entscheidung des Inhabers MINVER-1 vom 17.11.2026; vorher WordPress 6.8+, PHP 8.3+, WooCommerce 8.0. HPOS sowie Classic- und Blocks-Bestellungen werden unterstützt, sobald die Adapterversion dies deklariert.
+- Coreplugin: WordPress 7.0+, PHP 8.5+; WooCommerce-Adapter optional ab WooCommerce 11.2.2 (11.2.0/11.2.1 geben Store-API-Bestelldaten früherer Checkouts weiter); MySQL 9.7+ oder MariaDB 12.3+ empfohlen (älterer Server nur Warnung). Entscheidung des Inhabers MINVER-1 vom 17.11.2026; vorher WordPress 6.8+, PHP 8.3+, WooCommerce 8.0. HPOS sowie Classic- und Blocks-Bestellungen werden unterstützt, sobald die Adapterversion dies deklariert.
 - Unbegrenzte Workflows und Ausführungen, ohne Task-Credits oder externen Account.
 - Mehrere alternative Start-Trigger, mehrere geordnete Actions pro Lauf, einfache AND/OR-Filter und Tokens aus dem jeweiligen Event-Schema.
 - Grundlegende Zeitplanung: „sofort“, „nach Dauer“ und „zu Zeitpunkt“ für Aktionen. Trigger sind vor allem WordPress-Core und WooCommerce.
@@ -733,7 +733,7 @@ Keine Tests wurden bei dieser Konzeptaktualisierung ausgeführt. Die obigen Punk
 | Ausführungsbasis | Lokal auf der WordPress-Seite; Action Scheduler bei WooCommerce, WP-Cron-Fallback mit System-Cron-Empfehlung |
 | Multisite | Site-lokale Flows bleiben getrennt; netzwerkweite Cross-Site-Flows sind Pro v1, nur innerhalb derselben WP-Multisite und mit expliziter Teilnahme-/Ziel-Site-Freigabe *[Offen (F-07): Die Spezifikation nimmt bis zur Antwort des Inhabers an, dass Ereignisse ihre Website nicht verlassen und netzwerkweite Abläufe nicht Teil von Version 1 sind (Spezifikation Abschnitt 1, R-12.6).]* |
 | Multisite-Sitelimit | Jede eindeutige beteiligte Blog-ID (Quell- oder Ziel-Site) zählt gegen den Plan-Sitelimit; Netzwerkmodus braucht mindestens zwei lizenzierte Sites; Fan-out bleibt auf lizenzierte und freigegebene Sites begrenzt |
-| Kompatibilität | WordPress 7.0+, PHP 8.5+ (MINVER-1, 17.11.2026); WooCommerce 11.2+ optional für Shop-Provider; MySQL 9.7+/MariaDB 12.3+ empfohlen. Jeder Suite-Adapter verlangt zusätzlich die im Providervertrag definierte Kernplugin-Mindestversion. |
+| Kompatibilität | WordPress 7.0+, PHP 8.5+ (MINVER-1, 17.11.2026); WooCommerce 11.2.2+ optional für Shop-Provider; MySQL 9.7+/MariaDB 12.3+ empfohlen. Jeder Suite-Adapter verlangt zusätzlich die im Providervertrag definierte Kernplugin-Mindestversion. |
 | Externe Systeme | v1 enthält versionierte Connector-SDK/Providerverträge für kundenspezifische WordPress-Projekte sowie Pro-Webhooks für externe Systeme. Keine breite Bibliothek fertiger Drittanbieter-Apps. |
 | KI | Nicht in Version 1; keine automatische Veränderung oder Aktivierung ohne Betreiberfreigabe |
 | Supportzeit | Support-Level folgen dem Captain-Plan. Keine Antwortzeitgarantie, bevor Supportbetrieb dafür ausgestattet ist. |
