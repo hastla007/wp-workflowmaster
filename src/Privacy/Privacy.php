@@ -60,6 +60,10 @@ final class Privacy {
 			'exporter_friendly_name' => __( 'Workflow Captain: saved events', 'workflow-captain' ),
 			'callback'               => array( $this, 'export' ),
 		);
+		$exporters['workflow-captain-settings'] = array(
+			'exporter_friendly_name' => __( 'Workflow Captain: notice recipients', 'workflow-captain' ),
+			'callback'               => array( self::class, 'export_settings' ),
+		);
 		return $exporters;
 	}
 
@@ -68,7 +72,70 @@ final class Privacy {
 			'eraser_friendly_name' => __( 'Workflow Captain: saved events', 'workflow-captain' ),
 			'callback'             => array( $this, 'erase' ),
 		);
+		$erasers['workflow-captain-settings'] = array(
+			'eraser_friendly_name' => __( 'Workflow Captain: notice recipients', 'workflow-captain' ),
+			'callback'             => array( self::class, 'erase_settings' ),
+		);
 		return $erasers;
+	}
+
+	/**
+	 * SET-WC-29 (decided 23.11.2026): an e-mail address in the recipients of the notice mail, or in the settings backup
+	 * kept for "undo", is personal data of that person. The address need not belong to a WordPress user.
+	 */
+	public static function export_settings( string $email, int $page = 1 ): array {
+		$email = strtolower( trim( $email ) );
+		$items = array();
+		$where = array();
+		if ( self::in_list( (string) ( \WorkflowCaptain\Notifications::stored()['recipients'] ?? '' ), $email ) ) {
+			$where[] = __( 'Recipient of the daily notice email', 'workflow-captain' );
+		}
+		$backup = function_exists( 'get_option' ) ? get_option( \WorkflowCaptain\SettingsTransfer::BACKUP_OPTION, null ) : null;
+		if ( is_array( $backup ) && self::in_list( (string) ( $backup['values']['recipients'] ?? '' ), $email ) ) {
+			$where[] = __( 'Backup of the settings for “undo” (kept 30 days)', 'workflow-captain' );
+		}
+		foreach ( $where as $i => $label ) {
+			$items[] = array(
+				'group_id'    => 'workflow-captain-settings',
+				'group_label' => __( 'Workflow Captain: Settings', 'workflow-captain' ),
+				'item_id'     => 'workflow-captain-settings-' . $i,
+				'data'        => array(
+					array( 'name' => __( 'Email address', 'workflow-captain' ), 'value' => $email ),
+					array( 'name' => __( 'Stored as', 'workflow-captain' ), 'value' => $label ),
+				),
+			);
+		}
+		return array( 'data' => $items, 'done' => true );
+	}
+
+	/** Eraser of SET-WC-29: removes the address from the notice recipients and from the settings backup. */
+	public static function erase_settings( string $email, int $page = 1 ): array {
+		$email   = strtolower( trim( $email ) );
+		$removed = false;
+		$notify  = function_exists( 'get_option' ) ? get_option( \WorkflowCaptain\Notifications::OPTION, array() ) : array();
+		if ( is_array( $notify ) && self::in_list( (string) ( $notify['recipients'] ?? '' ), $email ) ) {
+			$notify['recipients'] = self::without( (string) $notify['recipients'], $email );
+			update_option( \WorkflowCaptain\Notifications::OPTION, $notify, false );
+			$removed = true;
+		}
+		$backup = function_exists( 'get_option' ) ? get_option( \WorkflowCaptain\SettingsTransfer::BACKUP_OPTION, null ) : null;
+		if ( is_array( $backup ) && self::in_list( (string) ( $backup['values']['recipients'] ?? '' ), $email ) ) {
+			$backup['values']['recipients'] = self::without( (string) $backup['values']['recipients'], $email );
+			update_option( \WorkflowCaptain\SettingsTransfer::BACKUP_OPTION, $backup, false );
+			$removed = true;
+		}
+		return array( 'items_removed' => $removed, 'items_retained' => false, 'messages' => array(), 'done' => true );
+	}
+
+	/** Whether a comma separated address list holds $email (case-insensitive). */
+	public static function in_list( string $list, string $email ): bool {
+		return '' !== $email && in_array( strtolower( trim( $email ) ), array_map( static fn( $a ) => strtolower( trim( $a ) ), explode( ',', $list ) ), true );
+	}
+
+	/** The list without $email, in the stored form ("a, b"). */
+	public static function without( string $list, string $email ): string {
+		$email = strtolower( trim( $email ) );
+		return implode( ', ', array_values( array_filter( array_map( 'trim', explode( ',', $list ) ), static fn( $a ) => '' !== $a && strtolower( $a ) !== $email ) ) );
 	}
 
 	/** Exporter callback: every stored event with this user as actor (R-12.5, C-13). */

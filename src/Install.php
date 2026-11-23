@@ -70,7 +70,26 @@ final class Install {
 			self::ensure_tables();
 		}
 		self::grant_admin_caps();
+		self::settings_not_autoloaded();
 		Plugin::schedule_events();
+	}
+
+	/**
+	 * SET-WC-35 (decided 23.11.2026): every option of the plugin is stored with autoload "no". The settings options are
+	 * created here before the first save, because options.php would otherwise create them autoloaded; existing ones are
+	 * switched (WordPress 6.4+). Runs on activation and after an upgrade, not on every request.
+	 */
+	public static function settings_not_autoloaded(): void {
+		if ( ! function_exists( 'add_option' ) ) {
+			return;
+		}
+		$names = array_keys( SettingsRegistry::GROUPS );
+		foreach ( $names as $option ) {
+			add_option( $option, array(), '', false );
+		}
+		if ( function_exists( 'wp_set_options_autoload' ) ) {
+			wp_set_options_autoload( $names, false );
+		}
 	}
 
 	public static function deactivate(): void {
@@ -131,6 +150,7 @@ final class Install {
 		}
 		if ( Migrator::DONE === $result['state'] ) {
 			self::$last_done = $result;
+			self::settings_not_autoloaded();
 		}
 		return $result;
 	}

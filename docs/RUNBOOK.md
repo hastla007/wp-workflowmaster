@@ -32,7 +32,7 @@ Gemessen am 16.11.2026 auf einer echten Installation (WooCommerce mit HPOS, Mari
 | Shop | Bestellungen | Einstellung | Warum |
 |---|---|---|---|
 | klein | bis etwa 50 am Tag, Spitzen bis 300 in der Stunde | Standard: Batch 25, geplanter Worker (Action Scheduler oder WP-Cron) | schafft etwa 500 Bestellungen je Stunde; ein Durchgang dauert 0,2 s |
-| mittel | bis etwa 1000 am Tag oder Aktionen mit Spitzen | System-Cron `* * * * * wp --path=/pfad workflow-captain process` (Standard `--limit=100`) | etwa 2000 Bestellungen je Stunde; ein Durchgang 0,6 s, mit WordPress-Start 1,3 s |
+| mittel | bis etwa 1000 am Tag oder Aktionen mit Spitzen | System-Cron `* * * * * wp --path=/pfad workflow-captain process --limit=100` (ohne `--limit` gilt seit SET-WC-36 die Einstellung „Ereignisse und Schritte je Worker-Durchlauf“, ab Werk 25) | etwa 2000 Bestellungen je Stunde; ein Durchgang 0,6 s, mit WordPress-Start 1,3 s |
 | groß | 5000 am Tag und mehr, Verkaufsstarts | System-Cron mit `--limit=200`; in den Einstellungen Batch 200 | etwa 4000 Bestellungen je Stunde; ein Durchgang 1,3 s, Speicher wie ein normaler WP-CLI-Aufruf (etwa 110 MB mit WooCommerce) |
 
 - Ohne Besucher und mit `DISABLE_WP_CRON` läuft der geplante Worker nicht: dann immer System-Cron.
