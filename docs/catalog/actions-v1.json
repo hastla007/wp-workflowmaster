@@ -1,6 +1,6 @@
 {
   "$comment": "Machine-readable part of docs/SPEC-suite-events.md 8.1 and 8.5 (WF-INT-01). Checked by tests/engine-tests.php against the action classes of the core. network_safe: the action may run in a run from another site of the same multisite network (spec section 17, R-17.4; Engine\\NetworkSafe).",
-  "spec_version": "1.0.0-draft.8",
+  "spec_version": "1.0.0-draft.9",
   "pause_reasons": [
     "action_unavailable",
     "not_authorized",
@@ -174,6 +174,42 @@
         "not_authorized"
       ],
       "status": "gebaut in Workflow Captain Pro (Voucher Captain ab Vertrag 1.3.0)",
+      "network_safe": false
+    },
+    {
+      "key": "review.request.plan",
+      "owner": "workflow-captain-pro",
+      "license": "workflow.suite_integrations + Review Captain Pro (review.review_requests)",
+      "capability": "review_captain_manage_requests",
+      "publish_capability": "review_captain_manage_requests",
+      "idempotent": true,
+      "side_effect": "plant eine Einladung zur Bewertung im Planer von Review Captain Pro; idempotent je Bestellung bzw. subject und Workflow-Schritt; Schutzregeln im Planer (R-4.30, 8.2)",
+      "retry": "ja mit demselben Schlüssel bei vorübergehenden Fehlern; rc.contract.unavailable (kein Planer) und Ablehnungen des Planers endgültig (R-8.13)",
+      "config_errors": [],
+      "run_errors": [
+        "rc.contract.unavailable",
+        "not_authorized"
+      ],
+      "provider_call": "ReviewCaptain\\Plugin::instance()->workflow()->plan_request()",
+      "status": "Spezifikation 1.0.0-draft.9 (F-23); Adapter in Workflow Captain Pro, Planer in Review Captain Pro noch nicht am Filter review_captain_request_planner_v1 angemeldet",
+      "network_safe": false
+    },
+    {
+      "key": "review.request.cancel",
+      "owner": "workflow-captain-pro",
+      "license": "workflow.suite_integrations + Review Captain Pro (review.review_requests)",
+      "capability": "review_captain_manage_requests",
+      "publish_capability": "review_captain_manage_requests",
+      "idempotent": true,
+      "side_effect": "bricht eine geplante Einladung zur Bewertung im Planer von Review Captain Pro ab; idempotent (R-4.30)",
+      "retry": "ja mit demselben Schlüssel bei vorübergehenden Fehlern; rc.contract.unavailable (kein Planer) und Ablehnungen des Planers endgültig (R-8.13)",
+      "config_errors": [],
+      "run_errors": [
+        "rc.contract.unavailable",
+        "not_authorized"
+      ],
+      "provider_call": "ReviewCaptain\\Plugin::instance()->workflow()->cancel_request()",
+      "status": "Spezifikation 1.0.0-draft.9 (F-23); Adapter in Workflow Captain Pro, Planer in Review Captain Pro noch nicht am Filter review_captain_request_planner_v1 angemeldet",
       "network_safe": false
     }
   ]
