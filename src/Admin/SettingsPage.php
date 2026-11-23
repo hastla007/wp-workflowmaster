@@ -267,7 +267,7 @@ final class SettingsPage {
 		$c      = \WorkflowCaptain\Messages::stored();
 		$active = \WorkflowCaptain\Messages::config();
 		$texts  = \WorkflowCaptain\SettingsRegistry::texts();
-		echo '<h2>' . esc_html__( 'Sender and footer', 'workflow-captain' ) . '</h2><form method="post" action="options.php" class="wfc-settings-form">';
+		echo '<h2>' . esc_html__( 'Sender, footer and time zone', 'workflow-captain' ) . '</h2><form method="post" action="options.php" class="wfc-settings-form">';
 		settings_fields( 'workflow_captain_messages' );
 		echo '<table class="form-table" role="presentation">';
 		foreach ( \WorkflowCaptain\SettingsRegistry::keys( \WorkflowCaptain\Messages::OPTION ) as $key ) {
@@ -278,7 +278,13 @@ final class SettingsPage {
 			$described = trim( ( $invalid ? $id . '-error ' : '' ) . $id . '-help' );
 			$attrs     = ' name="' . esc_attr( $name ) . '" data-default="" aria-describedby="' . esc_attr( $described ) . '"' . ( $invalid ? ' aria-invalid="true"' : '' );
 			echo '<tr><th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( $texts[ $key ][0] ) . '</label></th><td>';
-			if ( \WorkflowCaptain\SettingsRegistry::TYPE_TEXTAREA === $f['type'] ) {
+			if ( \WorkflowCaptain\SettingsRegistry::TYPE_TIMEZONE === $f['type'] ) {
+				echo '<select id="' . esc_attr( $id ) . '"' . $attrs . '><option value="">' . esc_html( sprintf( /* translators: %s: time zone of WordPress */ __( 'Like WordPress (%s)', 'workflow-captain' ), wp_timezone_string() ) ) . '</option>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is escaped above.
+				foreach ( \DateTimeZone::listIdentifiers() as $zone ) {
+					echo '<option value="' . esc_attr( $zone ) . '"' . ( $zone === $c[ $key ] ? ' selected' : '' ) . '>' . esc_html( $zone ) . '</option>';
+				}
+				echo '</select>';
+			} elseif ( \WorkflowCaptain\SettingsRegistry::TYPE_TEXTAREA === $f['type'] ) {
 				echo '<textarea id="' . esc_attr( $id ) . '"' . $attrs . ' rows="4" class="large-text" maxlength="' . (int) $f['max'] . '">' . esc_textarea( $c[ $key ] ) . '</textarea>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is escaped above.
 			} else {
 				echo '<input id="' . esc_attr( $id ) . '"' . $attrs . ' type="' . ( \WorkflowCaptain\SettingsRegistry::TYPE_EMAIL === $f['type'] ? 'email' : 'text' ) . '" class="regular-text"' . ( \WorkflowCaptain\SettingsRegistry::TYPE_TEXT === $f['type'] ? ' maxlength="' . (int) $f['max'] . '"' : '' ) . ' value="' . esc_attr( $c[ $key ] ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is escaped above.
@@ -362,7 +368,7 @@ final class SettingsPage {
 	/** Time zone and date format come from WordPress; the source is shown (WF-SET-04). */
 	private function general(): void {
 		$rows = array(
-			__( 'Time zone', 'workflow-captain' )     => wp_timezone_string() . ' – ' . __( 'from WordPress Settings → General', 'workflow-captain' ),
+			__( 'Time zone', 'workflow-captain' )     => \WorkflowCaptain\Settings::timezone() . ' – ' . ( '' !== \WorkflowCaptain\Messages::config()['timezone'] ? __( 'own setting in the Messages tab', 'workflow-captain' ) : __( 'from WordPress Settings → General', 'workflow-captain' ) ),
 			__( 'Date format', 'workflow-captain' ) => (string) get_option( 'date_format' ) . ' – ' . __( 'from WordPress Settings → General', 'workflow-captain' ),
 			__( 'Storage', 'workflow-captain' )  => __( 'All times are stored in UTC; delays in days follow the site\'s time zone.', 'workflow-captain' ),
 		);
@@ -439,10 +445,10 @@ final class SettingsPage {
 		$d    = $this->plugin->diagnostics();
 		$env  = $d['environment'];
 		$rows = array(
-			__( 'Site time zone', 'workflow-captain' )          => wp_timezone_string(),
+			__( 'Site time zone', 'workflow-captain' )          => \WorkflowCaptain\Settings::timezone(),
 			__( 'Database schema', 'workflow-captain' )                => $env['schema'] . ' / ' . $env['schema_expected'],
 			__( 'Database update', 'workflow-captain' )    => array( 'held' => __( 'in progress', 'workflow-captain' ), 'stale' => __( 'aborted – will be retried on the next admin page load, via cron or WP-CLI', 'workflow-captain' ) )[ $env['upgrade_lock'] ?? '' ] ?? __( 'none pending', 'workflow-captain' ),
-			__( 'Next worker run (UTC)', 'workflow-captain' )     => (string) ( $env['next_worker_run'] ?? __( 'not scheduled', 'workflow-captain' ) ),
+			__( 'Next worker run', 'workflow-captain' )     => isset( $env['next_worker_run'] ) ? Time::show( (string) $env['next_worker_run'] ) . ' (' . Time::label() . ')' : __( 'not scheduled', 'workflow-captain' ),
 			__( 'Worker scheduling', 'workflow-captain' ) => 'action_scheduler' === ( $env['scheduler'] ?? '' ) ? __( 'Action Scheduler (from WooCommerce)', 'workflow-captain' ) : __( 'WP-Cron', 'workflow-captain' ),
 			__( 'WP-Cron disabled', 'workflow-captain' )           => $env['wp_cron_disabled'] ? __( 'yes – system cron required: wp workflow-captain process', 'workflow-captain' ) : __( 'no', 'workflow-captain' ),
 			__( 'Custom secret key', 'workflow-captain' ) => Vault::own_key_configured() ? __( 'set', 'workflow-captain' ) : __( 'not set – recommended: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php', 'workflow-captain' ),
@@ -706,7 +712,7 @@ final class SettingsPage {
 			echo '<p>' . esc_html__( 'No entries yet.', 'workflow-captain' ) . '</p>';
 			return;
 		}
-		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Recent security-relevant changes', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Time (UTC)', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'User', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Change', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Details', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Recent security-relevant changes', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html( sprintf( /* translators: %s: time zone */ __( 'Time (%s)', 'workflow-captain' ), Time::label() ) ) . '</th><th scope="col">' . esc_html__( 'User', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Change', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Details', 'workflow-captain' ) . '</th></tr></thead><tbody>';
 		foreach ( $entries as $e ) {
 			$user   = get_userdata( (int) $e['user'] );
 			$detail = array();
@@ -714,7 +720,7 @@ final class SettingsPage {
 			foreach ( (array) $e['detail'] as $key => $value ) {
 				$detail[] = ( $named ? self::field_label( (string) $key ) : $key ) . ': ' . ( $named && is_array( $value ) && 2 === count( $value ) && \WorkflowCaptain\SettingsRegistry::field( (string) $key ) ? self::display_value( (string) $key, array_values( $value )[0] ) . ' → ' . self::display_value( (string) $key, array_values( $value )[1] ) : self::audit_value( $value ) );
 			}
-			echo '<tr><td>' . esc_html( (string) $e['at'] ) . '</td><td>' . esc_html( $user ? $user->display_name : ( 0 === (int) $e['user'] ? __( 'System/WP-CLI', 'workflow-captain' ) : '#' . (int) $e['user'] ) ) . '</td><td>' . esc_html( $labels[ $e['what'] ] ?? (string) $e['what'] ) . '</td><td>' . esc_html( implode( '; ', $detail ) ) . '</td></tr>';
+			echo '<tr><td>' . esc_html( Time::show( (string) $e['at'] ) ) . '</td><td>' . esc_html( $user ? $user->display_name : ( 0 === (int) $e['user'] ? __( 'System/WP-CLI', 'workflow-captain' ) : '#' . (int) $e['user'] ) ) . '</td><td>' . esc_html( $labels[ $e['what'] ] ?? (string) $e['what'] ) . '</td><td>' . esc_html( implode( '; ', $detail ) ) . '</td></tr>';
 		}
 		echo '</tbody></table>';
 		echo '<p class="description">' . esc_html( sprintf( /* translators: 1: number, 2: option name */ __( 'The last %1$d entries are kept in the option %2$s (adjustable in the Privacy & retention tab).', 'workflow-captain' ), Audit::keep(), Audit::OPTION ) ) . '</p>';

@@ -99,6 +99,12 @@ final class SettingsTransfer {
 				}
 				$clean = SettingsRegistry::clean( $key, $value );
 				return '' === trim( (string) $value ) || '' !== $clean ? array( true, $clean, '' ) : array( false, null, 'invalid_address' );
+			case SettingsRegistry::TYPE_TIMEZONE:
+				if ( ! is_string( $value ) ) {
+					return array( false, null, 'unknown_timezone' );
+				}
+				$clean = SettingsRegistry::clean( $key, $value );
+				return '' === trim( $value ) || '' !== $clean ? array( true, $clean, '' ) : array( false, null, 'unknown_timezone' );
 			case SettingsRegistry::TYPE_TEXT:
 			case SettingsRegistry::TYPE_TEXTAREA:
 				if ( ! is_string( $value ) ) {

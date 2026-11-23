@@ -131,7 +131,7 @@ final class EventsPage {
 			echo '<p><button class="button" type="submit">' . esc_html__( 'Queue selected again', 'workflow-captain' ) . '</button> <span class="description">' . esc_html__( 'First check whether the cause (adapter, license, provider) has been fixed.', 'workflow-captain' ) . '</span></p></form>';
 		}
 		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Stored events, newest first', 'workflow-captain' ) . '</caption><thead><tr>';
-		foreach ( array( __( 'No.', 'workflow-captain' ), __( 'Event', 'workflow-captain' ), __( 'Object', 'workflow-captain' ), __( 'Timestamp (UTC)', 'workflow-captain' ), __( 'State', 'workflow-captain' ), __( 'Attempts', 'workflow-captain' ), __( 'Last error', 'workflow-captain' ) ) as $head ) {
+		foreach ( array( __( 'No.', 'workflow-captain' ), __( 'Event', 'workflow-captain' ), __( 'Object', 'workflow-captain' ), sprintf( /* translators: %s: time zone */ __( 'Timestamp (%s)', 'workflow-captain' ), Time::label() ), __( 'State', 'workflow-captain' ), __( 'Attempts', 'workflow-captain' ), __( 'Last error', 'workflow-captain' ) ) as $head ) {
 			echo '<th scope="col">' . esc_html( $head ) . '</th>';
 		}
 		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'workflow-captain' ) . '</span></th>';
@@ -144,7 +144,7 @@ final class EventsPage {
 			if ( $bulk ) {
 				echo '<input type="checkbox" form="wfc-bulk" name="events[]" value="' . (int) $row['id'] . '" aria-label="' . esc_attr( sprintf( /* translators: %d: event number */ __( 'Select event %d', 'workflow-captain' ), (int) $row['id'] ) ) . '"> ';
 			}
-			echo (int) $row['id'] . '</td><td><code>' . esc_html( $row['type'] ) . '</code></td><td>' . esc_html( $row['subject_type'] . ' ' . $row['subject_id'] ) . '</td><td>' . esc_html( (string) ( $row['envelope']['occurred_at'] ?? $row['created_at'] ) ) . '</td><td>' . esc_html( self::state_label( $row['state'] ) ) . '</td><td>' . (int) $row['attempts'] . '</td><td>' . esc_html( (string) $row['last_error'] ) . '</td><td>';
+			echo (int) $row['id'] . '</td><td><code>' . esc_html( $row['type'] ) . '</code></td><td>' . esc_html( $row['subject_type'] . ' ' . $row['subject_id'] ) . '</td><td>' . Time::html( (string) ( $row['envelope']['occurred_at'] ?? $row['created_at'] ) ) . '</td><td>' . esc_html( self::state_label( $row['state'] ) ) . '</td><td>' . (int) $row['attempts'] . '</td><td>' . esc_html( (string) $row['last_error'] ) . '</td><td>';
 			if ( in_array( $row['state'], array( EventStore::DEAD_LETTER, EventStore::PAUSED ), true ) && current_user_can( 'retry_workflow_runs' ) ) {
 				echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 				echo '<input type="hidden" name="action" value="workflow_captain_requeue"><input type="hidden" name="event" value="' . (int) $row['id'] . '">';

@@ -35,6 +35,8 @@ final class SettingsRegistry {
 	const TYPE_TEXT     = 'text';
 	/** Several lines of plain text, at most `max` characters. */
 	const TYPE_TEXTAREA = 'textarea';
+	/** An IANA time zone name or empty (SET-WC-22). */
+	const TYPE_TIMEZONE = 'timezone';
 
 	/**
 	 * key => array( option, type, default, min, max, tab, export ). `export` false: the value is tied to this
@@ -65,6 +67,7 @@ final class SettingsRegistry {
 		'sender_email'       => array( Messages::OPTION, self::TYPE_EMAIL, '', 0, 0, 'messages', false ),
 		'reply_to'           => array( Messages::OPTION, self::TYPE_EMAIL, '', 0, 0, 'messages', false ),
 		'message_footer'     => array( Messages::OPTION, self::TYPE_TEXTAREA, '', 0, 1000, 'messages', true ),
+		'timezone'           => array( Messages::OPTION, self::TYPE_TIMEZONE, '', 0, 0, 'messages', true ),
 		'recipients'         => array( Notifications::OPTION, self::TYPE_EMAILS, '', 0, 10, 'notify', false ),
 		'kinds'              => array( Notifications::OPTION, self::TYPE_KINDS, Notifications::KINDS, 0, 0, 'notify', true ),
 		'notify_admin_roles' => array( Notifications::OPTION, self::TYPE_ROLES, array(), 0, 20, 'notify', true ),
@@ -130,6 +133,9 @@ final class SettingsRegistry {
 			case self::TYPE_EMAIL:
 				$address = is_scalar( $value ) ? strtolower( trim( (string) $value ) ) : '';
 				return false !== filter_var( $address, FILTER_VALIDATE_EMAIL ) ? $address : '';
+			case self::TYPE_TIMEZONE:
+				$zone = is_scalar( $value ) ? trim( (string) $value ) : '';
+				return in_array( $zone, \DateTimeZone::listIdentifiers(), true ) ? $zone : '';
 			case self::TYPE_TEXT:
 				$text = is_scalar( $value ) ? trim( preg_replace( '/[\x00-\x1F\x7F]+/u', ' ', strip_tags( (string) $value ) ) ?? '' ) : '';
 				return self::cut( $text, $f['max'] );
@@ -253,6 +259,7 @@ final class SettingsRegistry {
 			case self::TYPE_EMAIL:
 			case self::TYPE_TEXT:
 			case self::TYPE_TEXTAREA:
+			case self::TYPE_TIMEZONE:
 				return is_scalar( $filtered ) ? self::clean( $key, $filtered ) : $value;
 			case self::TYPE_EMAILS:
 				if ( is_array( $filtered ) ) {
@@ -296,6 +303,7 @@ final class SettingsRegistry {
 			'sender_email'       => array( __( 'Sender address', 'workflow-captain' ), __( 'Empty: the sender WordPress or your mail plugin sets (today’s behaviour). Use an address of your own domain, otherwise messages may land in spam.', 'workflow-captain' ) ),
 			'reply_to'           => array( __( 'Reply address', 'workflow-captain' ), __( 'Replies to messages from workflows go here. Empty: to the sender.', 'workflow-captain' ) ),
 			'message_footer'     => array( __( 'Footer of messages to customers', 'workflow-captain' ), __( 'Added below every “Message to user”, for example your contact details and links to your legal notice and privacy policy. Placeholders: {site_name}, {site_url}, {privacy_policy_url}. Empty: no footer. Check the wording with your legal advisor.', 'workflow-captain' ) ),
+			'timezone'           => array( __( 'Time zone of Workflow Captain', 'workflow-captain' ), __( 'For schedules, delays in days, the quiet time, the calendar day of the daily limit and the times shown in these pages. Empty: the time zone of WordPress (Settings → General). Stored times stay in UTC; a change applies from the next step on.', 'workflow-captain' ) ),
 			'notify_daily'       => array( __( 'Daily notice email to the site operator address', 'workflow-captain' ), __( 'Only sent when decisions are waiting, events have failed, work is stuck or the emergency pause is on. Without event contents.', 'workflow-captain' ) ),
 			'recipients'         => array( __( 'Recipients', 'workflow-captain' ), __( 'Up to ten addresses, separated by commas. Empty: the site\'s address.', 'workflow-captain' ) ),
 			'kinds'              => array( __( 'Notice types', 'workflow-captain' ), '' ),

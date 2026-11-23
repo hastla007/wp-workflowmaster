@@ -46,6 +46,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `sender_email` | `workflow_captain_messages` | Adresse | leer = Absender von WordPress bzw. des Mail-Plugins | eine Adresse | Nachrichten | nein (an die Installation gebunden) |
 | `reply_to` | `workflow_captain_messages` | Adresse | leer = an den Absender | eine Adresse | Nachrichten | nein (an die Installation gebunden) |
 | `message_footer` | `workflow_captain_messages` | Text (mehrzeilig) | leer = keine Fußzeile | bis 1000 Zeichen; Platzhalter `{site_name}`, `{site_url}`, `{privacy_policy_url}` | Nachrichten | ja |
+| `timezone` | `workflow_captain_messages` | Zeitzone (IANA-Name) | leer = Zeitzone von WordPress | `DateTimeZone::listIdentifiers()` | Nachrichten | ja |
 | `recipients` | `workflow_captain_notify` | Adressen | leer = Adresse der Website | bis 10 | Benachrichtigungen | nein (personenbezogen, an die Installation gebunden) |
 | `notify_admin_roles` | `workflow_captain_notify` | Rollen | keine | bis 20 Rollen dieser Website | Benachrichtigungen | ja |
 | `kinds` | `workflow_captain_notify` | Auswahl | alle sechs Arten | – | Benachrichtigungen | ja |
@@ -74,6 +75,7 @@ Capabilities bei Aktivierung für Administratoren: `manage_workflow_captain`, `e
 - Neue Standardwerte und geänderte Einstellungen ändern **keine** veröffentlichte Version und keinen laufenden Lauf. Läufe behalten Graph, Ereignis und `authorized_by_user_id` ihrer Version (WF-CORE-02).
 - Grenzen der Ausführung (Batch, Parallelität, Nachholgrenze) gelten ab dem nächsten Worker-Durchlauf für alle Schritte.
 - Ruhezeit, Sendetage und Tagesgrenze (SET-WC-07/-08) gelten für `notify.user` (Nachrichten an Kunden, Transaktion und Werbung) ab dem nächsten Schritt, auch in laufenden Läufen; Nachrichten an den Betreiber (`notify.admin`) werden nie zurückgehalten. Eine Nachricht außerhalb des Fensters wartet bis zum Beginn der nächsten erlaubten vollen Stunde (Zeitzone der Website, Sommerzeit eingerechnet); kein Versuch wird gezählt, im Schrittprotokoll steht `deferred` mit Grund und Zeit. Über der Tagesgrenze wartet sie bis zum nächsten Kalendertag (und dessen Fenster) oder wird mit `skipped: daily_limit` übersprungen. Der Platz wird atomar in der Tabelle `sends` belegt; scheitert der Versand, wird er zurückgegeben.
+- Eigene Zeitzone (SET-WC-22, `timezone`, leer = WordPress): gilt für Zeitpläne, Wartezeiten in Tagen, Ruhezeit, den Kalendertag der Tagesgrenze und die Anzeige der Zeiten im Admin (SET-WC-31; UTC steht weiter im `datetime`-Attribut und im Tooltip). Gespeichert wird weiter in UTC; eine Änderung wirkt ab dem nächsten Schritt bzw. Zeitplan-Durchlauf, schon geplante Fälligkeiten werden nicht umgerechnet. Datenschutz-Exporte und WP-CLI bleiben in UTC.
 - Kürzere Aufbewahrungsfristen wirken bei der nächsten täglichen Wartung, auch auf ältere Einträge.
 - Eine neue Plugin-Version ändert das Schema nur im Admin, per Cron oder per WP-CLI; ein neueres Schema bleibt nach einem Downgrade unberührt.
 

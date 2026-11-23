@@ -194,7 +194,7 @@ $now = strtotime( '2026-11-16 10:00:00 UTC' );
 check( 'range: preset of 7 days', array( 'filter' => array( 'since' => '2026-11-09 10:00:00' ), 'args' => array( 'period' => '7' ) ) === WorkflowsPage::period_filter( '7', '', '', $now ) );
 check( 'range: preset of 24 hours', '2026-11-15 10:00:00' === WorkflowsPage::period_filter( '1', '', '', $now )['filter']['since'] );
 check( 'range: unknown preset means no range', array( 'filter' => array(), 'args' => array() ) === WorkflowsPage::period_filter( '5', '', '', $now ) && array() === WorkflowsPage::period_filter( '07', '', '', $now )['filter'] );
-check( 'range: own dates win over the preset and cover whole days in UTC', array( 'filter' => array( 'since' => '2026-11-01 00:00:00', 'until' => '2026-11-10 23:59:59' ), 'args' => array( 'from' => '2026-11-01', 'to' => '2026-11-10' ) ) === WorkflowsPage::period_filter( '30', '2026-11-01', '2026-11-10', $now ) );
+check( 'range: own dates win over the preset and cover whole days (UTC when no zone is given)', array( 'filter' => array( 'since' => '2026-11-01 00:00:00', 'until' => '2026-11-10 23:59:59' ), 'args' => array( 'from' => '2026-11-01', 'to' => '2026-11-10' ) ) === WorkflowsPage::period_filter( '30', '2026-11-01', '2026-11-10', $now ) );
 check( 'range: reversed dates are swapped, a single date is open-ended', '2026-11-01 00:00:00' === WorkflowsPage::period_filter( '', '2026-11-10', '2026-11-01', $now )['filter']['since'] && array( 'since' => '2026-11-10 00:00:00' ) === WorkflowsPage::period_filter( '', '2026-11-10', '', $now )['filter'] );
 check( 'range: invalid dates are ignored', array() === WorkflowsPage::period_filter( '', '2026-02-30', '10.11.2026', $now )['filter'] );
 

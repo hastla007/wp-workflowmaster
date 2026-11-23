@@ -122,6 +122,19 @@ final class Settings {
 		return $values;
 	}
 
+	/**
+	 * Time zone of Workflow Captain (SET-WC-22): the own setting, else the one of WordPress (an IANA name or an offset
+	 * such as "+02:00"), else UTC.
+	 */
+	public static function timezone(): string {
+		$own = Messages::config()['timezone'] ?? '';
+		if ( '' !== $own ) {
+			return $own;
+		}
+		$wp = function_exists( 'wp_timezone_string' ) ? (string) wp_timezone_string() : '';
+		return '' === $wp ? 'UTC' : $wp;
+	}
+
 	/** Limits for the engine (WF-CORE-05, catch-up of konzept 15.3). */
 	public static function engine_limits( array $settings ): array {
 		return array(

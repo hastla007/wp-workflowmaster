@@ -130,7 +130,7 @@ check( 'SET-WC-07 a filter can set the days as a list too', 3 === SettingsRegist
 echo "\n# SET-WC-10 sender, reply address and footer\n";
 
 $wfc_m0 = Messages::sanitize( array() );
-check( 'SET-WC-10 empty by default: no From, no Reply-To, no footer (today\'s behaviour)', array() === Messages::headers( $wfc_m0 ) && '' === Messages::footer( $wfc_m0, array() ) && array( 'sender_name', 'sender_email', 'reply_to', 'message_footer' ) === array_keys( $wfc_m0 ) );
+check( 'SET-WC-10 empty by default: no From, no Reply-To, no footer (today\'s behaviour)', array() === Messages::headers( $wfc_m0 ) && '' === Messages::footer( $wfc_m0, array() ) && array( 'sender_name', 'sender_email', 'reply_to', 'message_footer', 'timezone' ) === array_keys( $wfc_m0 ) );
 $wfc_m = Messages::sanitize( array( 'sender_name' => "Shop \"Nord\"\r\nBcc: x@evil.example", 'sender_email' => ' Info@Shop.Example ', 'reply_to' => 'service@shop.example', 'message_footer' => "Shop Nord GmbH\r\n<b>Impressum</b>: {site_url}impressum\nDatenschutz: {privacy_policy_url}" ) );
 $wfc_h = Messages::headers( $wfc_m );
 check( 'SET-WC-10 sender and reply address become headers; the name cannot inject a header line', 2 === count( $wfc_h ) && str_starts_with( $wfc_h[0], 'From: "Shop Nord Bcc: x@evil.example" <info@shop.example>' ) && 'Reply-To: <service@shop.example>' === $wfc_h[1] && ! preg_match( '/[\r\n]/', implode( '', $wfc_h ) ) );
@@ -149,3 +149,23 @@ $wfc_nu->execute( $wfc_ctx( array( 'purpose' => 'promotional' ) ) );
 check( 'SET-WC-10 in a promotional message the footer comes before the unsubscribe line', 1 === preg_match( "/^Text\n\nShop Nord GmbH · Impressum\n\n-- \n/", end( $wfc_dir->sent )[2] ) );
 check( 'SET-WC-10 messages to the operator get sender and reply address, but no footer', ! str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/Actions/NotifyAdmin.php' ), 'footer' ) && 2 === substr_count( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/WpDirectory.php' ), 'Messages::headers(' ) );
 check( 'SET-WC-10 the option is removed on a confirmed uninstall and its form is logged', str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Install.php' ), "'workflow_captain_messages'" ) && str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Audit.php' ), 'Messages::OPTION' ) );
+
+// ----- SET-WC-22 own time zone, SET-WC-31 local times in the admin ----------------------------------------------
+
+echo "\n# SET-WC-22/-31 time zone\n";
+check( 'SET-WC-22 the time zone is empty by default (WordPress decides) and only takes real zone names', '' === Messages::sanitize( array() )['timezone'] && 'Europe/Vienna' === Messages::sanitize( array( 'timezone' => 'Europe/Vienna' ) )['timezone'] && '' === Messages::sanitize( array( 'timezone' => 'Mars/Olympus' ) )['timezone'] );
+check( 'SET-WC-22 import: an unknown zone is an error, empty is allowed', array( false, null, 'unknown_timezone' ) === SettingsTransfer::check( 'timezone', 'Mars/Olympus' ) && array( true, '', '' ) === SettingsTransfer::check( 'timezone', '' ) && array( true, 'Asia/Tokyo', '' ) === SettingsTransfer::check( 'timezone', 'Asia/Tokyo' ) );
+check( 'SET-WC-22 without own setting and without WordPress the time zone is UTC', 'UTC' === Settings::timezone() || function_exists( 'wp_timezone_string' ) );
+check( 'SET-WC-22 engine, sending window and editor read the one time zone', 2 === substr_count( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Plugin.php' ), 'Settings::timezone()' ) && ! str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Plugin.php' ), 'wp_timezone_string()' ) && str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Admin/WorkflowsPage.php' ), "'timezone'  => \\WorkflowCaptain\\Settings::timezone()" ) );
+check( 'SET-WC-31 a stored UTC time is shown in the chosen zone, DST included', '2026-07-01 14:00:00' === \WorkflowCaptain\Admin\Time::show( '2026-07-01 12:00:00', 'Europe/Berlin' ) && '2026-12-01 13:00:00' === \WorkflowCaptain\Admin\Time::show( '2026-12-01 12:00:00', 'Europe/Berlin' ) && '' === \WorkflowCaptain\Admin\Time::show( null ) && 'kaputt' === \WorkflowCaptain\Admin\Time::show( 'kaputt' ) );
+check( 'SET-WC-31 the <time> element keeps UTC for machines and in the title', 1 === preg_match( '/^<time datetime="2026-07-01T12:00:00Z" title="2026-07-01 12:00:00 UTC">/', \WorkflowCaptain\Admin\Time::html( '2026-07-01 12:00:00' ) ) );
+$wfc_utc_left = array();
+foreach ( glob( WORKFLOW_CAPTAIN_PATH . 'src/Admin/*.php' ) as $wfc_f ) {
+	foreach ( explode( "\n", (string) file_get_contents( $wfc_f ) ) as $wfc_n => $wfc_l ) {
+		if ( str_contains( $wfc_l, "(UTC)'" ) ) {
+			$wfc_utc_left[] = basename( $wfc_f ) . ':' . ( $wfc_n + 1 );
+		}
+	}
+}
+check( 'SET-WC-31 no admin column or filter says UTC any more' . ( $wfc_utc_left ? ': ' . implode( ', ', $wfc_utc_left ) : '' ), array() === $wfc_utc_left );
+check( 'SET-WC-31 the date filter of the run list means whole local days', array( 'since' => '2026-10-31 23:00:00', 'until' => '2026-11-10 22:59:59' ) === \WorkflowCaptain\Admin\WorkflowsPage::period_filter( '', '2026-11-01', '2026-11-10', 0, 'Europe/Berlin' )['filter'] && '2026-11-01 00:00:00' === \WorkflowCaptain\Admin\WorkflowsPage::period_filter( '', '2026-11-01', '', 0 )['filter']['since'] );

@@ -162,7 +162,7 @@ final class Plugin {
 			$actions   = new \WorkflowCaptain\Engine\ActionRegistry();
 			$actions->set_availability( array( $this->connectors(), 'action_available' ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyAdmin( $directory ) );
-			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyUser( $directory, new \WorkflowCaptain\Engine\Pacing( $store, $clock, wp_timezone_string(), static fn(): array => Settings::get() ) ) );
+			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyUser( $directory, new \WorkflowCaptain\Engine\Pacing( $store, $clock, Settings::timezone(), static fn(): array => Settings::get() ) ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Tag( $store, $clock ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Tag( $store, $clock, true ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Note( $store, $clock ) );
@@ -173,7 +173,7 @@ final class Plugin {
 			 * @param \WorkflowCaptain\Engine\ActionRegistry $registry
 			 */
 			do_action( 'workflow_captain_actions_v1', $actions );
-			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, wp_timezone_string(), Settings::engine_limits( Settings::get() ) );
+			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, Settings::timezone(), Settings::engine_limits( Settings::get() ) );
 			$this->engine->set_paused( EmergencyPause::active() );
 			$this->engine->set_provider_contracts( array( $this, 'provider_contracts' ) );
 			/**

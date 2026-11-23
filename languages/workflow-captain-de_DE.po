@@ -187,11 +187,6 @@ msgstr "Aktiv"
 msgid "Active emergency pause"
 msgstr "Aktive Notfallpause"
 
-#. translators: %s: time in UTC
-#: src/Admin/OverviewPage.php:127
-msgid "Active since %s (UTC). No step is executed; events are still stored."
-msgstr "Aktiv seit %s (UTC). Kein Schritt wird ausgeführt; Ereignisse werden weiter gespeichert."
-
 #: src/Admin/OverviewPage.php:42 src/Admin/ProvidersPage.php:133
 msgid "Active workflows"
 msgstr "Aktive Workflows"
@@ -371,10 +366,6 @@ msgstr "Korrelation"
 msgid "Correlation %s"
 msgstr "Korrelation %s"
 
-#: src/Admin/WorkflowsPage.php:698
-msgid "Created (UTC)"
-msgstr "Angelegt (UTC)"
-
 #: src/Admin/Pagination.php:56
 msgid "Current page"
 msgstr "Aktuelle Seite"
@@ -503,10 +494,6 @@ msgstr "Notfallpause eingeschaltet"
 #: src/Admin/WorkflowsPage.php:114
 msgid "End"
 msgstr "Ende"
-
-#: src/Admin/WorkflowsPage.php:680 src/Admin/WorkflowsPage.php:698
-msgid "Ended (UTC)"
-msgstr "Beendet (UTC)"
 
 #: src/Admin/WorkflowsPage.php:827
 msgid "Ended (condition)"
@@ -757,17 +744,9 @@ msgstr "Schlüssel doppelt angemeldet"
 msgid "Last error"
 msgstr "Letzter Fehler"
 
-#: src/Admin/WorkflowsPage.php:680
-msgid "Last modified (UTC)"
-msgstr "Zuletzt geändert (UTC)"
-
 #: src/Admin/Pagination.php:60
 msgid "Last page"
 msgstr "Letzte Seite"
-
-#: src/Admin/WorkflowsPage.php:404
-msgid "Last run (UTC)"
-msgstr "Letzter Lauf (UTC)"
 
 #. translators: 1: run number, 2: state
 #: src/Admin/WorkflowsPage.php:507
@@ -869,10 +848,6 @@ msgstr "Nächste Termine (Zeitzone der Website):"
 #: src/Admin/Pagination.php:59
 msgid "Next page"
 msgstr "Nächste Seite"
-
-#: src/Admin/SettingsPage.php:385
-msgid "Next worker run (UTC)"
-msgstr "Nächster Worker-Lauf (UTC)"
 
 #: src/Admin/SchedulesPage.php:122
 msgid "No active or paused workflow starts on a schedule. A draft only counts once it is published."
@@ -1477,10 +1452,6 @@ msgstr "Schritt"
 msgid "Step resumed"
 msgstr "Schritt fortgesetzt"
 
-#: src/Admin/WorkflowsPage.php:697
-msgid "Steps of the run in order, times in UTC"
-msgstr "Schritte des Laufs in ihrer Reihenfolge, Zeiten in UTC"
-
 #: src/Notifications.php:115
 msgid "Steps or runs are stuck"
 msgstr "Schritte oder Läufe hängen"
@@ -1749,10 +1720,6 @@ msgstr "Diese Testnachricht zeigt, dass Hinweise von Workflow Captain ankommen. 
 msgid "Thursday"
 msgstr "Donnerstag"
 
-#: src/Admin/SettingsPage.php:649
-msgid "Time (UTC)"
-msgstr "Zeit (UTC)"
-
 #: src/Admin/WorkflowsPage.php:637
 msgid "Time range"
 msgstr "Zeitraum"
@@ -1877,10 +1844,6 @@ msgstr "Wartet auf Wiederholung"
 #: src/Admin/WorkflowsPage.php:738
 msgid "Waiting steps no longer run; completed work is not undone."
 msgstr "Wartende Schritte laufen nicht mehr; Erledigtes wird nicht rückgängig gemacht."
-
-#: src/Admin/WorkflowsPage.php:698
-msgid "Waiting until (UTC)"
-msgstr "Wartet bis (UTC)"
 
 #: src/Admin/WorkflowsPage.php:152
 msgid "Warning"
@@ -2198,10 +2161,6 @@ msgstr "je Objekt nacheinander"
 msgid "one at a time per user"
 msgstr "je Benutzer nacheinander"
 
-#: src/Admin/WorkflowsPage.php:644
-msgid "or from (UTC)"
-msgstr "oder von (UTC)"
-
 #: src/Admin/SettingsPage.php:564
 msgid "outside the allowed range"
 msgstr "außerhalb des erlaubten Bereichs"
@@ -2237,10 +2196,6 @@ msgstr "die Datei stammt von einer neueren Version; bitte Workflow Captain aktua
 #: src/Admin/ConnectorsPage.php:80
 msgid "the runtime for custom connectors is not unlocked on this site (Workflow Captain Pro)"
 msgstr "die Laufzeit für eigene Connectoren ist auf dieser Website nicht freigeschaltet (Workflow Captain Pro)"
-
-#: src/Admin/WorkflowsPage.php:645
-msgid "to (UTC)"
-msgstr "bis (UTC)"
 
 #: src/Admin/SettingsPage.php:566
 msgid "unknown type"
@@ -2767,12 +2722,79 @@ msgstr "Antwortadresse"
 msgid "Sender address"
 msgstr "Absenderadresse"
 
-msgid "Sender and footer"
-msgstr "Absender und Fußzeile"
-
 msgid "Sender name"
 msgstr "Absendername"
 
 #, php-format
 msgid "“%s” is not a valid e-mail address and was not saved."
 msgstr "„%s“ ist keine gültige E-Mail-Adresse und wurde nicht gespeichert."
+
+#, php-format
+msgid "Active since %s. No step is executed; events are still stored."
+msgstr "Aktiv seit %s. Kein Schritt wird ausgeführt; Ereignisse werden weiter gespeichert."
+
+#, php-format
+msgid "Created (%s)"
+msgstr "Angelegt (%s)"
+
+#, php-format
+msgid "Ended (%s)"
+msgstr "Beendet (%s)"
+
+msgid "Last modified"
+msgstr "Zuletzt geändert"
+
+#, php-format
+msgid "Last run (%s)"
+msgstr "Letzter Lauf (%s)"
+
+msgid "Next worker run"
+msgstr "Nächster Worker-Lauf"
+
+#, php-format
+msgid "Steps of the run in order, times in %s"
+msgstr "Schritte des Laufs in ihrer Reihenfolge, Zeiten in %s"
+
+#, php-format
+msgid "Time (%s)"
+msgstr "Zeit (%s)"
+
+#, php-format
+msgid "Waiting until (%s)"
+msgstr "Wartet bis (%s)"
+
+msgid "or from"
+msgstr "oder von"
+
+msgid "to"
+msgstr "bis"
+
+#, php-format
+msgid "Started (%s)"
+msgstr "Begonnen (%s)"
+
+msgid "Started"
+msgstr "Begonnen"
+
+#, php-format
+msgid "Timestamp (%s)"
+msgstr "Zeitpunkt (%s)"
+
+msgid "Ended"
+msgstr "Beendet"
+
+msgid "For schedules, delays in days, the quiet time, the calendar day of the daily limit and the times shown in these pages. Empty: the time zone of WordPress (Settings → General). Stored times stay in UTC; a change applies from the next step on."
+msgstr "Für Zeitpläne, Wartezeiten in Tagen, die Ruhezeit, den Kalendertag der Tagesgrenze und die Zeiten auf diesen Seiten. Leer: die Zeitzone von WordPress (Einstellungen → Allgemein). Gespeichert wird weiter in UTC; eine Änderung gilt ab dem nächsten Schritt."
+
+#, php-format
+msgid "Like WordPress (%s)"
+msgstr "Wie WordPress (%s)"
+
+msgid "Time zone of Workflow Captain"
+msgstr "Zeitzone von Workflow Captain"
+
+msgid "own setting in the Messages tab"
+msgstr "eigene Einstellung im Reiter „Nachrichten“"
+
+msgid "Sender, footer and time zone"
+msgstr "Absender, Fußzeile und Zeitzone"

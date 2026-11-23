@@ -124,7 +124,7 @@ final class OverviewPage {
 			wp_nonce_field( 'workflow_captain_pause' );
 			if ( $pause['active'] ) {
 				/* translators: %s: time in UTC */
-				echo '<p>' . esc_html( sprintf( __( 'Active since %s (UTC). No step is executed; events are still stored.', 'workflow-captain' ), (string) $pause['since'] ) ) . '</p>';
+				echo '<p>' . esc_html( sprintf( __( 'Active since %s. No step is executed; events are still stored.', 'workflow-captain' ), Time::show( (string) $pause['since'] ) . ' (' . Time::label() . ')' ) ) . '</p>';
 				echo '<button class="button button-primary" name="pause" value="0">' . esc_html__( 'Lift emergency pause', 'workflow-captain' ) . '</button>';
 			} else {
 				/* translators: %d: number of running runs */
