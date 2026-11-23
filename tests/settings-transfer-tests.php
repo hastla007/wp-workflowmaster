@@ -84,7 +84,7 @@ $wfc_nested = SettingsTransfer::parse( array( 'format' => 1, 'plugin' => 'workfl
 $wfc_clean  = SettingsRegistry::clean( 'kinds', array( 'failed', array( 'pause' ) ) );
 $wfc_upload = array( \WorkflowCaptain\Admin\SettingsPage::uploaded_text( array( 'tmp_name' => array( 'a' ), 'error' => array( 0 ), 'size' => array( 1 ) ) ), \WorkflowCaptain\Admin\SettingsPage::uploaded_text( array( 'tmp_name' => '/etc/passwd', 'error' => 0, 'size' => 10 ) ), \WorkflowCaptain\Admin\SettingsPage::uploaded_text( null ), \WorkflowCaptain\Admin\SettingsPage::uploaded_text( array( 'tmp_name' => '', 'error' => UPLOAD_ERR_INI_SIZE ) ) );
 restore_error_handler();
-check( 'P4 manipulated import file: nested lists are errors without "Array to string" warnings', 'unknown_kind' === ( $wfc_nested['errors']['kinds'] ?? '' ) && 'not_a_number' === ( $wfc_nested['errors']['batch'] ?? '' ) && array( 'failed' ) === $wfc_clean && array() === $wfc_warnings );
+check( 'P4 manipulated import file: nested lists are errors without "Array to string" warnings', in_array( $wfc_nested['errors']['kinds'] ?? '', array( 'unknown_kind', 'not_a_list' ), true ) && 'not_a_number' === ( $wfc_nested['errors']['batch'] ?? '' ) && array( 'failed' ) === $wfc_clean && array() === $wfc_warnings );
 check( 'P4 upload: only PHP\'s temp file of this request is read (no path from the request, no array, no failed upload)', array( '', '', '', '' ) === $wfc_upload );
 check( 'P4 transfer actions only by POST (admin-post.php also runs them for GET)', \WorkflowCaptain\Admin\SettingsPage::is_post( array( 'REQUEST_METHOD' => 'POST' ) ) && ! \WorkflowCaptain\Admin\SettingsPage::is_post( array( 'REQUEST_METHOD' => 'GET' ) ) && ! \WorkflowCaptain\Admin\SettingsPage::is_post( array() ) && ! \WorkflowCaptain\Admin\SettingsPage::is_post( array( 'REQUEST_METHOD' => array( 'POST' ) ) ) );
 $wfc_page = (string) file_get_contents( dirname( __DIR__ ) . '/src/Admin/SettingsPage.php' );
@@ -121,3 +121,45 @@ check( 'SET-WC-13 audit keeps 50 entries by default, newest first', 50 === count
 $GLOBALS['wfc_test_options'][ Settings::OPTION ] = array( 'audit_keep' => 10 );
 check( 'SET-WC-13 the setting lowers the number (10 to 500)', 10 === count( \WorkflowCaptain\Audit::append( $wfc_log, 'settings', 0, array(), 'x' ) ) && 500 === Settings::sanitize( array( 'audit_keep' => 9999 ) )['audit_keep'] && 10 === Settings::sanitize( array( 'audit_keep' => 1 ) )['audit_keep'] );
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ] );
+// ----- P1 review (settings and data)
+$GLOBALS['wfc_test_options'][ Settings::OPTION ]      = array( 'notify_daily' => 1, 'retention_stuck' => 90 );
+$GLOBALS['wfc_test_options'][ Notifications::OPTION ] = array( 'recipients' => 'ops@example.org', 'kinds' => array( 'failed', 'pause' ) );
+add_filter( 'workflow_captain_setting_notify_daily', '__return_false_p1' );
+function __return_false_p1() {
+	return false;
+}
+add_filter( 'workflow_captain_setting_kinds', static fn( $v ) => 'failed' );
+add_filter( 'workflow_captain_setting_recipients', static fn( $v ) => array( 'Filter@example.org', 'kaputt' ) );
+add_filter( 'workflow_captain_setting_retention_stuck', static fn( $v ) => 10 );
+$wfc_p1_settings = Settings::get();
+$wfc_p1_notify   = Notifications::config();
+check( 'P1 filter: false switches the daily mail off (was: fell back to the default 1, mail stayed on)', 0 === $wfc_p1_settings['notify_daily'] );
+check( 'P1 filter: a result of the wrong type keeps the stored value (kinds not widened to all six)', array( 'failed', 'pause' ) === $wfc_p1_notify['kinds'] );
+check( 'P1 filter: addresses may come as a list; invalid ones are dropped', 'filter@example.org' === $wfc_p1_notify['recipients'] );
+check( 'P1 form values: stored() is what the form shows and saves, not the filtered value (saving a tab stored the filter result for good)', 90 === Settings::stored()['retention_stuck'] && 10 === $wfc_p1_settings['retention_stuck'] && 'ops@example.org' === Notifications::stored()['recipients'] && SettingsTransfer::current()['retention_stuck'] === 90 );
+check( 'P1 form: the settings page fills its fields from stored(), not from the filtered get()/config()', 1 === preg_match( '/\$s\s+= Settings::stored\(\);/', (string) file_get_contents( dirname( __DIR__ ) . '/src/Admin/SettingsPage.php' ) ) && 1 === preg_match( '/\$c\s+= Notifications::stored\(\);/', (string) file_get_contents( dirname( __DIR__ ) . '/src/Admin/SettingsPage.php' ) ) );
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_setting_notify_daily'], $GLOBALS['wfc_test_filters']['workflow_captain_setting_kinds'], $GLOBALS['wfc_test_filters']['workflow_captain_setting_recipients'], $GLOBALS['wfc_test_filters']['workflow_captain_setting_retention_stuck'] );
+
+$wfc_p1_nested = SettingsTransfer::parse( array( 'format' => 1, 'plugin' => 'workflow-captain', 'settings' => array( 'kinds' => array( array( 'failed' ) ) ) ) );
+check( 'P1 import: a nested list in kinds is refused without "Array to string" warning', 'not_a_list' === ( $wfc_p1_nested['errors']['kinds'] ?? '' ) && array( 'failed' ) === SettingsRegistry::clean( 'kinds', array( array( 'x' ), 'failed' ) ) );
+check( 'P1 check: the same address twice is one address, not an error; eleven addresses are too many', array( true, 'a@example.org', '' ) === SettingsTransfer::check( 'recipients', 'a@example.org, A@example.org' ) && 'too_many' === SettingsTransfer::check( 'recipients', implode( ',', array_map( static fn( $i ) => "a{$i}@example.org", range( 1, 11 ) ) ) )[2] && 'invalid_address' === SettingsTransfer::check( 'recipients', array( 'a@example.org' ) )[2] );
+
+$GLOBALS['wfc_test_options']['workflow_captain_audit'] = array();
+\WorkflowCaptain\Audit::settings_updated( array( 'recipients' => 'a@example.org', 'kinds' => array( 'failed' ) ), array( 'recipients' => 'b@example.org', 'kinds' => array( 'failed' ) ) );
+$wfc_p1_audit = get_option( 'workflow_captain_audit', array() );
+check( 'P1 audit: a form save of the notice settings is logged, the address without value', 'settings' === ( $wfc_p1_audit[0]['what'] ?? '' ) && array( 'recipients' => array( '…', '…' ) ) === $wfc_p1_audit[0]['detail'] );
+\WorkflowCaptain\Audit::settings_added( Settings::OPTION, array_merge( Settings::defaults(), array( 'batch' => 60 ) ) );
+$wfc_p1_audit = get_option( 'workflow_captain_audit', array() );
+check( 'P1 audit: the first form save of a site (creates the option, no update hook) is logged against the defaults', array( 'batch' => array( 25, 60 ) ) === ( $wfc_p1_audit[0]['detail'] ?? null ) );
+\WorkflowCaptain\Audit::settings_added( Notifications::OPTION, array( 'recipients' => '', 'kinds' => array( 'failed' ) ) );
+$wfc_p1_audit = get_option( 'workflow_captain_audit', array() );
+check( 'P1 audit: the first save of the notice settings is logged too', array( 'kinds' ) === array_keys( $wfc_p1_audit[0]['detail'] ?? array() ) );
+$wfc_p1_page = (string) file_get_contents( dirname( __DIR__ ) . '/src/Admin/SettingsPage.php' );
+check( 'P1 audit: the settings page hooks the audit of both options and of the first save', str_contains( $wfc_p1_page, 'Audit::watch_settings( true );' ) && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/src/Audit.php' ), "'add_option_' . \$option" ) );
+
+$GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time() - 31 * 86400, 'user' => 1, 'source' => 'reset', 'values' => array( 'recipients' => 'ops@example.org' ) );
+check( 'P1 backup: an expired backup (holds addresses) is deleted by the maintenance, a fresh one is kept', true === SettingsTransfer::purge_backup() && ! isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) && false === SettingsTransfer::purge_backup() && str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/src/Plugin.php' ), 'SettingsTransfer::purge_backup();' ) );
+$GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time(), 'user' => 1, 'source' => 'reset', 'values' => array() );
+check( 'P1 backup: a backup within 30 days stays for undo', false === SettingsTransfer::purge_backup() && isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
+unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ], $GLOBALS['wfc_test_options']['workflow_captain_audit'] );
+check( 'P1 import: "Übernehmen" after the preview expired says so instead of "Import verworfen"', 1 === preg_match( "/elseif \\( ! is_array\\( \\\$preview \\) .*?Die Vorschau ist abgelaufen/s", $wfc_p1_page ) );

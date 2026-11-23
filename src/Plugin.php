@@ -366,6 +366,7 @@ final class Plugin {
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->apply_retention();
 		SettingsTransfer::purge_expired_backup();
 		$this->consumer()->store()->purge_causes( ( new Clock() )->mysql() );
+		SettingsTransfer::purge_backup();
 	}
 
 	/** Stores how many envelopes were rejected and the last violation codes; never a value (R-5.5). */

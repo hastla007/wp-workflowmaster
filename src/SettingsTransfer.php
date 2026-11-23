@@ -24,9 +24,7 @@ final class SettingsTransfer {
 	 * @return array<string,mixed>
 	 */
 	public static function current(): array {
-		$settings = Settings::sanitize( function_exists( 'get_option' ) ? get_option( Settings::OPTION, array() ) : array() );
-		$notify   = function_exists( 'get_option' ) ? get_option( Notifications::OPTION, array() ) : array();
-		return $settings + Notifications::sanitize( is_array( $notify ) ? $notify : array() );
+		return Settings::stored() + Notifications::stored();
 	}
 
 	/** @return array<string,mixed> Default of every field. */
@@ -83,9 +81,20 @@ final class SettingsTransfer {
 				}
 				return array( true, $value, '' );
 			case SettingsRegistry::TYPE_EMAILS:
-				$clean = SettingsRegistry::clean( $key, $value );
-				$given = array_filter( preg_split( '/[\s,;]+/', is_scalar( $value ) ? (string) $value : '' ) ?: array() );
-				return count( $given ) === count( array_filter( explode( ', ', (string) $clean ) ) ) ? array( true, $clean, '' ) : array( false, null, 'invalid_address' );
+				if ( ! is_scalar( $value ) ) {
+					return array( false, null, 'invalid_address' );
+				}
+				// The same address twice is one address (as the form stores it), not an error.
+				$parts = preg_split( '/[\s,;]+/', (string) $value, -1, PREG_SPLIT_NO_EMPTY );
+				$given = array_unique( array_map( 'strtolower', is_array( $parts ) ? $parts : array() ) );
+				$valid = array_filter( $given, static fn( string $a ): bool => false !== filter_var( $a, FILTER_VALIDATE_EMAIL ) );
+				if ( count( $valid ) !== count( $given ) ) {
+					return array( false, null, 'invalid_address' );
+				}
+				if ( count( $given ) > $f['max'] ) {
+					return array( false, null, 'too_many' );
+				}
+				return array( true, SettingsRegistry::clean( $key, $value ), '' );
 			case SettingsRegistry::TYPE_ROLES:
 				if ( ! is_array( $value ) ) {
 					return array( false, null, 'not_a_list' );
@@ -93,7 +102,7 @@ final class SettingsTransfer {
 				$clean = SettingsRegistry::clean( $key, $value );
 				return count( $clean ) === count( array_unique( array_map( 'strval', $value ) ) ) ? array( true, $clean, '' ) : array( false, null, 'unknown_role' );
 			case SettingsRegistry::TYPE_KINDS:
-				if ( ! is_array( $value ) ) {
+				if ( ! is_array( $value ) || count( $value ) !== count( array_filter( $value, 'is_string' ) ) ) {
 					return array( false, null, 'not_a_list' );
 				}
 				if ( count( array_filter( $value, 'is_scalar' ) ) !== count( $value ) ) {
@@ -202,9 +211,11 @@ final class SettingsTransfer {
 			false
 		);
 		$new = array_merge( $current, $values );
-		// The audit hook of the settings option would record the same change without its source.
-		$hooked = false !== has_action( 'update_option_' . Settings::OPTION, array( Audit::class, 'settings_updated' ) );
-		remove_action( 'update_option_' . Settings::OPTION, array( Audit::class, 'settings_updated' ), 10 );
+		// The audit hooks of the form would record the same change without its source.
+		$hooked = Audit::watching_settings();
+		if ( $hooked ) {
+			Audit::watch_settings( false );
+		}
 		foreach ( SettingsRegistry::GROUPS as $option => $group ) {
 			$own = array();
 			foreach ( SettingsRegistry::keys( $option ) as $key ) {
@@ -213,7 +224,7 @@ final class SettingsTransfer {
 			update_option( $option, $own, false );
 		}
 		if ( $hooked ) {
-			add_action( 'update_option_' . Settings::OPTION, array( Audit::class, 'settings_updated' ), 10, 2 );
+			Audit::watch_settings( true );
 		}
 		$logged = array();
 		foreach ( $changed as $key => $pair ) {
@@ -245,6 +256,18 @@ final class SettingsTransfer {
 	 * so it should not outlive the 30 days the page promises (P3).
 	 */
 	public static function purge_expired_backup(): bool {
+		if ( ! function_exists( 'get_option' ) || false === get_option( self::BACKUP_OPTION, false ) || null !== self::backup() ) {
+			return false;
+		}
+		delete_option( self::BACKUP_OPTION );
+		return true;
+	}
+
+	/**
+	 * Deletes a backup older than 30 days (daily maintenance). It holds the addresses of the recipients, which must not
+	 * stay longer than the undo period (P1 finding).
+	 */
+	public static function purge_backup(): bool {
 		if ( ! function_exists( 'get_option' ) || false === get_option( self::BACKUP_OPTION, false ) || null !== self::backup() ) {
 			return false;
 		}

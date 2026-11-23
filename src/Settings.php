@@ -80,9 +80,14 @@ final class Settings {
 		return $clean;
 	}
 
-	/** @return array<string,int> */
+	/** @return array<string,int> What the operator stored, without filters: the values the settings form shows and saves. */
+	public static function stored(): array {
+		return self::sanitize( function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array() );
+	}
+
+	/** @return array<string,int> The values in effect: stored values with the filter of each field applied. */
 	public static function get(): array {
-		$values = self::sanitize( function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array() );
+		$values = self::stored();
 		foreach ( $values as $key => $value ) {
 			$values[ $key ] = SettingsRegistry::filtered( $key, $value );
 		}

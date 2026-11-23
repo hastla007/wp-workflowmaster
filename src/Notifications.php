@@ -17,10 +17,15 @@ final class Notifications {
 	/** Kinds of notices the operator can choose (WF-SET-06). */
 	const KINDS = array( 'decisions', 'paused', 'failed', 'stuck', 'pause', 'providers' );
 
-	/** @return array{recipients:string,kinds:string[],notify_admin_roles:string[]} */
+	/** @return array{recipients:string,kinds:string[],notify_admin_roles:string[]} What the operator stored, without filters (shown and saved by the form). */
+	public static function stored(): array {
+		$c = function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array();
+		return self::sanitize( is_array( $c ) ? $c : array() );
+	}
+
+	/** @return array{recipients:string,kinds:string[],notify_admin_roles:string[]} The values in effect, with the filter of each field applied. */
 	public static function config(): array {
-		$c      = function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array();
-		$config = self::sanitize( is_array( $c ) ? $c : array() );
+		$config = self::stored();
 		foreach ( $config as $key => $value ) {
 			$config[ $key ] = SettingsRegistry::filtered( $key, $value );
 		}
