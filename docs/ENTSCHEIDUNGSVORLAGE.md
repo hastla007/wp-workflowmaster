@@ -30,14 +30,21 @@ Diese Fragen sind offen, aber Code und Spezifikation folgen schon der Empfehlung
 |---|---|---|---|
 | E9 / F-19 | Preise Workflow Captain Pro (Vorschlag 129 / 229 / 399 € netto für 1 / 5 / 25 Websites) | bestätigen oder Beträge nennen; gleiche Pro-Funktionen in allen Tarifen | WF-INT-13, Produktkey und Jahrespläne im Shop, Website (WEB-1) |
 | F-04 | Aufbewahrung (30 Tage erledigt, 90 Tage fehlgeschlagen, Benutzer-ID leeren, sobald kein Lauf wartet) | als Voreinstellung bestätigen, nur nach unten änderbar; endgültig nach der Rechtsprüfung | WF-SPEC-11 |
-| F-05a | Höchstbeträge der Gutschein-Befehle in Shops ohne Euro | fester Betrag 100 in Shopwährung nur für eine kurze Liste ähnlicher Währungen (CHF, USD, GBP), sonst trägt der Betreiber ihn ein; bis dahin bleiben `voucher.issue`/`voucher.redeem` aus | VC-3 in Voucher Captain |
-| F-13 | Kontakt und Einwilligung ohne WordPress-Konto (Review-Einladung an Gast oder Gutscheinempfänger) | je eine kleine dokumentierte Lesefunktion in Pass und Voucher Captain (additiv) | PC-4b, VOUCH-WF-15 |
 | F-16 | Ist Course Captain ein Suite-Produkt mit Add-on und Präfix `course.` | ja (Course Captain baut schon so: `COURSE_CAPTAIN_CONTRACT_VERSION`, Pro-Funktionen) | Katalog `course.*`, CC-1 bis CC-4 |
 | F-24 | Schreibende Workflow-Aktionen für Course Captain (Zugang anlegen/entziehen) | nicht in Version 1; danach als Befehle nach dem Muster der Gutschein-Befehle, Aktion in Workflow Captain Pro | Antwort an Course Captain (E-39b) |
 | r4b | Volle WooCommerce-Erstattung: `affiliate.commission.adjusted` ohne `refund_id` (Affiliate bucht über den Bestellstatus) | Spezifikation: `refund_id` bei voller Erstattung über den Status optional; Affiliate muss nichts ändern | „Woo/Refund-Verknüpfung testen“ |
 | Z. 88 | Form und Review: Verhalten „Plugin fehlt, Lizenz fehlt, Vertrags-MAJOR“ nur per PHPUnit belegt, E2E erst mit freigegebenem Form/Review Captain Pro | so akzeptieren und abhaken | Provider-Verhalten |
 | WF-SEO-09 | Headless-Anwendung | zurückstellen, bis es eine Produktanforderung gibt; Aufgabe schließen | – |
 | Sprache | Die Texte im Admin sind im Code deutsch; WordPress.org erwartet englische Ausgangstexte (übersetzt über translate.wordpress.org) | vor dem ersten Release auf WordPress.org umstellen (deutsch dann als Übersetzung `de_DE`) | Veröffentlichung auf WordPress.org |
+
+## 2a. Entschieden am 23.11.2026, Umsetzung läuft
+
+Gemeldet von der koordinierenden Form-Sitzung (Entscheidungen der Inhaberin in der Gutschein-Sitzung); in der Spezifikation als entschieden vermerkt.
+
+| Nr. | Entscheidung | Umsetzung |
+|---|---|---|
+| F-05a | Höchstbetrag 100 auch in CHF, USD und GBP; in anderen Währungen trägt der Betreiber den Betrag selbst ein | wp-couponmaster Pull Request #20 (offen) |
+| F-13 | „Ja, nach Rechtsprüfung“: Kontakt und Einwilligung je Gutschein-ID bzw. Ticket lesbar, ab Werk aus | Voucher: Vertrag 1.5.0 in wp-couponmaster #20 (offen); Pass: mit Pass Captain 1.7.0 (PASS-E17-01) |
 
 ## 3. Extern (nicht durch eine Antwort lösbar)
 
@@ -50,4 +57,4 @@ Diese Fragen sind offen, aber Code und Spezifikation folgen schon der Empfehlung
 | Lizenzclient/Updater, Pro-ZIP, Shop-Sandbox, Update über HTTPS (WF-INT-18 Pro-Teil) | Freigabe von Workflow Captain Pro (Lizenz-Sitzung, zurückgehalten) und ein Testshop mit HTTPS |
 | Multisite je Provider (Pass/Affiliate je Website) | Suite-Lauf mit lizenziertem Pro |
 | n8n-Matrix gegen echtes n8n (WF-N8N-12) | laufende n8n-Instanz (Cloud oder selbst gehostet) |
-| Review-Anfrage-API (Planer) | Review Captain Pro (captain-pro Pull Request 10) |
+| Review-Anfrage-API (TODO Z. 26) | Review Captain Pro ist seit dem 23.11.2026 auf captain-pro `main` (`4abdee4`, Pull Request #10), meldet seinen `RequestPlanner` aber nicht am Kern-Filter `review_captain_request_planner_v1` an; bis dahin antwortet `plan_request()` mit `rc.contract.unavailable`. Aufgabe für captain-pro; als Workflow-Befehl ohnehin nicht in Version 1 (F-23) |
