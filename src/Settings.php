@@ -14,28 +14,29 @@ final class Settings {
 
 	const OPTION = 'workflow_captain_settings';
 
-	/** key => array( default, min, max ) */
-	const FIELDS = array(
-		'batch'              => array( 25, 1, 200 ),
-		'catch_up_hours'     => array( 24, 1, 168 ),
-		'max_site'           => array( 5, 1, 20 ),
-		'max_workflow'       => array( 2, 1, 10 ),
-		'max_seconds'        => array( 20, 5, 120 ),
-		'retention_finished' => array( 30, 1, 30 ),
-		'retention_stuck'    => array( 90, 1, 90 ),
-		'retention_runs'     => array( 30, 1, 30 ),
-		'notify_daily'       => array( 1, 0, 1 ),
-	);
+	/**
+	 * key => array( default, min, max ) of the values in this option, read from the register (SET-WC-01).
+	 *
+	 * @return array<string,array{0:int,1:int,2:int}>
+	 */
+	public static function fields(): array {
+		$out = array();
+		foreach ( SettingsRegistry::keys( self::OPTION ) as $key ) {
+			$f           = SettingsRegistry::field( $key );
+			$out[ $key ] = array( $f['default'], $f['min'], $f['max'] );
+		}
+		return $out;
+	}
 
 	/** @return array<string,int> */
 	public static function defaults(): array {
-		return array_map( static fn( $f ) => $f[0], self::FIELDS );
+		return array_map( static fn( $f ) => $f[0], self::fields() );
 	}
 
 	/** Clamps input to the allowed ranges; unknown keys are dropped. */
 	public static function sanitize( $input ): array {
 		$clean = self::defaults();
-		foreach ( self::FIELDS as $key => list( $default, $min, $max ) ) {
+		foreach ( self::fields() as $key => list( $default, $min, $max ) ) {
 			if ( is_array( $input ) && isset( $input[ $key ] ) && is_numeric( $input[ $key ] ) ) {
 				$clean[ $key ] = max( $min, min( $max, (int) $input[ $key ] ) );
 			}
@@ -55,7 +56,7 @@ final class Settings {
 		}
 		$clean    = self::sanitize( $input );
 		$problems = array();
-		foreach ( self::FIELDS as $key => list( , $min, $max ) ) {
+		foreach ( self::fields() as $key => list( , $min, $max ) ) {
 			if ( ! array_key_exists( $key, $input ) ) {
 				continue;
 			}
@@ -81,7 +82,11 @@ final class Settings {
 
 	/** @return array<string,int> */
 	public static function get(): array {
-		return self::sanitize( function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array() );
+		$values = self::sanitize( function_exists( 'get_option' ) ? get_option( self::OPTION, array() ) : array() );
+		foreach ( $values as $key => $value ) {
+			$values[ $key ] = SettingsRegistry::filtered( $key, $value );
+		}
+		return $values;
 	}
 
 	/** Limits for the engine (WF-CORE-05, catch-up of konzept 15.3). */
