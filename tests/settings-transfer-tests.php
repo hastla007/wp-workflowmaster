@@ -70,6 +70,9 @@ check( 'SET-WC-12 an address change is logged without the address', 'settings_cl
 check( 'SET-WC-12 check: CLI values are checked like the form (out of range refused)', array( false, null, 'out_of_range' ) === SettingsTransfer::check( 'max_workflow', '11' ) && array( true, 3, '' ) === SettingsTransfer::check( 'max_workflow', '3' ) && false === SettingsTransfer::check( 'recipients', 'a@example.org, kaputt' )[0] );
 $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ]['at'] = time() - 31 * 86400;
 check( 'SET-WC-23 a backup older than 30 days cannot be restored', null === SettingsTransfer::backup() );
+check( 'P3 an expired backup (may hold notification addresses) is deleted by the daily maintenance, a fresh one is kept', true === SettingsTransfer::purge_expired_backup() && ! isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) && false === SettingsTransfer::purge_expired_backup() && str_contains( (string) file_get_contents( __DIR__ . '/../src/Plugin.php' ), 'SettingsTransfer::purge_expired_backup();' ) );
+$GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' => time() - 29 * 86400, 'values' => array( 'batch' => 1 ) );
+check( 'P3 a backup within 30 days stays', false === SettingsTransfer::purge_expired_backup() && isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] );
 $wfc_av = new ReflectionMethod( \WorkflowCaptain\Admin\SettingsPage::class, 'audit_value' );
 check( 'SET-WC-12 audit view prints list values (notice kinds) without "Array to string" (found in the PHP 8.5 run)', 'failed, pause → failed' === $wfc_av->invoke( null, array( array( 'failed', 'pause' ), array( 'failed' ) ) ) && '7 → 9' === $wfc_av->invoke( null, array( 7, 9 ) ) );
