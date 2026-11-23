@@ -29,7 +29,7 @@ final class NotifyAdmin implements Action, NetworkSafe {
 	}
 
 	public function label(): string {
-		return __( 'Nachricht an Betreiber', 'workflow-captain' );
+		return __( 'Message to site operator', 'workflow-captain' );
 	}
 
 	public function capability(): ?string {
@@ -57,20 +57,20 @@ final class NotifyAdmin implements Action, NetworkSafe {
 	/** Recipient as a choice list in the editor: site address, the fixed capabilities, the released roles. */
 	public function builder_fields(): array {
 		$options = array(
-			array( 'value' => 'site_admin', 'label' => __( 'Adresse der Website', 'workflow-captain' ) ),
-			array( 'value' => 'manage_options', 'label' => __( 'Alle Administratoren (Recht manage_options)', 'workflow-captain' ) ),
-			array( 'value' => 'manage_woocommerce', 'label' => __( 'Alle Shop-Verwalter (Recht manage_woocommerce)', 'workflow-captain' ) ),
-			array( 'value' => 'manage_workflow_captain', 'label' => __( 'Alle mit Recht manage_workflow_captain', 'workflow-captain' ) ),
+			array( 'value' => 'site_admin', 'label' => __( 'Site address', 'workflow-captain' ) ),
+			array( 'value' => 'manage_options', 'label' => __( 'All administrators (capability manage_options)', 'workflow-captain' ) ),
+			array( 'value' => 'manage_woocommerce', 'label' => __( 'All shop managers (capability manage_woocommerce)', 'workflow-captain' ) ),
+			array( 'value' => 'manage_workflow_captain', 'label' => __( 'Everyone with the capability manage_workflow_captain', 'workflow-captain' ) ),
 		);
 		$names = function_exists( 'wp_roles' ) ? wp_roles()->get_names() : array();
 		foreach ( \WorkflowCaptain\Notifications::config()['notify_admin_roles'] as $role ) {
 			/* translators: %s: name of a user role */
-			$options[] = array( 'value' => 'role:' . $role, 'label' => sprintf( __( 'Rolle: %s', 'workflow-captain' ), isset( $names[ $role ] ) ? translate_user_role( $names[ $role ] ) : $role ) );
+			$options[] = array( 'value' => 'role:' . $role, 'label' => sprintf( __( 'Role: %s', 'workflow-captain' ), isset( $names[ $role ] ) ? translate_user_role( $names[ $role ] ) : $role ) );
 		}
 		return array(
-			array( 'key' => 'subject', 'label' => __( 'Betreff', 'workflow-captain' ) ),
-			array( 'key' => 'message', 'label' => __( 'Nachricht', 'workflow-captain' ), 'type' => 'textarea' ),
-			array( 'key' => 'to', 'label' => __( 'Empfänger', 'workflow-captain' ), 'type' => 'select', 'options' => $options ),
+			array( 'key' => 'subject', 'label' => __( 'Subject', 'workflow-captain' ) ),
+			array( 'key' => 'message', 'label' => __( 'Message', 'workflow-captain' ), 'type' => 'textarea' ),
+			array( 'key' => 'to', 'label' => __( 'Recipients', 'workflow-captain' ), 'type' => 'select', 'options' => $options ),
 		);
 	}
 

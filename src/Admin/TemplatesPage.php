@@ -25,7 +25,7 @@ final class TemplatesPage {
 	}
 
 	public function menu(): void {
-		add_submenu_page( OverviewPage::SLUG, __( 'Vorlagen', 'workflow-captain' ), __( 'Vorlagen', 'workflow-captain' ), 'edit_workflows', self::SLUG, array( $this, 'render' ) );
+		add_submenu_page( OverviewPage::SLUG, __( 'Templates', 'workflow-captain' ), __( 'Templates', 'workflow-captain' ), 'edit_workflows', self::SLUG, array( $this, 'render' ) );
 	}
 
 	/**
@@ -71,15 +71,15 @@ final class TemplatesPage {
 			return;
 		}
 		$available = $this->plugin->available_event_types();
-		echo '<div class="wrap"><h1>' . esc_html__( 'Vorlagen', 'workflow-captain' ) . '</h1>';
-		echo '<p>' . esc_html__( 'Eine Vorlage wird als Entwurf übernommen. Prüfen, Testlauf starten, dann veröffentlichen. Vorlagen nutzen nur die Aktionen der Version 1 und ersetzen keine Mail eines Kern-Plugins.', 'workflow-captain' ) . '</p>';
-		echo '<table class="widefat striped" tabindex="0"><thead><tr><th scope="col">' . esc_html__( 'Vorlage', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Auslöser', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Provider', 'workflow-captain' ) . '</th><th scope="col"><span class="screen-reader-text">' . esc_html__( 'Aktion', 'workflow-captain' ) . '</span></th></tr></thead><tbody>';
+		echo '<div class="wrap"><h1>' . esc_html__( 'Templates', 'workflow-captain' ) . '</h1>';
+		echo '<p>' . esc_html__( 'A template is added as a draft. Review it, start a test run, then publish. Templates only use version 1 actions and do not replace any email from a core plugin.', 'workflow-captain' ) . '</p>';
+		echo '<table class="widefat striped" tabindex="0"><thead><tr><th scope="col">' . esc_html__( 'Template', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Trigger', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Provider', 'workflow-captain' ) . '</th><th scope="col"><span class="screen-reader-text">' . esc_html__( 'Action', 'workflow-captain' ) . '</span></th></tr></thead><tbody>';
 		foreach ( self::templates() as $key => $t ) {
 			$ready = in_array( $t['event'], $available, true );
-			echo '<tr><td>' . esc_html( $t['name'] ) . '</td><td><code>' . esc_html( $t['event'] ) . '</code></td><td>' . esc_html( $ready ? __( 'verfügbar', 'workflow-captain' ) : __( 'nicht verfügbar – Entwurf möglich, Veröffentlichen erst mit Provider', 'workflow-captain' ) ) . '</td><td>';
+			echo '<tr><td>' . esc_html( $t['name'] ) . '</td><td><code>' . esc_html( $t['event'] ) . '</code></td><td>' . esc_html( $ready ? __( 'available', 'workflow-captain' ) : __( 'not available – you can create a draft, but publishing requires the provider', 'workflow-captain' ) ) . '</td><td>';
 			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_template"><input type="hidden" name="template" value="' . esc_attr( $key ) . '">';
 			wp_nonce_field( 'workflow_captain_template' );
-			echo '<button class="button">' . esc_html__( 'Als Entwurf übernehmen', 'workflow-captain' ) . '</button></form></td></tr>';
+			echo '<button class="button">' . esc_html__( 'Add as draft', 'workflow-captain' ) . '</button></form></td></tr>';
 		}
 		echo '</tbody></table></div>';
 	}
@@ -87,7 +87,7 @@ final class TemplatesPage {
 	public function handle_import(): void {
 		check_admin_referer( 'workflow_captain_template' );
 		if ( ! current_user_can( 'edit_workflows' ) ) {
-			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
+			wp_die( esc_html__( 'You do not have permission to do this.', 'workflow-captain' ), 403 );
 		}
 		$key       = isset( $_POST['template'] ) ? sanitize_key( wp_unslash( $_POST['template'] ) ) : '';
 		$templates = self::templates();

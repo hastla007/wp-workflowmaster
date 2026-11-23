@@ -75,13 +75,13 @@ final class Settings {
 		if ( 1 === $clean['delete_data_on_uninstall'] && 1 !== self::stored()['delete_data_on_uninstall'] && ! self::deletion_confirmed( $input ) ) {
 			$clean['delete_data_on_uninstall'] = 0;
 			if ( function_exists( 'add_settings_error' ) ) {
-				add_settings_error( self::OPTION, 'wfc-delete_data_on_uninstall', __( '„Beim Löschen des Plugins alle Daten entfernen“ wurde nicht eingeschaltet: Bitte zur Bestätigung LÖSCHEN eintragen.', 'workflow-captain' ), 'error' );
+				add_settings_error( self::OPTION, 'wfc-delete_data_on_uninstall', __( '“Delete all data when the plugin is deleted” was not switched on: Type DELETE to confirm.', 'workflow-captain' ), 'error' );
 			}
 		}
 		if ( function_exists( 'add_settings_error' ) ) {
 			foreach ( self::problems( $input ) as $key => list( $raw, $stored, $min, $max ) ) {
 				/* translators: 1: entered value, 2: lowest value, 3: highest value, 4: stored value */
-				add_settings_error( self::OPTION, 'wfc-' . $key, sprintf( __( 'Der Wert „%1$s“ liegt nicht zwischen %2$d und %3$d. Gespeichert wurde %4$d.', 'workflow-captain' ), $raw, $min, $max, $stored ), 'error' );
+				add_settings_error( self::OPTION, 'wfc-' . $key, sprintf( __( 'The value “%1$s” is not between %2$d and %3$d. Saved: %4$d.', 'workflow-captain' ), $raw, $min, $max, $stored ), 'error' );
 			}
 		}
 		return $clean;

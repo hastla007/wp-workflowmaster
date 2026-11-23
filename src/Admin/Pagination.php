@@ -49,15 +49,15 @@ final class Pagination {
 		};
 		$out  = '<nav class="tablenav bottom" aria-label="' . esc_attr( $label ) . '"><div class="tablenav-pages' . ( $pages <= 1 ? ' one-page' : '' ) . '">';
 		/* translators: %s: number of entries */
-		$out .= '<span class="displaying-num">' . esc_html( sprintf( _n( '%s Eintrag', '%s Einträge', $state['total'], 'workflow-captain' ), number_format_i18n( $state['total'] ) ) ) . '</span>';
+		$out .= '<span class="displaying-num">' . esc_html( sprintf( _n( '%s entry', '%s entries', $state['total'], 'workflow-captain' ), number_format_i18n( $state['total'] ) ) ) . '</span>';
 		$out .= '<span class="pagination-links">';
-		$out .= $link( 'first-page', 1, __( 'Erste Seite', 'workflow-captain' ), '&laquo;', $paged > 2 ) . ' ';
-		$out .= $link( 'prev-page', $paged - 1, __( 'Vorherige Seite', 'workflow-captain' ), '&lsaquo;', $paged > 1 ) . ' ';
-		$out .= '<span class="screen-reader-text">' . esc_html__( 'Aktuelle Seite', 'workflow-captain' ) . '</span>';
+		$out .= $link( 'first-page', 1, __( 'First page', 'workflow-captain' ), '&laquo;', $paged > 2 ) . ' ';
+		$out .= $link( 'prev-page', $paged - 1, __( 'Previous page', 'workflow-captain' ), '&lsaquo;', $paged > 1 ) . ' ';
+		$out .= '<span class="screen-reader-text">' . esc_html__( 'Current page', 'workflow-captain' ) . '</span>';
 		/* translators: 1: current page, 2: number of pages */
-		$out .= '<span class="paging-input"><span class="tablenav-paging-text" aria-current="page">' . esc_html( sprintf( __( '%1$s von %2$s', 'workflow-captain' ), number_format_i18n( $paged ), number_format_i18n( $pages ) ) ) . '</span></span> ';
-		$out .= $link( 'next-page', $paged + 1, __( 'Nächste Seite', 'workflow-captain' ), '&rsaquo;', $paged < $pages ) . ' ';
-		$out .= $link( 'last-page', $pages, __( 'Letzte Seite', 'workflow-captain' ), '&raquo;', $paged < $pages - 1 );
+		$out .= '<span class="paging-input"><span class="tablenav-paging-text" aria-current="page">' . esc_html( sprintf( __( '%1$s of %2$s', 'workflow-captain' ), number_format_i18n( $paged ), number_format_i18n( $pages ) ) ) . '</span></span> ';
+		$out .= $link( 'next-page', $paged + 1, __( 'Next page', 'workflow-captain' ), '&rsaquo;', $paged < $pages ) . ' ';
+		$out .= $link( 'last-page', $pages, __( 'Last page', 'workflow-captain' ), '&raquo;', $paged < $pages - 1 );
 		$out .= '</span></div><br class="clear"></nav>';
 		return $out;
 	}

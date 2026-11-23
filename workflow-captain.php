@@ -75,3 +75,13 @@ add_action(
 		\WorkflowCaptain\Plugin::instance()->boot();
 	}
 );
+
+// English source strings; German as de_DE (du) and de_DE_formal (Sie) in languages/ (SET-WC-06, decision S4).
+// Translations from translate.wordpress.org in wp-content/languages/plugins/ take precedence.
+add_action(
+	'init',
+	static function (): void {
+		load_plugin_textdomain( 'workflow-captain', false, dirname( plugin_basename( WORKFLOW_CAPTAIN_FILE ) ) . '/languages' );
+	},
+	0
+);

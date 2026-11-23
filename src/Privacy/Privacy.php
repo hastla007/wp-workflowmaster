@@ -57,7 +57,7 @@ final class Privacy {
 
 	public function add_exporter( array $exporters ): array {
 		$exporters['workflow-captain'] = array(
-			'exporter_friendly_name' => __( 'Workflow Captain: gespeicherte Ereignisse', 'workflow-captain' ),
+			'exporter_friendly_name' => __( 'Workflow Captain: saved events', 'workflow-captain' ),
 			'callback'               => array( $this, 'export' ),
 		);
 		return $exporters;
@@ -65,7 +65,7 @@ final class Privacy {
 
 	public function add_eraser( array $erasers ): array {
 		$erasers['workflow-captain'] = array(
-			'eraser_friendly_name' => __( 'Workflow Captain: gespeicherte Ereignisse', 'workflow-captain' ),
+			'eraser_friendly_name' => __( 'Workflow Captain: saved events', 'workflow-captain' ),
 			'callback'             => array( $this, 'erase' ),
 		);
 		return $erasers;
@@ -82,17 +82,17 @@ final class Privacy {
 		foreach ( $rows as $row ) {
 			$envelope = $row['envelope'];
 			$fields   = array(
-				array( 'name' => __( 'Ereignis', 'workflow-captain' ), 'value' => $row['type'] ),
-				array( 'name' => __( 'Objekt', 'workflow-captain' ), 'value' => $row['subject_type'] . ' ' . $row['subject_id'] ),
-				array( 'name' => __( 'Zeitpunkt (UTC)', 'workflow-captain' ), 'value' => (string) ( $envelope['occurred_at'] ?? '' ) ),
-				array( 'name' => __( 'Zustand', 'workflow-captain' ), 'value' => $row['state'] ),
+				array( 'name' => __( 'Event', 'workflow-captain' ), 'value' => $row['type'] ),
+				array( 'name' => __( 'Object', 'workflow-captain' ), 'value' => $row['subject_type'] . ' ' . $row['subject_id'] ),
+				array( 'name' => __( 'Timestamp (UTC)', 'workflow-captain' ), 'value' => (string) ( $envelope['occurred_at'] ?? '' ) ),
+				array( 'name' => __( 'State', 'workflow-captain' ), 'value' => $row['state'] ),
 			);
 			foreach ( (array) ( $envelope['data'] ?? array() ) as $name => $value ) {
 				$fields[] = array( 'name' => (string) $name, 'value' => is_bool( $value ) ? ( $value ? 'true' : 'false' ) : (string) $value );
 			}
 			$items[] = array(
 				'group_id'    => 'workflow-captain-events',
-				'group_label' => __( 'Workflow Captain: Ereignisse', 'workflow-captain' ),
+				'group_label' => __( 'Workflow Captain: Events', 'workflow-captain' ),
 				'item_id'     => 'workflow-captain-event-' . $row['id'],
 				'data'        => $fields,
 			);
@@ -101,13 +101,13 @@ final class Privacy {
 		foreach ( $runs as $run ) {
 			$items[] = array(
 				'group_id'    => 'workflow-captain-runs',
-				'group_label' => __( 'Workflow Captain: Läufe', 'workflow-captain' ),
+				'group_label' => __( 'Workflow Captain: Runs', 'workflow-captain' ),
 				'item_id'     => 'workflow-captain-run-' . $run['id'],
 				'data'        => array(
-					array( 'name' => __( 'Ereignis', 'workflow-captain' ), 'value' => (string) ( $run['context']['type'] ?? '' ) ),
-					array( 'name' => __( 'Objekt', 'workflow-captain' ), 'value' => (string) ( $run['context']['subject']['type'] ?? '' ) . ' ' . (string) ( $run['context']['subject']['id'] ?? '' ) ),
-					array( 'name' => __( 'Zustand', 'workflow-captain' ), 'value' => $run['state'] ),
-					array( 'name' => __( 'Begonnen (UTC)', 'workflow-captain' ), 'value' => $run['created_at'] ),
+					array( 'name' => __( 'Event', 'workflow-captain' ), 'value' => (string) ( $run['context']['type'] ?? '' ) ),
+					array( 'name' => __( 'Object', 'workflow-captain' ), 'value' => (string) ( $run['context']['subject']['type'] ?? '' ) . ' ' . (string) ( $run['context']['subject']['id'] ?? '' ) ),
+					array( 'name' => __( 'State', 'workflow-captain' ), 'value' => $run['state'] ),
+					array( 'name' => __( 'Started (UTC)', 'workflow-captain' ), 'value' => $run['created_at'] ),
 				),
 			);
 		}

@@ -25,7 +25,7 @@ final class Note implements Action, NetworkSafe {
 	}
 
 	public function label(): string {
-		return __( 'Notiz hinzufügen', 'workflow-captain' );
+		return __( 'Add note', 'workflow-captain' );
 	}
 
 	public function capability(): ?string {

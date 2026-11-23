@@ -82,7 +82,7 @@ final class Provenance {
 		$text = $info['label'] . ( null !== $info['version'] ? ' ' . $info['version'] : '' );
 		if ( null !== $info['contract'] ) {
 			/* translators: 1: product and plugin version, 2: contract version */
-			$text = sprintf( __( '%1$s, Vertrag %2$s', 'workflow-captain' ), $text, $info['contract'] );
+			$text = sprintf( __( '%1$s, contract %2$s', 'workflow-captain' ), $text, $info['contract'] );
 		}
 		return $text;
 	}

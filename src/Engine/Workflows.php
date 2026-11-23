@@ -84,7 +84,7 @@ final class Workflows {
 	 */
 	public function save( ?int $id, string $name, array $graph ): array {
 		$name = trim( $name );
-		$name = '' === $name ? __( 'Ohne Namen', 'workflow-captain' ) : mb_substr( $name, 0, 191 );
+		$name = '' === $name ? __( 'Untitled', 'workflow-captain' ) : mb_substr( $name, 0, 191 );
 		if ( null === $id ) {
 			$id = $this->store->create_workflow( $name, $graph, $this->clock->mysql() );
 		} elseif ( $this->is_anchor( $id ) ) {
@@ -151,7 +151,7 @@ final class Workflows {
 			return 0;
 		}
 		/* translators: %s: name of the original workflow */
-		list( $new ) = $this->save( null, sprintf( __( '%s (Kopie)', 'workflow-captain' ), $wf['name'] ), $wf['draft'] );
+		list( $new ) = $this->save( null, sprintf( __( '%s (copy)', 'workflow-captain' ), $wf['name'] ), $wf['draft'] );
 		return $new;
 	}
 
