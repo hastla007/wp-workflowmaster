@@ -245,6 +245,10 @@ msgstr ""
 msgid "Als Entwurf übernehmen"
 msgstr ""
 
+#: src/SettingsRegistry.php:177
+msgid "An: Zugangsdaten (zum Beispiel von Verbindungen eines Add-ons) werden nur gespeichert, wenn WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php gesetzt ist. Ohne eigenen Schlüssel hängt die Verschlüsselung an den Salts von WordPress; ändern sie sich, sind gespeicherte Geheimnisse verloren. Gespeicherte Werte bleiben lesbar."
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:144
 msgid "Anderes Feld …"
 msgstr ""
@@ -270,7 +274,7 @@ msgstr ""
 msgid "Archiviert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:194 src/Admin/SettingsPage.php:194 src/SettingsRegistry.php:180
+#: src/Admin/SettingsPage.php:194 src/Admin/SettingsPage.php:194 src/SettingsRegistry.php:182
 msgid "Arten"
 msgstr ""
 
@@ -278,11 +282,11 @@ msgstr ""
 msgid "Auf Standard setzen"
 msgstr ""
 
-#: src/SettingsRegistry.php:133
+#: src/SettingsRegistry.php:134
 msgid "Aus"
 msgstr ""
 
-#: src/SettingsRegistry.php:177
+#: src/SettingsRegistry.php:179
 msgid "Aus (Standard): Beim Löschen des Plugins bleiben Ereignisse, Läufe, Workflows und Einstellungen erhalten, damit eine Neuinstallation weitermachen kann. An: Beim Löschen werden alle Tabellen, Einstellungen und Rechte von Workflow Captain auf dieser Website endgültig entfernt."
 msgstr ""
 
@@ -372,7 +376,7 @@ msgstr ""
 msgid "Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website (%s). Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress."
 msgstr ""
 
-#: src/SettingsRegistry.php:179
+#: src/SettingsRegistry.php:181
 msgid "Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website."
 msgstr ""
 
@@ -392,7 +396,7 @@ msgstr ""
 msgid "Dafür fehlt die Berechtigung."
 msgstr ""
 
-#: src/SettingsRegistry.php:169
+#: src/SettingsRegistry.php:170
 msgid "Danach beginnt der Worker keinen neuen Schritt mehr; ein begonnener Schritt läuft zu Ende. Hält Seitenaufrufe kurz, wenn WP-Cron über Besucher läuft."
 msgstr ""
 
@@ -412,7 +416,7 @@ msgstr ""
 msgid "Datei mit Einstellungen"
 msgstr ""
 
-#: src/SettingsRegistry.php:177
+#: src/SettingsRegistry.php:179
 msgid "Daten beim Löschen des Plugins entfernen"
 msgstr ""
 
@@ -605,7 +609,7 @@ msgstr ""
 msgid "Ein Import wird immer ein Entwurf. Veröffentlicht wird erst nach Prüfung und Testlauf."
 msgstr ""
 
-#: src/SettingsRegistry.php:168
+#: src/SettingsRegistry.php:169
 msgid "Ein Schritt, der länger überfällig ist (zum Beispiel weil WP-Cron nicht lief), wird nicht von selbst ausgeführt, sondern zur Entscheidung angezeigt."
 msgstr ""
 
@@ -685,7 +689,7 @@ msgstr ""
 msgid "Einstellungen, Notfallpause, Diagnose"
 msgstr ""
 
-#: src/SettingsRegistry.php:176
+#: src/SettingsRegistry.php:178
 msgid "Einträge im Änderungsprotokoll"
 msgstr ""
 
@@ -697,7 +701,7 @@ msgstr ""
 msgid "Empfangen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:191 src/Engine/Actions/NotifyAdmin.php:73 src/SettingsRegistry.php:179
+#: src/Admin/SettingsPage.php:191 src/Engine/Actions/NotifyAdmin.php:73 src/SettingsRegistry.php:181
 msgid "Empfänger"
 msgstr ""
 
@@ -758,7 +762,7 @@ msgstr ""
 msgid "Ereignisse sind fehlgeschlagen"
 msgstr ""
 
-#: src/SettingsRegistry.php:165
+#: src/SettingsRegistry.php:166
 msgid "Ereignisse und Schritte je Worker-Durchlauf"
 msgstr ""
 
@@ -796,11 +800,11 @@ msgstr ""
 msgid "Erledigt."
 msgstr ""
 
-#: src/SettingsRegistry.php:173
+#: src/SettingsRegistry.php:174
 msgid "Erledigte Ereignisse löschen nach (Tagen)"
 msgstr ""
 
-#: src/SettingsRegistry.php:174
+#: src/SettingsRegistry.php:175
 msgid "Erledigte Läufe mit Schrittprotokoll löschen nach (Tagen)"
 msgstr ""
 
@@ -867,7 +871,7 @@ msgstr ""
 msgid "Fehlgeschlagene Ereignisse lassen sich unter „Ereignisse“ auswählen und erneut einreihen."
 msgstr ""
 
-#: src/SettingsRegistry.php:175
+#: src/SettingsRegistry.php:176
 msgid "Fehlgeschlagene und pausierte Ereignisse löschen nach (Tagen)"
 msgstr ""
 
@@ -919,7 +923,7 @@ msgstr ""
 msgid "Für >, ≥, < und ≤ eine Zahl angeben."
 msgstr ""
 
-#: src/SettingsRegistry.php:170
+#: src/SettingsRegistry.php:171
 msgid "Für Testumgebungen und zum Ausprobieren. „Nachrichten umleiten“: Jede Nachricht aus einem Workflow geht an den ersten Empfänger der Hinweis-Mail (sonst an die Adresse der Website), mit „[Test]“ im Betreff. „Nichts ausführen“: Workflows laufen, aber kein Schritt wirkt; jeder Schritt wird nur als übersprungen protokolliert. Die Konstante WORKFLOW_CAPTAIN_TEST_MODE in wp-config.php hat Vorrang."
 msgstr ""
 
@@ -929,6 +933,10 @@ msgstr ""
 
 #: src/Admin/WorkflowsPage.php:161
 msgid "Für „in Liste“ Werte mit Komma getrennt angeben."
+msgstr ""
+
+#: src/SettingsRegistry.php:177
+msgid "Geheimnisse nur mit eigenem Schlüssel speichern"
 msgstr ""
 
 #. translators: %s: option name
@@ -985,7 +993,7 @@ msgstr ""
 msgid "Hängende Schritte und Läufe"
 msgstr ""
 
-#: src/SettingsRegistry.php:172
+#: src/SettingsRegistry.php:173
 msgid "Höchste Tiefe einer Kette von Workflows"
 msgstr ""
 
@@ -994,11 +1002,11 @@ msgstr ""
 msgid "Höchstens %d Regeln je Bedingung, Gruppen eingeschlossen."
 msgstr ""
 
-#: src/SettingsRegistry.php:166
+#: src/SettingsRegistry.php:167
 msgid "Höchstens gleichzeitig laufende Schritte auf dieser Website"
 msgstr ""
 
-#: src/SettingsRegistry.php:167
+#: src/SettingsRegistry.php:168
 msgid "Höchstens gleichzeitig laufende Schritte je Workflow"
 msgstr ""
 
@@ -1014,7 +1022,7 @@ msgstr ""
 msgid "Im Editor zeigen"
 msgstr ""
 
-#: src/SettingsRegistry.php:181
+#: src/SettingsRegistry.php:183
 msgid "Im Workflow-Editor lassen sich dann zusätzlich alle Benutzer dieser Rollen als Empfänger wählen (höchstens 50 Adressen je Nachricht). Ohne Auswahl: die Adresse der Website oder die Inhaber der festen Rechte."
 msgstr ""
 
@@ -1092,7 +1100,7 @@ msgstr ""
 msgid "Kommandozeile"
 msgstr ""
 
-#: src/SettingsRegistry.php:178
+#: src/SettingsRegistry.php:180
 msgid "Kommt nur, wenn Entscheidungen warten, Ereignisse fehlgeschlagen sind, Arbeit hängt oder die Notfallpause aktiv ist. Ohne Inhalte von Ereignissen."
 msgstr ""
 
@@ -1152,7 +1160,7 @@ msgstr ""
 msgid "Laufende Läufe"
 msgstr ""
 
-#: src/SettingsRegistry.php:169
+#: src/SettingsRegistry.php:170
 msgid "Laufzeit je Worker-Durchlauf in Sekunden"
 msgstr ""
 
@@ -1221,7 +1229,7 @@ msgstr ""
 msgid "Läuft"
 msgstr ""
 
-#: src/SettingsRegistry.php:172
+#: src/SettingsRegistry.php:173
 msgid "Löst ein Workflow ein Ereignis aus, das wieder einen Workflow startet, entsteht eine Kette. Tiefer verschachtelte Ereignisse werden gespeichert, starten aber nichts (Schutz vor Schleifen)."
 msgstr ""
 
@@ -1245,7 +1253,7 @@ msgstr ""
 msgid "Mehr als ein Ausgang."
 msgstr ""
 
-#: src/SettingsRegistry.php:165
+#: src/SettingsRegistry.php:166
 msgid "Mehr je Durchlauf arbeitet einen Rückstau schneller ab, macht aber jeden Durchlauf länger. Bei wenig Speicher oder kurzen Laufzeiten des Hosters kleiner wählen."
 msgstr ""
 
@@ -1257,7 +1265,7 @@ msgstr ""
 msgid "Montag"
 msgstr ""
 
-#: src/SettingsRegistry.php:168
+#: src/SettingsRegistry.php:169
 msgid "Nachholgrenze in Stunden"
 msgstr ""
 
@@ -1273,7 +1281,7 @@ msgstr ""
 msgid "Nachricht an Betreiber"
 msgstr ""
 
-#: src/SettingsRegistry.php:134
+#: src/SettingsRegistry.php:135
 msgid "Nachrichten umleiten"
 msgstr ""
 
@@ -1301,7 +1309,7 @@ msgstr ""
 msgid "Nicht mit dem Auslöser verbunden."
 msgstr ""
 
-#: src/SettingsRegistry.php:135
+#: src/SettingsRegistry.php:136
 msgid "Nichts ausführen, nur protokollieren"
 msgstr ""
 
@@ -1489,7 +1497,7 @@ msgstr ""
 msgid "Rollen & Rechte"
 msgstr ""
 
-#: src/SettingsRegistry.php:181
+#: src/SettingsRegistry.php:183
 msgid "Rollen als Empfänger von „Nachricht an Betreiber“"
 msgstr ""
 
@@ -1535,7 +1543,7 @@ msgstr ""
 msgid "Schritte oder Läufe hängen"
 msgstr ""
 
-#: src/SettingsRegistry.php:166
+#: src/SettingsRegistry.php:167
 msgid "Schützt den Server, wenn viele Ereignisse auf einmal kommen. Weitere Schritte warten, bis ein Platz frei wird."
 msgstr ""
 
@@ -1555,11 +1563,11 @@ msgstr ""
 msgid "So läuft die Ausführung"
 msgstr ""
 
-#: src/SettingsRegistry.php:171
+#: src/SettingsRegistry.php:172
 msgid "So oft wird ein Ereignis oder Schritt nach einem vorübergehenden Fehler erneut versucht, mit wachsenden Abständen (1 Min. bis 24 Std.). Danach wird ein Ereignis als fehlgeschlagen angezeigt, ein Schritt braucht eine Entscheidung. Nachrichten mit unklarem Ausgang werden nie von selbst wiederholt."
 msgstr ""
 
-#: src/SettingsRegistry.php:176
+#: src/SettingsRegistry.php:178
 msgid "So viele der letzten Änderungen (Einstellungen, Rechte, Notfallpause, Freigaben) bleiben im Tab Status sichtbar. Ältere fallen weg. Das Protokoll enthält Benutzer-IDs, aber keine Inhalte von Ereignissen."
 msgstr ""
 
@@ -1608,7 +1616,7 @@ msgstr ""
 msgid "Testlauf starten"
 msgstr ""
 
-#: src/SettingsRegistry.php:170
+#: src/SettingsRegistry.php:171
 msgid "Testmodus"
 msgstr ""
 
@@ -1620,11 +1628,11 @@ msgstr ""
 msgid "Testnachricht übergeben. Kommt sie nicht an, prüfen Sie den Mailversand der Website."
 msgstr ""
 
-#: src/SettingsRegistry.php:178
+#: src/SettingsRegistry.php:180
 msgid "Tägliche Hinweis-Mail an die Betreiber-Adresse"
 msgstr ""
 
-#: src/SettingsRegistry.php:167
+#: src/SettingsRegistry.php:168
 msgid "Verhindert, dass ein einzelner Workflow alle Plätze belegt; die anderen kommen weiter dran."
 msgstr ""
 
@@ -1669,15 +1677,15 @@ msgstr ""
 msgid "Veröffentlicht. Neue Läufe nutzen diese Version; laufende behalten ihre."
 msgstr ""
 
-#: src/SettingsRegistry.php:173
+#: src/SettingsRegistry.php:174
 msgid "Vorgabe 30 Tage, höchstens 180. Welche Frist für Ihren Betrieb gilt, klären Sie mit Ihrer Rechtsberatung."
 msgstr ""
 
-#: src/SettingsRegistry.php:174
+#: src/SettingsRegistry.php:175
 msgid "Vorgabe 30 Tage, höchstens 180; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf."
 msgstr ""
 
-#: src/SettingsRegistry.php:175
+#: src/SettingsRegistry.php:176
 msgid "Vorgabe 90 Tage, höchstens 180. Die Vorgaben sind ein Vorschlag bis zur Rechtsprüfung."
 msgstr ""
 
@@ -1766,7 +1774,7 @@ msgstr ""
 msgid "Wiederholen, fortsetzen, abbrechen"
 msgstr ""
 
-#: src/SettingsRegistry.php:171
+#: src/SettingsRegistry.php:172
 msgid "Wiederholungen nach einem vorübergehenden Fehler"
 msgstr ""
 

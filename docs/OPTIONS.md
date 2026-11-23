@@ -32,6 +32,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `retention_finished` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–180 | Datenschutz & Aufbewahrung | ja |
 | `retention_runs` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–180 | Datenschutz & Aufbewahrung | ja |
 | `retention_stuck` | `workflow_captain_settings` | Zahl (Tage) | 90 | 1–180 | Datenschutz & Aufbewahrung | ja |
+| `require_own_key` | `workflow_captain_settings` | ja/nein | nein | – | Datenschutz & Aufbewahrung | nein (hängt an `wp-config.php` dieser Installation) |
 | `audit_keep` | `workflow_captain_settings` | Zahl | 50 | 10–500 | Datenschutz & Aufbewahrung | ja |
 | `delete_data_on_uninstall` | `workflow_captain_settings` | ja/nein | nein (Daten behalten, E-S6) | – | Datenschutz & Aufbewahrung | nein (gilt nur für diese Installation) |
 | `notify_daily` | `workflow_captain_settings` | ja/nein | ja | – | Benachrichtigungen | ja |

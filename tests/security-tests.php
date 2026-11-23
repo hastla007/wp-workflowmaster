@@ -248,3 +248,24 @@ check( 'SEC-02 rekey dry run counts and changes nothing', array( 'current' => 1,
 SecretStores::rekey( $rot, $store );
 check( 'SEC-02 rekey: old values readable with the new key only afterwards', 'token-a' === ( new Vault( 'new-key-for-test' ) )->decrypt( $saved['a'], 'webhook' ) && null === $old_vault->decrypt( $saved['a'], 'webhook' ) );
 check( 'SEC-02 rekey result carries no secret', ! str_contains( (string) json_encode( SecretStores::rekey( $rot, $store, true ) ), 'token' ) );
+
+// SET-WC-24: "only with an own key" blocks new secrets while the key comes from the salts.
+if ( ! defined( 'AUTH_KEY' ) ) {
+	define( 'AUTH_KEY', 'test-auth-key' );
+	define( 'SECURE_AUTH_KEY', 'test-secure-auth-key' );
+}
+$wfc_salted = new Vault();
+$wfc_stored = $wfc_salted->encrypt( 'geheim', 'connection:1:9:token' );
+add_filter( 'workflow_captain_setting_require_own_key', static fn( $v ) => 1 );
+$wfc_refused = '';
+try {
+	$wfc_salted->encrypt( 'neu', 'connection:1:9:token' );
+} catch ( \RuntimeException $e ) {
+	$wfc_refused = $e->getMessage();
+}
+$wfc_own_ok = str_starts_with( ( new Vault( str_repeat( 'cd', 32 ) ) )->encrypt( 'neu', 'connection:1:9:token' ), Vault::PREFIX );
+$wfc_read   = $wfc_salted->decrypt( $wfc_stored, 'connection:1:9:token' );
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_setting_require_own_key'] );
+check( 'SET-WC-24 with "only own key" on, a key from the salts stores nothing new (own_key_required)', 'own_key_required' === $wfc_refused );
+check( 'SET-WC-24 an own key still stores, stored secrets stay readable', $wfc_own_ok && 'geheim' === $wfc_read );
+check( 'SET-WC-24 off by default: the salts key stores', str_starts_with( $wfc_salted->encrypt( 'x', 'connection:1:9:token' ), Vault::PREFIX ) );
