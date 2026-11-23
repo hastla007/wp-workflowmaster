@@ -138,7 +138,11 @@ final class SettingsPage {
 			echo '<tr><th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label></th><td>';
 			if ( 0 === $min && 1 === $max ) {
 				// A switch is a checkbox; the hidden field sends 0 when it is unchecked.
-				echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="0"><input id="' . esc_attr( $id ) . '" type="checkbox" name="' . esc_attr( $name ) . '" value="1" data-default="' . (int) $default . '"' . ( 'delete_data_on_uninstall' === $key ? ' data-confirm="' . esc_attr__( 'Beim Löschen des Plugins werden dann alle Ereignisse, Läufe, Workflows und Einstellungen dieser Website endgültig entfernt. Einschalten?', 'workflow-captain' ) . '"' : '' ) . ( 1 === $s[ $key ] ? ' checked' : '' ) . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) . '>';
+				echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="0"><input id="' . esc_attr( $id ) . '" type="checkbox" name="' . esc_attr( $name ) . '" value="1" data-default="' . (int) $default . '"' . ( 1 === $s[ $key ] ? ' checked' : '' ) . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) . '>';
+				if ( 'delete_data_on_uninstall' === $key && 1 !== $s[ $key ] ) {
+					// Typed confirmation, the same in every Captain plugin (S10); checked on the server.
+					echo '<p><label for="wfc-delete-confirm">' . esc_html__( 'Zum Einschalten LÖSCHEN eintragen:', 'workflow-captain' ) . '</label> <input type="text" id="wfc-delete-confirm" name="' . esc_attr( Settings::OPTION . '[delete_data_on_uninstall_confirm]' ) . '" autocomplete="off" size="10" value=""></p>';
+				}
 			} elseif ( array() !== \WorkflowCaptain\SettingsRegistry::choices( $key ) ) {
 				$locked = 'test_mode' === $key && \WorkflowCaptain\TestMode::forced();
 				echo '<select id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" data-default="' . (int) $default . '"' . ( $locked ? ' disabled' : '' ) . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . '>';

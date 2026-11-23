@@ -186,3 +186,14 @@ $wfc_page = \WorkflowCaptain\Admin\SettingsPage::class;
 check( 'P5 preview/log: a setting is shown by the label of its tab, unknown keys as they are', SettingsRegistry::texts()['batch'][0] === $wfc_page::field_label( 'batch' ) && 'evil' === $wfc_page::field_label( 'evil' ) );
 check( 'P5 preview/log: switches read ein/aus, notice kinds by name, numbers unchanged', 'ein' === $wfc_page::display_value( 'notify_daily', 1 ) && 'aus' === $wfc_page::display_value( 'notify_daily', 0 ) && $wfc_page::kind_labels()['failed'] . ', ' . $wfc_page::kind_labels()['pause'] === $wfc_page::display_value( 'kinds', array( 'failed', 'pause' ) ) && 'keine' === $wfc_page::display_value( 'kinds', array() ) && '40' === $wfc_page::display_value( 'batch', 40 ) );
 check( 'P5 the notification tab and the preview use the same kind names as the register', Notifications::KINDS === array_keys( $wfc_page::kind_labels() ) );
+
+// S10: switching on "delete data on uninstall" needs the typed word, as in Pass Captain and Form Captain.
+$GLOBALS['wfc_test_options'][ Settings::OPTION ] = array();
+check( 'S10 delete on uninstall: without the word it stays off', 0 === Settings::sanitize_and_report( array( 'delete_data_on_uninstall' => 1 ) )['delete_data_on_uninstall'] );
+check( 'S10 delete on uninstall: a wrong word keeps it off', 0 === Settings::sanitize_and_report( array( 'delete_data_on_uninstall' => 1, 'delete_data_on_uninstall_confirm' => 'ja' ) )['delete_data_on_uninstall'] );
+check( 'S10 delete on uninstall: LÖSCHEN, loeschen or delete switch it on', 1 === Settings::sanitize_and_report( array( 'delete_data_on_uninstall' => 1, 'delete_data_on_uninstall_confirm' => ' löschen ' ) )['delete_data_on_uninstall'] && 1 === Settings::sanitize_and_report( array( 'delete_data_on_uninstall' => 1, 'delete_data_on_uninstall_confirm' => 'LOESCHEN' ) )['delete_data_on_uninstall'] && 1 === Settings::sanitize_and_report( array( 'delete_data_on_uninstall' => 1, 'delete_data_on_uninstall_confirm' => 'Delete' ) )['delete_data_on_uninstall'] );
+$GLOBALS['wfc_test_options'][ Settings::OPTION ] = array( 'delete_data_on_uninstall' => 1 );
+check( 'S10 delete on uninstall: once on, saving other fields keeps it on without the word', 1 === Settings::sanitize_and_report( array( 'delete_data_on_uninstall' => 1, 'batch' => 30 ) )['delete_data_on_uninstall'] );
+check( 'S10 delete on uninstall: switching off needs no word', 0 === Settings::sanitize_and_report( array( 'delete_data_on_uninstall' => 0 ) )['delete_data_on_uninstall'] );
+$GLOBALS['wfc_test_options'][ Settings::OPTION ] = array();
+check( 'S10 the CLI asks for --confirm before switching it on', str_contains( (string) file_get_contents( dirname( __DIR__ ) . '/src/Cli/Command.php' ), "Settings::deletion_confirmed( array( 'delete_data_on_uninstall_confirm' => \$assoc['confirm'] ?? '' ) )" ) );

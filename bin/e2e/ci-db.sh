@@ -163,7 +163,7 @@ checks() {
 	hits=$(grep -n "workflow-captain\|workflow_captain\|WorkflowCaptain" "$E2E_LOG" 2>/dev/null | head -5)
 	rec h20 'PHP error log has no entry from Workflow Captain (WP_DEBUG, WP_DEBUG_LOG)' $([ -z "$hits" ] && echo 1 || echo 0) "${hits:-$(wc -l < "$E2E_LOG" 2>/dev/null || echo 0) lines in debug.log, none from the plugin}"
 
-	# ----- j: deactivate keeps data, delete removes everything ------------------------------------------------------
+	# ----- j: deactivate keeps data, uninstall keeps it by default, delete after opt-in removes everything ------------------------------------------------------
 	wp plugin deactivate workflow-captain >/dev/null
 	ev deactivated
 	wp plugin activate workflow-captain >/dev/null
@@ -171,6 +171,11 @@ checks() {
 	c=$(wp cron event list --fields=hook --format=csv | grep -c workflow_captain_process_events)
 	rec j5 'reactivation schedules the worker once (AS), no WP-Cron duplicate' $([ "$n" = 1 ] && [ "$c" = 0 ] && echo 1 || echo 0) "AS pending=$n wp-cron=$c"
 	wp plugin deactivate workflow-captain >/dev/null
+	# SET-WC-05 / S10: without the opt-in, uninstall.php keeps every table, option and capability.
+	wp eval 'define( "WP_UNINSTALL_PLUGIN", "workflow-captain/workflow-captain.php" ); include WP_PLUGIN_DIR . "/workflow-captain/uninstall.php";' >/dev/null 2>&1
+	ev uninstall_kept
+	# Opt in ("Daten beim Löschen entfernen"), then deleting the plugin removes everything.
+	wp eval '$o = get_option( "workflow_captain_settings", array() ); $o = is_array( $o ) ? $o : array(); $o["delete_data_on_uninstall"] = 1; update_option( "workflow_captain_settings", $o );' >/dev/null
 	out=$(wp eval 'require_once ABSPATH . "wp-admin/includes/plugin.php"; require_once ABSPATH . "wp-admin/includes/file.php"; $r = delete_plugins( array( "workflow-captain/workflow-captain.php" ) ); echo is_wp_error( $r ) ? $r->get_error_message() : var_export( $r, true );' 2>"$E2E_LOGS/delete.err")
 	rec j5b 'delete_plugins() runs uninstall.php and deletes the files' $([ "$out" = true ] && [ ! -e "$E2E_WWW/wp-content/plugins/workflow-captain" ] && echo 1 || echo 0) "$(echo "$out" | head -3 | tr '\n' ' ') $(grep -v "^$" "$E2E_LOGS/delete.err" | head -2 | tr '\n' ' ')"
 	ev uninstalled
