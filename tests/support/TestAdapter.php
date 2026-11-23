@@ -96,7 +96,19 @@ final class FixedClock extends Clock {
 	}
 }
 
-final class FakeDirectory implements \WorkflowCaptain\Engine\Directory, \WorkflowCaptain\Engine\SiteMembers, \WorkflowCaptain\Engine\Marketing, \WorkflowCaptain\Engine\MessageFooter {
+final class FakeDirectory implements \WorkflowCaptain\Engine\Directory, \WorkflowCaptain\Engine\SiteMembers, \WorkflowCaptain\Engine\Marketing, \WorkflowCaptain\Engine\MessageFooter, \WorkflowCaptain\Engine\UserLocale {
+
+	/** @var array<int,string> Locale per user (SET-WC-18); the site's locale. */
+	public array $locales = array();
+	public string $site_locale = 'en_US';
+
+	public function locale_of( int $user_id ): ?string {
+		return $this->locales[ $user_id ] ?? null;
+	}
+
+	public function site_locale(): string {
+		return $this->site_locale;
+	}
 
 	/** Footer of messages to customers (SET-WC-10). */
 	public string $footer = '';

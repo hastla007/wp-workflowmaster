@@ -223,6 +223,10 @@ msgstr ""
 msgid "Add as draft"
 msgstr ""
 
+#: src/Engine/Actions/NotifyUser.php:153
+msgid "Add language version"
+msgstr ""
+
 #: src/Engine/Actions/Note.php:28
 msgid "Add note"
 msgstr ""
@@ -958,8 +962,20 @@ msgstr ""
 msgid "Key registered twice"
 msgstr ""
 
-#: src/Engine/Actions/NotifyUser.php:75
+#: src/Engine/Actions/NotifyUser.php:137
 msgid "Kind of message"
+msgstr ""
+
+#: src/Engine/Actions/NotifyUser.php:150
+msgid "Language (locale, e.g. de_DE)"
+msgstr ""
+
+#: src/Engine/Actions/NotifyUser.php:155
+msgid "Language version"
+msgstr ""
+
+#: src/Engine/Actions/NotifyUser.php:146
+msgid "Language versions"
 msgstr ""
 
 #: src/Admin/DataTexts.php:21
@@ -1025,7 +1041,7 @@ msgstr ""
 msgid "Maximum depth of a chain of workflows"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:57 src/Engine/Actions/NotifyAdmin.php:72 src/Engine/Actions/NotifyUser.php:71
+#: src/Admin/WorkflowsPage.php:57 src/Engine/Actions/NotifyAdmin.php:72 src/Engine/Actions/NotifyUser.php:133 src/Engine/Actions/NotifyUser.php:152
 msgid "Message"
 msgstr ""
 
@@ -1033,7 +1049,7 @@ msgstr ""
 msgid "Message to site operator"
 msgstr ""
 
-#: src/Engine/Actions/NotifyUser.php:44
+#: src/Engine/Actions/NotifyUser.php:53
 msgid "Message to user"
 msgstr ""
 
@@ -1287,6 +1303,10 @@ msgstr ""
 msgid "Operator"
 msgstr ""
 
+#: src/Engine/Actions/NotifyUser.php:148
+msgid "Optional. The recipient gets the version of their profile language (for example de_DE, or de for every German locale); without a match the main text above."
+msgstr ""
+
 #: src/Admin/WorkflowsPage.php:114
 msgid "Origin"
 msgstr ""
@@ -1363,7 +1383,7 @@ msgstr ""
 msgid "Profile"
 msgstr ""
 
-#: src/Engine/Actions/NotifyUser.php:79
+#: src/Engine/Actions/NotifyUser.php:141
 msgid "Promotional (only with consent, with unsubscribe link)"
 msgstr ""
 
@@ -1479,6 +1499,10 @@ msgstr ""
 
 #: src/Admin/WorkflowsPage.php:175
 msgid "Remove group"
+msgstr ""
+
+#: src/Engine/Actions/NotifyUser.php:154
+msgid "Remove language version"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:204
@@ -1937,7 +1961,7 @@ msgstr ""
 msgid "Stuck steps and runs"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:57 src/Engine/Actions/NotifyAdmin.php:71 src/Engine/Actions/NotifyUser.php:70
+#: src/Admin/WorkflowsPage.php:57 src/Engine/Actions/NotifyAdmin.php:71 src/Engine/Actions/NotifyUser.php:132 src/Engine/Actions/NotifyUser.php:151
 msgid "Subject"
 msgstr ""
 
@@ -2234,7 +2258,7 @@ msgid "Timestamp (UTC)"
 msgstr ""
 
 #. translators: %s: unsubscribe link
-#: src/Engine/Actions/NotifyUser.php:156
+#: src/Engine/Actions/NotifyUser.php:236
 msgid "To stop receiving these messages: %s"
 msgstr ""
 
@@ -2247,7 +2271,7 @@ msgstr ""
 msgid "Tools → Site Health shows whether the worker is running. Settings → Status shows the next run and stuck steps."
 msgstr ""
 
-#: src/Engine/Actions/NotifyUser.php:78
+#: src/Engine/Actions/NotifyUser.php:140
 msgid "Transaction (about an order, booking or account)"
 msgstr ""
 
@@ -2309,11 +2333,15 @@ msgstr ""
 msgid "Up to ten addresses, separated by commas. Empty: the site's address."
 msgstr ""
 
+#: src/Engine/Actions/NotifyUser.php:156
+msgid "Use a locale such as de_DE or de that no other version uses."
+msgstr ""
+
 #: src/Admin/SettingsPage.php:788
 msgid "User"
 msgstr ""
 
-#: src/Engine/Actions/NotifyUser.php:72
+#: src/Engine/Actions/NotifyUser.php:134
 msgid "User from (actor_user_id or data.…_user_id)"
 msgstr ""
 

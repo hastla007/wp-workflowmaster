@@ -9,7 +9,7 @@ namespace WorkflowCaptain\Engine;
 
 defined( 'ABSPATH' ) || exit;
 
-final class WpDirectory implements MessageFooter, Directory, SiteMembers, Marketing {
+final class WpDirectory implements MessageFooter, Directory, SiteMembers, Marketing, UserLocale {
 
 	public function user_can( int $user_id, string $capability ): bool {
 		return $user_id > 0 && false !== get_userdata( $user_id ) && user_can( $user_id, $capability );
@@ -38,6 +38,16 @@ final class WpDirectory implements MessageFooter, Directory, SiteMembers, Market
 			}
 		}
 		return array_values( array_unique( $emails ) );
+	}
+
+	/** Language the user chose in the profile, else the site's (SET-WC-18). */
+	public function locale_of( int $user_id ): ?string {
+		$locale = $user_id > 0 && false !== get_userdata( $user_id ) ? (string) get_user_locale( $user_id ) : '';
+		return '' === $locale ? null : $locale;
+	}
+
+	public function site_locale(): string {
+		return (string) get_locale();
 	}
 
 	public function is_member( int $user_id ): bool {

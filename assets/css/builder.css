@@ -71,6 +71,9 @@ body[class*="workflow-captain"] .button.button-link-delete { color: #b32d2e; }
 /* Groups of rules ("+ Gruppe"). */
 .wfc-rule-group { border: 1px solid #c3c4c7; padding: 4px 8px 0; margin: 0 0 8px; min-width: 0; }
 .wfc-rule-group legend { font-weight: 600; padding: 0 4px; }
+.wfc-versions, .wfc-version { border: 1px solid #c3c4c7; padding: 4px 8px 0; margin: 0 0 8px; min-width: 0; }
+.wfc-versions legend, .wfc-version legend { font-weight: 600; padding: 0 4px; }
+.wfc-version-locale[aria-invalid="true"] { border-color: #d63638; }
 .wfc-rule-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
 .wfc-rule-buttons .button[disabled], .wfc-rule-group .button[disabled] { cursor: not-allowed; }
 /* Dragging from the palette onto the canvas. */

@@ -2901,3 +2901,24 @@ msgstr "Pro-Hinweise zeigen"
 
 msgid "Shows a grey line of text at the end of a tab when a paid add-on offers more for that tab. Text only, no ads, no data is sent. Off: no hints at all."
 msgstr "Zeigt am Ende eines Reiters eine graue Textzeile, wenn ein kostenpflichtiges Add-on für diesen Reiter mehr bietet. Nur Text, keine Werbung, es werden keine Daten gesendet. Aus: gar keine Hinweise."
+
+msgid "Add language version"
+msgstr "Sprachfassung hinzufügen"
+
+msgid "Language (locale, e.g. de_DE)"
+msgstr "Sprache (Locale, z. B. de_DE)"
+
+msgid "Language version"
+msgstr "Sprachfassung"
+
+msgid "Language versions"
+msgstr "Sprachfassungen"
+
+msgid "Optional. The recipient gets the version of their profile language (for example de_DE, or de for every German locale); without a match the main text above."
+msgstr "Optional. Der Empfänger bekommt die Fassung seiner Profilsprache (zum Beispiel de_DE, oder de für jede deutsche Locale); ohne Treffer den Haupttext oben."
+
+msgid "Remove language version"
+msgstr "Sprachfassung entfernen"
+
+msgid "Use a locale such as de_DE or de that no other version uses."
+msgstr "Gib eine Locale wie de_DE oder de ein, die keine andere Fassung nutzt."
