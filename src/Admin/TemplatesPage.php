@@ -60,7 +60,7 @@ final class TemplatesPage {
 				}
 			}
 			$key         = sanitize_key( basename( $file, '.json' ) );
-			$out[ $key ] = array( 'file' => $file, 'name' => (string) ( $data['name'] ?? $key ), 'event' => $event );
+			$out[ $key ] = array( 'file' => $file, 'name' => DataTexts::translate( (string) ( $data['name'] ?? $key ) ), 'event' => $event );
 		}
 		ksort( $out );
 		return $out;
@@ -84,6 +84,13 @@ final class TemplatesPage {
 		echo '</tbody></table></div>';
 	}
 
+	/** JSON of a template with its shipped texts in the site language (SET-WC-06); unknown texts stay as they are. */
+	public static function localized( string $file ): string {
+		$json = (string) file_get_contents( $file );
+		$data = json_decode( $json, true );
+		return is_array( $data ) ? (string) wp_json_encode( DataTexts::recipe( $data ) ) : $json;
+	}
+
 	public function handle_import(): void {
 		check_admin_referer( 'workflow_captain_template' );
 		if ( ! current_user_can( 'edit_workflows' ) ) {
@@ -92,7 +99,7 @@ final class TemplatesPage {
 		$key       = isset( $_POST['template'] ) ? sanitize_key( wp_unslash( $_POST['template'] ) ) : '';
 		$templates = self::templates();
 		$result    = isset( $templates[ $key ] )
-			? Transfer::import( (string) file_get_contents( $templates[ $key ]['file'] ), $this->plugin->workflows() )
+			? Transfer::import( self::localized( $templates[ $key ]['file'] ), $this->plugin->workflows() )
 			: array( 'ok' => false, 'id' => 0, 'violations' => array( 'template:unknown' ) );
 		set_transient( 'workflow_captain_notice_' . get_current_user_id(), array( 'do' => 'import', 'errors' => array_slice( $result['violations'], 0, 30 ) ), 60 );
 		wp_safe_redirect( WorkflowsPage::url( WorkflowsPage::SLUG_WORKFLOWS, $result['ok'] ? array( 'edit' => $result['id'] ) : array() ) );

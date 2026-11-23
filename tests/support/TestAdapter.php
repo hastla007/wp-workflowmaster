@@ -96,7 +96,53 @@ final class FixedClock extends Clock {
 	}
 }
 
-final class FakeDirectory implements \WorkflowCaptain\Engine\Directory, \WorkflowCaptain\Engine\SiteMembers {
+final class FakeDirectory implements \WorkflowCaptain\Engine\Directory, \WorkflowCaptain\Engine\SiteMembers, \WorkflowCaptain\Engine\Marketing, \WorkflowCaptain\Engine\MessageFooter, \WorkflowCaptain\Engine\UserLocale {
+
+	/** @var array<int,string> Locale per user (SET-WC-18); the site's locale. */
+	public array $locales = array();
+	public string $site_locale = 'en_US';
+
+	public function locale_of( int $user_id ): ?string {
+		return $this->locales[ $user_id ] ?? null;
+	}
+
+	public function site_locale(): string {
+		return $this->site_locale;
+	}
+
+	/** Footer of messages to customers (SET-WC-10). */
+	public string $footer = '';
+
+	public function footer(): string {
+		return $this->footer;
+	}
+
+
+	/** @var int[] Users with consent to promotional messages; users who unsubscribed. */
+	public array $consent = array();
+	public array $unsubscribed = array();
+	public array $consent_context = array();
+
+	public function has_consent( int $user_id, array $context ): bool {
+		$this->consent_context = $context;
+		return in_array( $user_id, $this->consent, true );
+	}
+
+	public function unsubscribed( int $user_id ): bool {
+		return in_array( $user_id, $this->unsubscribed, true );
+	}
+
+	public function unsubscribe_url( int $user_id ): string {
+		return 'https://shop.example/wp-admin/admin-post.php?action=workflow_captain_unsubscribe&u=' . $user_id . '&t=sig';
+	}
+
+	public function mail_promotional( string $to, string $subject, string $message, string $unsubscribe_url ): bool {
+		$ok = $this->mail( $to, $subject, $message );
+		if ( $ok ) {
+			$this->sent[ count( $this->sent ) - 1 ][] = 'List-Unsubscribe: <' . $unsubscribe_url . '>';
+		}
+		return $ok;
+	}
 
 	/** @var int[] Users who are members of this site (multisite). */
 	public array $members = array( 1, 17 );

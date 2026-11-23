@@ -1,0 +1,196 @@
+<?php
+/**
+ * SET-WC-07 (quiet time and sending days) and SET-WC-08 (daily limit per recipient): window arithmetic in the site's
+ * time zone across DST changes, the engine putting a held message back in the queue, the atomic daily slot with two
+ * connections, the settings form, export/import and privacy.
+ *
+ * @package WorkflowCaptain
+ */
+
+use WorkflowCaptain\Engine\EngineStore;
+use WorkflowCaptain\Engine\Pacing;
+use WorkflowCaptain\Engine\WpdbEngineStore;
+use WorkflowCaptain\LogLevel;
+use WorkflowCaptain\Messages;
+use WorkflowCaptain\Settings;
+use WorkflowCaptain\SettingsRegistry;
+use WorkflowCaptain\SettingsTransfer;
+
+echo "\n# SET-WC-07/-08 sending window and daily limit\n";
+
+$wfc_ts = static fn( string $local, string $tz ): int => ( new DateTimeImmutable( $local, new DateTimeZone( $tz ) ) )->getTimestamp();
+$wfc_lc = static fn( int $ts, string $tz ): string => ( new DateTimeImmutable( '@' . $ts ) )->setTimezone( new DateTimeZone( $tz ) )->format( 'D Y-m-d H:i' );
+$b      = 'Europe/Berlin';
+
+// Window arithmetic.
+check( 'SET-WC-07 off by default: every hour and day is open', Pacing::is_open( $wfc_ts( '2026-11-22 03:00', $b ), $b, -1, -1, 127 ) );
+check( 'SET-WC-07 the same hour for start and end means no quiet time', Pacing::is_open( $wfc_ts( '2026-11-23 22:30', $b ), $b, 22, 22, 127 ) );
+check( 'SET-WC-07 quiet time over midnight: 22:00 to 07:00 holds 23:30 and 06:59, lets 07:00 and 21:59 through', ! Pacing::is_open( $wfc_ts( '2026-11-23 23:30', $b ), $b, 22, 7, 127 ) && ! Pacing::is_open( $wfc_ts( '2026-11-24 06:59', $b ), $b, 22, 7, 127 ) && Pacing::is_open( $wfc_ts( '2026-11-24 07:00', $b ), $b, 22, 7, 127 ) && Pacing::is_open( $wfc_ts( '2026-11-23 21:59', $b ), $b, 22, 7, 127 ) );
+check( 'SET-WC-07 quiet time within a day: 12:00 to 14:00', ! Pacing::is_open( $wfc_ts( '2026-11-23 13:15', $b ), $b, 12, 14, 127 ) && Pacing::is_open( $wfc_ts( '2026-11-23 14:00', $b ), $b, 12, 14, 127 ) );
+check( 'SET-WC-07 a message at 23:30 waits until 07:00 of the next day', 'Tue 2026-11-24 07:00' === $wfc_lc( Pacing::next_open( $wfc_ts( '2026-11-23 23:30', $b ), $b, 22, 7, 127 ), $b ) );
+check( 'SET-WC-07 an open moment is returned unchanged', $wfc_ts( '2026-11-23 10:17', $b ) === Pacing::next_open( $wfc_ts( '2026-11-23 10:17', $b ), $b, 22, 7, 127 ) );
+check( 'SET-WC-07 Monday to Friday: Saturday afternoon waits until Monday 00:00, with quiet time until Monday 07:00', 'Mon 2026-11-23 00:00' === $wfc_lc( Pacing::next_open( $wfc_ts( '2026-11-21 15:00', $b ), $b, -1, -1, 31 ), $b ) && 'Mon 2026-11-23 07:00' === $wfc_lc( Pacing::next_open( $wfc_ts( '2026-11-21 15:00', $b ), $b, 22, 7, 31 ), $b ) );
+check( 'SET-WC-07 sending day is the local day: Friday 23:30 in Berlin is already Saturday in Tokyo', Pacing::is_open( $wfc_ts( '2026-11-20 23:30', $b ), $b, -1, -1, 31 ) && ! Pacing::is_open( $wfc_ts( '2026-11-20 23:30', $b ), 'Asia/Tokyo', -1, -1, 31 ) );
+// DST: Berlin jumps from 02:00 to 03:00 on 29 March 2026 and back from 03:00 to 02:00 on 25 October 2026.
+$wfc_spring = Pacing::next_open( $wfc_ts( '2026-03-29 01:30', $b ), $b, 1, 3, 127 );
+check( 'SET-WC-07 DST spring: quiet 01:00 to 03:00 ends at 03:00 summer time, one real hour after 01:30', 'Sun 2026-03-29 03:00' === $wfc_lc( $wfc_spring, $b ) && 1800 === $wfc_spring - $wfc_ts( '2026-03-29 01:30', $b ) );
+$wfc_autumn_from = $wfc_ts( '2026-10-25 01:30', $b );
+$wfc_autumn      = Pacing::next_open( $wfc_autumn_from, $b, 1, 3, 127 );
+check( 'SET-WC-07 DST autumn: quiet 01:00 to 03:00 lasts one real hour longer (02:00 twice): from 01:30 summer time 2.5 real hours until 03:00 winter time', 'Sun 2026-10-25 03:00' === $wfc_lc( $wfc_autumn, $b ) && 9000 === $wfc_autumn - $wfc_autumn_from );
+check( 'SET-WC-07 time zones with half hours keep full local hours (Asia/Kolkata)', '07:00' === ( new DateTimeImmutable( '@' . Pacing::next_open( $wfc_ts( '2026-11-23 23:10', 'Asia/Kolkata' ), 'Asia/Kolkata', 22, 7, 127 ) ) )->setTimezone( new DateTimeZone( 'Asia/Kolkata' ) )->format( 'H:i' ) );
+check( 'SET-WC-08 the calendar day is the site\'s day', '2026-11-24' === Pacing::day( $wfc_ts( '2026-11-24 00:30', $b ), $b ) && '2026-11-23' === Pacing::day( $wfc_ts( '2026-11-24 00:30', $b ), 'UTC' ) );
+
+// Engine: a held message goes back to the queue and goes out when the window opens.
+$wfc_pacing = array( 'quiet_hours_start' => 22, 'quiet_hours_end' => 7, 'send_days' => 127, 'daily_limit' => 0, 'daily_limit_action' => 0 );
+$e          = engine_site( $b, null, 'wp_', 1, static function () use ( &$wfc_pacing ): array { return $wfc_pacing; } );
+$e->clock->time = $wfc_ts( '2026-11-23 23:30', $b );
+$g              = sample_graph();
+$g['nodes'][2]  = array( 'id' => 'mail', 'type' => 'action', 'action' => 'notify.user', 'config' => array( 'subject' => 'Hallo', 'message' => 'Text' ) );
+publish( $e, $g );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+$wfc_mail = array_values( array_filter( steps_of( $e ), static fn( $s ) => 'mail' === $s['node_id'] ) )[0] ?? array();
+check( 'SET-WC-07 in the quiet time the message is not sent; the step waits until 07:00 without a counted attempt', array() === $e->dir->sent && EngineStore::STEP_QUEUED === ( $wfc_mail['state'] ?? '' ) && 0 === (int) $wfc_mail['attempts'] && $wfc_ts( '2026-11-24 07:00', $b ) === strtotime( $wfc_mail['due_at'] . ' UTC' ) && EngineStore::RUN_RUNNING === run_of( $e )['state'] );
+check( 'SET-WC-07 the step log says why and until when, and books no side effect', 'quiet_hours' === ( $wfc_mail['result']['deferred'] ?? '' ) && str_starts_with( (string) ( $wfc_mail['result']['until'] ?? '' ), '2026-11-24T06:00:00' ) && EngineStore::EFFECT_NONE === $wfc_mail['effect'] );
+$e->clock->time = $wfc_ts( '2026-11-24 06:59', $b );
+drain( $e );
+check( 'SET-WC-07 nothing goes out before the window opens', array() === $e->dir->sent );
+$e->clock->time = $wfc_ts( '2026-11-24 07:01', $b );
+drain( $e );
+check( 'SET-WC-07 at the start of the window the message goes out once and the run ends', 1 === count( $e->dir->sent ) && EngineStore::RUN_SUCCEEDED === run_of( $e )['state'] );
+check( 'SET-WC-07 messages to the operator are never held back', ! str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/Actions/NotifyAdmin.php' ), 'Pacing' ) );
+
+// Daily limit: one message per day, the second run waits for the next day.
+$wfc_pacing = array( 'quiet_hours_start' => -1, 'quiet_hours_end' => -1, 'send_days' => 127, 'daily_limit' => 1, 'daily_limit_action' => Pacing::LIMIT_DEFER );
+$e          = engine_site( $b, null, 'wp_', 1, static function () use ( &$wfc_pacing ): array { return $wfc_pacing; } );
+$e->clock->time = $wfc_ts( '2026-11-23 10:00', $b );
+publish( $e, $g );
+$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'scan-1' ) );
+$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'scan-2' ) );
+drain( $e );
+$wfc_runs = $e->store->find_runs( array(), 10, 0 );
+check( 'SET-WC-08 two runs for the same customer on one day: one message goes out, the other waits', 1 === count( $e->dir->sent ) && 2 === count( $wfc_runs ) && 1 === count( array_filter( $wfc_runs, static fn( $r ) => EngineStore::RUN_RUNNING === $r['state'] ) ) );
+$e->clock->time = $wfc_ts( '2026-11-23 23:59', $b );
+drain( $e );
+check( 'SET-WC-08 the waiting message does not go out on the same calendar day', 1 === count( $e->dir->sent ) );
+$e->clock->time = $wfc_ts( '2026-11-24 00:01', $b );
+drain( $e );
+check( 'SET-WC-08 on the next calendar day of the site the waiting message goes out', 2 === count( $e->dir->sent ) );
+// Skip instead of wait.
+$wfc_pacing['daily_limit_action'] = Pacing::LIMIT_SKIP;
+$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'scan-3' ) );
+drain( $e );
+$wfc_skip = array_values( array_filter( $e->store->steps_for_run( $e->store->find_runs( array(), 1, 0 )[0]['id'] ), static fn( $s ) => 'mail' === $s['node_id'] ) )[0] ?? array();
+check( 'SET-WC-08 "skip": the surplus message is dropped and the run notes it', 2 === count( $e->dir->sent ) && 'daily_limit' === ( $wfc_skip['result']['skipped'] ?? '' ) && EngineStore::RUN_SUCCEEDED === $e->store->find_runs( array(), 1, 0 )[0]['state'] );
+// A failed mail gives the slot back.
+$wfc_pacing['daily_limit'] = 1;
+$e->clock->time            = $wfc_ts( '2026-11-25 10:00', $b );
+$e->dir->fail_mails        = 1;
+$e->consumer->capture( $e->adapter, checkin( '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d', 'scan-4' ) );
+drain( $e );
+$e->clock->advance( 5 * MINUTE_IN_SECONDS );
+drain( $e );
+check( 'SET-WC-08 a failed mail gives its slot back: the retry on the same day still goes out', 3 === count( $e->dir->sent ) );
+
+// Atomic slot with two connections to the same database (two workers).
+$wfc_file = tempnam( sys_get_temp_dir(), 'wfc' );
+$wfc_pdo1 = new PDO( 'sqlite:' . $wfc_file );
+$wfc_pdo1->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+( new FakeWpdb( $wfc_pdo1 ) )->create_engine_tables();
+$wfc_pdo2 = new PDO( 'sqlite:' . $wfc_file );
+$wfc_pdo2->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+$wfc_s1   = new WpdbEngineStore( new FakeWpdb( $wfc_pdo1 ) );
+$wfc_s2   = new WpdbEngineStore( new FakeWpdb( $wfc_pdo2 ) );
+$wfc_take = array( $wfc_s1->take_send_slot( '2026-11-23', 17, 2 ), $wfc_s2->take_send_slot( '2026-11-23', 17, 2 ), $wfc_s1->take_send_slot( '2026-11-23', 17, 2 ), $wfc_s2->take_send_slot( '2026-11-23', 17, 2 ) );
+check( 'SET-WC-08 two workers on two connections share the limit: exactly two of four attempts get a slot', array( true, true, false, false ) === $wfc_take );
+check( 'SET-WC-08 the slot is taken in one conditional UPDATE (no read-then-write race)', str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/WpdbEngineStore.php' ), 'SET sent = sent + 1 WHERE day = %s AND user_id = %d AND sent < %d' ) );
+$wfc_s1->release_send_slot( '2026-11-23', 17 );
+check( 'SET-WC-08 a released slot can be taken again, by the other worker', $wfc_s2->take_send_slot( '2026-11-23', 17, 2 ) && ! $wfc_s1->take_send_slot( '2026-11-23', 17, 2 ) );
+check( 'SET-WC-08 another customer and another day have their own count', $wfc_s1->take_send_slot( '2026-11-23', 18, 2 ) && $wfc_s1->take_send_slot( '2026-11-24', 17, 2 ) );
+$wfc_s1->take_send_slot( '2026-11-20', 17, 2 );
+check( 'SET-WC-08 old counters are purged, and the eraser removes a user\'s counters', 1 === $wfc_s1->purge_send_counts( '2026-11-21' ) && 2 === $wfc_s1->erase_send_counts( 17 ) && 1 === (int) $wfc_pdo1->query( "SELECT COUNT(*) FROM wp_workflow_captain_sends" )->fetchColumn() );
+unset( $wfc_s1, $wfc_s2, $wfc_pdo1, $wfc_pdo2 );
+@unlink( $wfc_file );
+check( 'SET-WC-08 the counter table is created by the schema and removed with the other tables', str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Install.php' ), "CREATE TABLE {\$t( 'sends' )}" ) && in_array( 'sends', WpdbEngineStore::TABLES, true ) && str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'workflow-captain.php' ), "define( 'WORKFLOW_CAPTAIN_DB_VERSION', '5' )" ) );
+check( 'SET-WC-08 privacy: the eraser and a deleted user clear the counters, the daily maintenance purges old days', 3 === substr_count( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Privacy/Privacy.php' ), '_send_counts(' ) );
+
+// Settings: register, form, export/import.
+check( 'SET-WC-07 defaults: no quiet time, every day, no daily limit (nothing changes for existing sites)', -1 === Settings::defaults()['quiet_hours_start'] && -1 === Settings::defaults()['quiet_hours_end'] && 127 === Settings::defaults()['send_days'] && 0 === Settings::defaults()['daily_limit'] );
+check( 'SET-WC-07 the form sends weekdays as a list; it is stored as a mask', 31 === Settings::sanitize( array( 'send_days' => array( '', '1', '2', '3', '4', '5' ) ) )['send_days'] && 96 === Settings::sanitize( array( 'send_days' => array( '6', '7' ) ) )['send_days'] );
+check( 'SET-WC-07 no day chosen is a problem at the field, never a silent "every day"', isset( Settings::problems( array( 'send_days' => array( '' ) ) )['send_days'] ) && array() === Settings::problems( array( 'send_days' => array( '', '1' ) ) ) );
+check( 'SET-WC-07 the quiet time is a list of full hours with "Off" first', 'Off' === SettingsRegistry::choices( 'quiet_hours_start' )[-1] && '22:00' === SettingsRegistry::choices( 'quiet_hours_end' )[22] && 25 === count( SettingsRegistry::choices( 'quiet_hours_start' ) ) );
+check( 'SET-WC-08 "when the limit is reached" is a choice, not a switch', 2 === count( SettingsRegistry::choices( 'daily_limit_action' ) ) );
+check( 'SET-WC-07 import: a mask or a weekday list is accepted, an unknown day is an error', array( true, 31, '' ) === SettingsTransfer::check( 'send_days', 31 ) && array( true, 65, '' ) === SettingsTransfer::check( 'send_days', array( 1, 7 ) ) && array( false, null, 'unknown_day' ) === SettingsTransfer::check( 'send_days', array( 8 ) ) && array( false, null, 'out_of_range' ) === SettingsTransfer::check( 'send_days', 0 ) );
+check( 'SET-WC-07 import: quiet time and limit are checked against their range', array( false, null, 'out_of_range' ) === SettingsTransfer::check( 'quiet_hours_start', 24 ) && array( true, -1, '' ) === SettingsTransfer::check( 'quiet_hours_end', '-1' ) && array( false, null, 'out_of_range' ) === SettingsTransfer::check( 'daily_limit', 21 ) );
+check( 'SET-WC-07 the log and the import preview show days and hours by name', 'Monday, Friday' === \WorkflowCaptain\Admin\SettingsPage::display_value( 'send_days', 17 ) && '07:00' === \WorkflowCaptain\Admin\SettingsPage::display_value( 'quiet_hours_end', 7 ) && 'Off' === \WorkflowCaptain\Admin\SettingsPage::display_value( 'quiet_hours_start', -1 ) );
+check( 'SET-WC-07 the values are exported (site policy, no personal data)', array( 'quiet_hours_start', 'quiet_hours_end', 'send_days', 'daily_limit', 'daily_limit_action' ) === array_values( array_intersect( array_keys( SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ), array( 'quiet_hours_start', 'quiet_hours_end', 'send_days', 'daily_limit', 'daily_limit_action' ) ) ) );
+check( 'SET-WC-07 a filter can set the days as a list too', 3 === SettingsRegistry::clean( 'send_days', array( 1, 2 ) ) );
+
+// ----- SET-WC-10 sender, reply address, footer (S6) -------------------------------------------------------------
+
+echo "\n# SET-WC-10 sender, reply address and footer\n";
+
+$wfc_m0 = Messages::sanitize( array() );
+check( 'SET-WC-10 empty by default: no From, no Reply-To, no footer (today\'s behaviour)', array() === Messages::headers( $wfc_m0 ) && '' === Messages::footer( $wfc_m0, array() ) && array( 'sender_name', 'sender_email', 'reply_to', 'message_footer', 'timezone' ) === array_keys( $wfc_m0 ) );
+$wfc_m = Messages::sanitize( array( 'sender_name' => "Shop \"Nord\"\r\nBcc: x@evil.example", 'sender_email' => ' Info@Shop.Example ', 'reply_to' => 'service@shop.example', 'message_footer' => "Shop Nord GmbH\r\n<b>Impressum</b>: {site_url}impressum\nDatenschutz: {privacy_policy_url}" ) );
+$wfc_h = Messages::headers( $wfc_m );
+check( 'SET-WC-10 sender and reply address become headers; the name cannot inject a header line', 2 === count( $wfc_h ) && str_starts_with( $wfc_h[0], 'From: "Shop Nord Bcc: x@evil.example" <info@shop.example>' ) && 'Reply-To: <service@shop.example>' === $wfc_h[1] && ! preg_match( '/[\r\n]/', implode( '', $wfc_h ) ) );
+check( 'SET-WC-10 an invalid address is not stored', '' === Messages::sanitize( array( 'sender_email' => 'kein-mail' ) )['sender_email'] && array( false, null, 'invalid_address' ) === SettingsTransfer::check( 'reply_to', 'kein-mail' ) && array( true, '', '' ) === SettingsTransfer::check( 'reply_to', '' ) );
+check( 'SET-WC-10 the footer is plain text with placeholders filled', "Shop Nord GmbH\nImpressum: https://shop.example/impressum\nDatenschutz: https://shop.example/datenschutz" === Messages::footer( $wfc_m, array( 'site_url' => 'https://shop.example/', 'privacy_policy_url' => 'https://shop.example/datenschutz' ) ) );
+check( 'SET-WC-10 texts are cut to their length; import rejects a longer text instead of cutting it', 100 === mb_strlen( Messages::sanitize( array( 'sender_name' => str_repeat( 'ä', 150 ) ) )['sender_name'] ) && array( false, null, 'too_long' ) === SettingsTransfer::check( 'message_footer', str_repeat( 'x', 1001 ) ) && array( false, null, 'not_text' ) === SettingsTransfer::check( 'sender_name', array( 'x' ) ) );
+check( 'SET-WC-10 addresses stay out of an export; name and footer go with it', ! array_key_exists( 'sender_email', SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ) && ! array_key_exists( 'reply_to', SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ) && array_key_exists( 'message_footer', SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ) );
+$wfc_dir         = new FakeDirectory();
+$wfc_dir->footer = 'Shop Nord GmbH · Impressum';
+$wfc_nu          = new \WorkflowCaptain\Engine\Actions\NotifyUser( $wfc_dir );
+$wfc_ctx         = static fn( array $config ) => new \WorkflowCaptain\Engine\ActionContext( array( 'type' => 'pass.ticket.checked_in', 'actor_user_id' => 17, 'subject' => array( 'id' => '5' ), 'data' => array() ), $config + array( 'subject' => 'Hallo', 'message' => 'Text' ), 'k', 9, 1, 1, 1 );
+$wfc_nu->execute( $wfc_ctx( array() ) );
+check( 'SET-WC-10 the footer is added below a message to a customer', "Text\n\nShop Nord GmbH · Impressum" === end( $wfc_dir->sent )[2] );
+$wfc_dir->consent = array( 17 );
+$wfc_nu->execute( $wfc_ctx( array( 'purpose' => 'promotional' ) ) );
+check( 'SET-WC-10 in a promotional message the footer comes before the unsubscribe line', 1 === preg_match( "/^Text\n\nShop Nord GmbH · Impressum\n\n-- \n/", end( $wfc_dir->sent )[2] ) );
+check( 'SET-WC-10 messages to the operator get sender and reply address, but no footer', ! str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/Actions/NotifyAdmin.php' ), 'footer' ) && 2 === substr_count( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/WpDirectory.php' ), 'Messages::headers(' ) );
+check( 'SET-WC-10 the option is removed on a confirmed uninstall and its form is logged', str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Install.php' ), "'workflow_captain_messages'" ) && str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Audit.php' ), 'Messages::OPTION' ) );
+
+// ----- SET-WC-22 own time zone, SET-WC-31 local times in the admin ----------------------------------------------
+
+echo "\n# SET-WC-22/-31 time zone\n";
+check( 'SET-WC-22 the time zone is empty by default (WordPress decides) and only takes real zone names', '' === Messages::sanitize( array() )['timezone'] && 'Europe/Vienna' === Messages::sanitize( array( 'timezone' => 'Europe/Vienna' ) )['timezone'] && '' === Messages::sanitize( array( 'timezone' => 'Mars/Olympus' ) )['timezone'] );
+check( 'SET-WC-22 import: an unknown zone is an error, empty is allowed', array( false, null, 'unknown_timezone' ) === SettingsTransfer::check( 'timezone', 'Mars/Olympus' ) && array( true, '', '' ) === SettingsTransfer::check( 'timezone', '' ) && array( true, 'Asia/Tokyo', '' ) === SettingsTransfer::check( 'timezone', 'Asia/Tokyo' ) );
+check( 'SET-WC-22 without own setting and without WordPress the time zone is UTC', 'UTC' === Settings::timezone() || function_exists( 'wp_timezone_string' ) );
+check( 'SET-WC-22 engine, sending window and editor read the one time zone', 2 === substr_count( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Plugin.php' ), 'Settings::timezone()' ) && ! str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Plugin.php' ), 'wp_timezone_string()' ) && str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Admin/WorkflowsPage.php' ), "'timezone'  => \\WorkflowCaptain\\Settings::timezone()" ) );
+check( 'SET-WC-31 a stored UTC time is shown in the chosen zone, DST included', '2026-07-01 14:00:00' === \WorkflowCaptain\Admin\Time::show( '2026-07-01 12:00:00', 'Europe/Berlin' ) && '2026-12-01 13:00:00' === \WorkflowCaptain\Admin\Time::show( '2026-12-01 12:00:00', 'Europe/Berlin' ) && '' === \WorkflowCaptain\Admin\Time::show( null ) && 'kaputt' === \WorkflowCaptain\Admin\Time::show( 'kaputt' ) );
+check( 'SET-WC-31 the <time> element keeps UTC for machines and in the title', 1 === preg_match( '/^<time datetime="2026-07-01T12:00:00Z" title="2026-07-01 12:00:00 UTC">/', \WorkflowCaptain\Admin\Time::html( '2026-07-01 12:00:00' ) ) );
+$wfc_utc_left = array();
+foreach ( glob( WORKFLOW_CAPTAIN_PATH . 'src/Admin/*.php' ) as $wfc_f ) {
+	foreach ( explode( "\n", (string) file_get_contents( $wfc_f ) ) as $wfc_n => $wfc_l ) {
+		if ( str_contains( $wfc_l, "(UTC)'" ) ) {
+			$wfc_utc_left[] = basename( $wfc_f ) . ':' . ( $wfc_n + 1 );
+		}
+	}
+}
+check( 'SET-WC-31 no admin column or filter says UTC any more' . ( $wfc_utc_left ? ': ' . implode( ', ', $wfc_utc_left ) : '' ), array() === $wfc_utc_left );
+check( 'SET-WC-31 the date filter of the run list means whole local days', array( 'since' => '2026-10-31 23:00:00', 'until' => '2026-11-10 22:59:59' ) === \WorkflowCaptain\Admin\WorkflowsPage::period_filter( '', '2026-11-01', '2026-11-10', 0, 'Europe/Berlin' )['filter'] && '2026-11-01 00:00:00' === \WorkflowCaptain\Admin\WorkflowsPage::period_filter( '', '2026-11-01', '', 0 )['filter']['since'] );
+
+// ----- SET-WC-21 log level ---------------------------------------------------------------------------------------
+
+echo "\n# SET-WC-21 log level\n";
+check( 'SET-WC-21 normal by default; "detailed" is a choice and is not exported (temporary)', 0 === Settings::defaults()['log_level'] && 2 === count( SettingsRegistry::choices( 'log_level' ) ) && ! array_key_exists( 'log_level', SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ) );
+check( 'SET-WC-21 detailed lasts 7 days from switching it on, then counts as normal', LogLevel::in_period( 1, 1000, 1000 + 6 * DAY_IN_SECONDS ) && ! LogLevel::in_period( 1, 1000, 1000 + 7 * DAY_IN_SECONDS ) && ! LogLevel::in_period( 1, null, 1000 ) && ! LogLevel::in_period( 0, 1000, 1000 ) );
+$e = engine_site();
+$e->engine = new \WorkflowCaptain\Engine\Engine( $e->store, $e->actions, $e->dir, $e->clock, 'UTC', array( 'detailed' => true ) );
+$e->engine->set_consumer( $e->consumer );
+$e->consumer = new \WorkflowCaptain\Consumer\Consumer( $e->events, $e->registry, $e->engine, $e->clock, 1 );
+$e->engine->set_consumer( $e->consumer );
+publish( $e, sample_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+$wfc_steps = array_column( steps_of( $e ), 'result', 'node_id' );
+check( 'SET-WC-21 detailed: the condition step names each rule with field, operator and result, never the value', 'data.checkin_source eq: yes' === ( $wfc_steps['c']['rules'] ?? '' ) && ! str_contains( json_encode( $wfc_steps ), 'scanner' ) );
+check( 'SET-WC-21 detailed: every action step notes its duration in ms', array() !== array_filter( $wfc_steps, static fn( $r ) => is_int( $r['ms'] ?? null ) ) && ! isset( $wfc_steps['c']['ms'] ) );
+$e = engine_site();
+publish( $e, sample_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+check( 'SET-WC-21 normal: no rules and no durations in the log', ! str_contains( json_encode( array_column( steps_of( $e ), 'result' ) ), '"rules"' ) && ! str_contains( json_encode( array_column( steps_of( $e ), 'result' ) ), '"ms"' ) );
+check( 'SET-WC-21 explain lists rules of nested groups and a missing field', 'data.a eq: no; data.b exists: yes; data.zz gt: missing' === \WorkflowCaptain\Engine\Conditions::explain( array( 'op' => 'and', 'items' => array( array( 'field' => 'data.a', 'operator' => 'eq', 'value' => 1 ), array( 'op' => 'or', 'items' => array( array( 'field' => 'data.b', 'operator' => 'exists' ), array( 'field' => 'data.zz', 'operator' => 'gt', 'value' => 3 ) ) ) ) ), array( 'data' => array( 'a' => 2, 'b' => 'x' ) ) ) );
+check( 'SET-WC-21 the daily maintenance switches back and notes it; the period starts on every way of saving', str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Plugin.php' ), 'LogLevel::revert_if_expired(' ) && str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Plugin.php' ), "'update_option_' . Settings::OPTION, array( LogLevel::class, 'changed' )" ) );

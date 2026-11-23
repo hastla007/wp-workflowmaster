@@ -1,7 +1,7 @@
 {
   "format": "workflow-captain/workflow",
   "format_version": 1,
-  "name": "Termin abgesagt: Termin markieren und Betreiber informieren",
+  "name": "Date canceled: tag the date and notify the site operator",
   "graph": {
     "nodes": [
       {
@@ -22,8 +22,8 @@
         "type": "action",
         "action": "notify.admin",
         "config": {
-          "subject": "Termin {{subject.id}} abgesagt",
-          "message": "{{data.issued_tickets}} ausgegebene Tickets sind betroffen. Pass Captain informiert die Gäste selbst; dieser Hinweis ist zusätzlich.",
+          "subject": "Date {{subject.id}} canceled",
+          "message": "{{data.issued_tickets}} issued tickets are affected. Pass Captain informs the guests itself; this notice is in addition.",
           "to": "site_admin"
         }
       },

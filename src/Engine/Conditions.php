@@ -90,6 +90,30 @@ final class Conditions {
 			|| 1 === preg_match( '/^data\.[a-z][a-z0-9_]*$/', $field );
 	}
 
+	/**
+	 * Detailed log (SET-WC-21): every rule with its result, as "field operator: yes|no|missing", separated by "; ".
+	 * Field names and operators only; never a value of the event. Evaluates all rules (no short cut).
+	 */
+	public static function explain( array $rules, array $envelope ): string {
+		$out  = array();
+		$walk = static function ( array $group ) use ( &$walk, &$out, $envelope ): void {
+			foreach ( (array) ( $group['items'] ?? array() ) as $item ) {
+				if ( isset( $item['op'] ) ) {
+					$walk( $item );
+					continue;
+				}
+				try {
+					$res = self::rule( $item, $envelope, 'error' ) ? 'yes' : 'no';
+				} catch ( MissingField $e ) {
+					$res = 'missing';
+				}
+				$out[] = (string) ( $item['field'] ?? '' ) . ' ' . (string) ( $item['operator'] ?? '' ) . ': ' . $res;
+			}
+		};
+		$walk( $rules );
+		return substr( implode( '; ', $out ), 0, 1000 );
+	}
+
 	private static function group( array $group, array $envelope, string $missing ): bool {
 		$and = 'and' === $group['op'];
 		foreach ( $group['items'] as $item ) {

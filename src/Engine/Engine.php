@@ -43,6 +43,7 @@ final class Engine implements Dispatcher {
 		'workflow' => 2,
 		'catch_up' => DAY_IN_SECONDS,
 		'seconds'  => 20,
+		'detailed' => 0, // SET-WC-21: detailed step log (0/1).
 	);
 
 	public function __construct(
@@ -54,7 +55,9 @@ final class Engine implements Dispatcher {
 		array $limits = array()
 	) {
 		foreach ( $limits as $key => $value ) {
-			if ( isset( $this->limits[ $key ] ) && (int) $value > 0 ) {
+			if ( 'detailed' === $key ) {
+				$this->limits[ $key ] = $value ? 1 : 0;
+			} elseif ( isset( $this->limits[ $key ] ) && (int) $value > 0 ) {
 				$this->limits[ $key ] = (int) $value;
 			}
 		}
@@ -337,7 +340,11 @@ final class Engine implements Dispatcher {
 						return;
 					}
 					$branch = Conditions::TRUE === $outcome ? 'then' : 'else';
-					$this->advance( $step, $owner, $run, $version, $node, $branch, $this->clock->mysql(), array( 'outcome' => $branch ), $attempts );
+					$logged = array( 'outcome' => $branch );
+					if ( ! empty( $this->limits['detailed'] ) ) {
+						$logged['rules'] = Conditions::explain( (array) ( $node['rules'] ?? array() ), $envelope ); // SET-WC-21.
+					}
+					$this->advance( $step, $owner, $run, $version, $node, $branch, $this->clock->mysql(), $logged, $attempts );
 					return;
 
 				case 'delay':
@@ -350,6 +357,21 @@ final class Engine implements Dispatcher {
 					return;
 			}
 			$this->stop( $step, $owner, $run, EngineStore::STEP_ACTION_REQUIRED, EngineStore::RUN_ACTION_REQUIRED, 'unknown_node_type', $attempts );
+		} catch ( Deferred $d ) {
+			// Not yet (sending window, daily limit; SET-WC-07/-08): nothing happened. Back to the queue until the
+			// window opens, without counting an attempt; the reason and time are visible in the step log.
+			$this->finish(
+				$step,
+				$owner,
+				EngineStore::STEP_QUEUED,
+				array(
+					'attempts'   => $attempts - 1,
+					'due_at'     => $this->clock->mysql( max( $d->until, $this->clock->now() + MINUTE_IN_SECONDS ) ),
+					'effect'     => EngineStore::EFFECT_NONE,
+					'last_error' => null,
+					'result'     => array( 'deferred' => self::code( $d->reason ), 'until' => $this->clock->rfc3339( $d->until ) ),
+				)
+			);
 		} catch ( PermanentFailure $e ) {
 			$this->stop(
 				$step,
@@ -436,7 +458,11 @@ final class Engine implements Dispatcher {
 			$execute = \WorkflowCaptain\TestMode::DRY === \WorkflowCaptain\TestMode::mode()
 				? static fn(): array => array( 'skipped' => 'test_mode' ) // SET-WC-14: nothing takes effect, the step is logged.
 				: static fn() => $action->execute( $context );
+			$started = microtime( true );
 			$result  = null === $this->consumer ? $execute() : $this->consumer->run_command( Consumer::cause_for( $envelope, (int) $run['workflow_id'] ), $execute );
+			if ( ! empty( $this->limits['detailed'] ) && is_array( $result ) ) {
+				$result['ms'] = (int) round( ( microtime( true ) - $started ) * 1000 ); // SET-WC-21: duration of the action.
+			}
 			$this->store->set_effect( (int) $step['id'], $owner, EngineStore::EFFECT_DONE, $this->clock->mysql() );
 		} else {
 			$result = (array) ( $step['result'] ?? array() ); // Done before a crash: book it, do not repeat it.

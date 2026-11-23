@@ -11,6 +11,7 @@
  *     wp workflow-captain pause <on|off>
  *     wp workflow-captain export <id> | import <file>
  *     wp workflow-captain settings <list|get|set|export|import|reset|undo> (SET-WC-12)
+ *     wp workflow-captain settings profile <DE|AT|CH|EU|OTHER> [--apply=<keys>] [--dry-run] (SET-WC-17)
  *
  * Read-only except process, requeue and migrate; requeue is the same human decision as in the admin (7.4).
  *
@@ -225,7 +226,7 @@ final class Command {
 	 * ## OPTIONS
 	 *
 	 * <command>
-	 * : list | get <key> | set <key> <value> | export [<file>] | import <file> [--dry-run] | reset [--tab=<tab>] | undo
+	 * : list | get <key> | set <key> <value> | export [<file>] | import <file> [--dry-run] | reset [--tab=<tab>] | undo | profile <DE|AT|CH|EU|OTHER> [--apply=<keys>] [--dry-run]
 	 *
 	 * [<key>]
 	 * : Field of the register (see `list`); for export and import the file.
@@ -237,7 +238,10 @@ final class Command {
 	 * : For reset: execution, notify or privacy. Without: all fields.
 	 *
 	 * [--dry-run]
-	 * : For import: show the changes, write nothing.
+	 * : For import and profile: show the changes, write nothing.
+	 *
+	 * [--apply=<keys>]
+	 * : For profile: comma-separated keys of the proposal to take over. Without: only the proposal is shown.
 	 *
 	 * [--yes]
 	 * : For reset: no confirmation.
@@ -288,6 +292,9 @@ final class Command {
 				}
 				if ( in_array( $f['type'], array( \WorkflowCaptain\SettingsRegistry::TYPE_KINDS, \WorkflowCaptain\SettingsRegistry::TYPE_ROLES ), true ) ) {
 					$value = '' === $value ? array() : array_map( 'trim', explode( ',', (string) $value ) );
+				}
+				if ( \WorkflowCaptain\SettingsRegistry::TYPE_DAYS === $f['type'] && preg_match( '/^\s*[1-7]\s*(,\s*[1-7]\s*)*$/', (string) $value ) ) {
+					$value = array_map( 'trim', explode( ',', (string) $value ) ); // Weekdays 1 (Monday) to 7, e.g. 1,2,3,4,5; another number is the bit mask.
 				}
 				list( $ok, $clean, $code ) = \WorkflowCaptain\SettingsTransfer::check( $key, $value );
 				if ( ! $ok ) {
@@ -352,8 +359,41 @@ final class Command {
 				}
 				\WP_CLI::success( sprintf( '%d settings restored.', count( $changed ) ) );
 				return;
+			case 'profile':
+				// A country profile only proposes (SET-WC-17, S8/S9): without --apply, or with --dry-run, nothing is written.
+				$profile = strtoupper( (string) ( $args[1] ?? '' ) );
+				if ( ! \WorkflowCaptain\CountryProfiles::exists( $profile ) ) {
+					\WP_CLI::error( 'Usage: wp workflow-captain settings profile <' . implode( '|', \WorkflowCaptain\CountryProfiles::keys() ) . '> [--apply=<keys>] [--dry-run]' );
+				}
+				$diff = \WorkflowCaptain\CountryProfiles::diff( $profile, $current );
+				foreach ( $diff as $key => $row ) {
+					\WP_CLI::line( sprintf( '%s: %s -> %s%s', $key, $show( $row[0] ), $show( $row[1] ), $row[2] ? '' : '  [unchecked - legal review]' ) );
+				}
+				$selected = isset( $assoc['apply'] ) ? array_values( array_filter( array_map( 'trim', explode( ',', (string) $assoc['apply'] ) ) ) ) : array();
+				if ( array() === $selected || isset( $assoc['dry-run'] ) ) {
+					list( , $errors ) = \WorkflowCaptain\CountryProfiles::selection( $profile, $selected, $current );
+					foreach ( $errors as $key => $code ) {
+						\WP_CLI::warning( $key . ': ' . $code );
+					}
+					\WP_CLI::success( sprintf( '%d proposed changes (dry run, nothing written). Apply: --apply=<key1,key2>', count( $diff ) ) );
+					return;
+				}
+				foreach ( $selected as $key ) {
+					if ( isset( $diff[ $key ] ) && ! $diff[ $key ][2] ) {
+						\WP_CLI::warning( sprintf( '%s has not been legally reviewed yet.', $key ) );
+					}
+				}
+				list( $changed, $errors ) = \WorkflowCaptain\CountryProfiles::apply( $profile, $selected );
+				foreach ( $errors as $key => $code ) {
+					\WP_CLI::warning( $key . ': ' . $code );
+				}
+				if ( array() !== $errors ) {
+					\WP_CLI::error( 'Nothing was changed.' );
+				}
+				\WP_CLI::success( sprintf( '%d settings of profile %s applied. Undo: wp workflow-captain settings undo', count( $changed ), $profile ) );
+				return;
 		}
-		\WP_CLI::error( 'Unknown command. Use list, get, set, export, import, reset or undo.' );
+		\WP_CLI::error( 'Unknown command. Use list, get, set, export, import, reset, undo or profile.' );
 	}
 
 }

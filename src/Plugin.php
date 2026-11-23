@@ -85,8 +85,13 @@ final class Plugin {
 		add_action( 'init', array( $this, 'register_connectors' ), 20 );
 		add_action( Install::CRON_PROCESS, array( $this, 'run_worker' ) );
 		add_action( Install::CRON_DAILY, array( $this, 'run_maintenance' ) );
+		// SET-WC-21: switching the log level on starts its 7-day period, whichever way the option is written.
+		add_action( 'update_option_' . Settings::OPTION, array( LogLevel::class, 'changed' ), 10, 2 );
+		add_action( 'add_option_' . Settings::OPTION, array( LogLevel::class, 'added' ), 10, 2 );
 		add_filter( 'workflow_captain_retention_days', array( Settings::class, 'retention' ), 5, 2 );
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->register();
+		// SET-WC-04 (S11): the one public address, the unsubscribe link of promotional messages.
+		Unsubscribe::register();
 		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( '\WP_CLI' ) ) {
 			\WP_CLI::add_command( 'workflow-captain', \WorkflowCaptain\Cli\Command::class );
 		}
@@ -160,7 +165,7 @@ final class Plugin {
 			$actions   = new \WorkflowCaptain\Engine\ActionRegistry();
 			$actions->set_availability( array( $this->connectors(), 'action_available' ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyAdmin( $directory ) );
-			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyUser( $directory ) );
+			$actions->add( new \WorkflowCaptain\Engine\Actions\NotifyUser( $directory, new \WorkflowCaptain\Engine\Pacing( $store, $clock, Settings::timezone(), static fn(): array => Settings::get() ) ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Tag( $store, $clock ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Tag( $store, $clock, true ) );
 			$actions->add( new \WorkflowCaptain\Engine\Actions\Note( $store, $clock ) );
@@ -171,7 +176,7 @@ final class Plugin {
 			 * @param \WorkflowCaptain\Engine\ActionRegistry $registry
 			 */
 			do_action( 'workflow_captain_actions_v1', $actions );
-			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, wp_timezone_string(), Settings::engine_limits( Settings::get() ) );
+			$this->engine = new \WorkflowCaptain\Engine\Engine( $store, $actions, $directory, $clock, Settings::timezone(), Settings::engine_limits( Settings::get() ) );
 			$this->engine->set_paused( EmergencyPause::active() );
 			$this->engine->set_provider_contracts( array( $this, 'provider_contracts' ) );
 			/**
@@ -365,6 +370,7 @@ final class Plugin {
 		}
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->apply_retention();
 		SettingsTransfer::purge_expired_backup();
+		LogLevel::revert_if_expired( time() );
 		$this->consumer()->store()->purge_causes( ( new Clock() )->mysql() );
 	}
 

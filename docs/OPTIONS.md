@@ -7,10 +7,11 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | Option | Inhalt | Standard | Geschrieben von | Gelöscht bei Deinstallation (nur mit `delete_data_on_uninstall`, SET-WC-05) |
 |---|---|---|---|---|
 | `workflow_captain_db_version` | Version des Datenbankschemas | Version des Plugins | `Install::create_tables()` | ja |
-| `workflow_captain_settings` | Batchgröße, Parallelität, Nachholgrenze, Aufbewahrungsfristen, tägliche Hinweis-Mail | Register (`SettingsRegistry`, unten) | Einstellungsseite (`manage_workflow_captain`) | ja |
+| `workflow_captain_settings` | Batchgröße, Parallelität, Nachholgrenze, Aufbewahrungsfristen, Ruhezeit und Tagesgrenze der Nachrichten, tägliche Hinweis-Mail | Register (`SettingsRegistry`, unten) | Einstellungsseite (`manage_workflow_captain`) | ja |
 | `workflow_captain_emergency_pause` | Notfallpause: aktiv, seit, von Benutzer | aus | Übersicht, `wp workflow-captain pause` | ja |
 | `workflow_captain_adapters` | Produkte, deren Adapter zuletzt angemeldet waren (für das Pausieren bei Wegfall, C-15) | leer | `Plugin::register_adapters()` | ja |
 | `workflow_captain_audit` | letzte 50 (einstellbar 10–500, `audit_keep`) sicherheitsrelevante Änderungen: Zeit, Benutzer-ID, Art (Einstellungen, Rechte, Notfallpause), geänderte Schlüssel | leer | `Audit::record()` | ja |
+| `workflow_captain_messages` | Absender (Name, Adresse), Antwortadresse und Fußzeile der Nachrichten aus Workflows (SET-WC-10); Absender und Antwortadresse für alle Nachrichten, die Fußzeile nur für Nachrichten an Kunden | leer = heutiges Verhalten | Einstellungen → Nachrichten | ja |
 | `workflow_captain_notify` | Empfänger (bis zu zehn Adressen) und Arten der täglichen Hinweis-Mail | leer = Adresse der Website, alle Arten | Einstellungen → Benachrichtigungen | ja |
 | `workflow_captain_settings_backup` | Stand vor dem letzten Import, Zurücksetzen oder Rückgängig der Einstellungen (Zeit, Benutzer-ID, Quelle, Werte inkl. Empfänger), 30 Tage für „Rückgängig“, danach von der täglichen Wartung gelöscht | leer | `SettingsTransfer::apply()` | ja |
 | `workflow_captain_rejected` | Zahl abgelehnter Umschläge und die letzten Regelcodes, nie Werte | leer | `Plugin::record_rejection()` | ja |
@@ -35,12 +36,26 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `require_own_key` | `workflow_captain_settings` | ja/nein | nein | – | Datenschutz & Aufbewahrung | nein (hängt an `wp-config.php` dieser Installation) |
 | `audit_keep` | `workflow_captain_settings` | Zahl | 50 | 10–500 | Datenschutz & Aufbewahrung | ja |
 | `delete_data_on_uninstall` | `workflow_captain_settings` | ja/nein | nein (Daten behalten, E-S6; einschalten nur mit dem Wort LÖSCHEN, LOESCHEN oder DELETE, im Formular und mit `--confirm` in WP-CLI, wie in allen Captain-Plugins, S10) | – | Datenschutz & Aufbewahrung | nein (gilt nur für diese Installation) |
+| `quiet_hours_start` | `workflow_captain_settings` | Auswahl (volle Stunde) | −1 = aus | −1–23 | Nachrichten | ja |
+| `quiet_hours_end` | `workflow_captain_settings` | Auswahl (volle Stunde) | −1 = aus | −1–23 (über Mitternacht erlaubt, z. B. 22–7) | Nachrichten | ja |
+| `send_days` | `workflow_captain_settings` | Wochentage (Bitmaske, 1 = Montag … 64 = Sonntag; WP-CLI auch `1,2,3,4,5`) | 127 = alle | 1–127 | Nachrichten | ja |
+| `daily_limit` | `workflow_captain_settings` | Zahl | 0 = keine Grenze | 0–20 je Kunde und Kalendertag | Nachrichten | ja |
+| `daily_limit_action` | `workflow_captain_settings` | Auswahl | 0 = am nächsten Tag senden (1 = überspringen) | 0–1 | Nachrichten | ja |
+| `log_level` | `workflow_captain_settings` | Auswahl | 0 = normal (1 = ausführlich) | 0–1; ausführlich fällt nach 7 Tagen von selbst zurück (Beginn in `workflow_captain_log_detailed_since`) | Ausführung | nein (vorübergehend, an die Installation gebunden) |
 | `notify_daily` | `workflow_captain_settings` | ja/nein | ja | – | Benachrichtigungen | ja |
+| `show_pro_hints` | `workflow_captain_settings` | ja/nein | ja | – | Allgemein | ja (graue Pro-Hinweiszeilen am Ende eines Reiters, nur Text; die Liste im Kern bleibt leer, bis eine Funktion verkauft wird, S5, SET-WC-02) |
+| `sender_name` | `workflow_captain_messages` | Text | leer | bis 100 Zeichen | Nachrichten | ja |
+| `sender_email` | `workflow_captain_messages` | Adresse | leer = Absender von WordPress bzw. des Mail-Plugins | eine Adresse | Nachrichten | nein (an die Installation gebunden) |
+| `reply_to` | `workflow_captain_messages` | Adresse | leer = an den Absender | eine Adresse | Nachrichten | nein (an die Installation gebunden) |
+| `message_footer` | `workflow_captain_messages` | Text (mehrzeilig) | leer = keine Fußzeile | bis 1000 Zeichen; Platzhalter `{site_name}`, `{site_url}`, `{privacy_policy_url}` | Nachrichten | ja |
+| `timezone` | `workflow_captain_messages` | Zeitzone (IANA-Name) | leer = Zeitzone von WordPress | `DateTimeZone::listIdentifiers()` | Nachrichten | ja |
 | `recipients` | `workflow_captain_notify` | Adressen | leer = Adresse der Website | bis 10 | Benachrichtigungen | nein (personenbezogen, an die Installation gebunden) |
 | `notify_admin_roles` | `workflow_captain_notify` | Rollen | keine | bis 20 Rollen dieser Website | Benachrichtigungen | ja |
 | `kinds` | `workflow_captain_notify` | Auswahl | alle sechs Arten | – | Benachrichtigungen | ja |
 
 **Übertragen (SET-WC-11, -12, -23):** Einstellungen → Status → „Einstellungen übertragen“ und `wp workflow-captain settings list|get|set|export|import|reset|undo`. Der Export (Format 1) enthält nur Felder mit „Export: ja“, nie Empfänger-Adressen oder Geheimnisse; ein Import prüft jedes Feld streng (Fehler statt stiller Korrektur), zeigt zuerst die Änderungen und lehnt eine neuere Formatnummer ab. Speichern im Formular (beide Optionen, auch das erste Speichern einer Website), Import, Zurücksetzen (je Tab oder alles) und WP-CLI schreiben einen Eintrag ins Änderungsprotokoll (Adressen ohne Wert); Import, Zurücksetzen und WP-CLI sichern den vorigen Stand 30 Tage lang für einmaliges „Rückgängig“. Transient der Import-Vorschau: `workflow_captain_settings_import_{user}` (15 Minuten, ohne Adressen). Export, Import, Zurücksetzen und Rückgängig nehmen nur POST mit eigener Nonce und `manage_workflow_captain` an; die Deinstallation löscht auch die Transients `workflow_captain_*`.
+
+**Länderprofile (SET-WC-17, S8/S9):** `src/CountryProfiles.php`, Schlüssel `DE`, `AT`, `CH`, `EU`, `OTHER`. Ein Profil ist nur ein Vorschlag mit Vorher/Nachher für `quiet_hours_start/_end`, `send_days`, `daily_limit`, `daily_limit_action`, `retention_*` und (DE/AT/CH) `timezone`; jeder Wert liegt im Bereich des Registers. Werte mit rechtlichem Gewicht tragen `checked = false` und werden als „ungeprüft – rechtliche Prüfung“ markiert und nie vorausgewählt; OTHER enthält die neutralen Standardwerte (alles aus) und ist insgesamt „nicht geprüft“. **Die Werte von DE, AT und CH sind Platzhalter und müssen vor dem Verkaufsstart rechtlich und steuerlich geprüft werden.** Übernommen werden nur die ausgewählten Werte, über denselben Weg wie der Import (strenge Prüfung je Feld, Sicherung für „Rückgängig“, Protokolleintrag `settings_profile`); bestehende Fristen bleiben, solange sie nicht ausgewählt werden. Oberfläche: Einstellungen → Status → „Länderprofil“ (Auswahl per GET nur als Vorschau, Übernahme per POST mit Nonce `workflow_captain_settings_profile` und `manage_workflow_captain`). WP-CLI: `wp workflow-captain settings profile <KEY>` zeigt den Vorschlag (Probelauf), `--apply=key1,key2` übernimmt genau diese Schlüssel, `--dry-run` schreibt auch mit `--apply` nichts.
 
 Kurzlebige Transients je Benutzer (60 bis 300 Sekunden): `workflow_captain_notice_{user}` (Ergebnis von Speichern und Import) und `workflow_captain_dryrun_{user}` (letzter Testlauf mit Beispieldaten). Sie enthalten nur, was der Benutzer selbst eingegeben hat.
 
@@ -57,17 +72,22 @@ Capabilities bei Aktivierung für Administratoren: `manage_workflow_captain`, `e
 | `runs` | Lauf mit Kopie des Umschlags | `actor_user_id` | erledigte Läufe 30 Tage (eigene Frist, einstellbar 1–180 Tage), offene bleiben |
 | `steps` | Schritte, Sperrfrist, Buchung des Seiteneffekts, redigiertes Ergebnis | keiner | mit dem Lauf |
 | `tags`, `notes` | Markierungen und Notizen an Objekten | nur wenn der Betreiber Personenbezug in eine Notiz schreibt | bis zur Löschung |
+| `sends` | Zähler der Tagesgrenze (SET-WC-08): Kalendertag, Benutzer-ID, Zahl der Nachrichten | Benutzer-ID | 2 Tage (tägliche Wartung); Löscher und gelöschter Benutzer entfernen sie sofort |
 
 ## Änderungssemantik (WF-SET-14)
 
 - Neue Standardwerte und geänderte Einstellungen ändern **keine** veröffentlichte Version und keinen laufenden Lauf. Läufe behalten Graph, Ereignis und `authorized_by_user_id` ihrer Version (WF-CORE-02).
 - Grenzen der Ausführung (Batch, Parallelität, Nachholgrenze) gelten ab dem nächsten Worker-Durchlauf für alle Schritte.
+- Ruhezeit, Sendetage und Tagesgrenze (SET-WC-07/-08) gelten für `notify.user` (Nachrichten an Kunden, Transaktion und Werbung) ab dem nächsten Schritt, auch in laufenden Läufen; Nachrichten an den Betreiber (`notify.admin`) werden nie zurückgehalten. Eine Nachricht außerhalb des Fensters wartet bis zum Beginn der nächsten erlaubten vollen Stunde (Zeitzone der Website, Sommerzeit eingerechnet); kein Versuch wird gezählt, im Schrittprotokoll steht `deferred` mit Grund und Zeit. Über der Tagesgrenze wartet sie bis zum nächsten Kalendertag (und dessen Fenster) oder wird mit `skipped: daily_limit` übersprungen. Der Platz wird atomar in der Tabelle `sends` belegt; scheitert der Versand, wird er zurückgegeben.
+- Eigene Zeitzone (SET-WC-22, `timezone`, leer = WordPress): gilt für Zeitpläne, Wartezeiten in Tagen, Ruhezeit, den Kalendertag der Tagesgrenze und die Anzeige der Zeiten im Admin (SET-WC-31; UTC steht weiter im `datetime`-Attribut und im Tooltip). Gespeichert wird weiter in UTC; eine Änderung wirkt ab dem nächsten Schritt bzw. Zeitplan-Durchlauf, schon geplante Fälligkeiten werden nicht umgerechnet. Datenschutz-Exporte und WP-CLI bleiben in UTC.
 - Kürzere Aufbewahrungsfristen wirken bei der nächsten täglichen Wartung, auch auf ältere Einträge.
 - Eine neue Plugin-Version ändert das Schema nur im Admin, per Cron oder per WP-CLI; ein neueres Schema bleibt nach einem Downgrade unberührt.
 
 ## Öffentliche und private Datenflächen (WF-SEO-01, -02, -03)
 
 - Workflow Captain gibt auf öffentlichen Seiten nichts aus: keine Hooks an `wp_head`, `wp_footer`, `template_redirect`, Inhalt, Titel, Robots oder Sitemaps, keine Shortcodes, Rewrite-Regeln, eigenen Beitragstypen und keine REST-Routen. Ein Test in `tests/security-tests.php` sichert das ab.
+- **Einzige öffentliche Adresse (S11, SET-WC-04):** der Abmelde-Link von Werbenachrichten, `wp-admin/admin-post.php?action=workflow_captain_unsubscribe&u=<Benutzer-ID>&t=<Signatur>` (`src/Unsubscribe.php`). Die Signatur ist ein HMAC-SHA256 mit einem Schlüssel aus den Salts der Website; ohne gültige Signatur antwortet die Adresse mit 400. Öffnen zeigt nur eine Schaltfläche, erst das POST meldet ab (auch das One-Click-POST nach RFC 8058). Antwort mit `X-Robots-Tag: noindex, nofollow`; kein Theme, keine weiteren Daten. Der Test in `tests/security-tests.php` lässt genau diese eine Aktion zu.
+- Benutzer-Option `workflow_captain_unsubscribed` (Zeitpunkt in UTC; im Netzwerk je Website mit deren Präfix): Abmeldung von Werbenachrichten; bleibt bei der Deinstallation erhalten, außer „Beim Löschen des Plugins alle Daten entfernen“ ist an. *Aufbewahrung und Auskunft: Rechtsprüfung.*
 - Alle Seiten liegen im Admin und verlangen die passende Capability; jede Aktion prüft zusätzlich eine Nonce.
 - Ausgehende Daten gibt es nur als Nachrichten der Aktionen `notify.admin` und `notify.user` an Empfänger der eigenen Website. Ausgehende HTTP-Aufrufe macht der Kern nicht.
 - Downloads (Diagnose, Export eines Workflows) liefert nur `admin-post.php` mit Capability und Nonce.

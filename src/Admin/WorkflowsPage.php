@@ -55,7 +55,6 @@ final class WorkflowsPage {
 		wp_enqueue_script( 'workflow-captain-builder', $base . 'js/builder.js', array(), WORKFLOW_CAPTAIN_VERSION, true );
 		$fields  = array(
 			'notify.admin'        => array( array( 'key' => 'subject', 'label' => __( 'Subject', 'workflow-captain' ) ), array( 'key' => 'message', 'label' => __( 'Message', 'workflow-captain' ), 'type' => 'textarea' ), array( 'key' => 'to', 'label' => __( 'Recipients (site_admin or capability)', 'workflow-captain' ) ) ),
-			'notify.user'         => array( array( 'key' => 'subject', 'label' => __( 'Subject', 'workflow-captain' ) ), array( 'key' => 'message', 'label' => __( 'Message', 'workflow-captain' ), 'type' => 'textarea' ), array( 'key' => 'user_field', 'label' => __( 'User from (actor_user_id or data.…_user_id)', 'workflow-captain' ) ) ),
 			'workflow.tag.set'    => array( array( 'key' => 'tag', 'label' => __( 'Tag', 'workflow-captain' ) ) ),
 			'workflow.tag.remove' => array( array( 'key' => 'tag', 'label' => __( 'Tag', 'workflow-captain' ) ) ),
 			'workflow.note.add'   => array( array( 'key' => 'text', 'label' => __( 'Note', 'workflow-captain' ), 'type' => 'textarea' ) ),
@@ -81,11 +80,11 @@ final class WorkflowsPage {
 			'actions'   => $actions,
 			'events'    => array_values( array_unique( $events ) ),
 			'fields'    => array() !== $fields ? $fields : new \stdClass(),
-			'coreMails' => is_array( $mails ) && is_array( $mails['events'] ?? null ) ? $mails['events'] : new \stdClass(),
+			'coreMails' => is_array( $mails ) && is_array( $mails['events'] ?? null ) ? DataTexts::core_mails( $mails['events'] ) : new \stdClass(),
 			'path'      => $path,
 			'errorNode' => is_array( $dry ) ? $dry['result']['error_node'] : null,
 			'sources'   => $this->sources(),
-			'timezone'  => wp_timezone_string(),
+			'timezone'  => \WorkflowCaptain\Settings::timezone(),
 			'locale'    => str_replace( '_', '-', get_user_locale() ),
 			'focusNode' => 1 === preg_match( '/^[A-Za-z0-9_-]{1,64}$/', $node ) ? $node : null,
 			// Limits of conditions, so the form offers "+ Gruppe" only as deep as the engine allows (condition:too_deep).
@@ -459,7 +458,7 @@ final class WorkflowsPage {
 		}
 
 		$pages = Pagination::state( $store->count_workflows(), self::PER_PAGE, Pagination::requested() );
-		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Workflows, newest first', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Name', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'State', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Trigger', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Version', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Last run (UTC)', 'workflow-captain' ) . '</th><th scope="col">' . esc_html( sprintf( /* translators: %d: number of days */ __( 'Errors (%d days)', 'workflow-captain' ), self::ERROR_DAYS ) ) . '</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Workflows, newest first', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Name', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'State', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Trigger', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Version', 'workflow-captain' ) . '</th><th scope="col">' . esc_html( sprintf( /* translators: %s: time zone */ __( 'Last run (%s)', 'workflow-captain' ), Time::label() ) ) . '</th><th scope="col">' . esc_html( sprintf( /* translators: %d: number of days */ __( 'Errors (%d days)', 'workflow-captain' ), self::ERROR_DAYS ) ) . '</th></tr></thead><tbody>';
 		$rows = $store->list_workflows( self::PER_PAGE, $pages['offset'] );
 		if ( array() === $rows ) {
 			echo '<tr><td colspan="6">' . esc_html__( 'No workflows yet.', 'workflow-captain' ) . '</td></tr>';
@@ -562,7 +561,7 @@ final class WorkflowsPage {
 			$last = $store->workflow_run_summary( array( (int) $wf['id'] ), self::error_since( time() ) )[ (int) $wf['id'] ] ?? null;
 			if ( null !== $last ) {
 				/* translators: 1: run number, 2: state */
-				echo '<br>' . esc_html__( 'Last run:', 'workflow-captain' ) . ' <a href="' . esc_url( self::url( self::SLUG_RUNS, array( 'run' => $last['last_run_id'] ) ) ) . '">' . esc_html( sprintf( __( 'Run %1$d, %2$s', 'workflow-captain' ), $last['last_run_id'], self::run_label( $last['last_state'] ) ) ) . '</a>, ' . self::time_html( $last['last_at'] ) . ' UTC'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- time_html() escapes.
+				echo '<br>' . esc_html__( 'Last run:', 'workflow-captain' ) . ' <a href="' . esc_url( self::url( self::SLUG_RUNS, array( 'run' => $last['last_run_id'] ) ) ) . '">' . esc_html( sprintf( __( 'Run %1$d, %2$s', 'workflow-captain' ), $last['last_run_id'], self::run_label( $last['last_state'] ) ) ) . '</a>, ' . self::time_html( $last['last_at'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- time_html() escapes.
 			}
 		}
 		echo '</p></div><p class="wfc-editor-actions"><button class="button" name="do" value="dryrun">' . esc_html__( 'Test run', 'workflow-captain' ) . '</button>';
@@ -599,7 +598,7 @@ final class WorkflowsPage {
 		$period   = isset( $_GET['period'] ) ? sanitize_key( wp_unslash( $_GET['period'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 		$from     = isset( $_GET['from'] ) ? sanitize_text_field( wp_unslash( $_GET['from'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 		$to       = isset( $_GET['to'] ) ? sanitize_text_field( wp_unslash( $_GET['to'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
-		$range    = self::period_filter( $period, $from, $to, time() );
+		$range    = self::period_filter( $period, $from, $to, time(), Time::label() );
 		$base     = array_filter( array( 'correlation_id' => $corr, 'workflow_id' => $workflow ) ) + $range['filter'];
 		$filter   = $base + array_filter( array( 'state' => $state ) );
 		$pages    = Pagination::state( $store->count_runs( $filter ), self::PER_PAGE, Pagination::requested() );
@@ -630,7 +629,7 @@ final class WorkflowsPage {
 		echo '<ul class="subsubsub"><li>' . implode( ' | </li><li>', $links ) . '</li></ul>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from escaped parts above.
 		$this->render_period_form( $state, $corr, $workflow, $range['args'] );
 
-		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Runs, newest first', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'No.', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Workflow', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Event', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'State', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Reason', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Started (UTC)', 'workflow-captain' ) . '</th></tr></thead><tbody>';
+		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Runs, newest first', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'No.', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Workflow', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Event', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'State', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Reason', 'workflow-captain' ) . '</th><th scope="col">' . esc_html( sprintf( /* translators: %s: time zone */ __( 'Started (%s)', 'workflow-captain' ), Time::label() ) ) . '</th></tr></thead><tbody>';
 		$runs = $store->find_runs( $filter, self::PER_PAGE, $pages['offset'] );
 		if ( array() === $runs ) {
 			echo '<tr><td colspan="6">' . esc_html__( 'No runs.', 'workflow-captain' ) . '</td></tr>';
@@ -641,7 +640,7 @@ final class WorkflowsPage {
 				$names[ $r['workflow_id'] ] = $store->get_workflow( $r['workflow_id'] )['name'] ?? (string) $r['workflow_id'];
 			}
 			/* translators: %d: run number */
-			echo '<tr><td><a href="' . esc_url( self::url( self::SLUG_RUNS, array( 'run' => $r['id'] ) ) ) . '" aria-label="' . esc_attr( sprintf( __( 'View run %d', 'workflow-captain' ), (int) $r['id'] ) ) . '">' . (int) $r['id'] . '</a></td><td>' . esc_html( (string) $names[ $r['workflow_id'] ] ) . '</td><td><code>' . esc_html( (string) ( $r['context']['type'] ?? '' ) ) . '</code> ' . esc_html( (string) ( $r['context']['subject']['id'] ?? '' ) ) . '</td><td>' . esc_html( self::run_label( $r['state'] ) ) . '</td><td>' . esc_html( (string) $r['last_error'] ) . '</td><td>' . esc_html( $r['created_at'] ) . '</td></tr>';
+			echo '<tr><td><a href="' . esc_url( self::url( self::SLUG_RUNS, array( 'run' => $r['id'] ) ) ) . '" aria-label="' . esc_attr( sprintf( __( 'View run %d', 'workflow-captain' ), (int) $r['id'] ) ) . '">' . (int) $r['id'] . '</a></td><td>' . esc_html( (string) $names[ $r['workflow_id'] ] ) . '</td><td><code>' . esc_html( (string) ( $r['context']['type'] ?? '' ) ) . '</code> ' . esc_html( (string) ( $r['context']['subject']['id'] ?? '' ) ) . '</td><td>' . esc_html( self::run_label( $r['state'] ) ) . '</td><td>' . esc_html( (string) $r['last_error'] ) . '</td><td>' . Time::html( $r['created_at'] ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Time::html() escapes.
 		}
 		echo '</tbody></table>';
 		echo Pagination::render( $pages, $args + array( 'state' => $state ), __( 'Run list pages', 'workflow-captain' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in Pagination::render().
@@ -652,12 +651,13 @@ final class WorkflowsPage {
 	const PERIODS = array( 1, 7, 30, 90 );
 
 	/**
-	 * Time range of the run list from the request. Own dates (UTC, "Y-m-d", from 00:00:00 to 23:59:59 inclusive) win over
+	 * Time range of the run list from the request. Own dates ("Y-m-d" in $zone, from 00:00:00 to 23:59:59 inclusive,
+	 * converted to the stored UTC; SET-WC-31) win over
 	 * a preset of days; reversed dates are swapped; anything else is ignored. "args" are the parameters to keep in links.
 	 *
 	 * @return array{filter:array{since?:string,until?:string},args:array<string,string>}
 	 */
-	public static function period_filter( string $period, string $from, string $to, int $now ): array {
+	public static function period_filter( string $period, string $from, string $to, int $now, string $zone = 'UTC' ): array {
 		$date = static function ( string $d ): ?string {
 			$dt = \DateTimeImmutable::createFromFormat( '!Y-m-d', $d, new \DateTimeZone( 'UTC' ) );
 			return false !== $dt && $dt->format( 'Y-m-d' ) === $d ? $d : null;
@@ -671,11 +671,11 @@ final class WorkflowsPage {
 			$filter = array();
 			$args   = array();
 			if ( null !== $from ) {
-				$filter['since'] = $from . ' 00:00:00';
+				$filter['since'] = Time::to_utc( $from . ' 00:00:00', $zone );
 				$args['from']    = $from;
 			}
 			if ( null !== $to ) {
-				$filter['until'] = $to . ' 23:59:59';
+				$filter['until'] = Time::to_utc( $to . ' 23:59:59', $zone );
 				$args['to']      = $to;
 			}
 			return array( 'filter' => $filter, 'args' => $args );
@@ -699,8 +699,8 @@ final class WorkflowsPage {
 			echo '<option value="' . (int) $days . '"' . selected( (string) ( $current['period'] ?? '' ), (string) $days, false ) . '>' . esc_html( $text ) . '</option>';
 		}
 		echo '</select></span>';
-		echo '<span><label for="wfc-from">' . esc_html__( 'or from (UTC)', 'workflow-captain' ) . '</label><br><input type="date" id="wfc-from" name="from" value="' . esc_attr( (string) ( $current['from'] ?? '' ) ) . '"></span>';
-		echo '<span><label for="wfc-to">' . esc_html__( 'to (UTC)', 'workflow-captain' ) . '</label><br><input type="date" id="wfc-to" name="to" value="' . esc_attr( (string) ( $current['to'] ?? '' ) ) . '"></span>';
+		echo '<span><label for="wfc-from">' . esc_html__( 'or from', 'workflow-captain' ) . '</label><br><input type="date" id="wfc-from" name="from" value="' . esc_attr( (string) ( $current['from'] ?? '' ) ) . '"></span>';
+		echo '<span><label for="wfc-to">' . esc_html__( 'to', 'workflow-captain' ) . '</label><br><input type="date" id="wfc-to" name="to" value="' . esc_attr( (string) ( $current['to'] ?? '' ) ) . '"></span>';
 		echo '<span><button class="button">' . esc_html__( 'Filter', 'workflow-captain' ) . '</button>';
 		if ( array() !== $current ) {
 			echo ' <a href="' . esc_url( self::url( self::SLUG_RUNS, array_filter( array( 'state' => $state, 'correlation' => $corr, 'workflow' => $workflow ) ) ) ) . '">' . esc_html__( 'Remove time range', 'workflow-captain' ) . '</a>';
@@ -734,8 +734,8 @@ final class WorkflowsPage {
 		$meta[ __( 'Event', 'workflow-captain' ) ]          = '<code>' . esc_html( (string) ( $context['type'] ?? '' ) ) . '</code>';
 		$meta[ __( 'Object', 'workflow-captain' ) ]            = esc_html( trim( (string) ( $context['subject']['type'] ?? '' ) . ' ' . (string) ( $context['subject']['id'] ?? '' ) ) );
 		$meta[ __( 'Occurred', 'workflow-captain' ) ]       = esc_html( (string) ( $context['occurred_at'] ?? '–' ) );
-		$meta[ __( 'Started (UTC)', 'workflow-captain' ) ]    = esc_html( $run['created_at'] );
-		$meta[ in_array( $run['state'], EngineStore::RUN_OPEN, true ) ? __( 'Last modified (UTC)', 'workflow-captain' ) : __( 'Ended (UTC)', 'workflow-captain' ) ] = esc_html( $run['updated_at'] );
+		$meta[ __( 'Started', 'workflow-captain' ) ]    = Time::html( $run['created_at'] );
+		$meta[ in_array( $run['state'], EngineStore::RUN_OPEN, true ) ? __( 'Last modified', 'workflow-captain' ) : __( 'Ended', 'workflow-captain' ) ] = Time::html( $run['updated_at'] );
 		if ( '' !== (string) $run['last_error'] ) {
 			$meta[ __( 'Reason', 'workflow-captain' ) ] = '<code>' . esc_html( (string) $run['last_error'] ) . '</code>';
 		}
@@ -752,8 +752,8 @@ final class WorkflowsPage {
 		echo '</tbody></table>';
 
 		echo '<h3>' . esc_html__( 'Timeline of the steps', 'workflow-captain' ) . '</h3>';
-		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Steps of the run in order, times in UTC', 'workflow-captain' ) . '</caption><thead><tr>';
-		foreach ( array( __( 'Step', 'workflow-captain' ), __( 'State', 'workflow-captain' ), __( 'Created (UTC)', 'workflow-captain' ), __( 'Waiting until (UTC)', 'workflow-captain' ), __( 'Ended (UTC)', 'workflow-captain' ), __( 'Attempts', 'workflow-captain' ), __( 'Result', 'workflow-captain' ), __( 'Error', 'workflow-captain' ) ) as $head ) {
+		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html( sprintf( /* translators: %s: time zone */ __( 'Steps of the run in order, times in %s', 'workflow-captain' ), Time::label() ) ) . '</caption><thead><tr>';
+		foreach ( array( __( 'Step', 'workflow-captain' ), __( 'State', 'workflow-captain' ), sprintf( /* translators: %s: time zone */ __( 'Created (%s)', 'workflow-captain' ), Time::label() ), sprintf( /* translators: %s: time zone */ __( 'Waiting until (%s)', 'workflow-captain' ), Time::label() ), sprintf( /* translators: %s: time zone */ __( 'Ended (%s)', 'workflow-captain' ), Time::label() ), __( 'Attempts', 'workflow-captain' ), __( 'Result', 'workflow-captain' ), __( 'Error', 'workflow-captain' ) ) as $head ) {
 			echo '<th scope="col">' . esc_html( $head ) . '</th>';
 		}
 		echo '<th scope="col"><span class="screen-reader-text">' . esc_html__( 'Actions', 'workflow-captain' ) . '</span></th></tr></thead><tbody>';
@@ -848,10 +848,7 @@ final class WorkflowsPage {
 	}
 
 	private static function time_html( ?string $mysql ): string {
-		if ( null === $mysql || '' === $mysql ) {
-			return '<span aria-hidden="true">–</span><span class="screen-reader-text">' . esc_html__( 'not specified', 'workflow-captain' ) . '</span>';
-		}
-		return '<time datetime="' . esc_attr( str_replace( ' ', 'T', $mysql ) . 'Z' ) . '">' . esc_html( $mysql ) . '</time>';
+		return Time::html( $mysql );
 	}
 
 	private static function step_label( string $state ): string {

@@ -120,6 +120,7 @@ final class Privacy {
 		$count = $user ? $this->store()->anonymize_actor( (int) $user->ID, $this->clock->mysql() ) : 0;
 		if ( $user && null !== $this->engine_provider ) {
 			$count += $this->engine()->anonymize_runs( (int) $user->ID, $this->clock->mysql() );
+			$count += $this->engine()->erase_send_counts( (int) $user->ID );
 		}
 		return array(
 			'items_removed'  => $count > 0,
@@ -133,6 +134,7 @@ final class Privacy {
 		$this->store()->anonymize_actor( (int) $user_id, $this->clock->mysql() );
 		if ( null !== $this->engine_provider ) {
 			$this->engine()->anonymize_runs( (int) $user_id, $this->clock->mysql() );
+			$this->engine()->erase_send_counts( (int) $user_id );
 		}
 	}
 
@@ -159,6 +161,8 @@ final class Privacy {
 			// Finished runs and their step logs have their own period (WF-SET-07); open runs (running, action
 			// required, paused) are never deleted here.
 			$days = max( 1, min( self::max_days(), (int) apply_filters( 'workflow_captain_retention_days', 30, 'runs' ) ) );
+			// Counters of the daily limit (SET-WC-08) are needed only for today; keep two days for time zone changes.
+			$this->engine()->purge_send_counts( gmdate( 'Y-m-d', $clock->now() - 2 * DAY_IN_SECONDS ) );
 			$this->engine()->delete_runs_older( array( EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_FAILED, EngineStore::RUN_CANCELLED ), $clock->mysql( $clock->now() - $days * DAY_IN_SECONDS ) );
 		}
 	}

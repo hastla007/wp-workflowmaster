@@ -37,8 +37,9 @@ final class Settings {
 	public static function sanitize( $input ): array {
 		$clean = self::defaults();
 		foreach ( self::fields() as $key => list( $default, $min, $max ) ) {
-			if ( is_array( $input ) && isset( $input[ $key ] ) && is_numeric( $input[ $key ] ) ) {
-				$clean[ $key ] = max( $min, min( $max, (int) $input[ $key ] ) );
+			if ( is_array( $input ) && isset( $input[ $key ] ) ) {
+				// Numbers are clamped to their range; the sending days also come as a list of weekdays (SET-WC-07).
+				$clean[ $key ] = SettingsRegistry::clean( $key, $input[ $key ] );
 			}
 		}
 		return $clean;
@@ -58,6 +59,12 @@ final class Settings {
 		$problems = array();
 		foreach ( self::fields() as $key => list( , $min, $max ) ) {
 			if ( ! array_key_exists( $key, $input ) ) {
+				continue;
+			}
+			if ( is_array( $input[ $key ] ) && SettingsRegistry::TYPE_DAYS === SettingsRegistry::field( $key )['type'] ) {
+				if ( 0 === SettingsRegistry::days_mask( $input[ $key ] ) ) {
+					$problems[ $key ] = array( '', $clean[ $key ], $min, $max );
+				}
 				continue;
 			}
 			$raw = is_scalar( $input[ $key ] ) ? trim( (string) $input[ $key ] ) : '';
@@ -80,6 +87,11 @@ final class Settings {
 		}
 		if ( function_exists( 'add_settings_error' ) ) {
 			foreach ( self::problems( $input ) as $key => list( $raw, $stored, $min, $max ) ) {
+				if ( SettingsRegistry::TYPE_DAYS === SettingsRegistry::field( $key )['type'] ) {
+					$clean[ $key ] = self::stored()[ $key ];
+					add_settings_error( self::OPTION, 'wfc-' . $key, __( 'Choose at least one sending day. The days were not changed.', 'workflow-captain' ), 'error' );
+					continue;
+				}
 				/* translators: 1: entered value, 2: lowest value, 3: highest value, 4: stored value */
 				add_settings_error( self::OPTION, 'wfc-' . $key, sprintf( __( 'The value “%1$s” is not between %2$d and %3$d. Saved: %4$d.', 'workflow-captain' ), $raw, $min, $max, $stored ), 'error' );
 			}
@@ -110,6 +122,19 @@ final class Settings {
 		return $values;
 	}
 
+	/**
+	 * Time zone of Workflow Captain (SET-WC-22): the own setting, else the one of WordPress (an IANA name or an offset
+	 * such as "+02:00"), else UTC.
+	 */
+	public static function timezone(): string {
+		$own = Messages::config()['timezone'] ?? '';
+		if ( '' !== $own ) {
+			return $own;
+		}
+		$wp = function_exists( 'wp_timezone_string' ) ? (string) wp_timezone_string() : '';
+		return '' === $wp ? 'UTC' : $wp;
+	}
+
 	/** Limits for the engine (WF-CORE-05, catch-up of konzept 15.3). */
 	public static function engine_limits( array $settings ): array {
 		return array(
@@ -117,6 +142,7 @@ final class Settings {
 			'workflow' => $settings['max_workflow'],
 			'catch_up' => $settings['catch_up_hours'] * HOUR_IN_SECONDS,
 			'seconds'  => $settings['max_seconds'],
+			'detailed' => LogLevel::detailed( time() ), // SET-WC-21.
 		);
 	}
 

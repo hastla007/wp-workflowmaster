@@ -187,11 +187,6 @@ msgstr "Aktiv"
 msgid "Active emergency pause"
 msgstr "Aktive Notfallpause"
 
-#. translators: %s: time in UTC
-#: src/Admin/OverviewPage.php:127
-msgid "Active since %s (UTC). No step is executed; events are still stored."
-msgstr "Aktiv seit %s (UTC). Kein Schritt wird ausgeführt; Ereignisse werden weiter gespeichert."
-
 #: src/Admin/OverviewPage.php:42 src/Admin/ProvidersPage.php:133
 msgid "Active workflows"
 msgstr "Aktive Workflows"
@@ -371,10 +366,6 @@ msgstr "Korrelation"
 msgid "Correlation %s"
 msgstr "Korrelation %s"
 
-#: src/Admin/WorkflowsPage.php:698
-msgid "Created (UTC)"
-msgstr "Angelegt (UTC)"
-
 #: src/Admin/Pagination.php:56
 msgid "Current page"
 msgstr "Aktuelle Seite"
@@ -503,10 +494,6 @@ msgstr "Notfallpause eingeschaltet"
 #: src/Admin/WorkflowsPage.php:114
 msgid "End"
 msgstr "Ende"
-
-#: src/Admin/WorkflowsPage.php:680 src/Admin/WorkflowsPage.php:698
-msgid "Ended (UTC)"
-msgstr "Beendet (UTC)"
 
 #: src/Admin/WorkflowsPage.php:827
 msgid "Ended (condition)"
@@ -757,17 +744,9 @@ msgstr "Schlüssel doppelt angemeldet"
 msgid "Last error"
 msgstr "Letzter Fehler"
 
-#: src/Admin/WorkflowsPage.php:680
-msgid "Last modified (UTC)"
-msgstr "Zuletzt geändert (UTC)"
-
 #: src/Admin/Pagination.php:60
 msgid "Last page"
 msgstr "Letzte Seite"
-
-#: src/Admin/WorkflowsPage.php:404
-msgid "Last run (UTC)"
-msgstr "Letzter Lauf (UTC)"
 
 #. translators: 1: run number, 2: state
 #: src/Admin/WorkflowsPage.php:507
@@ -869,10 +848,6 @@ msgstr "Nächste Termine (Zeitzone der Website):"
 #: src/Admin/Pagination.php:59
 msgid "Next page"
 msgstr "Nächste Seite"
-
-#: src/Admin/SettingsPage.php:385
-msgid "Next worker run (UTC)"
-msgstr "Nächster Worker-Lauf (UTC)"
 
 #: src/Admin/SchedulesPage.php:122
 msgid "No active or paused workflow starts on a schedule. A draft only counts once it is published."
@@ -1477,10 +1452,6 @@ msgstr "Schritt"
 msgid "Step resumed"
 msgstr "Schritt fortgesetzt"
 
-#: src/Admin/WorkflowsPage.php:697
-msgid "Steps of the run in order, times in UTC"
-msgstr "Schritte des Laufs in ihrer Reihenfolge, Zeiten in UTC"
-
 #: src/Notifications.php:115
 msgid "Steps or runs are stuck"
 msgstr "Schritte oder Läufe hängen"
@@ -1749,10 +1720,6 @@ msgstr "Diese Testnachricht zeigt, dass Hinweise von Workflow Captain ankommen. 
 msgid "Thursday"
 msgstr "Donnerstag"
 
-#: src/Admin/SettingsPage.php:649
-msgid "Time (UTC)"
-msgstr "Zeit (UTC)"
-
 #: src/Admin/WorkflowsPage.php:637
 msgid "Time range"
 msgstr "Zeitraum"
@@ -1877,10 +1844,6 @@ msgstr "Wartet auf Wiederholung"
 #: src/Admin/WorkflowsPage.php:738
 msgid "Waiting steps no longer run; completed work is not undone."
 msgstr "Wartende Schritte laufen nicht mehr; Erledigtes wird nicht rückgängig gemacht."
-
-#: src/Admin/WorkflowsPage.php:698
-msgid "Waiting until (UTC)"
-msgstr "Wartet bis (UTC)"
 
 #: src/Admin/WorkflowsPage.php:152
 msgid "Warning"
@@ -2198,10 +2161,6 @@ msgstr "je Objekt nacheinander"
 msgid "one at a time per user"
 msgstr "je Benutzer nacheinander"
 
-#: src/Admin/WorkflowsPage.php:644
-msgid "or from (UTC)"
-msgstr "oder von (UTC)"
-
 #: src/Admin/SettingsPage.php:564
 msgid "outside the allowed range"
 msgstr "außerhalb des erlaubten Bereichs"
@@ -2237,10 +2196,6 @@ msgstr "die Datei stammt von einer neueren Version; bitte Workflow Captain aktua
 #: src/Admin/ConnectorsPage.php:80
 msgid "the runtime for custom connectors is not unlocked on this site (Workflow Captain Pro)"
 msgstr "die Laufzeit für eigene Connectoren ist auf dieser Website nicht freigeschaltet (Workflow Captain Pro)"
-
-#: src/Admin/WorkflowsPage.php:645
-msgid "to (UTC)"
-msgstr "bis (UTC)"
 
 #: src/Admin/SettingsPage.php:566
 msgid "unknown type"
@@ -2498,3 +2453,472 @@ msgstr "nicht in Liste"
 #: src/Admin/WorkflowsPage.php:187
 msgid "week(s)"
 msgstr "Woche(n)"
+
+#: src/Admin/DataTexts.php:66
+msgid "Buyer"
+msgstr "Käufer"
+
+#: src/Admin/DataTexts.php:27
+msgid "Check-in {{subject.id}}"
+msgstr "Einlass {{subject.id}}"
+
+#: src/Admin/DataTexts.php:26
+msgid "Check-in: notice to the site operator"
+msgstr "Einlass: Hinweis an den Betreiber"
+
+#: src/Admin/DataTexts.php:20
+msgid "Commission approved: notify partner management after one day"
+msgstr "Provision freigegeben: nach einem Tag Hinweis an Partnerverwaltung"
+
+#: src/Admin/DataTexts.php:22
+msgid "Commission {{subject.id}} of {{data.amount_minor}} {{data.currency}} has been approved for one day."
+msgstr "Provision {{subject.id}} über {{data.amount_minor}} {{data.currency}} ist seit einem Tag freigegeben."
+
+#: src/Admin/DataTexts.php:65
+msgid "Customer"
+msgstr "Kunde"
+
+#: src/Admin/DataTexts.php:23
+msgid "Date canceled: tag the date and notify the site operator"
+msgstr "Termin abgesagt: Termin markieren und Betreiber informieren"
+
+#: src/Admin/DataTexts.php:24
+msgid "Date {{subject.id}} canceled"
+msgstr "Termin {{subject.id}} abgesagt"
+
+#: src/Admin/DataTexts.php:62
+msgid "Gift recipient"
+msgstr "Beschenkter"
+
+#: src/Admin/DataTexts.php:21
+msgid "Large commission approved"
+msgstr "Große Provision freigegeben"
+
+#: src/Admin/DataTexts.php:67
+msgid "Partner"
+msgstr "Partner"
+
+#: src/Admin/DataTexts.php:64
+msgid "Recipient or buyer"
+msgstr "Empfänger oder Käufer"
+
+#: src/Admin/DataTexts.php:30
+msgid "Redeemed: {{data.amount_minor}} {{data.currency}} via {{data.channel}}"
+msgstr "Eingelöst: {{data.amount_minor}} {{data.currency}} über {{data.channel}}"
+
+#: src/Admin/DataTexts.php:63
+msgid "Site operator"
+msgstr "Betreiber"
+
+#: src/Admin/DataTexts.php:68
+msgid "Ticket holder"
+msgstr "Ticketinhaber"
+
+#: src/Admin/DataTexts.php:28
+msgid "Ticket {{subject.id}} was checked in at {{occurred_at}} on device {{data.device_id}}."
+msgstr "Ticket {{subject.id}} wurde um {{occurred_at}} am Gerät {{data.device_id}} eingecheckt."
+
+#: src/Admin/DataTexts.php:29
+msgid "Voucher redeemed: tag and add a note"
+msgstr "Gutschein eingelöst: markieren und notieren"
+
+#: src/Admin/DataTexts.php:47
+msgid "also the order emails of WooCommerce"
+msgstr "zusätzlich die Bestellmails von WooCommerce"
+
+#: src/Admin/DataTexts.php:51
+msgid "can be turned off under WooCommerce → Settings → Emails"
+msgstr "abschaltbar unter WooCommerce → Einstellungen → E-Mails"
+
+#: src/Admin/DataTexts.php:52
+msgid "can be turned off under WooCommerce → Settings → Emails, off by default"
+msgstr "abschaltbar unter WooCommerce → Einstellungen → E-Mails, ab Werk aus"
+
+#: src/Admin/DataTexts.php:53
+msgid "cannot be turned off (only with a code filter)"
+msgstr "nicht abschaltbar (nur per Code-Filter)"
+
+#: src/Admin/DataTexts.php:37
+msgid "depending on the change; reactivation without email"
+msgstr "je nach Wechsel; Reaktivierung ohne Mail"
+
+#: src/Admin/DataTexts.php:38
+msgid "depending on the path: application, automatic approval or creation in the admin"
+msgstr "je nach Weg: Bewerbung, automatische Freigabe oder Anlage im Admin"
+
+#: src/Admin/DataTexts.php:36
+msgid "depending on the status change"
+msgstr "je nach Statuswechsel"
+
+#: src/Admin/DataTexts.php:35
+msgid "for each affected date, also the cancellation of the date"
+msgstr "je betroffenem Termin zusätzlich die Absage des Termins"
+
+#: src/Admin/DataTexts.php:32
+msgid "for many codes; with a delivery date only at the time of delivery"
+msgstr "bei vielen Codes; mit Lieferdatum erst zum Lieferzeitpunkt"
+
+#: src/Admin/DataTexts.php:42
+msgid "gifts only, only on the first redemption"
+msgstr "nur Geschenke, nur bei der ersten Einlösung"
+
+#: src/Admin/DataTexts.php:46
+msgid "later via cron"
+msgstr "später per Cron"
+
+#: src/Admin/DataTexts.php:41
+msgid "not for WooCommerce orders (WooCommerce sends those) and not for refunds in the payment provider’s dashboard"
+msgstr "nicht bei WooCommerce-Bestellungen (dort WooCommerce) und nicht bei Erstattungen im Dashboard des Zahlungsanbieters"
+
+#: src/Admin/DataTexts.php:31
+msgid "on application without automatic approval"
+msgstr "bei Bewerbung ohne automatische Freigabe"
+
+#: src/Admin/DataTexts.php:44
+msgid "only if the commission goes into review; later via cron"
+msgstr "nur wenn die Provision in Prüfung geht; später per Cron"
+
+#: src/Admin/DataTexts.php:45
+msgid "only if there was a credit note"
+msgstr "nur wenn es eine Gutschrift gab"
+
+#: src/Admin/DataTexts.php:43
+msgid "only if “send” is chosen when issuing (default)"
+msgstr "nur wenn beim Ausstellen „senden“ gewählt ist (Standard)"
+
+#: src/Admin/DataTexts.php:54
+msgid "only with the filter wpac_notify_credit_note"
+msgstr "nur per Filter wpac_notify_credit_note"
+
+#: src/Admin/DataTexts.php:55
+msgid "only with the filter wpcap_send_refund_mail"
+msgstr "nur per Filter wpcap_send_refund_mail"
+
+#: src/Admin/DataTexts.php:48
+msgid "setting notify_admin_review"
+msgstr "Einstellung notify_admin_review"
+
+#: src/Admin/DataTexts.php:49
+msgid "setting notify_commissions (off by default) and the partner’s unsubscribe"
+msgstr "Einstellung notify_commissions (ab Werk aus) und Abmeldung des Partners"
+
+#: src/Admin/DataTexts.php:50
+msgid "setting notify_payout_paid (on by default)"
+msgstr "Einstellung notify_payout_paid (ab Werk an)"
+
+#: src/Admin/DataTexts.php:34
+msgid "the same email as for “Order paid”"
+msgstr "dieselbe Mail wie bei „Bestellung bezahlt“"
+
+#: src/Admin/DataTexts.php:33
+msgid "the voucher email itself was sent before this event"
+msgstr "die Gutscheinmail selbst ging schon vor diesem Ereignis hinaus"
+
+#: src/Admin/DataTexts.php:40
+msgid "with PDF tickets; for WooCommerce orders also the order emails of WooCommerce"
+msgstr "mit PDF-Tickets; bei WooCommerce-Bestellungen zusätzlich die Bestellmails von WooCommerce"
+
+#: src/Admin/DataTexts.php:39
+msgid "with credit note; not for WooCommerce orders"
+msgstr "mit Gutschrift; nicht bei WooCommerce-Bestellungen"
+
+#: src/Admin/DataTexts.php:25
+msgid "{{data.issued_tickets}} issued tickets are affected. Pass Captain informs the guests itself; this notice is in addition."
+msgstr "{{data.issued_tickets}} ausgegebene Tickets sind betroffen. Pass Captain informiert die Gäste selbst; dieser Hinweis ist zusätzlich."
+
+#: src/Unsubscribe.php:83
+msgid "Do you want to stop receiving promotional messages from this site?"
+msgstr "Möchtest du keine Werbenachrichten dieser Website mehr erhalten?"
+
+#: src/Engine/Actions/NotifyUser.php:70
+msgid "Kind of message"
+msgstr "Art der Nachricht"
+
+#: src/Engine/Actions/NotifyUser.php:74
+msgid "Promotional (only with consent, with unsubscribe link)"
+msgstr "Werbung (nur mit Einwilligung, mit Abmelde-Link)"
+
+#: src/Unsubscribe.php:76
+msgid "This unsubscribe link is not valid (anymore)."
+msgstr "Dieser Abmelde-Link ist nicht (mehr) gültig."
+
+#. translators: %s: unsubscribe link
+#: src/Engine/Actions/NotifyUser.php:128
+msgid "To stop receiving these messages: %s"
+msgstr "Wenn du diese Nachrichten nicht mehr erhalten möchtest: %s"
+
+#: src/Engine/Actions/NotifyUser.php:73
+msgid "Transaction (about an order, booking or account)"
+msgstr "Transaktion (zu einer Bestellung, Buchung oder einem Konto)"
+
+#: src/Unsubscribe.php:74 src/Unsubscribe.php:88
+msgid "Unsubscribe"
+msgstr "Abmelden"
+
+#: src/Unsubscribe.php:81
+msgid "You will no longer receive promotional messages from this site. Messages about your orders and bookings are not affected."
+msgstr "Du erhältst keine Werbenachrichten dieser Website mehr. Nachrichten zu deinen Bestellungen und Buchungen sind davon nicht betroffen."
+
+msgid "At most this many messages from all workflows together to one customer per calendar day of the site. 0: no limit."
+msgstr "Höchstens so viele Nachrichten aller Workflows zusammen an einen Kunden je Kalendertag der Website. 0: keine Grenze."
+
+msgid "Messages"
+msgstr "Nachrichten"
+
+msgid "Messages from workflows to customers (“Message to user”) are not sent during the quiet time; they wait until it ends. Off, or the same hour as “until”: no quiet time. Times in the site’s time zone. Messages to the site operator are not held back."
+msgstr "Nachrichten aus Workflows an Kunden („Nachricht an Benutzer“) werden in der Ruhezeit nicht gesendet; sie warten, bis sie endet. Aus oder dieselbe Stunde wie bei „bis“: keine Ruhezeit. Zeiten in der Zeitzone der Website. Nachrichten an den Betreiber werden nicht zurückgehalten."
+
+msgid "Messages per customer and day"
+msgstr "Nachrichten je Kunde und Tag"
+
+msgid "On other days, messages to customers wait for the next sending day. At least one day."
+msgstr "An anderen Tagen warten Nachrichten an Kunden bis zum nächsten Sendetag. Mindestens ein Tag."
+
+msgid "Quiet time from"
+msgstr "Ruhezeit von"
+
+msgid "Quiet time until"
+msgstr "Ruhezeit bis"
+
+msgid "Send on the next day"
+msgstr "Am nächsten Tag senden"
+
+msgid "Sending days"
+msgstr "Sendetage"
+
+msgid "Skip the message"
+msgstr "Nachricht überspringen"
+
+msgid "The quiet time may span midnight, for example 22:00 to 07:00."
+msgstr "Die Ruhezeit darf über Mitternacht gehen, zum Beispiel 22:00 bis 07:00."
+
+msgid "When the limit is reached"
+msgstr "Wenn die Grenze erreicht ist"
+
+msgid "“Send on the next day” keeps every message; “Skip” drops the surplus and notes it in the run."
+msgstr "„Am nächsten Tag senden“ behält jede Nachricht; „Überspringen“ verwirft den Überschuss und vermerkt das im Lauf."
+
+msgid "Choose at least one sending day. The days were not changed."
+msgstr "Wähle mindestens einen Sendetag. Die Tage wurden nicht geändert."
+
+msgid "Empty: the sender WordPress or your mail plugin sets (today’s behaviour). Use an address of your own domain, otherwise messages may land in spam."
+msgstr "Leer: der Absender, den WordPress oder dein Mail-Plugin setzt (bisheriges Verhalten). Verwende eine Adresse deiner eigenen Domain, sonst landen Nachrichten leicht im Spam."
+
+msgid "Added below every “Message to user”, for example your contact details and links to your legal notice and privacy policy. Placeholders: {site_name}, {site_url}, {privacy_policy_url}. Empty: no footer. Check the wording with your legal advisor."
+msgstr "Steht unter jeder „Nachricht an Benutzer“, zum Beispiel deine Kontaktdaten und Links zu Impressum und Datenschutzerklärung. Platzhalter: {site_name}, {site_url}, {privacy_policy_url}. Leer: keine Fußzeile. Prüfe den Wortlaut mit deiner Rechtsberatung."
+
+msgid "Footer of messages to customers"
+msgstr "Fußzeile der Nachrichten an Kunden"
+
+msgid "Name shown as sender of messages from workflows. Used together with the sender address."
+msgstr "Name, der als Absender von Nachrichten aus Workflows erscheint. Gilt zusammen mit der Absenderadresse."
+
+msgid "Replies to messages from workflows go here. Empty: to the sender."
+msgstr "Antworten auf Nachrichten aus Workflows gehen an diese Adresse. Leer: an den Absender."
+
+msgid "Reply address"
+msgstr "Antwortadresse"
+
+msgid "Sender address"
+msgstr "Absenderadresse"
+
+msgid "Sender name"
+msgstr "Absendername"
+
+#, php-format
+msgid "“%s” is not a valid e-mail address and was not saved."
+msgstr "„%s“ ist keine gültige E-Mail-Adresse und wurde nicht gespeichert."
+
+#, php-format
+msgid "Active since %s. No step is executed; events are still stored."
+msgstr "Aktiv seit %s. Kein Schritt wird ausgeführt; Ereignisse werden weiter gespeichert."
+
+#, php-format
+msgid "Created (%s)"
+msgstr "Angelegt (%s)"
+
+#, php-format
+msgid "Ended (%s)"
+msgstr "Beendet (%s)"
+
+msgid "Last modified"
+msgstr "Zuletzt geändert"
+
+#, php-format
+msgid "Last run (%s)"
+msgstr "Letzter Lauf (%s)"
+
+msgid "Next worker run"
+msgstr "Nächster Worker-Lauf"
+
+#, php-format
+msgid "Steps of the run in order, times in %s"
+msgstr "Schritte des Laufs in ihrer Reihenfolge, Zeiten in %s"
+
+#, php-format
+msgid "Time (%s)"
+msgstr "Zeit (%s)"
+
+#, php-format
+msgid "Waiting until (%s)"
+msgstr "Wartet bis (%s)"
+
+msgid "or from"
+msgstr "oder von"
+
+msgid "to"
+msgstr "bis"
+
+#, php-format
+msgid "Started (%s)"
+msgstr "Begonnen (%s)"
+
+msgid "Started"
+msgstr "Begonnen"
+
+#, php-format
+msgid "Timestamp (%s)"
+msgstr "Zeitpunkt (%s)"
+
+msgid "Ended"
+msgstr "Beendet"
+
+msgid "For schedules, delays in days, the quiet time, the calendar day of the daily limit and the times shown in these pages. Empty: the time zone of WordPress (Settings → General). Stored times stay in UTC; a change applies from the next step on."
+msgstr "Für Zeitpläne, Wartezeiten in Tagen, die Ruhezeit, den Kalendertag der Tagesgrenze und die Zeiten auf diesen Seiten. Leer: die Zeitzone von WordPress (Einstellungen → Allgemein). Gespeichert wird weiter in UTC; eine Änderung gilt ab dem nächsten Schritt."
+
+#, php-format
+msgid "Like WordPress (%s)"
+msgstr "Wie WordPress (%s)"
+
+msgid "Time zone of Workflow Captain"
+msgstr "Zeitzone von Workflow Captain"
+
+msgid "own setting in the Messages tab"
+msgstr "eigene Einstellung im Reiter „Nachrichten“"
+
+msgid "Sender, footer and time zone"
+msgstr "Absender, Fußzeile und Zeitzone"
+
+msgid "Detailed (for 7 days)"
+msgstr "Ausführlich (für 7 Tage)"
+
+msgid "Detailed step log switched back to normal after 7 days"
+msgstr "Ausführliches Schrittprotokoll nach 7 Tagen auf normal zurückgestellt"
+
+msgid "Normal"
+msgstr "Normal"
+
+msgid "Step log"
+msgstr "Schrittprotokoll"
+
+msgid "“Detailed” additionally notes which rule of a condition held (field and operator, never the value) and how long each action took. For finding a problem; it switches back to “Normal” by itself after 7 days."
+msgstr "„Ausführlich“ vermerkt zusätzlich, welche Regel einer Bedingung zutraf (Feld und Operator, nie der Wert) und wie lange jede Aktion dauerte. Zur Fehlersuche; nach 7 Tagen stellt es sich von selbst auf „Normal“ zurück."
+
+# SET-WC-17 country profiles
+
+msgid "Apply selected values"
+msgstr "Ausgewählte Werte übernehmen"
+
+msgid "Austria"
+msgstr "Österreich"
+
+msgid "Country profile"
+msgstr "Länderprofil"
+
+msgid "Current"
+msgstr "Aktuell"
+
+msgid "European Union (general)"
+msgstr "Europäische Union (allgemein)"
+
+msgid "Germany"
+msgstr "Deutschland"
+
+msgid "No value selected. Nothing was changed."
+msgstr "Kein Wert ausgewählt. Es wurde nichts geändert."
+
+msgid "Only the selected values are changed. You can undo this for 30 days, until the next import, reset or profile."
+msgstr "Geändert werden nur die ausgewählten Werte. Rückgängig ist 30 Tage lang möglich, bis zum nächsten Import, Zurücksetzen oder Profil."
+
+msgid "Other countries (neutral values)"
+msgstr "Andere Länder (neutrale Werte)"
+
+msgid "Profile"
+msgstr "Profil"
+
+#, php-format
+msgid "Proposal of the profile %s"
+msgstr "Vorschlag des Profils %s"
+
+msgid "Proposed"
+msgstr "Vorgeschlagen"
+
+msgid "Proposed changes of the country profile"
+msgstr "Vorgeschlagene Änderungen des Länderprofils"
+
+msgid "Review"
+msgstr "Prüfung"
+
+msgid "Show proposal"
+msgstr "Vorschlag anzeigen"
+
+msgid "Switzerland"
+msgstr "Schweiz"
+
+msgid "The profile was not applied:"
+msgstr "Das Profil wurde nicht übernommen:"
+
+msgid "Values of a country profile applied"
+msgstr "Werte eines Länderprofils übernommen"
+
+msgid "Your settings already match this profile. Nothing to change."
+msgstr "Deine Einstellungen entsprechen schon diesem Profil. Nichts zu ändern."
+
+msgid "no legal weight"
+msgstr "ohne rechtliches Gewicht"
+
+msgid "not part of this profile"
+msgstr "nicht Teil dieses Profils"
+
+msgid "unchecked – legal review"
+msgstr "ungeprüft – rechtliche Prüfung"
+
+msgid "unknown profile"
+msgstr "unbekanntes Profil"
+
+#, php-format
+msgid "%d settings of the country profile applied. You can undo this for 30 days, until the next import, reset or profile."
+msgstr "%d Einstellungen des Länderprofils übernommen. Rückgängig ist 30 Tage lang möglich, bis zum nächsten Import, Zurücksetzen oder Profil."
+
+msgid "A country profile only proposes values. You see the current and the proposed value and choose which to take over; nothing is changed without your selection. Values marked “unchecked” have not been legally reviewed yet: check them with your legal advisor before you use them."
+msgstr "Ein Länderprofil schlägt Werte nur vor. Du siehst den aktuellen und den vorgeschlagenen Wert und wählst aus, was du übernimmst; ohne deine Auswahl wird nichts geändert. Mit „ungeprüft“ markierte Werte sind noch nicht rechtlich geprüft: Kläre sie mit deiner Rechtsberatung, bevor du sie verwendest."
+
+msgid "Settings of add-ons"
+msgstr "Einstellungen von Add-ons"
+
+msgid "Show Pro hints"
+msgstr "Pro-Hinweise zeigen"
+
+msgid "Shows a grey line of text at the end of a tab when a paid add-on offers more for that tab. Text only, no ads, no data is sent. Off: no hints at all."
+msgstr "Zeigt am Ende eines Reiters eine graue Textzeile, wenn ein kostenpflichtiges Add-on für diesen Reiter mehr bietet. Nur Text, keine Werbung, es werden keine Daten gesendet. Aus: gar keine Hinweise."
+
+msgid "Add language version"
+msgstr "Sprachfassung hinzufügen"
+
+msgid "Language (locale, e.g. de_DE)"
+msgstr "Sprache (Locale, z. B. de_DE)"
+
+msgid "Language version"
+msgstr "Sprachfassung"
+
+msgid "Language versions"
+msgstr "Sprachfassungen"
+
+msgid "Optional. The recipient gets the version of their profile language (for example de_DE, or de for every German locale); without a match the main text above."
+msgstr "Optional. Der Empfänger bekommt die Fassung seiner Profilsprache (zum Beispiel de_DE, oder de für jede deutsche Locale); ohne Treffer den Haupttext oben."
+
+msgid "Remove language version"
+msgstr "Sprachfassung entfernen"
+
+msgid "Use a locale such as de_DE or de that no other version uses."
+msgstr "Gib eine Locale wie de_DE oder de ein, die keine andere Fassung nutzt."

@@ -282,7 +282,7 @@ const count = async ( page ) => {
 	await page.goto( BASE + A + 'workflow-captain-settings&tab=status' );
 	const up = await page.locator( 'tr', { hasText: 'Aktualisierung der Datenbank' } ).innerText();
 	const audit = await page.locator( 'table', { hasText: 'upgrade' } ).or( page.locator( '.wrap table' ).last() ).last().innerText();
-	check( 'v24', 'status tab: "Aktualisierung der Datenbank: keine offen", schema 4 / 4', up.includes( 'keine offen' ) && ( await page.locator( 'tr', { hasText: 'Datenbankschema' } ).innerText() ).includes( '4 / 4' ), up );
+	check( 'v24', 'status tab: "Aktualisierung der Datenbank: keine offen", schema 5 / 5', up.includes( 'keine offen' ) && ( await page.locator( 'tr', { hasText: 'Datenbankschema' } ).innerText() ).includes( '5 / 5' ), up );
 	check( 'v25', 'status tab: audit entries with readable labels (resumed upgrade, run export)', audit.includes( 'Abgebrochene Datenbank-Aktualisierung wiederholt' ) && audit.includes( 'Lauf exportiert' ) && ! /\brun_export\b/.test( audit ), audit.split( '\n' ).slice( 0, 6 ) );
 	await a11yPage( page, 'status', 'settings status', 1280 );
 

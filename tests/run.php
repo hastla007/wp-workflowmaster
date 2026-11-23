@@ -184,7 +184,7 @@ $wfc_uninstall = static function ( string $settings ): array {
 define( "ABSPATH", "/" );
 define( "WP_UNINSTALL_PLUGIN", "workflow-captain/workflow-captain.php" );
 $GLOBALS["log"] = array();
-final class Stub_Db { public $prefix = "wp_"; public $options = "wp_options"; public function query( $q ) { $GLOBALS["log"][] = $q; return true; } }
+final class Stub_Db { public $prefix = "wp_"; public $options = "wp_options"; public $usermeta = "wp_usermeta"; public function query( $q ) { $GLOBALS["log"][] = $q; return true; } public function get_blog_prefix() { return $this->prefix; } public function delete( $t, $w ) { $GLOBALS["log"][] = "delete:" . $t . ":" . implode( ",", $w ); return 1; } }
 final class Stub_Role { public function remove_cap( $c ) { $GLOBALS["log"][] = "cap:" . $c; } }
 $wpdb = new Stub_Db();
 function is_multisite() { return false; }
@@ -202,10 +202,10 @@ echo json_encode( $GLOBALS["log"] );
 	return array( $code, json_decode( (string) end( $out ), true ) );
 };
 list( $wfc_code, $wfc_log ) = $wfc_uninstall( 'array( "delete_data_on_uninstall" => 1 )' );
-check( 'uninstall.php runs without the plugin autoloader (drops tables, options, caps, clears both worker plans when chosen)', 0 === $wfc_code && is_array( $wfc_log ) && in_array( 'DROP TABLE IF EXISTS wp_workflow_captain_events', $wfc_log, true ) && in_array( 'option:workflow_captain_settings', $wfc_log, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log, true ) && in_array( 'as:workflow_captain_process_events:workflow-captain', $wfc_log, true ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
+check( 'uninstall.php runs without the plugin autoloader (drops tables, options, caps, clears both worker plans when chosen)', 0 === $wfc_code && is_array( $wfc_log ) && in_array( 'DROP TABLE IF EXISTS wp_workflow_captain_events', $wfc_log, true ) && in_array( 'option:workflow_captain_settings', $wfc_log, true ) && in_array( 'cap:manage_workflow_captain', $wfc_log, true ) && in_array( 'delete:wp_usermeta:wp_workflow_captain_unsubscribed', $wfc_log, true ) && in_array( 'as:workflow_captain_process_events:workflow-captain', $wfc_log, true ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
 check( 'P4 uninstall removes the settings backup (addresses) and the plugin transients (import preview per user)', is_array( $wfc_log ) && in_array( 'option:workflow_captain_settings_backup', $wfc_log, true ) && array() !== array_filter( $wfc_log, static fn( $q ): bool => str_starts_with( $q, 'DELETE FROM wp_options' ) && str_contains( $q, '\\_transient\\_workflow\\_captain\\_%' ) && str_contains( $q, '\\_transient\\_timeout\\_workflow\\_captain\\_%' ) ) );
 list( $wfc_code, $wfc_log ) = $wfc_uninstall( 'array( "batch" => 25 )' );
-check( 'SET-WC-05 uninstall keeps tables, options and caps by default (E-S6), clears only the worker plan', 0 === $wfc_code && is_array( $wfc_log ) && array() === array_filter( $wfc_log, static fn( $l ) => str_starts_with( $l, 'DROP' ) || str_starts_with( $l, 'option:' ) || str_starts_with( $l, 'cap:' ) ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
+check( 'SET-WC-05 uninstall keeps tables, options and caps by default (E-S6), clears only the worker plan', 0 === $wfc_code && is_array( $wfc_log ) && array() === array_filter( $wfc_log, static fn( $l ) => str_starts_with( $l, 'DROP' ) || str_starts_with( $l, 'delete:' ) || str_starts_with( $l, 'option:' ) || str_starts_with( $l, 'cap:' ) ) && in_array( 'cron:workflow_captain_daily_maintenance', $wfc_log, true ) );
 list( $wfc_code, $wfc_log ) = $wfc_uninstall( 'false' );
 check( 'SET-WC-05 uninstall without any stored settings keeps the data too', 0 === $wfc_code && array() === array_filter( (array) $wfc_log, static fn( $l ) => str_starts_with( $l, 'DROP' ) ) );
 
@@ -645,6 +645,10 @@ require __DIR__ . '/connector-tests.php';
 require __DIR__ . '/admin-list-tests.php';
 require __DIR__ . '/settings-transfer-tests.php';
 require __DIR__ . '/i18n-tests.php';
+require __DIR__ . '/pacing-tests.php';
+require __DIR__ . '/country-profile-tests.php';
+require __DIR__ . '/settings-hints-tests.php';
+require __DIR__ . '/language-tests.php';
 
 echo "\n{$passed} passed, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );

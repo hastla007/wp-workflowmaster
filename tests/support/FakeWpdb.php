@@ -57,6 +57,7 @@ final class FakeWpdb {
 		$this->pdo->exec( "CREATE TABLE {$p}steps ( id INTEGER PRIMARY KEY AUTOINCREMENT, run_id INTEGER NOT NULL, node_id TEXT NOT NULL, step_key TEXT NOT NULL UNIQUE, state TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, effect TEXT NOT NULL DEFAULT 'none', due_at TEXT NOT NULL, lease_owner TEXT NULL, lease_until TEXT NULL, result TEXT NULL, last_error TEXT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL )" );
 		$this->pdo->exec( "CREATE TABLE {$p}tags ( id INTEGER PRIMARY KEY AUTOINCREMENT, product TEXT NOT NULL, subject_type TEXT NOT NULL, subject_id TEXT NOT NULL, tag TEXT NOT NULL, workflow_id INTEGER NOT NULL, created_at TEXT NOT NULL, UNIQUE (product, subject_type, subject_id, tag) )" );
 		$this->pdo->exec( "CREATE TABLE {$p}notes ( id INTEGER PRIMARY KEY AUTOINCREMENT, note_key TEXT NOT NULL UNIQUE, product TEXT NOT NULL, subject_type TEXT NOT NULL, subject_id TEXT NOT NULL, note TEXT NOT NULL, workflow_id INTEGER NOT NULL, run_id INTEGER NOT NULL, created_at TEXT NOT NULL )" );
+		$this->pdo->exec( "CREATE TABLE {$p}sends ( day TEXT NOT NULL, user_id INTEGER NOT NULL, sent INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, user_id) )" );
 	}
 
 	public function suppress_errors( $suppress = true ) {

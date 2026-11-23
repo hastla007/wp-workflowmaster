@@ -37,11 +37,12 @@ wp eval-file "$T" snapshot 2>&1 | q
 # ----- the update: the symlink points to the current code again (like replacing the plugin files), or the ZIP -----
 e2e_plugin_current
 out=$(wp workflow-captain status 2>&1 | q)
-rec u1 'first WP-CLI call after the update: status shows schema 4 (expected 4)' $([[ "$out" == *"schema 4 (expected 4)"* ]] && echo 1 || echo 0) "$(echo "$out" | tr '\n' ' ')"
+cur=$(wp eval 'echo WORKFLOW_CAPTAIN_DB_VERSION;' 2>/dev/null)
+rec u1 "first WP-CLI call after the update: status shows schema $cur (expected $cur)" $([[ -n "$cur" && "$out" == *"schema $cur (expected $cur)"* ]] && echo 1 || echo 0) "$(echo "$out" | tr '\n' ' ')"
 wp eval-file "$T" upgrade_check 2>&1 | q
 out=$(wp workflow-captain verify 2>&1 | q); rec u4 'verify after the update' $([[ "$out" == *"No inconsistencies"* ]] && echo 1 || echo 0) "$out"
 out=$(wp workflow-captain migrate 2>&1 | q)
-rec u6 'migrate on the current schema: success, no data step, no warning' $([[ "$out" == *"Schema 4 in place"* && "$out" != *"Data steps"* && "$out" != *Warning* ]] && echo 1 || echo 0) "$out"
+rec u6 'migrate on the current schema: success, no data step, no warning' $([[ "$out" == *"Schema $cur in place"* && "$out" != *"Data steps"* && "$out" != *Warning* ]] && echo 1 || echo 0) "$out"
 
 # ----- interrupted upgrade (schema 3, index and table missing), no lock: the next request completes it -----------
 wp eval-file "$T" interrupt 2>&1 | q
@@ -65,7 +66,7 @@ if [ -n "${E2E_LOCK_SHOT:-}" ]; then E2E_ONLY=lock node "$PLUGIN/bin/e2e/third.j
 # ----- the lock turns stale (upgrade stopped half-way 11 minutes ago): taken over and repeated -------------------
 mysql $E2E_MAIN_DB -e "UPDATE wp_options SET option_value = UNIX_TIMESTAMP() - 660 WHERE option_name = 'workflow_captain_upgrade_lock'"
 out=$(wp workflow-captain migrate 2>&1 | q)
-rec u10b 'stale lock: migrate takes it over, warns that an earlier upgrade was repeated, success' $([[ "$out" == *"stopped half-way"* && "$out" == *"Schema 4 in place"* ]] && echo 1 || echo 0) "$(echo "$out" | tr '\n' ' ')"
+rec u10b 'stale lock: migrate takes it over, warns that an earlier upgrade was repeated, success' $([[ "$out" == *"stopped half-way"* && "$out" == *"Schema $cur in place"* ]] && echo 1 || echo 0) "$(echo "$out" | tr '\n' ' ')"
 wp eval-file "$T" interrupt_check u10c 2>&1 | q
 wp eval-file "$T" resumed_check 2>&1 | q
 out=$(wp workflow-captain verify 2>&1 | q); rec u13 'verify after the resumed upgrade' $([[ "$out" == *"No inconsistencies"* ]] && echo 1 || echo 0) "$out"

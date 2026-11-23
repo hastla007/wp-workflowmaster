@@ -43,7 +43,7 @@ function e2e_tables(): array {
 	global $wpdb;
 	// Listed here, not read from the plugin: the checks also run while the plugin is inactive or deleted.
 	$out = array( $wpdb->prefix . 'workflow_captain_events', $wpdb->prefix . 'workflow_captain_causes' );
-	foreach ( array( 'workflows', 'versions', 'runs', 'steps', 'tags', 'notes' ) as $t ) {
+	foreach ( array( 'workflows', 'versions', 'runs', 'steps', 'tags', 'notes', 'sends' ) as $t ) {
 		$out[] = $wpdb->prefix . 'workflow_captain_' . $t;
 	}
 	return $out;

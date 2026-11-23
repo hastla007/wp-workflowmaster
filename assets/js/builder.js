@@ -821,6 +821,63 @@
 			this.drag = null;
 		}
 
+		/**
+		 * Language versions of a message (SET-WC-18): config[f.key] = { locale: { subject, message } }, at most 10. Each
+		 * version is a group with its own labelled fields; a new one starts as a copy of the main text with a free
+		 * locale. Labels come from PHP (f.labels).
+		 */
+		versionsForm( n, f ) {
+			const L = Object.assign( { locale: 'Language', subject: 'Subject', message: 'Message', add: 'Add language version', remove: 'Remove language version', version: 'Language version', invalid: 'Use a locale such as de_DE or de that no other version uses.' }, f.labels || {} );
+			const raw = n.config[ f.key ] && 'object' === typeof n.config[ f.key ] && ! Array.isArray( n.config[ f.key ] ) ? n.config[ f.key ] : {};
+			const list = Object.keys( raw ).map( ( locale ) => ( { locale, subject: ( raw[ locale ] || {} ).subject || '', message: ( raw[ locale ] || {} ).message || '' } ) );
+			const save = () => {
+				if ( ! list.length ) {
+					delete n.config[ f.key ];
+				} else {
+					n.config[ f.key ] = {};
+					list.forEach( ( v ) => {
+						n.config[ f.key ][ v.locale ] = { subject: v.subject, message: v.message };
+					} );
+				}
+				this.commit();
+			};
+			const box = el( 'fieldset', { class: 'wfc-versions' }, [ el( 'legend', { text: f.label } ) ] );
+			if ( f.help ) {
+				uid++;
+				const helpId = 'wfc-versions-help' + uid;
+				box.appendChild( el( 'p', { class: 'description', id: helpId, text: f.help } ) );
+				box.setAttribute( 'aria-describedby', helpId );
+			}
+			list.forEach( ( v, i ) => {
+				const group = el( 'fieldset', { class: 'wfc-version', 'data-locale': v.locale }, [ el( 'legend', { text: L.version + ' ' + ( i + 1 ) + ': ' + v.locale } ) ] );
+				const locale = el( 'input', { type: 'text', class: 'small-text wfc-version-locale', value: v.locale, autocomplete: 'off', spellcheck: 'false', onchange: ( ev ) => {
+					const next = ev.target.value.trim();
+					if ( ! /^[a-z]{2,3}(_[A-Z]{2})?$/.test( next ) || list.some( ( o, j ) => j !== i && o.locale === next ) ) {
+						ev.target.setAttribute( 'aria-invalid', 'true' );
+						this.announce( L.invalid );
+						return;
+					}
+					v.locale = next;
+					save();
+				} } );
+				const subject = el( 'input', { type: 'text', class: 'regular-text wfc-version-subject', value: v.subject, onchange: ( ev ) => { v.subject = ev.target.value; save(); } } );
+				const message = el( 'textarea', { rows: 4, class: 'large-text wfc-version-message', onchange: ( ev ) => { v.message = ev.target.value; save(); } } );
+				message.value = v.message;
+				group.appendChild( labelled( L.locale, locale ) );
+				group.appendChild( labelled( L.subject, subject ) );
+				group.appendChild( labelled( L.message, message ) );
+				group.appendChild( el( 'button', { type: 'button', class: 'button-link wfc-version-remove', text: L.remove + ' ' + v.locale, onclick: () => { list.splice( i, 1 ); this.focusSelector = '.wfc-version-add'; save(); } } ) );
+				box.appendChild( group );
+			} );
+			const free = [ 'en_US', 'de_DE', 'fr_FR', 'es_ES', 'it_IT', 'nl_NL', 'pl_PL', 'pt_PT', 'sv_SE', 'da_DK', 'cs_CZ', 'fi_FI' ].find( ( x ) => ! list.some( ( v ) => v.locale === x ) );
+			box.appendChild( el( 'p', {}, [ el( 'button', { type: 'button', class: 'button wfc-version-add', text: '+ ' + L.add, disabled: list.length >= 10 || ! free, onclick: () => {
+				list.push( { locale: free, subject: n.config.subject || '', message: n.config.message || '' } );
+				this.focusSelector = `.wfc-version[data-locale="${ free }"] .wfc-version-locale`;
+				save();
+			} } ) ] ) );
+			return box;
+		}
+
 		/** Data fields the trigger's event type allows (catalog), for conditions and placeholders. */
 		dataFields() {
 			const types = this.dataTypes();
@@ -1016,7 +1073,7 @@
 			const trigger = this.graph.nodes.find( ( x ) => 'trigger' === x.type );
 			const mails = ( trigger && this.config.coreMails && this.config.coreMails[ trigger.event ] ) || [];
 			// Possible duplicate: the same circle of recipients already gets a core mail (operator vs. customers).
-			const toOperator = ( m ) => 'Betreiber' === m.to;
+			const toOperator = ( m ) => 'operator' === m.to;
 			const duplicate = mails.some( ( m ) => ( 'notify.admin' === action ) === toOperator( m ) );
 			const box = el( 'div', { class: 'wfc-core-mails notice inline ' + ( duplicate ? 'notice-warning wfc-core-mails-duplicate' : 'notice-info' ) } );
 			if ( ! trigger || ! trigger.event ) {
@@ -1027,7 +1084,7 @@
 				return box;
 			}
 			box.appendChild( el( 'p', { text: this.t( 'coreMailsIntro', 'For this event the core plugin already sends:' ) } ) );
-			box.appendChild( el( 'ul', {}, mails.map( ( m ) => el( 'li', { text: m.to + ': ' + m.mail + ' (' + m.off + ( m.note ? '; ' + m.note : '' ) + ')' } ) ) ) );
+			box.appendChild( el( 'ul', {}, mails.map( ( m ) => el( 'li', { text: ( m.to_label || m.to ) + ': ' + m.mail + ' (' + m.off + ( m.note ? '; ' + m.note : '' ) + ')' } ) ) ) );
 			if ( duplicate ) {
 				box.appendChild( el( 'p', { role: 'status', text: this.t( 'coreMailsDuplicate', 'Possibly a duplicate: these recipients already get an email from the core plugin for the same occasion.' ) } ) );
 			}
@@ -1181,6 +1238,10 @@
 				n.config = n.config || {};
 				const def = this.config.actions.find( ( a ) => a.key === n.action );
 				( def ? def.fields : [] ).forEach( ( f ) => {
+					if ( 'versions' === f.type ) {
+						box.appendChild( this.versionsForm( n, f ) );
+						return;
+					}
 					// An emptied field is removed from the configuration, so the server applies its default.
 					const put = ( value ) => {
 						if ( '' === value ) {

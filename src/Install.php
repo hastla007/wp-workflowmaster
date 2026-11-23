@@ -150,7 +150,7 @@ final class Install {
 
 	/**
 	 * Data steps by the schema version they lead to. Each must be idempotent and must not delete history. Versions 1 to
-	 * 4 changed only tables (dbDelta), so there is no data step yet; a later version adds e.g. 5 => [ self::class, 'to_5' ].
+	 * 5 changed only tables (dbDelta), so there is no data step yet; a later version adds e.g. 6 => [ self::class, 'to_6' ].
 	 *
 	 * @return array<int,callable>
 	 */
@@ -312,6 +312,16 @@ final class Install {
   UNIQUE KEY subject_tag (product,subject_type,subject_id(64),tag)
 ) {$charset};"
 		);
+		// Daily limit per recipient (SET-WC-08): one row per calendar day of the site and user, kept a few days.
+		dbDelta(
+			"CREATE TABLE {$t( 'sends' )} (
+  day date NOT NULL,
+  user_id bigint(20) unsigned NOT NULL,
+  sent smallint(5) unsigned NOT NULL DEFAULT 0,
+  PRIMARY KEY  (day,user_id),
+  KEY user_id (user_id)
+) {$charset};"
+		);
 		dbDelta(
 			"CREATE TABLE {$t( 'notes' )} (
   id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -366,11 +376,13 @@ final class Install {
 			// Table names are the plugin's own (prefix + fixed name), never input; uninstall removes its tables.
 			$wpdb->query( 'DROP TABLE IF EXISTS ' . $table ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		}
-		foreach ( array( self::DB_OPTION, Migrator::LOCK_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at', 'workflow_captain_settings_backup' ) as $option ) {
+		foreach ( array( self::DB_OPTION, Migrator::LOCK_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_messages', 'workflow_captain_log_detailed_since', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at', 'workflow_captain_settings_backup' ) as $option ) {
 			delete_option( $option );
 		}
 		// Short-lived transients per user (import preview, notices, dry run); fixed names, no input.
 		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '\\_transient\\_workflow\\_captain\\_%' OR option_name LIKE '\\_transient\\_timeout\\_workflow\\_captain\\_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fixed query on the plugin's own transients.
+		// Unsubscribes of this site (user option with the site prefix, S11); the literal name, uninstall.php has no autoloader.
+		$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => $wpdb->get_blog_prefix() . 'workflow_captain_unsubscribed' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 		foreach ( wp_roles()->role_objects as $role ) {
 			foreach ( self::CAPS as $cap ) {
 				$role->remove_cap( $cap );
