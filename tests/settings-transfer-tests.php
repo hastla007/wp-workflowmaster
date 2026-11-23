@@ -163,3 +163,18 @@ $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] = array( 'at' =>
 check( 'P1 backup: a backup within 30 days stays for undo', false === SettingsTransfer::purge_backup() && isset( $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] ) );
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ], $GLOBALS['wfc_test_options']['workflow_captain_audit'] );
 check( 'P1 import: "Übernehmen" after the preview expired says so instead of "Import verworfen"', 1 === preg_match( "/elseif \\( ! is_array\\( \\\$preview \\) .*?Die Vorschau ist abgelaufen/s", $wfc_p1_page ) );
+
+// P6: every hook of the core is part of the public contract and listed in docs/SDK.md, section 5 (the setting filters
+// as workflow_captain_setting_<feld>); found: the new setting filters and three older hooks were missing there.
+$wfc_sdk   = (string) file_get_contents( dirname( __DIR__ ) . '/docs/SDK.md' );
+$wfc_nodoc = array();
+foreach ( array_merge( array( dirname( __DIR__ ) . '/workflow-captain.php' ), iterator_to_array( new RecursiveIteratorIterator( new RecursiveDirectoryIterator( dirname( __DIR__ ) . '/src', FilesystemIterator::SKIP_DOTS ) ) ) ) as $wfc_file ) {
+	preg_match_all( "/(?:apply_filters|do_action)\\(\\s*'(workflow_captain_[a-z0-9_]*)'(\\s*\\.)?/", (string) file_get_contents( (string) $wfc_file ), $wfc_m, PREG_SET_ORDER );
+	foreach ( $wfc_m as $wfc_hook ) {
+		$wfc_name = $wfc_hook[1] . ( isset( $wfc_hook[2] ) && '' !== $wfc_hook[2] ? '<feld>' : '' );
+		if ( ! str_contains( $wfc_sdk, '`' . $wfc_name . '`' ) ) {
+			$wfc_nodoc[] = $wfc_name;
+		}
+	}
+}
+check( 'P6 every hook of the core is documented in docs/SDK.md' . ( $wfc_nodoc ? ': ' . implode( ', ', array_unique( $wfc_nodoc ) ) : '' ), array() === $wfc_nodoc );
