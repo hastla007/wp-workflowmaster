@@ -28,7 +28,7 @@ const config = {
 	actions: [
 		{ key: 'notify.admin', label: 'Nachricht an Betreiber', fields: [ { key: 'subject', label: 'Betreff' } ] },
 		{ key: 'workflow.tag.set', label: 'Markierung setzen', fields: [ { key: 'tag', label: 'Markierung' } ] },
-		{ key: 'notify.user', label: 'Nachricht an Benutzer', fields: [ { key: 'subject', label: 'Betreff' } ] },
+		{ key: 'notify.user', label: 'Nachricht an Benutzer', fields: [ { key: 'subject', label: 'Betreff' }, { key: 'versions', label: 'Sprachfassungen', type: 'versions', help: 'Optional.', labels: { locale: 'Sprache', subject: 'Betreff', message: 'Text', add: 'Sprachfassung hinzufügen', remove: 'Sprachfassung entfernen', version: 'Sprachfassung', invalid: 'Ungültige Sprache.' } } ] },
 	],
 	events: [ 'pass.ticket.checked_in', 'pass.order.paid' ],
 	fields: { 'pass.ticket.checked_in': { checkin_source: 'string', device_id: 'integer', area_id: 'integer' } },
@@ -275,6 +275,30 @@ function check( label, ok ) {
 	check( 'operator message is not flagged when the core mail goes to the buyer', 0 === ( await page.$$( '.wfc-core-mails-duplicate' ) ).length );
 	await page.selectOption( '.wfc-inspector select', 'notify.user' );
 	check( 'customer message is flagged as possible duplicate of the buyer mail', 1 === ( await page.$$( '.wfc-core-mails-duplicate' ) ).length );
+
+	// Language versions of notify.user (SET-WC-18): keyboard, labels, rename, invalid locale, remove.
+	const versionsNow = async () => ( await graphNow() ).nodes.find( ( n ) => 'mail' === n.id ).config.versions;
+	await page.fill( '.wfc-inspector input.regular-text', 'Hallo' );
+	await page.press( '.wfc-inspector input.regular-text', 'Tab' );
+	await page.focus( '.wfc-version-add' );
+	await page.keyboard.press( 'Enter' );
+	await page.waitForSelector( '.wfc-version[data-locale="en_US"]' );
+	check( 'language version: Enter on the button adds a version as a copy of the main text with a free locale', 'Hallo' === ( ( await versionsNow() ) || {} ).en_US?.subject );
+	check( 'language version: the focus goes to the locale of the new version', await page.evaluate( () => null !== document.activeElement && document.activeElement.matches( '.wfc-version[data-locale="en_US"] .wfc-version-locale' ) ) );
+	check( 'language version: every field has a label and the group a legend and a description', await page.$$eval( '.wfc-versions input, .wfc-versions textarea', ( xs ) => xs.length >= 3 && xs.every( ( x ) => x.id && document.querySelector( 'label[for="' + x.id + '"]' ) ) ) && ( await page.$eval( '.wfc-version legend', ( x ) => x.textContent ) ).includes( 'en_US' ) && null !== ( await page.$eval( '.wfc-versions', ( x ) => x.getAttribute( 'aria-describedby' ) ) ) );
+	await page.fill( '.wfc-version-locale', 'de_DE' );
+	await page.press( '.wfc-version-locale', 'Tab' );
+	await page.waitForSelector( '.wfc-version[data-locale="de_DE"]' );
+	check( 'language version: changing the locale renames the version', '["de_DE"]' === JSON.stringify( Object.keys( await versionsNow() ) ) );
+	await page.fill( '.wfc-version-locale', 'deutsch' );
+	await page.press( '.wfc-version-locale', 'Tab' );
+	check( 'language version: an invalid locale is marked and announced, the version keeps its key', 'true' === await page.$eval( '.wfc-version-locale', ( x ) => x.getAttribute( 'aria-invalid' ) ) && '["de_DE"]' === JSON.stringify( Object.keys( await versionsNow() ) ) && 'Ungültige Sprache.' === await page.$eval( '[aria-live]', ( x ) => x.textContent ) );
+	await page.fill( '.wfc-version-message', 'Hallo {{subject.id}}' );
+	await page.press( '.wfc-version-message', 'Tab' );
+	await page.waitForTimeout( 50 );
+	check( 'language version: the text is stored under its locale', 'Hallo {{subject.id}}' === ( await versionsNow() ).de_DE.message );
+	await page.click( '.wfc-version-remove' );
+	check( 'language version: removing the last one drops the field and focuses the add button', undefined === await versionsNow() && await page.evaluate( () => null !== document.activeElement && document.activeElement.matches( '.wfc-version-add' ) ) );
 	await page.selectOption( '.wfc-inspector select', 'notify.admin' );
 	await page.click( '.wfc-node[data-id="t"]' );
 	await page.fill( '.wfc-inspector input[list="wfc-events"]', 'pass.ticket.checked_in' );
