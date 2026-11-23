@@ -116,7 +116,7 @@ msgstr ""
 msgid "Abgebrochen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:472
+#: src/Admin/SettingsPage.php:484
 msgid "Abgebrochene Datenbank-Aktualisierung wiederholt"
 msgstr ""
 
@@ -156,7 +156,7 @@ msgstr ""
 msgid "Aktionen"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:77 src/Admin/WorkflowsPage.php:815
+#: src/Admin/SchedulesPage.php:93 src/Admin/WorkflowsPage.php:815
 msgid "Aktiv"
 msgstr ""
 
@@ -323,7 +323,7 @@ msgstr ""
 msgid "Benachrichtigungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:505
 msgid "Benutzer"
 msgstr ""
 
@@ -420,7 +420,7 @@ msgstr ""
 msgid "Der Datenbankserver ist älter als MySQL 9.7 bzw. MariaDB 12.3. Workflow Captain arbeitet weiter, ältere Server werden aber nicht mehr getestet. Empfohlen: beim Hoster ein Update anfragen."
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:81
+#: src/Admin/SchedulesPage.php:97
 msgid "Der Entwurf weicht ab; es gilt die veröffentlichte Version."
 msgstr ""
 
@@ -617,7 +617,7 @@ msgstr ""
 msgid "Einstellung"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:459
+#: src/Admin/SettingsPage.php:471
 msgid "Einstellung per WP-CLI geändert"
 msgstr ""
 
@@ -625,7 +625,7 @@ msgstr ""
 msgid "Einstellungen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:457
+#: src/Admin/SettingsPage.php:469
 msgid "Einstellungen auf Standard gesetzt"
 msgstr ""
 
@@ -633,15 +633,15 @@ msgstr ""
 msgid "Einstellungen exportieren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:455
+#: src/Admin/SettingsPage.php:467
 msgid "Einstellungen geändert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:456
+#: src/Admin/SettingsPage.php:468
 msgid "Einstellungen importiert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:458
+#: src/Admin/SettingsPage.php:470
 msgid "Einstellungen wiederhergestellt"
 msgstr ""
 
@@ -653,7 +653,7 @@ msgstr ""
 msgid "Einstellungen, Notfallpause, Diagnose"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:505
 msgid "Einzelheiten"
 msgstr ""
 
@@ -726,7 +726,7 @@ msgstr ""
 msgid "Ereignisse und Schritte je Worker-Durchlauf"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:464
+#: src/Admin/SettingsPage.php:476
 msgid "Ereignisse wieder eingereiht"
 msgstr ""
 
@@ -781,7 +781,7 @@ msgid "Erste Seite"
 msgstr ""
 
 #. translators: 1: number, 2: option name
-#: src/Admin/SettingsPage.php:503
+#: src/Admin/SettingsPage.php:515
 msgid "Es bleiben die letzten %1$d Einträge in der Option %2$s."
 msgstr ""
 
@@ -863,7 +863,7 @@ msgstr ""
 msgid "Freigabe"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:463
+#: src/Admin/SettingsPage.php:475
 msgid "Freigabe eines eigenen Connectors geändert"
 msgstr ""
 
@@ -946,12 +946,12 @@ msgstr ""
 msgid "Höchstens %d Regeln je Bedingung, Gruppen eingeschlossen."
 msgstr ""
 
-#: src/SettingsRegistry.php:134
-msgid "Höchstens 30 Tage; nur kürzer möglich."
+#: src/SettingsRegistry.php:135
+msgid "Höchstens 30 Tage; gilt für erledigte, fehlgeschlagene und abgebrochene Läufe, offene bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf."
 msgstr ""
 
-#: src/SettingsRegistry.php:135
-msgid "Höchstens 30 Tage; offene Läufe bleiben. Protokolle enthalten keine Inhalte von Nachrichten oder Ereignisdaten außer der Kopie im Lauf."
+#: src/SettingsRegistry.php:134
+msgid "Höchstens 30 Tage; nur kürzer möglich."
 msgstr ""
 
 #: src/SettingsRegistry.php:136
@@ -1006,7 +1006,7 @@ msgstr ""
 msgid "Kein aktiver Workflow hört auf dieses Ereignis."
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:106
+#: src/Admin/SchedulesPage.php:122
 msgid "Kein aktiver oder pausierter Workflow startet nach Zeitplan. Ein Entwurf zählt erst nach dem Veröffentlichen."
 msgstr ""
 
@@ -1088,7 +1088,7 @@ msgstr ""
 msgid "Lauf abbrechen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:465
+#: src/Admin/SettingsPage.php:477
 msgid "Lauf abgebrochen"
 msgstr ""
 
@@ -1096,7 +1096,7 @@ msgstr ""
 msgid "Lauf exportieren (JSON, redigiert)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:473
+#: src/Admin/SettingsPage.php:485
 msgid "Lauf exportiert"
 msgstr ""
 
@@ -1120,7 +1120,7 @@ msgstr ""
 msgid "Letzte Seite"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:487 src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:499 src/Admin/SettingsPage.php:505
 msgid "Letzte sicherheitsrelevante Änderungen"
 msgstr ""
 
@@ -1137,7 +1137,7 @@ msgstr ""
 msgid "Letzter Lauf:"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:86 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:524
+#: src/Admin/SchedulesPage.php:102 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:45 src/Admin/WorkflowsPage.php:524
 msgid "Läufe"
 msgstr ""
 
@@ -1269,7 +1269,7 @@ msgstr ""
 msgid "Noch kein Provider bekannt."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:490
+#: src/Admin/SettingsPage.php:502
 msgid "Noch keine Einträge."
 msgstr ""
 
@@ -1289,7 +1289,7 @@ msgstr ""
 msgid "Notfallpause aktivieren"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:462
+#: src/Admin/SettingsPage.php:474
 msgid "Notfallpause aufgehoben"
 msgstr ""
 
@@ -1297,7 +1297,7 @@ msgstr ""
 msgid "Notfallpause aufheben"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:461
+#: src/Admin/SettingsPage.php:473
 msgid "Notfallpause eingeschaltet"
 msgstr ""
 
@@ -1340,7 +1340,7 @@ msgstr ""
 msgid "Nächste Termine (Zeitzone der Website):"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103
+#: src/Admin/SchedulesPage.php:119
 msgid "Nächster Termin"
 msgstr ""
 
@@ -1364,7 +1364,7 @@ msgstr ""
 msgid "Pausieren"
 msgstr ""
 
-#: src/Admin/EventsPage.php:176 src/Admin/SchedulesPage.php:77 src/Admin/WorkflowsPage.php:806 src/Admin/WorkflowsPage.php:816 src/Admin/WorkflowsPage.php:830
+#: src/Admin/EventsPage.php:176 src/Admin/SchedulesPage.php:93 src/Admin/WorkflowsPage.php:806 src/Admin/WorkflowsPage.php:816 src/Admin/WorkflowsPage.php:830
 msgid "Pausiert"
 msgstr ""
 
@@ -1412,7 +1412,7 @@ msgstr ""
 msgid "Prüfen und veröffentlichen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:460
+#: src/Admin/SettingsPage.php:472
 msgid "Rechte der Rollen geändert"
 msgstr ""
 
@@ -1462,7 +1462,7 @@ msgstr ""
 msgid "Schritt %s fortsetzen"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:466
+#: src/Admin/SettingsPage.php:478
 msgid "Schritt fortgesetzt"
 msgstr ""
 
@@ -1514,7 +1514,7 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:500
+#: src/Admin/SettingsPage.php:512
 msgid "System/WP-CLI"
 msgstr ""
 
@@ -1564,7 +1564,7 @@ msgid "Version"
 msgstr ""
 
 #. translators: %d: version number
-#: src/Admin/SchedulesPage.php:79
+#: src/Admin/SchedulesPage.php:95
 msgid "Version %d"
 msgstr ""
 
@@ -1685,7 +1685,7 @@ msgstr ""
 msgid "Worker"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:672
+#: src/Admin/SchedulesPage.php:119 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:672
 msgid "Workflow"
 msgstr ""
 
@@ -1736,11 +1736,11 @@ msgstr ""
 msgid "Workflow archivieren? Er startet keine neuen Läufe mehr; Läufe und Protokolle bleiben erhalten."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:468
+#: src/Admin/SettingsPage.php:480
 msgid "Workflow archiviert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:471
+#: src/Admin/SettingsPage.php:483
 msgid "Workflow fortgesetzt"
 msgstr ""
 
@@ -1752,15 +1752,15 @@ msgstr ""
 msgid "Workflow nicht gefunden."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:470
+#: src/Admin/SettingsPage.php:482
 msgid "Workflow pausiert"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:467
+#: src/Admin/SettingsPage.php:479
 msgid "Workflow veröffentlicht"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:469
+#: src/Admin/SettingsPage.php:481
 msgid "Workflow wiederhergestellt"
 msgstr ""
 
@@ -1782,7 +1782,7 @@ msgid "Workflows entwerfen"
 msgstr ""
 
 #. translators: %s: time zone of the site
-#: src/Admin/SchedulesPage.php:102
+#: src/Admin/SchedulesPage.php:118
 msgid "Workflows mit dem Auslöser „Zeitplan“, nach Name. Alle Zeiten in der Zeitzone der Website (%s). Ein verpasster Termin wird höchstens einmal nachgeholt."
 msgstr ""
 
@@ -1794,7 +1794,7 @@ msgstr ""
 msgid "Workflows, neueste zuerst"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:505
 msgid "Zeit (UTC)"
 msgstr ""
 
@@ -1802,7 +1802,7 @@ msgstr ""
 msgid "Zeitleiste der Schritte"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103
+#: src/Admin/SchedulesPage.php:119
 msgid "Zeitplan"
 msgstr ""
 
@@ -1810,11 +1810,11 @@ msgstr ""
 msgid "Zeitplan (Zeitzone der Website)"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:100
+#: src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:27 src/Admin/SchedulesPage.php:116
 msgid "Zeitpläne"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103
+#: src/Admin/SchedulesPage.php:119
 msgid "Zeitpläne der Workflows"
 msgstr ""
 
@@ -1847,7 +1847,7 @@ msgstr ""
 msgid "Zu viele Regeln (höchstens %d)."
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:103
+#: src/Admin/SchedulesPage.php:119
 msgid "Zuletzt ausgelöst"
 msgstr ""
 
@@ -1867,7 +1867,7 @@ msgstr ""
 msgid "Zurücksetzen"
 msgstr ""
 
-#: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:103 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:698 src/Privacy/Privacy.php:80 src/Privacy/Privacy.php:101
+#: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:119 src/Admin/WorkflowsPage.php:404 src/Admin/WorkflowsPage.php:575 src/Admin/WorkflowsPage.php:698 src/Privacy/Privacy.php:80 src/Privacy/Privacy.php:101
 msgid "Zustand"
 msgstr ""
 
@@ -1976,7 +1976,7 @@ msgstr ""
 msgid "kein Adapter (Add-on fehlt, inaktiv oder ohne Lizenz)"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:57 src/Admin/WorkflowsPage.php:794
+#: src/Admin/SchedulesPage.php:72 src/Admin/WorkflowsPage.php:794
 msgid "keine Angabe"
 msgstr ""
 
@@ -1996,7 +1996,7 @@ msgstr ""
 msgid "keine offen"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:83
+#: src/Admin/SchedulesPage.php:99
 msgid "keiner (pausiert)"
 msgstr ""
 
@@ -2082,7 +2082,7 @@ msgstr ""
 msgid "wöchentlich"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:493
+#: src/Admin/SettingsPage.php:505
 msgid "Änderung"
 msgstr ""
 

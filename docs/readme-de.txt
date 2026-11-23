@@ -93,7 +93,7 @@ Unter **Workflow Captain → Ereignisse** die Schaltfläche „Diagnose herunter
 
 == Privacy ==
 
-Gespeicherte Ereignisse und Läufe enthalten Kennungen, Status, Beträge und Zeitpunkte, keine Codes, E-Mail-Adressen, Namen oder Freitext. Die Benutzer-ID des Auslösers wird geleert, sobald kein Lauf mehr wartet. Workflow Captain meldet sich beim Export und Löschen persönlicher Daten von WordPress an. Erledigte Ereignisse und Läufe werden nach 30 Tagen gelöscht, fehlgeschlagene nach 90 Tagen; beides lässt sich verkürzen.
+Gespeicherte Ereignisse und Läufe enthalten Kennungen, Status, Beträge und Zeitpunkte, keine Codes, E-Mail-Adressen, Namen oder Freitext. Die Benutzer-ID des Auslösers wird geleert, sobald kein Lauf mehr wartet. Workflow Captain meldet sich beim Export und Löschen persönlicher Daten von WordPress an. Erledigte Ereignisse werden nach 30 Tagen gelöscht, fehlgeschlagene und pausierte nach 90 Tagen. Erledigte, fehlgeschlagene und abgebrochene Läufe mit Schrittprotokoll werden 30 Tage nach ihrem Ende gelöscht; Läufe, die noch warten, pausiert sind oder eine Aktion brauchen, bleiben bis zu ihrem Ende. Die Fristen lassen sich nur verkürzen. Markierungen und Notizen, die Workflows an einem Objekt setzen, fallen nicht unter diese Fristen; das Änderungsprotokoll behält die letzten 50 Änderungen mit Benutzer-ID.
 
 So fließen die Daten:
 
