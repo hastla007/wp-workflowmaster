@@ -57,4 +57,4 @@ Gemeldet von der koordinierenden Form-Sitzung (Entscheidungen der Inhaberin in d
 | Lizenzclient/Updater, Pro-ZIP, Shop-Sandbox, Update über HTTPS (WF-INT-18 Pro-Teil) | Freigabe von Workflow Captain Pro (Lizenz-Sitzung, zurückgehalten) und ein Testshop mit HTTPS |
 | Multisite je Provider (Pass/Affiliate je Website) | Suite-Lauf mit lizenziertem Pro |
 | n8n-Matrix gegen echtes n8n (WF-N8N-12) | laufende n8n-Instanz (Cloud oder selbst gehostet) |
-| Review-Anfrage-API (TODO Z. 26) | Review Captain Pro ist seit dem 23.11.2026 auf captain-pro `main` (`4abdee4`, Pull Request #10), meldet seinen `RequestPlanner` aber nicht am Kern-Filter `review_captain_request_planner_v1` an; bis dahin antwortet `plan_request()` mit `rc.contract.unavailable`. Aufgabe für captain-pro; als Workflow-Befehl ohnehin nicht in Version 1 (F-23) |
+| Review-Anfrage-API (TODO Z. 26) | hängt nur an F-23 (Abschnitt 1): Review Captain Pro (captain-pro `main` `4abdee4`) meldet seinen Planer bewusst nicht an der Kern-Schnittstelle an; bei „ja“ zu Workflow-Befehlen holt die Review-Sitzung das nach |
