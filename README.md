@@ -11,6 +11,7 @@ Dieses Repository gehört zum künftigen kostenlosen Kern-Plugin **Workflow Capt
 | Datei | Zweck |
 |---|---|
 | [`docs/SPEC-suite-events.md`](docs/SPEC-suite-events.md) | **Normativ.** Die eine gemeinsame Spezifikation dafür, wie die Plugins der Captain Suite zusammenarbeiten: Ereignisse, Umschlag, Zustellung, Befehle, Lizenzen. Version 1.0.0-draft.8, Entwurf zur Abnahme. |
+| [`docs/SETTINGS-ANALYSE.md`](docs/SETTINGS-ANALYSE.md) | Einstellungen für den Verkauf: Analyse, Entscheidungen E-S1 bis E-S8, Free/Pro, Hinweistexte (Aufgaben SET-WC in `TODO.md`). |
 | [`docs/ENTSCHEIDUNGSVORLAGE.md`](docs/ENTSCHEIDUNGSVORLAGE.md) | Alle offenen Entscheidungen mit Empfehlung (was die Antwort freigibt) und die externen Blocker. |
 | [`docs/SPEC-open-questions.md`](docs/SPEC-open-questions.md) | Offene Fragen zur Spezifikation mit Empfehlung und die Widersprüche zwischen den Entscheidungen. |
 | [`docs/schema/suite-event-v1.schema.json`](docs/schema/suite-event-v1.schema.json) | JSON Schema des Umschlags. |
