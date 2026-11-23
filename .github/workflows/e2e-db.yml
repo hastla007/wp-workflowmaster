@@ -6,6 +6,10 @@ name: E2E database
 # bin/e2e/ci-db.sh (locally only with PHP 8.3, which the plugin now refuses: see docs/E2E-RESULTS.md). No browser.
 on:
   push:
+    branches:
+      - main
+    tags:
+      - "*"
     paths:
       - "**.php"
       - "bin/e2e/**"
@@ -15,8 +19,13 @@ on:
     paths:
       - "**.php"
       - "bin/e2e/**"
+      - ".gitattributes"
       - ".github/workflows/e2e-db.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

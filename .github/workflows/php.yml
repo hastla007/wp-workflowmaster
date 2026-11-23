@@ -4,6 +4,10 @@ name: PHP
 # (PHP 8.5+, MINVER-1). The code itself stays parseable on PHP 8.3, the version of the local development machine.
 on:
   push:
+    branches:
+      - main
+    tags:
+      - "*"
     paths:
       - "**.php"
       - "docs/**"
@@ -17,6 +21,10 @@ on:
       - "languages/**"
       - ".github/workflows/php.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

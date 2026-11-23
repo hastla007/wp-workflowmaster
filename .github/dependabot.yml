@@ -1,0 +1,21 @@
+# Dependabot: only the GitHub Actions of the CI (the plugin itself has no Composer or npm dependencies).
+# Daily at a fixed time, one group per ecosystem, security updates in their own group, at most two open pull requests,
+# so the Actions queue of the account is not flooded (owner decision 23.11.2026).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+      time: "05:00"
+      timezone: Europe/Vienna
+    open-pull-requests-limit: 2
+    groups:
+      github-actions-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"

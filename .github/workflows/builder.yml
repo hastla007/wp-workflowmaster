@@ -3,6 +3,10 @@ name: Builder
 # Browser tests of the visual builder (assets/js/builder.js) and the settings script in headless Chromium.
 on:
   push:
+    branches:
+      - main
+    tags:
+      - "*"
     paths:
       - "assets/**"
       - "tests/builder.test.js"
@@ -15,6 +19,10 @@ on:
       - "tests/settings.test.js"
       - ".github/workflows/builder.yml"
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
