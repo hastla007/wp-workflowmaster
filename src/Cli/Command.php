@@ -47,10 +47,11 @@ final class Command {
 	 * Processes due schedule triggers, events and steps now (for system cron on weakly visited sites).
 	 *
 	 * [--limit=<n>]
-	 * : Events and steps per pass. Default 100.
+	 * : Events and steps per pass. Default: the setting "Events and steps per worker pass" (batch, 25 out of the box;
+	 * SET-WC-36, decided 23.11.2026). Before 0.4 the default was a fixed 100; set --limit=100 to keep that.
 	 */
 	public function process( array $args, array $assoc ): void {
-		$limit = max( 1, min( 1000, (int) ( $assoc['limit'] ?? 100 ) ) );
+		$limit = max( 1, min( 1000, (int) ( $assoc['limit'] ?? \WorkflowCaptain\Settings::get()['batch'] ) ) );
 		// The same pass as the scheduled worker, schedule triggers included (it replaces WP-Cron, docs/RUNBOOK.md).
 		$done = Plugin::instance()->work( $limit );
 		if ( null === $done ) {

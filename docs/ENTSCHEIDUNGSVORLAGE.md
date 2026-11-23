@@ -18,7 +18,6 @@ Diese Fragen sind offen, aber Code und Spezifikation folgen schon der Empfehlung
 | F-10 | Verarbeitet der kostenlose Kern Captain-Ereignisse | nein: Captain-Produkte nur mit Workflow Captain Pro; Lizenzereignisse im Shop über Pro |
 | F-14 | Verlust zwischen Commit des Kerns und Speichern | für Version 1 hinnehmen, im Handbuch nennen |
 | F-21 | Beantragter Partnercode „öffentlich“? | nein, erst nach Freigabe |
-| F-23 | Review-Einladung als Workflow-Befehl | nicht in Version 1; später höchstens `review.request.plan`/`.cancel` über den Planer von Review Captain Pro |
 | W-1 bis W-9, W-13 | Widersprüche zwischen den Entscheidungen vom 16.11. | so auflösen, wie Teil 2 der offenen Fragen es beschreibt (alle so gebaut) |
 
 **Gibt frei:** WF-SPEC-01 und „Suite-weite Regeln abnehmen“ (Spezifikation auf 1.0.0).
@@ -46,6 +45,7 @@ F-05a und F-13 gemeldet von der koordinierenden Form-Sitzung (Entscheidungen der
 | F-15 | Wiederholungen 8, Tiefe 3 als Vorgabe, einstellbar 1–8 (E-S5) | SET-WC-09 |
 | E-S1 bis E-S8 | Einstellungen für den Verkauf: alle wie empfohlen (`SETTINGS-ANALYSE.md`) | SET-WC-01 bis -28 |
 | F-13 | „Ja, nach Rechtsprüfung“: Kontakt und Einwilligung je Gutschein-ID bzw. Ticket lesbar, ab Werk aus | Voucher: Vertrag 1.5.0 in wp-couponmaster #20 (offen); Pass: mit Pass Captain 1.7.0 (PASS-E17-01) |
+| F-23 | **Entschieden: ja.** Review-Einladung als Workflow-Befehl: `review.request.plan` und `review.request.cancel` über `plan_request()`/`cancel_request()` des Service `workflow` und den Planer von Review Captain Pro; Lizenz Workflow Captain Pro plus `review.review_requests` | Spezifikation 1.0.0-draft.9 (R-4.30, 8.1, 8.5) und `catalog/actions-v1.json` erledigt; offen: Review-Sitzung meldet `RequestPlanner` an `review_captain_request_planner_v1` an, captain-pro-Adapter bietet die Befehle an |
 
 ## 3. Extern (nicht durch eine Antwort lösbar)
 
@@ -58,4 +58,4 @@ F-05a und F-13 gemeldet von der koordinierenden Form-Sitzung (Entscheidungen der
 | Lizenzclient/Updater, Pro-ZIP, Shop-Sandbox, Update über HTTPS (WF-INT-18 Pro-Teil) | Freigabe von Workflow Captain Pro (Lizenz-Sitzung, zurückgehalten) und ein Testshop mit HTTPS |
 | Multisite je Provider (Pass/Affiliate je Website) | Suite-Lauf mit lizenziertem Pro |
 | n8n-Matrix gegen echtes n8n (WF-N8N-12) | laufende n8n-Instanz (Cloud oder selbst gehostet) |
-| Review-Anfrage-API (TODO Z. 26) | hängt nur an F-23 (Abschnitt 1): Review Captain Pro (captain-pro `main` `4abdee4`) meldet seinen Planer bewusst nicht an der Kern-Schnittstelle an; bei „ja“ zu Workflow-Befehlen holt die Review-Sitzung das nach |
+| Review-Anfrage-API (TODO Z. 28) | F-23 am 23.11.2026 mit „ja“ entschieden (Abschnitt 2a): Review Captain Pro (captain-pro `main` `4abdee4`) meldet seinen Planer noch nicht an der Kern-Schnittstelle an; das holt die Review-Sitzung nach, danach bietet der captain-pro-Adapter die Befehle an |

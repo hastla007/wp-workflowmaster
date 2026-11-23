@@ -2922,3 +2922,21 @@ msgstr "Sprachfassung entfernen"
 
 msgid "Use a locale such as de_DE or de that no other version uses."
 msgstr "Geben Sie eine Locale wie de_DE oder de ein, die keine andere Fassung nutzt."
+
+msgid "Backup of the settings for “undo” (kept 30 days)"
+msgstr "Sicherung der Einstellungen für „Rückgängig“ (30 Tage aufbewahrt)"
+
+msgid "Email address"
+msgstr "E-Mail-Adresse"
+
+msgid "Recipient of the daily notice email"
+msgstr "Empfänger der täglichen Hinweis-Mail"
+
+msgid "Stored as"
+msgstr "Gespeichert als"
+
+msgid "Workflow Captain: Settings"
+msgstr "Workflow Captain: Einstellungen"
+
+msgid "Workflow Captain: notice recipients"
+msgstr "Workflow Captain: Empfänger der Hinweis-Mail"

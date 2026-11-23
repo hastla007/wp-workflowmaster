@@ -60,6 +60,16 @@ final class SettingsPage {
 		// Own group: options.php resets every option of a group that is missing in the request.
 		register_setting( 'workflow_captain_messages', \WorkflowCaptain\Messages::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( \WorkflowCaptain\Messages::class, 'sanitize_and_report' ), 'default' => \WorkflowCaptain\Messages::sanitize( array() ) ) );
 		register_setting( 'workflow_captain_notify', Notifications::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Notifications::class, 'sanitize_and_report' ), 'default' => Notifications::sanitize( array() ) ) );
+		// SET-WC-30 (decided 23.11.2026): saving any settings group needs the same right as the actions (import, reset,
+		// undo): manage_workflow_captain, not WordPress' default manage_options for options.php.
+		foreach ( \WorkflowCaptain\SettingsRegistry::GROUPS as $group ) {
+			add_filter( 'option_page_capability_' . $group, array( self::class, 'settings_capability' ) );
+		}
+	}
+
+	/** Capability for options.php of the settings groups (SET-WC-30). */
+	public static function settings_capability(): string {
+		return \WorkflowCaptain\SettingsRegistry::CAPABILITY;
 	}
 
 	public function menu(): void {

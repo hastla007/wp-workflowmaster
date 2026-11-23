@@ -123,6 +123,11 @@ None. Workflow Captain does not call any external service.
 
 == Changelog ==
 
+= Unreleased =
+* `wp workflow-captain process` without `--limit` now uses the setting "Events and steps per worker pass" (default 25) instead of a fixed 100. Add `--limit=100` to your system cron to keep the previous throughput.
+* Saving the settings pages now needs the capability manage_workflow_captain (like import, reset and undo).
+* Privacy: the personal data export and erasure of WordPress now cover addresses in the notice recipients and in the settings backup.
+
 = 0.2.0 =
 * Minimum versions: PHP 8.5 and WordPress 7.0; below that the plugin stays inactive with a notice. The WooCommerce adapter needs WooCommerce 11.2.2. Site Health recommends an update when the database server is older than MySQL 9.7 or MariaDB 12.3 (no block).
 * Workflow engine: workflows, versions, runs, steps, conditions, waits, actions of version 1.
