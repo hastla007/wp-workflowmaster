@@ -21,9 +21,14 @@ final class Audit {
 	 * @param array<int,array<string,mixed>> $log
 	 * @return array<int,array<string,mixed>>
 	 */
-	public static function append( array $log, string $what, int $user_id, array $detail, string $at ): array {
+	public static function append( array $log, string $what, int $user_id, array $detail, string $at, ?int $keep = null ): array {
 		array_unshift( $log, array( 'at' => $at, 'user' => $user_id, 'what' => $what, 'detail' => $detail ) );
-		return array_slice( $log, 0, self::KEEP );
+		return array_slice( $log, 0, $keep ?? self::keep() );
+	}
+
+	/** Number of entries kept: setting `audit_keep` (10 to 500, default KEEP; SET-WC-13). */
+	public static function keep(): int {
+		return (int) Settings::get()['audit_keep'];
 	}
 
 	/**

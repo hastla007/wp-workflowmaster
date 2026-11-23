@@ -90,3 +90,13 @@ check( 'SET-WC-25 a role withdrawn after publishing sends nothing and says why',
 check( 'SET-WC-25 the fixed capabilities and the site address still work (published versions unchanged)', array() === $wfc_na->validate_config( array( 'subject' => 'S', 'message' => 'M', 'to' => 'manage_woocommerce' ) ) && array() === $wfc_na->validate_config( array( 'subject' => 'S', 'message' => 'M' ) ) );
 check( 'SET-WC-25 import accepts released roles and refuses malformed ones', array( true, array( 'editor' ), '' ) === SettingsTransfer::check( 'notify_admin_roles', array( 'editor' ) ) && 'unknown_role' === SettingsTransfer::check( 'notify_admin_roles', array( 'editor', '<x>' ) )[2] );
 unset( $GLOBALS['wfc_test_options'][ Notifications::OPTION ] );
+
+// SET-WC-13: number of audit entries.
+$wfc_log = array();
+for ( $i = 0; $i < 60; $i++ ) {
+	$wfc_log = \WorkflowCaptain\Audit::append( $wfc_log, 'settings', 0, array( 'n' => $i ), 't' . $i );
+}
+check( 'SET-WC-13 audit keeps 50 entries by default, newest first', 50 === count( $wfc_log ) && 59 === $wfc_log[0]['detail']['n'] );
+$GLOBALS['wfc_test_options'][ Settings::OPTION ] = array( 'audit_keep' => 10 );
+check( 'SET-WC-13 the setting lowers the number (10 to 500)', 10 === count( \WorkflowCaptain\Audit::append( $wfc_log, 'settings', 0, array(), 'x' ) ) && 500 === Settings::sanitize( array( 'audit_keep' => 9999 ) )['audit_keep'] && 10 === Settings::sanitize( array( 'audit_keep' => 1 ) )['audit_keep'] );
+unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ] );

@@ -520,6 +520,6 @@ final class SettingsPage {
 			echo '<tr><td>' . esc_html( (string) $e['at'] ) . '</td><td>' . esc_html( $user ? $user->display_name : ( 0 === (int) $e['user'] ? __( 'System/WP-CLI', 'workflow-captain' ) : '#' . (int) $e['user'] ) ) . '</td><td>' . esc_html( $labels[ $e['what'] ] ?? (string) $e['what'] ) . '</td><td>' . esc_html( implode( '; ', $detail ) ) . '</td></tr>';
 		}
 		echo '</tbody></table>';
-		echo '<p class="description">' . esc_html( sprintf( /* translators: 1: number, 2: option name */ __( 'Es bleiben die letzten %1$d Einträge in der Option %2$s.', 'workflow-captain' ), Audit::KEEP, Audit::OPTION ) ) . '</p>';
+		echo '<p class="description">' . esc_html( sprintf( /* translators: 1: number, 2: option name */ __( 'Es bleiben die letzten %1$d Einträge in der Option %2$s (einstellbar im Tab Datenschutz & Aufbewahrung).', 'workflow-captain' ), Audit::keep(), Audit::OPTION ) ) . '</p>';
 	}
 }
