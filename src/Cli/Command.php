@@ -241,6 +241,9 @@ final class Command {
 	 *
 	 * [--yes]
 	 * : For reset: no confirmation.
+	 *
+	 * [--confirm=<word>]
+	 * : For set delete_data_on_uninstall 1: the word LÖSCHEN (or DELETE), as in the settings form.
 	 */
 	public function settings( array $args, array $assoc ): void {
 		$command = (string) ( $args[0] ?? 'list' );
@@ -289,6 +292,9 @@ final class Command {
 				list( $ok, $clean, $code ) = \WorkflowCaptain\SettingsTransfer::check( $key, $value );
 				if ( ! $ok ) {
 					\WP_CLI::error( sprintf( '%s: %s (allowed: %s). Nothing was changed.', $key, $code, 'int' === $f['type'] ? $f['min'] . '-' . $f['max'] : $f['type'] ) );
+				}
+				if ( 'delete_data_on_uninstall' === $key && 1 === $clean && 1 !== \WorkflowCaptain\Settings::stored()['delete_data_on_uninstall'] && ! \WorkflowCaptain\Settings::deletion_confirmed( array( 'delete_data_on_uninstall_confirm' => $assoc['confirm'] ?? '' ) ) ) {
+					\WP_CLI::error( 'Switching on delete_data_on_uninstall needs --confirm=LÖSCHEN (or DELETE). Nothing was changed.' );
 				}
 				$changed = \WorkflowCaptain\SettingsTransfer::apply( array( $key => $clean ), 'cli' );
 				\WP_CLI::success( array() === $changed ? 'Unchanged.' : sprintf( '%s = %s', $key, $show( $clean ) ) );
