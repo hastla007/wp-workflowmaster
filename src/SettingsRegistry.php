@@ -94,9 +94,15 @@ final class SettingsRegistry {
 		switch ( $f['type'] ) {
 			case self::TYPE_INT:
 			case self::TYPE_BOOL:
+				// A switch also takes true/false (a filter returning __return_false must switch it off, not on).
+				if ( is_bool( $value ) && self::TYPE_BOOL === $f['type'] ) {
+					$value = (int) $value;
+				}
 				return is_numeric( $value ) ? max( $f['min'], min( $f['max'], (int) $value ) ) : $f['default'];
 			case self::TYPE_EMAILS:
 				$list = array();
+				// A list of addresses (for example from a filter) counts like the same addresses separated by commas.
+				$value = is_array( $value ) ? implode( ',', array_filter( $value, 'is_scalar' ) ) : $value;
 				foreach ( preg_split( '/[\s,;]+/', is_scalar( $value ) ? (string) $value : '' ) ?: array() as $address ) {
 					$address = strtolower( trim( $address ) );
 					if ( '' !== $address && false !== filter_var( $address, FILTER_VALIDATE_EMAIL ) && ! in_array( $address, $list, true ) ) {
@@ -105,7 +111,11 @@ final class SettingsRegistry {
 				}
 				return implode( ', ', array_slice( $list, 0, $f['max'] ) );
 			case self::TYPE_KINDS:
-				return is_array( $value ) ? array_values( array_intersect( $f['default'], array_map( 'strval', $value ) ) ) : $f['default'];
+				// Comma-separated text (for example from a filter) counts like the list; nested values are ignored.
+				if ( is_string( $value ) ) {
+					$value = '' === trim( $value ) ? array() : array_map( 'trim', explode( ',', $value ) );
+				}
+				return is_array( $value ) ? array_values( array_intersect( $f['default'], array_map( 'strval', array_filter( $value, 'is_scalar' ) ) ) ) : $f['default'];
 		}
 		return $f['default'];
 	}

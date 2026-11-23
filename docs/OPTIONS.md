@@ -17,7 +17,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 
 ### Register der Einstellungen (SET-WC-01)
 
-`src/SettingsRegistry.php` ist die einzige Quelle für Option, Typ, Vorgabe, Bereich, Tab, Beschriftung, Hilfetext, Recht und Export-Regel. Jeder Wert lässt sich mit dem Filter `workflow_captain_setting_<feld>` setzen; der Filter gewinnt, das Ergebnis wird trotzdem gegen Typ und Bereich geprüft. Ändern darf nur `manage_workflow_captain`. Ein Test prüft, dass diese Tabelle jedes Feld des Registers nennt.
+`src/SettingsRegistry.php` ist die einzige Quelle für Option, Typ, Vorgabe, Bereich, Tab, Beschriftung, Hilfetext, Recht und Export-Regel. Jeder Wert lässt sich mit dem Filter `workflow_captain_setting_<feld>` setzen; der Filter gewinnt, das Ergebnis wird trotzdem gegen Typ und Bereich geprüft (ja/nein nimmt auch `true`/`false`, Arten auch Text mit Kommas, Empfänger auch eine Liste). Der Filter ändert nur, was wirkt: Formulare, Export und `wp workflow-captain settings` zeigen und speichern den gespeicherten Wert; unter einem gefilterten Feld steht, welcher Wert derzeit wirkt. Ändern darf nur `manage_workflow_captain`. Ein Test prüft, dass diese Tabelle jedes Feld des Registers nennt.
 
 | Feld | Option | Typ | Vorgabe | Bereich | Tab | Export |
 |---|---|---|---|---|---|---|

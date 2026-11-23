@@ -90,6 +90,9 @@ final class SettingsTransfer {
 				if ( ! is_array( $value ) ) {
 					return array( false, null, 'not_a_list' );
 				}
+				if ( count( array_filter( $value, 'is_scalar' ) ) !== count( $value ) ) {
+					return array( false, null, 'unknown_kind' );
+				}
 				$clean = SettingsRegistry::clean( $key, $value );
 				return count( $clean ) === count( array_unique( array_map( 'strval', $value ) ) ) ? array( true, $clean, '' ) : array( false, null, 'unknown_kind' );
 		}

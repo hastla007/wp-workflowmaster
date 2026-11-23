@@ -73,3 +73,35 @@ check( 'SET-WC-23 a backup older than 30 days cannot be restored', null === Sett
 unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] );
 $wfc_av = new ReflectionMethod( \WorkflowCaptain\Admin\SettingsPage::class, 'audit_value' );
 check( 'SET-WC-12 audit view prints list values (notice kinds) without "Array to string" (found in the PHP 8.5 run)', 'failed, pause → failed' === $wfc_av->invoke( null, array( array( 'failed', 'pause' ), array( 'failed' ) ) ) && '7 → 9' === $wfc_av->invoke( null, array( 7, 9 ) ) );
+
+// P2: values set by a filter (workflow_captain_setting_<key>) in the running flows.
+$GLOBALS['wfc_test_options'][ Settings::OPTION ]      = array( 'batch' => 7, 'notify_daily' => 1 );
+$GLOBALS['wfc_test_options'][ Notifications::OPTION ] = array( 'recipients' => 'ops@example.org', 'kinds' => array( 'failed' ) );
+$wfc_saved_filters = $GLOBALS['wfc_test_filters'] ?? array();
+add_filter( 'workflow_captain_setting_notify_daily', static fn() => false );
+check( 'P2 filter: __return_false on the daily notice switches it off (was: on, the default)', 0 === Settings::get()['notify_daily'] );
+$GLOBALS['wfc_test_filters']['workflow_captain_setting_notify_daily'] = array( static fn() => true );
+$GLOBALS['wfc_test_options'][ Settings::OPTION ]['notify_daily'] = 0;
+check( 'P2 filter: true on the daily notice switches it on', 1 === Settings::get()['notify_daily'] );
+add_filter( 'workflow_captain_setting_kinds', static fn() => 'failed, pause, evil' );
+add_filter( 'workflow_captain_setting_recipients', static fn() => array( 'A@example.org', 'b@example.org', array( 'x' ) ) );
+check( 'P2 filter: kinds as comma-separated text and addresses as a list are taken, unknown parts dropped', array( 'failed', 'pause' ) === Notifications::config()['kinds'] && 'a@example.org, b@example.org' === Notifications::config()['recipients'] );
+$GLOBALS['wfc_test_filters']['workflow_captain_setting_kinds'] = array( static fn() => '' );
+check( 'P2 filter: empty text for kinds means no kinds (not all)', array() === Notifications::config()['kinds'] );
+add_filter( 'workflow_captain_setting_batch', static fn() => 150 );
+$wfc_fv = new ReflectionMethod( \WorkflowCaptain\Admin\SettingsPage::class, 'form_values' );
+list( $wfc_form, $wfc_eff ) = $wfc_fv->invoke( null, Settings::OPTION );
+list( $wfc_nform, $wfc_neff ) = $wfc_fv->invoke( null, Notifications::OPTION );
+check( 'P2 settings form shows and saves the stored value, not the filtered one (saving another tab kept the filter value for good)', 7 === $wfc_form['batch'] && 150 === $wfc_eff['batch'] && 'ops@example.org' === $wfc_nform['recipients'] && array( 'failed' ) === $wfc_nform['kinds'] && 'a@example.org, b@example.org' === $wfc_neff['recipients'] );
+check( 'P2 export ignores filters (stored values only)', 7 === SettingsTransfer::export( SettingsTransfer::current(), '0.2.0' )['settings']['batch'] );
+$GLOBALS['wfc_test_filters'] = $wfc_saved_filters;
+set_error_handler( static function () { throw new ErrorException( 'warning' ); } );
+try {
+	$wfc_nested = SettingsTransfer::check( 'kinds', array( 'failed', array( 'pause' ) ) );
+	$wfc_nested_clean = SettingsRegistry::clean( 'kinds', array( 'failed', array( 'pause' ) ) );
+} catch ( ErrorException $e ) {
+	$wfc_nested = null;
+}
+restore_error_handler();
+check( 'P2 import: a nested list in kinds is an error, without "Array to string" warning', array( false, null, 'unknown_kind' ) === $wfc_nested && array( 'failed' ) === ( $wfc_nested_clean ?? null ) );
+unset( $GLOBALS['wfc_test_options'][ Settings::OPTION ], $GLOBALS['wfc_test_options'][ Notifications::OPTION ], $GLOBALS['wfc_test_options'][ SettingsTransfer::BACKUP_OPTION ] );
