@@ -26,6 +26,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `max_workflow` | `workflow_captain_settings` | Zahl | 2 | 1–10 | Ausführung | ja |
 | `catch_up_hours` | `workflow_captain_settings` | Zahl | 24 | 1–168 | Ausführung | ja |
 | `max_seconds` | `workflow_captain_settings` | Zahl | 20 | 5–120 | Ausführung | ja |
+| `test_mode` | `workflow_captain_settings` | Auswahl | 0 = aus (1 = Nachrichten umleiten, 2 = nichts ausführen) | 0–2 | Ausführung | nein (gilt nur für diese Installation; Konstante `WORKFLOW_CAPTAIN_TEST_MODE` hat Vorrang) |
 | `retry_attempts` | `workflow_captain_settings` | Zahl | 8 | 1–8 | Ausführung | ja |
 | `max_chain_depth` | `workflow_captain_settings` | Zahl | 3 | 1–8 | Ausführung | ja |
 | `retention_finished` | `workflow_captain_settings` | Zahl (Tage) | 30 | 1–180 | Datenschutz & Aufbewahrung | ja |

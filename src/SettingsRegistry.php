@@ -38,6 +38,7 @@ final class SettingsRegistry {
 		'max_workflow'       => array( Settings::OPTION, self::TYPE_INT, 2, 1, 10, 'execution', true ),
 		'catch_up_hours'     => array( Settings::OPTION, self::TYPE_INT, 24, 1, 168, 'execution', true ),
 		'max_seconds'        => array( Settings::OPTION, self::TYPE_INT, 20, 5, 120, 'execution', true ),
+		'test_mode'          => array( Settings::OPTION, self::TYPE_INT, 0, 0, 2, 'execution', false ),
 		'retry_attempts'     => array( Settings::OPTION, self::TYPE_INT, 8, 1, 8, 'execution', true ),
 		'max_chain_depth'    => array( Settings::OPTION, self::TYPE_INT, 3, 1, 8, 'execution', true ),
 		'retention_finished' => array( Settings::OPTION, self::TYPE_INT, 30, 1, self::RETENTION_MAX, 'privacy', true ),
@@ -121,6 +122,22 @@ final class SettingsRegistry {
 		return $f['default'];
 	}
 
+	/**
+	 * Labels of the choices of a number field shown as a list (value => label), empty for plain numbers.
+	 *
+	 * @return array<int,string>
+	 */
+	public static function choices( string $key ): array {
+		if ( 'test_mode' === $key ) {
+			return array(
+				TestMode::OFF      => __( 'Aus', 'workflow-captain' ),
+				TestMode::REDIRECT => __( 'Nachrichten umleiten', 'workflow-captain' ),
+				TestMode::DRY      => __( 'Nichts ausführen, nur protokollieren', 'workflow-captain' ),
+			);
+		}
+		return array();
+	}
+
 	/** A role slug of this site (any well-formed slug where WordPress is not loaded, as in the tests). */
 	public static function is_role( string $role ): bool {
 		if ( ! preg_match( '/^[a-z0-9_-]{1,60}$/', $role ) ) {
@@ -150,6 +167,7 @@ final class SettingsRegistry {
 			'max_workflow'       => array( __( 'Höchstens gleichzeitig laufende Schritte je Workflow', 'workflow-captain' ), __( 'Verhindert, dass ein einzelner Workflow alle Plätze belegt; die anderen kommen weiter dran.', 'workflow-captain' ) ),
 			'catch_up_hours'     => array( __( 'Nachholgrenze in Stunden', 'workflow-captain' ), __( 'Ein Schritt, der länger überfällig ist (zum Beispiel weil WP-Cron nicht lief), wird nicht von selbst ausgeführt, sondern zur Entscheidung angezeigt.', 'workflow-captain' ) ),
 			'max_seconds'        => array( __( 'Laufzeit je Worker-Durchlauf in Sekunden', 'workflow-captain' ), __( 'Danach beginnt der Worker keinen neuen Schritt mehr; ein begonnener Schritt läuft zu Ende. Hält Seitenaufrufe kurz, wenn WP-Cron über Besucher läuft.', 'workflow-captain' ) ),
+			'test_mode'          => array( __( 'Testmodus', 'workflow-captain' ), __( 'Für Testumgebungen und zum Ausprobieren. „Nachrichten umleiten“: Jede Nachricht aus einem Workflow geht an den ersten Empfänger der Hinweis-Mail (sonst an die Adresse der Website), mit „[Test]“ im Betreff. „Nichts ausführen“: Workflows laufen, aber kein Schritt wirkt; jeder Schritt wird nur als übersprungen protokolliert. Die Konstante WORKFLOW_CAPTAIN_TEST_MODE in wp-config.php hat Vorrang.', 'workflow-captain' ) ),
 			'retry_attempts'     => array( __( 'Wiederholungen nach einem vorübergehenden Fehler', 'workflow-captain' ), __( 'So oft wird ein Ereignis oder Schritt nach einem vorübergehenden Fehler erneut versucht, mit wachsenden Abständen (1 Min. bis 24 Std.). Danach wird ein Ereignis als fehlgeschlagen angezeigt, ein Schritt braucht eine Entscheidung. Nachrichten mit unklarem Ausgang werden nie von selbst wiederholt.', 'workflow-captain' ) ),
 			'max_chain_depth'    => array( __( 'Höchste Tiefe einer Kette von Workflows', 'workflow-captain' ), __( 'Löst ein Workflow ein Ereignis aus, das wieder einen Workflow startet, entsteht eine Kette. Tiefer verschachtelte Ereignisse werden gespeichert, starten aber nichts (Schutz vor Schleifen).', 'workflow-captain' ) ),
 			'retention_finished' => array( __( 'Erledigte Ereignisse löschen nach (Tagen)', 'workflow-captain' ), __( 'Vorgabe 30 Tage, höchstens 180. Welche Frist für Ihren Betrieb gilt, klären Sie mit Ihrer Rechtsberatung.', 'workflow-captain' ) ),

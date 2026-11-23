@@ -121,7 +121,7 @@ final class SettingsPage {
 			list( $default, $min, $max ) = Settings::fields()[ $key ];
 			$id                          = 'wfc-' . $key;
 			$name                        = Settings::OPTION . '[' . $key . ']';
-			$range                       = 0 === $min && 1 === $max ? '' : sprintf( /* translators: 1: lowest, 2: highest, 3: default value */ __( 'Erlaubt: %1$d bis %2$d. Standard: %3$d.', 'workflow-captain' ), $min, $max, $default );
+			$range                       = ( 0 === $min && 1 === $max ) || array() !== \WorkflowCaptain\SettingsRegistry::choices( $key ) ? '' : sprintf( /* translators: 1: lowest, 2: highest, 3: default value */ __( 'Erlaubt: %1$d bis %2$d. Standard: %3$d.', 'workflow-captain' ), $min, $max, $default );
 			$help                        = trim( $help . ' ' . $range );
 			$described                   = trim( ( '' !== $help ? $id . '-help' : '' ) . ( isset( $errors[ $id ] ) ? ' ' . $id . '-error' : '' ) );
 			$invalid                     = isset( $errors[ $id ] );
@@ -129,6 +129,17 @@ final class SettingsPage {
 			if ( 0 === $min && 1 === $max ) {
 				// A switch is a checkbox; the hidden field sends 0 when it is unchecked.
 				echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="0"><input id="' . esc_attr( $id ) . '" type="checkbox" name="' . esc_attr( $name ) . '" value="1" data-default="' . (int) $default . '"' . ( 'delete_data_on_uninstall' === $key ? ' data-confirm="' . esc_attr__( 'Beim Löschen des Plugins werden dann alle Ereignisse, Läufe, Workflows und Einstellungen dieser Website endgültig entfernt. Einschalten?', 'workflow-captain' ) . '"' : '' ) . ( 1 === $s[ $key ] ? ' checked' : '' ) . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) . '>';
+			} elseif ( array() !== \WorkflowCaptain\SettingsRegistry::choices( $key ) ) {
+				$locked = 'test_mode' === $key && \WorkflowCaptain\TestMode::forced();
+				echo '<select id="' . esc_attr( $id ) . '" name="' . esc_attr( $name ) . '" data-default="' . (int) $default . '"' . ( $locked ? ' disabled' : '' ) . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . '>';
+				foreach ( \WorkflowCaptain\SettingsRegistry::choices( $key ) as $value => $choice ) {
+					echo '<option value="' . (int) $value . '"' . ( (int) $value === ( $locked ? \WorkflowCaptain\TestMode::mode() : $s[ $key ] ) ? ' selected' : '' ) . '>' . esc_html( $choice ) . '</option>';
+				}
+				echo '</select>';
+				if ( $locked ) {
+					// A disabled select is not sent; keep the stored value.
+					echo '<input type="hidden" name="' . esc_attr( $name ) . '" value="' . (int) $s[ $key ] . '"><p class="description">' . esc_html__( 'Festgelegt durch WORKFLOW_CAPTAIN_TEST_MODE in wp-config.php.', 'workflow-captain' ) . '</p>';
+				}
 			} else {
 				echo '<input id="' . esc_attr( $id ) . '" type="number" required min="' . (int) $min . '" max="' . (int) $max . '" name="' . esc_attr( $name ) . '" value="' . (int) $s[ $key ] . '" data-default="' . (int) $default . '" class="small-text"' . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) . '>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) is escaped above.
 			}

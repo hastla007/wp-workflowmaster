@@ -49,6 +49,11 @@ final class WpDirectory implements Directory, SiteMembers {
 	}
 
 	public function mail( string $to, string $subject, string $message ): bool {
+		if ( \WorkflowCaptain\TestMode::REDIRECT === \WorkflowCaptain\TestMode::mode() ) {
+			// SET-WC-14: the message goes to the catch address; the original recipient is not named anywhere.
+			$to      = \WorkflowCaptain\TestMode::catch_address();
+			$subject = '[Test] ' . $subject;
+		}
 		return (bool) wp_mail( $to, $subject, $message );
 	}
 }

@@ -582,10 +582,10 @@ check( 'settings: engine limits mapped', array( 'site' => 5, 'workflow' => 2, 'c
 // SET-WC-01: register of the settings.
 use WorkflowCaptain\SettingsRegistry;
 use WorkflowCaptain\Notifications;
-check( 'SET-WC-01 register: every value of both options is in the register, nothing else', array_keys( Settings::defaults() ) === SettingsRegistry::keys( Settings::OPTION ) && array( 'recipients', 'kinds', 'notify_admin_roles' ) === SettingsRegistry::keys( Notifications::OPTION ) && 16 === count( SettingsRegistry::SPEC ) );
+check( 'SET-WC-01 register: every value of both options is in the register, nothing else', array_keys( Settings::defaults() ) === SettingsRegistry::keys( Settings::OPTION ) && array( 'recipients', 'kinds', 'notify_admin_roles' ) === SettingsRegistry::keys( Notifications::OPTION ) && 17 === count( SettingsRegistry::SPEC ) );
 check( 'SET-WC-01 register: both options keep their settings group', 'workflow_captain' === SettingsRegistry::GROUPS[ Settings::OPTION ] && 'workflow_captain_notify' === SettingsRegistry::GROUPS[ Notifications::OPTION ] );
 check( 'SET-WC-01 register: every field has a label and every number field a help text', array() === array_diff( array_keys( SettingsRegistry::SPEC ), array_keys( SettingsRegistry::texts() ) ) && array() === array_filter( SettingsRegistry::keys( Settings::OPTION ), static fn( $k ) => '' === SettingsRegistry::texts()[ $k ][1] ) );
-check( 'SET-WC-01 register: defaults and ranges unchanged against 0.2.0', array( 'batch' => 25, 'max_site' => 5, 'max_workflow' => 2, 'catch_up_hours' => 24, 'max_seconds' => 20, 'retry_attempts' => 8, 'max_chain_depth' => 3, 'retention_finished' => 30, 'retention_runs' => 30, 'retention_stuck' => 90, 'audit_keep' => 50, 'delete_data_on_uninstall' => 0, 'notify_daily' => 1 ) === Settings::defaults() && array( 1, 200 ) === array_slice( Settings::fields()['batch'], 1 ) );
+check( 'SET-WC-01 register: defaults and ranges unchanged against 0.2.0', array( 'batch' => 25, 'max_site' => 5, 'max_workflow' => 2, 'catch_up_hours' => 24, 'max_seconds' => 20, 'test_mode' => 0, 'retry_attempts' => 8, 'max_chain_depth' => 3, 'retention_finished' => 30, 'retention_runs' => 30, 'retention_stuck' => 90, 'audit_keep' => 50, 'delete_data_on_uninstall' => 0, 'notify_daily' => 1 ) === Settings::defaults() && array( 1, 200 ) === array_slice( Settings::fields()['batch'], 1 ) );
 check( 'SET-WC-01 register: stored option of 0.2.0 is read unchanged (no migration needed)', array( 'max_site' => 7, 'retention_stuck' => 45 ) === array_intersect_key( Settings::sanitize( array( 'max_site' => '7', 'retention_stuck' => 45, 'old' => 1 ) ), array( 'max_site' => 1, 'retention_stuck' => 1 ) ) && array( 'recipients' => 'a@example.org', 'kinds' => array( 'paused' ), 'notify_admin_roles' => array() ) === Notifications::sanitize( array( 'recipients' => 'A@example.org', 'kinds' => array( 'paused' ) ) ) );
 add_filter( 'workflow_captain_setting_max_site', static fn( $v ) => 12 );
 add_filter( 'workflow_captain_setting_batch', static fn( $v ) => 5000 );
@@ -940,6 +940,17 @@ unset( $GLOBALS['wfc_test_filters']['workflow_captain_setting_retry_attempts'], 
 check( 'SET-WC-09 the setting (here by filter) reaches the retry plan and the consumer', array( array( 60, 300 ), null, 1 ) === $GLOBALS['wfc_limits'] && 3 === \WorkflowCaptain\Consumer\Consumer::max_depth() );
 check( 'SET-WC-09 chain depth: default 3, range 1 to 8 (schema allows 8)', 3 === Settings::defaults()['max_chain_depth'] && 8 === Settings::sanitize( array( 'max_chain_depth' => 9 ) )['max_chain_depth'] && 1 === Settings::sanitize( array( 'max_chain_depth' => -1 ) )['max_chain_depth'] );
 check( 'SET-WC-28 retention: the core allows at most 180 days, an add-on may raise it by filter', 180 === \WorkflowCaptain\Privacy\Privacy::max_days() );
+// SET-WC-14: test mode "nothing executed": runs go through, no step takes effect.
+add_filter( 'workflow_captain_test_mode', static fn( $m ) => \WorkflowCaptain\TestMode::DRY );
+$e  = engine_site();
+$id = publish( $e, sample_graph() );
+$e->consumer->capture( $e->adapter, checkin() );
+drain( $e );
+unset( $GLOBALS['wfc_test_filters']['workflow_captain_test_mode'] );
+$wfc_steps = steps_of( $e );
+check( 'SET-WC-14 dry test mode: the run succeeds, no mail, no tag', EngineStore::RUN_SUCCEEDED === ( run_of( $e )['state'] ?? '' ) && array() === $e->dir->sent && array() === $e->store->tags_for( 'pass-captain', 'ticket', '8f3a1c0d9e7b4a2f6c5d1e0b9a8f7c6d' ) );
+check( 'SET-WC-14 dry test mode: each action step is logged as skipped (test_mode)', array( 'test_mode', 'test_mode' ) === array_values( array_filter( array_map( fn( $st ) => $st['result']['skipped'] ?? null, $wfc_steps ) ) ) );
+check( 'SET-WC-14 test mode is off by default and limited to 0, 1, 2', \WorkflowCaptain\TestMode::OFF === \WorkflowCaptain\TestMode::mode() && 2 === Settings::sanitize( array( 'test_mode' => 7 ) )['test_mode'] && false === \WorkflowCaptain\SettingsRegistry::field( 'test_mode' )['export'] );
 $p = Settings::problems( array( 'batch' => '9999', 'max_site' => 'abc', 'max_workflow' => '3', 'notify_daily' => '1' ) );
 check( 'WF-SET-13 settings: out-of-range and non-numeric values are reported per field, valid ones are not', array( 'batch', 'max_site' ) === array_keys( $p ) && array( '9999', 200, 1, 200 ) === $p['batch'] && 5 === $p['max_site'][1] );
 check( 'WF-SET-13 settings: no problems for an untouched form', array() === Settings::problems( Settings::defaults() ) && array() === Settings::problems( 'x' ) );

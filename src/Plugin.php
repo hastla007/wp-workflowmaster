@@ -59,6 +59,16 @@ final class Plugin {
 				}
 			);
 		}
+		if ( TestMode::OFF !== TestMode::mode() ) {
+			add_action(
+				'admin_notices',
+				static function (): void {
+					if ( current_user_can( 'view_workflow_logs' ) ) {
+						echo '<div class="notice notice-warning"><p><strong>' . esc_html( TestMode::DRY === TestMode::mode() ? __( 'Workflow Captain: Testmodus „Nichts ausführen“ ist aktiv. Workflows laufen, aber kein Schritt wirkt.', 'workflow-captain' ) : __( 'Workflow Captain: Testmodus „Nachrichten umleiten“ ist aktiv. Nachrichten aus Workflows gehen an die Testadresse.', 'workflow-captain' ) ) . '</strong></p></div>';
+					}
+				}
+			);
+		}
 		if ( Install::SCHEMA_NEWER === $this->schema ) {
 			add_action(
 				'admin_notices',
