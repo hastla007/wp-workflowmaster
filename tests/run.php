@@ -316,6 +316,21 @@ foreach ( glob( __DIR__ . '/../src/Admin/*.php' ) as $wfc_file ) {
 }
 check( 'WF-BUILDER-09 admin form controls have a label (wrapped, for=id or aria-label)' . ( $wfc_unlabelled ? ': ' . implode( '; ', $wfc_unlabelled ) : '' ), array() === $wfc_unlabelled );
 
+// P5 (settings transfer review, browser run at 1280 and 375 px):
+$wfc_sp = (string) file_get_contents( __DIR__ . '/../src/Admin/SettingsPage.php' );
+// - a capability key is no accessible name: the role checkboxes said "view_workflow_logs" and not which role.
+check( 'P5 role checkboxes are named by right and role, not by the capability key', ! str_contains( $wfc_sp, "aria-label=\"' . esc_attr( \$cap ) . '\"" ) && str_contains( $wfc_sp, "sprintf( __( '%1\$s – %2\$s', 'workflow-captain' ), \$label, \$name )" ) );
+// - a save through options.php reports as setting "general"; only the plugin's own setting was printed (no feedback).
+check( 'P5 settings page prints the "saved" message of options.php', str_contains( $wfc_sp, "settings_errors( 'general' );" ) );
+// - every button printed with submit_button() on one tab had id="submit" (status tab: four times).
+preg_match_all( "/submit_button\(([^;]*)\);/", $wfc_sp, $wfc_sb );
+$wfc_noid = array_filter( $wfc_sb[1], static fn( $b ) => ! str_contains( $b, "'id'" ) );
+check( 'P5 submit buttons of the settings page carry their own id (no duplicate id="submit")' . ( $wfc_noid ? ': ' . count( $wfc_noid ) . ' without' : '' ), array() === $wfc_noid );
+// - the irreversible undo had no confirmation, the reset had one.
+check( 'P5 undo of the settings asks for confirmation like the reset', 1 === preg_match( "/'id'\s*=>\s*'wfc-undo-submit'.*?'onclick'\s*=>\s*'return confirm\(/s", $wfc_sp ) );
+// - the error of a field is read before its help text, and the recipients field shows its own error.
+check( 'P5 a field error comes first in aria-describedby and the recipients field can show one', str_contains( $wfc_sp, "\$id . '-error ' : '' ) . ( '' !== \$help" ) && str_contains( $wfc_sp, 'id="wfc-recipients-error"' ) && str_contains( (string) file_get_contents( __DIR__ . '/../src/Admin/SettingsPage.php' ), "array( Notifications::class, 'sanitize_and_report' )" ) );
+
 // Found in the E2E third run with the wp-admin styles (docs/E2E-RESULTS.md, "Dritter Lauf"):
 // - WF-SET-13: every audit entry the core writes has a readable label on the status tab ("run_export" showed its key).
 $wfc_settings = (string) file_get_contents( __DIR__ . '/../src/Admin/SettingsPage.php' );

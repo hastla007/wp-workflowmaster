@@ -57,7 +57,7 @@ final class SettingsPage {
 	public function register_setting(): void {
 		register_setting( 'workflow_captain', Settings::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Settings::class, 'sanitize_and_report' ), 'default' => Settings::defaults() ) );
 		// Own group: options.php resets every option of a group that is missing in the request.
-		register_setting( 'workflow_captain_notify', Notifications::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Notifications::class, 'sanitize' ), 'default' => Notifications::sanitize( array() ) ) );
+		register_setting( 'workflow_captain_notify', Notifications::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Notifications::class, 'sanitize_and_report' ), 'default' => Notifications::sanitize( array() ) ) );
 	}
 
 	public function menu(): void {
@@ -78,12 +78,17 @@ final class SettingsPage {
 			'status'    => __( 'Status', 'workflow-captain' ),
 		);
 		$tab  = isset( $tabs[ $tab ] ) ? $tab : 'general';
-		echo '<div class="wrap"><h1>' . esc_html__( 'Einstellungen', 'workflow-captain' ) . '</h1><nav class="nav-tab-wrapper">';
+		// After an action (settings-updated, which WordPress removes from the address bar at once) settings.js moves
+		// focus to its message.
+		$result = isset( $_GET['settings-updated'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+		echo '<div class="wrap"' . ( $result ? ' data-wfc-result="1"' : '' ) . '><h1>' . esc_html__( 'Einstellungen', 'workflow-captain' ) . '</h1><nav class="nav-tab-wrapper">';
 		foreach ( $tabs as $key => $label ) {
 			echo '<a class="nav-tab' . ( $tab === $key ? ' nav-tab-active' : '' ) . '" href="' . esc_url( add_query_arg( array( 'page' => self::SLUG, 'tab' => $key ), admin_url( 'admin.php' ) ) ) . '">' . esc_html( $label ) . '</a>';
 		}
 		echo '</nav>';
 		settings_errors( Settings::OPTION );
+		// options.php reports a successful save as setting "general"; without it a save gave no feedback at all.
+		settings_errors( 'general' );
 		if ( 'status' === $tab ) {
 			$this->status();
 			echo '</div>';
@@ -127,7 +132,8 @@ final class SettingsPage {
 			$name                        = Settings::OPTION . '[' . $key . ']';
 			$range                       = ( 0 === $min && 1 === $max ) || array() !== \WorkflowCaptain\SettingsRegistry::choices( $key ) ? '' : sprintf( /* translators: 1: lowest, 2: highest, 3: default value */ __( 'Erlaubt: %1$d bis %2$d. Standard: %3$d.', 'workflow-captain' ), $min, $max, $default );
 			$help                        = trim( $help . ' ' . $range );
-			$described                   = trim( ( '' !== $help ? $id . '-help' : '' ) . ( isset( $errors[ $id ] ) ? ' ' . $id . '-error' : '' ) );
+			// The error first: a screen reader reads it before the help text.
+			$described                   = trim( ( isset( $errors[ $id ] ) ? $id . '-error ' : '' ) . ( '' !== $help ? $id . '-help' : '' ) );
 			$invalid                     = isset( $errors[ $id ] );
 			echo '<tr><th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( $label ) . '</label></th><td>';
 			if ( 0 === $min && 1 === $max ) {
@@ -159,11 +165,11 @@ final class SettingsPage {
 			echo '</td></tr>';
 		}
 		echo '</table><p class="submit">';
-		submit_button( null, 'primary', 'submit', false );
+		submit_button( null, 'primary', 'submit', false, array( 'id' => 'wfc-settings-submit' ) );
 		echo ' <button type="button" class="button wfc-reset-tab">' . esc_html__( 'Standardwerte dieses Tabs', 'workflow-captain' ) . '</button></p>';
 		echo '</form>';
 		if ( 'notify' === $tab ) {
-			$this->notify();
+			$this->notify( $errors );
 		}
 		if ( 'execution' === $tab ) {
 			$this->execution_help();
@@ -188,11 +194,13 @@ final class SettingsPage {
 		return sprintf( __( 'Der Filter %1$s setzt diesen Wert auf „%2$s“. Gespeichert bleibt der Wert im Feld; er gilt erst wieder ohne den Filter.', 'workflow-captain' ), 'workflow_captain_setting_' . $key, '' === $value ? '–' : $value );
 	}
 
-	/** Recipients, kinds and a test mail (WF-SET-06). */
-	private function notify(): void {
-		$c      = Notifications::stored();
-		$active = Notifications::config();
-		$kinds  = array(
+	/**
+	 * Readable names of the notice kinds (notification tab, import preview, log).
+	 *
+	 * @return array<string,string>
+	 */
+	public static function kind_labels(): array {
+		return array(
 			'decisions' => __( 'Läufe, die eine Entscheidung brauchen', 'workflow-captain' ),
 			'paused'    => __( 'Pausierte Läufe', 'workflow-captain' ),
 			'failed'    => __( 'Fehlgeschlagene Ereignisse (Queue-Ausfall)', 'workflow-captain' ),
@@ -200,19 +208,58 @@ final class SettingsPage {
 			'pause'     => __( 'Aktive Notfallpause', 'workflow-captain' ),
 			'providers' => __( 'Abgelehnte oder inkompatible Provider', 'workflow-captain' ),
 		);
+	}
+
+	/** Label of a setting as on its tab; the key itself for anything outside the register. */
+	public static function field_label( string $key ): string {
+		$texts = \WorkflowCaptain\SettingsRegistry::texts();
+		return isset( $texts[ $key ] ) ? $texts[ $key ][0] : $key;
+	}
+
+	/** A value of a setting as the operator reads it: switches as ein/aus, notice kinds by name, numbers as they are. */
+	public static function display_value( string $key, $value ): string {
+		$f = \WorkflowCaptain\SettingsRegistry::field( $key );
+		if ( null !== $f && \WorkflowCaptain\SettingsRegistry::TYPE_BOOL === $f['type'] && is_scalar( $value ) ) {
+			return 1 === (int) $value ? __( 'ein', 'workflow-captain' ) : __( 'aus', 'workflow-captain' );
+		}
+		if ( null !== $f && \WorkflowCaptain\SettingsRegistry::TYPE_KINDS === $f['type'] && is_array( $value ) ) {
+			$labels = self::kind_labels();
+			$names  = array_map( static fn( $k ): string => is_scalar( $k ) ? ( $labels[ (string) $k ] ?? (string) $k ) : '', $value );
+			return array() === $names ? __( 'keine', 'workflow-captain' ) : implode( ', ', $names );
+		}
+		if ( is_array( $value ) ) {
+			return implode( ', ', array_map( static fn( $p ): string => is_scalar( $p ) ? (string) $p : '', $value ) );
+		}
+		return is_scalar( $value ) || null === $value ? (string) $value : '';
+	}
+
+	/**
+	 * Recipients, kinds and a test mail (WF-SET-06).
+	 *
+	 * @param array<string,string> $errors Field errors of the last save (id => message).
+	 */
+	private function notify( array $errors ): void {
+		$c       = Notifications::stored();
+		$active  = Notifications::config();
+		$texts   = \WorkflowCaptain\SettingsRegistry::texts();
+		$invalid = isset( $errors['wfc-recipients'] );
 		echo '<h2>' . esc_html__( 'Empfänger und Arten', 'workflow-captain' ) . '</h2><form method="post" action="options.php" class="wfc-settings-form">';
 		settings_fields( 'workflow_captain_notify' );
-		echo '<table class="form-table" role="presentation"><tr><th scope="row"><label for="wfc-recipients">' . esc_html__( 'Empfänger', 'workflow-captain' ) . '</label></th><td>';
-		echo '<input id="wfc-recipients" type="text" class="regular-text" name="' . esc_attr( Notifications::OPTION ) . '[recipients]" value="' . esc_attr( $c['recipients'] ) . '" aria-describedby="wfc-recipients-help">';
-		echo '<p id="wfc-recipients-help" class="description">' . esc_html( sprintf( /* translators: %s: e-mail address of the site */ __( 'Bis zu zehn Adressen, durch Komma getrennt. Leer: die Adresse der Website (%s). Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress.', 'workflow-captain' ), (string) get_option( 'admin_email' ) ) ) . '</p>';
+		echo '<table class="form-table" role="presentation"><tr><th scope="row"><label for="wfc-recipients">' . esc_html( $texts['recipients'][0] ) . '</label></th><td>';
+		echo '<input id="wfc-recipients" type="text" class="regular-text" name="' . esc_attr( Notifications::OPTION ) . '[recipients]" value="' . esc_attr( $c['recipients'] ) . '" aria-describedby="' . ( $invalid ? 'wfc-recipients-error ' : '' ) . 'wfc-recipients-help"' . ( $invalid ? ' aria-invalid="true"' : '' ) . '>';
+		if ( $invalid ) {
+			echo '<p id="wfc-recipients-error" class="wfc-field-error" style="color:#b32d2e">' . esc_html( $errors['wfc-recipients'] ) . '</p>';
+		}
+		/* translators: %s: e-mail address of the site */
+		echo '<p id="wfc-recipients-help" class="description">' . esc_html( $texts['recipients'][1] . ' ' . sprintf( __( 'Das ist heute %s.', 'workflow-captain' ), (string) get_option( 'admin_email' ) ) . ' ' . __( 'Absender ist der von WooCommerce, wenn WooCommerce aktiv ist, sonst der von WordPress.', 'workflow-captain' ) ) . '</p>';
 		if ( $active['recipients'] !== $c['recipients'] ) {
 			echo '<p class="description">' . esc_html( self::filter_note( 'recipients', $active['recipients'] ) ) . '</p>';
 		}
 		echo '</td></tr>';
-		echo '<tr><th scope="row">' . esc_html__( 'Arten', 'workflow-captain' ) . '</th><td><fieldset><legend class="screen-reader-text">' . esc_html__( 'Arten', 'workflow-captain' ) . '</legend>';
+		echo '<tr><th scope="row">' . esc_html( $texts['kinds'][0] ) . '</th><td><fieldset><legend class="screen-reader-text">' . esc_html( $texts['kinds'][0] ) . '</legend>';
 		// An empty list must still reach the server, otherwise all kinds would come back.
 		echo '<input type="hidden" name="' . esc_attr( Notifications::OPTION ) . '[kinds][]" value="">';
-		foreach ( $kinds as $key => $label ) {
+		foreach ( self::kind_labels() as $key => $label ) {
 			echo '<label><input type="checkbox" name="' . esc_attr( Notifications::OPTION ) . '[kinds][]" value="' . esc_attr( $key ) . '"' . ( in_array( $key, $c['kinds'], true ) ? ' checked' : '' ) . '> ' . esc_html( $label ) . '</label><br>';
 		}
 		echo '</fieldset>';
@@ -228,7 +275,7 @@ final class SettingsPage {
 			echo '<label><input type="checkbox" name="' . esc_attr( Notifications::OPTION ) . '[notify_admin_roles][]" value="' . esc_attr( $role ) . '"' . ( in_array( $role, $c['notify_admin_roles'], true ) ? ' checked' : '' ) . '> ' . esc_html( translate_user_role( $name ) ) . '</label><br>';
 		}
 		echo '<p id="wfc-roles-help" class="description">' . esc_html( $roles_help ) . '</p></fieldset></td></tr></table>';
-		submit_button();
+		submit_button( null, 'primary', 'submit', true, array( 'id' => 'wfc-notify-submit' ) );
 		echo '</form>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="workflow_captain_test_mail">';
 		wp_nonce_field( 'workflow_captain_test_mail' );
@@ -281,14 +328,17 @@ final class SettingsPage {
 		echo '</tr></thead><tbody>';
 		foreach ( wp_roles()->role_objects as $key => $role ) {
 			$admin = 'administrator' === $key;
-			echo '<tr><th scope="row">' . esc_html( translate_user_role( wp_roles()->role_names[ $key ] ?? $key ) ) . '</th>';
-			foreach ( array_keys( $labels ) as $cap ) {
-				echo '<td><input type="checkbox" name="caps[' . esc_attr( $key ) . '][]" value="' . esc_attr( $cap ) . '"' . ( $role->has_cap( $cap ) ? ' checked' : '' ) . ( $admin ? ' disabled' : '' ) . ' aria-label="' . esc_attr( $cap ) . '"></td>';
+			$name  = translate_user_role( wp_roles()->role_names[ $key ] ?? $key );
+			echo '<tr><th scope="row">' . esc_html( $name ) . '</th>';
+			foreach ( $labels as $cap => $label ) {
+				// The name says right and role: a screen reader in a table cell does not always read both headers.
+				/* translators: 1: right, 2: role */
+				echo '<td><input type="checkbox" name="caps[' . esc_attr( $key ) . '][]" value="' . esc_attr( $cap ) . '"' . ( $role->has_cap( $cap ) ? ' checked' : '' ) . ( $admin ? ' disabled' : '' ) . ' aria-label="' . esc_attr( sprintf( __( '%1$s – %2$s', 'workflow-captain' ), $label, $name ) ) . '"></td>';
 			}
 			echo '</tr>';
 		}
 		echo '</tbody></table><p class="description">' . esc_html__( 'Administratoren haben immer alle Rechte. Shop-Manager bekommen keine Rechte automatisch.', 'workflow-captain' ) . '</p>';
-		submit_button();
+		submit_button( null, 'primary', 'submit', true, array( 'id' => 'wfc-roles-submit' ) );
 		echo '</form>';
 	}
 
@@ -315,6 +365,8 @@ final class SettingsPage {
 		if ( $changes ) {
 			Audit::record( 'roles', $changes );
 		}
+		add_settings_error( Settings::OPTION, 'wfc-roles', $changes ? __( 'Rechte gespeichert.', 'workflow-captain' ) : __( 'Keine Rechte geändert.', 'workflow-captain' ), $changes ? 'success' : 'info' );
+		set_transient( 'settings_errors', get_settings_errors(), 30 );
 		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'roles', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
 		exit;
 	}
@@ -350,46 +402,64 @@ final class SettingsPage {
 		echo '<p>' . esc_html__( 'Die Datei enthält alle Einstellungen außer den Empfänger-Adressen; Geheimnisse und Zugangsdaten sind nie darin. Ein Import zeigt zuerst, was sich ändert.', 'workflow-captain' ) . '</p>';
 		echo '<form method="post" action="' . $post . '" style="display:inline-block;margin-right:1em"><input type="hidden" name="action" value="workflow_captain_settings_export">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
 		wp_nonce_field( 'workflow_captain_settings_export' );
-		submit_button( __( 'Einstellungen exportieren', 'workflow-captain' ), 'secondary', 'submit', false );
+		submit_button( __( 'Einstellungen exportieren', 'workflow-captain' ), 'secondary', 'submit', false, array( 'id' => 'wfc-export-submit' ) );
 		echo '</form>';
 		$preview = get_transient( 'workflow_captain_settings_import_' . get_current_user_id() );
 		if ( is_array( $preview ) && isset( $preview['values'], $preview['diff'] ) ) {
-			echo '<div class="notice notice-info inline"><p><strong>' . esc_html__( 'Vorschau des Imports', 'workflow-captain' ) . '</strong></p>';
+			echo '<div id="wfc-import-preview" class="notice notice-info inline" tabindex="-1" data-wfc-focus role="region" aria-labelledby="wfc-import-preview-title"><p><strong id="wfc-import-preview-title">' . esc_html__( 'Vorschau des Imports', 'workflow-captain' ) . '</strong></p>';
 			if ( array() === $preview['diff'] ) {
 				echo '<p>' . esc_html__( 'Die Datei ändert nichts.', 'workflow-captain' ) . '</p>';
 			} else {
 				echo '<table class="widefat striped" tabindex="0" style="max-width:700px"><caption class="screen-reader-text">' . esc_html__( 'Änderungen durch den Import', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Einstellung', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Bisher', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Neu', 'workflow-captain' ) . '</th></tr></thead><tbody>';
 				foreach ( $preview['diff'] as $key => $pair ) {
-					echo '<tr><td><code>' . esc_html( (string) $key ) . '</code></td><td>' . esc_html( is_array( $pair[0] ) ? implode( ', ', $pair[0] ) : (string) $pair[0] ) . '</td><td>' . esc_html( is_array( $pair[1] ) ? implode( ', ', $pair[1] ) : (string) $pair[1] ) . '</td></tr>';
+					echo '<tr><th scope="row">' . esc_html( self::field_label( (string) $key ) ) . ' <code>' . esc_html( (string) $key ) . '</code></th><td>' . esc_html( self::display_value( (string) $key, $pair[0] ) ) . '</td><td>' . esc_html( self::display_value( (string) $key, $pair[1] ) ) . '</td></tr>';
 				}
 				echo '</tbody></table>';
+			}
+			if ( ! empty( $preview['ignored'] ) && is_array( $preview['ignored'] ) ) {
+				/* translators: %s: list of settings */
+				echo '<p>' . esc_html( sprintf( __( 'Nicht übernommen, weil nicht übertragbar (wie die Empfänger-Adressen) oder unbekannt: %s.', 'workflow-captain' ), implode( ', ', array_map( static fn( $k ): string => self::field_label( (string) $k ), $preview['ignored'] ) ) ) ) . '</p>';
 			}
 			echo '<form method="post" action="' . $post . '"><input type="hidden" name="action" value="workflow_captain_settings_import"><input type="hidden" name="confirm" value="1">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
 			wp_nonce_field( 'workflow_captain_settings_import' );
 			echo '<p>';
-			submit_button( __( 'Übernehmen', 'workflow-captain' ), 'primary', 'submit', false, array_merge( array() === $preview['diff'] ? array( 'disabled' => 'disabled' ) : array() ) );
+			submit_button( __( 'Übernehmen', 'workflow-captain' ), 'primary', 'submit', false, array_merge( array( 'id' => 'wfc-import-apply' ), array() === $preview['diff'] ? array( 'disabled' => 'disabled' ) : array() ) );
 			echo ' ';
-			submit_button( __( 'Verwerfen', 'workflow-captain' ), 'secondary', 'discard', false );
+			submit_button( __( 'Verwerfen', 'workflow-captain' ), 'secondary', 'discard', false, array( 'id' => 'wfc-import-discard' ) );
 			echo '</p></form></div>';
 		} else {
 			echo '<form method="post" enctype="multipart/form-data" action="' . $post . '" style="display:inline-block"><input type="hidden" name="action" value="workflow_captain_settings_import">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
 			wp_nonce_field( 'workflow_captain_settings_import' );
-			echo '<label for="wfc-settings-file">' . esc_html__( 'Datei mit Einstellungen', 'workflow-captain' ) . '</label> <input id="wfc-settings-file" type="file" name="settings_file" accept="application/json,.json" required> ';
-			submit_button( __( 'Vorschau anzeigen', 'workflow-captain' ), 'secondary', 'submit', false );
+			echo '<label for="wfc-settings-file">' . esc_html__( 'Datei mit Einstellungen', 'workflow-captain' ) . '</label> <input id="wfc-settings-file" type="file" name="settings_file" accept="application/json,.json" required aria-describedby="wfc-settings-file-help"> ';
+			submit_button( __( 'Vorschau anzeigen', 'workflow-captain' ), 'secondary', 'submit', false, array( 'id' => 'wfc-import-preview-submit' ) );
+			echo '<p id="wfc-settings-file-help" class="description">' . esc_html__( 'Eine JSON-Datei aus „Einstellungen exportieren“, höchstens 64 KB.', 'workflow-captain' ) . '</p>';
 			echo '</form>';
 		}
 		echo '<h3>' . esc_html__( 'Zurücksetzen', 'workflow-captain' ) . '</h3>';
 		echo '<form method="post" action="' . $post . '" style="display:inline-block;margin-right:1em"><input type="hidden" name="action" value="workflow_captain_settings_reset">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
 		wp_nonce_field( 'workflow_captain_settings_reset' );
-		echo '<label for="wfc-reset-scope" class="screen-reader-text">' . esc_html__( 'Bereich', 'workflow-captain' ) . '</label><select id="wfc-reset-scope" name="tab"><option value="">' . esc_html__( 'Alle Einstellungen', 'workflow-captain' ) . '</option><option value="execution">' . esc_html__( 'Ausführung', 'workflow-captain' ) . '</option><option value="notify">' . esc_html__( 'Benachrichtigungen', 'workflow-captain' ) . '</option><option value="privacy">' . esc_html__( 'Datenschutz & Aufbewahrung', 'workflow-captain' ) . '</option></select> ';
-		submit_button( __( 'Auf Standard setzen', 'workflow-captain' ), 'secondary', 'submit', false, array( 'onclick' => 'return confirm(' . wp_json_encode( __( 'Die gewählten Einstellungen auf die Standardwerte setzen? Rückgängig ist 30 Tage lang möglich.', 'workflow-captain' ) ) . ')' ) );
+		echo '<label for="wfc-reset-scope">' . esc_html__( 'Bereich', 'workflow-captain' ) . '</label> <select id="wfc-reset-scope" name="tab"><option value="">' . esc_html__( 'Alle Einstellungen', 'workflow-captain' ) . '</option><option value="execution">' . esc_html__( 'Ausführung', 'workflow-captain' ) . '</option><option value="notify">' . esc_html__( 'Benachrichtigungen', 'workflow-captain' ) . '</option><option value="privacy">' . esc_html__( 'Datenschutz & Aufbewahrung', 'workflow-captain' ) . '</option></select> ';
+		submit_button( __( 'Auf Standard setzen', 'workflow-captain' ), 'secondary', 'submit', false, array( 'id' => 'wfc-reset-submit', 'onclick' => 'return confirm(' . wp_json_encode( __( 'Die Einstellungen des gewählten Bereichs auf die Standardwerte setzen? Rückgängig ist 30 Tage lang möglich, bis zum nächsten Import oder Zurücksetzen.', 'workflow-captain' ) ) . ')' ) );
 		echo '</form>';
 		$backup = \WorkflowCaptain\SettingsTransfer::backup();
 		if ( null !== $backup ) {
 			echo '<form method="post" action="' . $post . '" style="display:inline-block"><input type="hidden" name="action" value="workflow_captain_settings_undo">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
 			wp_nonce_field( 'workflow_captain_settings_undo' );
-			/* translators: %s: date and time of the backup */
-			submit_button( sprintf( __( 'Rückgängig: Stand vom %s wiederherstellen', 'workflow-captain' ), wp_date( (string) get_option( 'date_format' ) . ' ' . (string) get_option( 'time_format' ), (int) $backup['at'] ) ), 'secondary', 'submit', false );
+			$when = wp_date( (string) get_option( 'date_format' ) . ' ' . (string) get_option( 'time_format' ), (int) $backup['at'] );
+			// Long on a phone: the button wraps instead of widening the page (found at 375 px).
+			submit_button(
+				/* translators: %s: date and time of the backup */
+				sprintf( __( 'Rückgängig: Stand vom %s wiederherstellen', 'workflow-captain' ), $when ),
+				'secondary',
+				'submit',
+				false,
+				array(
+					'id'      => 'wfc-undo-submit',
+					'style'   => 'white-space:normal;height:auto;max-width:100%;text-align:left',
+					/* translators: %s: date and time of the backup */
+					'onclick' => 'return confirm(' . wp_json_encode( sprintf( __( 'Alle Einstellungen auf den Stand vom %s zurücksetzen? Spätere Änderungen gehen dabei verloren. Danach gibt es kein weiteres Rückgängig.', 'workflow-captain' ), $when ) ) . ')',
+				)
+			);
 			echo '</form>';
 		}
 	}
@@ -400,7 +470,7 @@ final class SettingsPage {
 	 */
 	private static function guard( string $action ): void {
 		if ( ! current_user_can( 'manage_workflow_captain' ) ) {
-			wp_die( esc_html__( 'Keine Berechtigung.', 'workflow-captain' ), 403 );
+			wp_die( esc_html__( 'Dafür fehlt die Berechtigung.', 'workflow-captain' ), 403 );
 		}
 		if ( ! self::is_post( $_SERVER ) ) {
 			wp_die( esc_html__( 'Diese Aktion ist nur über das Formular möglich.', 'workflow-captain' ), 405 );
@@ -460,7 +530,7 @@ final class SettingsPage {
 			} else {
 				$changed = \WorkflowCaptain\SettingsTransfer::apply( $preview['values'], 'import' );
 				/* translators: %d: number of changed settings */
-				add_settings_error( Settings::OPTION, 'wfc-import', sprintf( __( '%d Einstellungen übernommen. Rückgängig ist 30 Tage lang möglich.', 'workflow-captain' ), count( $changed ) ), 'success' );
+				add_settings_error( Settings::OPTION, 'wfc-import', sprintf( __( '%d Einstellungen übernommen. Rückgängig ist 30 Tage lang möglich, bis zum nächsten Import oder Zurücksetzen.', 'workflow-captain' ), count( $changed ) ), 'success' );
 			}
 		} else {
 			$text = self::uploaded_text( $_FILES['settings_file'] ?? null ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only PHP's temp file of this upload is read (is_uploaded_file), its content is checked by parse().
@@ -468,11 +538,11 @@ final class SettingsPage {
 			if ( array() !== $parsed['errors'] ) {
 				$messages = array();
 				foreach ( $parsed['errors'] as $field => $code ) {
-					$messages[] = '_file' === $field ? self::import_error( $code ) : $field . ': ' . self::import_error( $code );
+					$messages[] = '_file' === $field ? self::import_error( $code ) : self::field_label( (string) $field ) . ' (' . $field . '): ' . self::import_error( $code );
 				}
 				add_settings_error( Settings::OPTION, 'wfc-import', __( 'Die Datei wurde nicht übernommen:', 'workflow-captain' ) . ' ' . implode( '; ', $messages ), 'error' );
 			} else {
-				set_transient( $key, array( 'values' => $parsed['values'], 'diff' => \WorkflowCaptain\SettingsTransfer::diff( \WorkflowCaptain\SettingsTransfer::current(), $parsed['values'] ) ), 15 * MINUTE_IN_SECONDS );
+				set_transient( $key, array( 'values' => $parsed['values'], 'ignored' => $parsed['ignored'], 'diff' => \WorkflowCaptain\SettingsTransfer::diff( \WorkflowCaptain\SettingsTransfer::current(), $parsed['values'] ) ), 15 * MINUTE_IN_SECONDS );
 			}
 		}
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
@@ -502,7 +572,7 @@ final class SettingsPage {
 		$tab = in_array( $tab, array( 'execution', 'notify', 'privacy' ), true ) ? $tab : '';
 		$changed = \WorkflowCaptain\SettingsTransfer::apply( \WorkflowCaptain\SettingsTransfer::reset_values( '' === $tab ? null : $tab ), 'reset' );
 		/* translators: %d: number of changed settings */
-		add_settings_error( Settings::OPTION, 'wfc-reset', sprintf( __( '%d Einstellungen auf Standard gesetzt. Rückgängig ist 30 Tage lang möglich.', 'workflow-captain' ), count( $changed ) ), 'success' );
+		add_settings_error( Settings::OPTION, 'wfc-reset', sprintf( __( '%d Einstellungen auf Standard gesetzt. Rückgängig ist 30 Tage lang möglich, bis zum nächsten Import oder Zurücksetzen.', 'workflow-captain' ), count( $changed ) ), 'success' );
 		set_transient( 'settings_errors', get_settings_errors(), 30 );
 		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'tab' => 'status', 'settings-updated' => 'true' ), admin_url( 'admin.php' ) ) );
 		exit;
@@ -576,8 +646,9 @@ final class SettingsPage {
 		foreach ( $entries as $e ) {
 			$user   = get_userdata( (int) $e['user'] );
 			$detail = array();
+			$named  = 'settings' === $e['what'] || str_starts_with( (string) $e['what'], 'settings_' );
 			foreach ( (array) $e['detail'] as $key => $value ) {
-				$detail[] = $key . ': ' . self::audit_value( $value );
+				$detail[] = ( $named ? self::field_label( (string) $key ) : $key ) . ': ' . ( $named && is_array( $value ) && 2 === count( $value ) && \WorkflowCaptain\SettingsRegistry::field( (string) $key ) ? self::display_value( (string) $key, array_values( $value )[0] ) . ' → ' . self::display_value( (string) $key, array_values( $value )[1] ) : self::audit_value( $value ) );
 			}
 			echo '<tr><td>' . esc_html( (string) $e['at'] ) . '</td><td>' . esc_html( $user ? $user->display_name : ( 0 === (int) $e['user'] ? __( 'System/WP-CLI', 'workflow-captain' ) : '#' . (int) $e['user'] ) ) . '</td><td>' . esc_html( $labels[ $e['what'] ] ?? (string) $e['what'] ) . '</td><td>' . esc_html( implode( '; ', $detail ) ) . '</td></tr>';
 		}
