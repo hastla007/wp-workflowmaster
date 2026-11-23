@@ -96,7 +96,15 @@ final class FixedClock extends Clock {
 	}
 }
 
-final class FakeDirectory implements \WorkflowCaptain\Engine\Directory, \WorkflowCaptain\Engine\SiteMembers, \WorkflowCaptain\Engine\Marketing {
+final class FakeDirectory implements \WorkflowCaptain\Engine\Directory, \WorkflowCaptain\Engine\SiteMembers, \WorkflowCaptain\Engine\Marketing, \WorkflowCaptain\Engine\MessageFooter {
+
+	/** Footer of messages to customers (SET-WC-10). */
+	public string $footer = '';
+
+	public function footer(): string {
+		return $this->footer;
+	}
+
 
 	/** @var int[] Users with consent to promotional messages; users who unsubscribed. */
 	public array $consent = array();

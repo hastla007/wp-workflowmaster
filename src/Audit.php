@@ -92,7 +92,7 @@ final class Audit {
 	 * writes, because it records the same change with its source.
 	 */
 	public static function watch_settings( bool $on ): void {
-		foreach ( array( Settings::OPTION, Notifications::OPTION ) as $option ) {
+		foreach ( array( Settings::OPTION, Notifications::OPTION, Messages::OPTION ) as $option ) {
 			if ( $on ) {
 				add_action( 'update_option_' . $option, array( self::class, 'settings_updated' ), 10, 2 );
 				add_action( 'add_option_' . $option, array( self::class, 'settings_added' ), 10, 2 );

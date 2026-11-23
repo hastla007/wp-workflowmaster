@@ -24,7 +24,7 @@ final class SettingsTransfer {
 	 * @return array<string,mixed>
 	 */
 	public static function current(): array {
-		return Settings::stored() + Notifications::stored();
+		return Settings::stored() + Notifications::stored() + Messages::stored();
 	}
 
 	/** @return array<string,mixed> Default of every field. */
@@ -93,6 +93,21 @@ final class SettingsTransfer {
 				}
 				$value = (int) $value;
 				return $value < $f['min'] || $value > $f['max'] ? array( false, null, 'out_of_range' ) : array( true, $value, '' );
+			case SettingsRegistry::TYPE_EMAIL:
+				if ( ! is_scalar( $value ) ) {
+					return array( false, null, 'invalid_address' );
+				}
+				$clean = SettingsRegistry::clean( $key, $value );
+				return '' === trim( (string) $value ) || '' !== $clean ? array( true, $clean, '' ) : array( false, null, 'invalid_address' );
+			case SettingsRegistry::TYPE_TEXT:
+			case SettingsRegistry::TYPE_TEXTAREA:
+				if ( ! is_string( $value ) ) {
+					return array( false, null, 'not_text' );
+				}
+				if ( ( function_exists( 'mb_strlen' ) ? mb_strlen( $value, 'UTF-8' ) : strlen( $value ) ) > $f['max'] ) {
+					return array( false, null, 'too_long' );
+				}
+				return array( true, SettingsRegistry::clean( $key, $value ), '' );
 			case SettingsRegistry::TYPE_EMAILS:
 				if ( ! is_scalar( $value ) ) {
 					return array( false, null, 'invalid_address' );

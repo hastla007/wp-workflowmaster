@@ -2745,3 +2745,34 @@ msgstr "„Am nächsten Tag senden“ behält jede Nachricht; „Überspringen�
 
 msgid "Choose at least one sending day. The days were not changed."
 msgstr "Wähle mindestens einen Sendetag. Die Tage wurden nicht geändert."
+
+msgid "Empty: the sender WordPress or your mail plugin sets (today’s behaviour). Use an address of your own domain, otherwise messages may land in spam."
+msgstr "Leer: der Absender, den WordPress oder dein Mail-Plugin setzt (bisheriges Verhalten). Verwende eine Adresse deiner eigenen Domain, sonst landen Nachrichten leicht im Spam."
+
+msgid "Added below every “Message to user”, for example your contact details and links to your legal notice and privacy policy. Placeholders: {site_name}, {site_url}, {privacy_policy_url}. Empty: no footer. Check the wording with your legal advisor."
+msgstr "Steht unter jeder „Nachricht an Benutzer“, zum Beispiel deine Kontaktdaten und Links zu Impressum und Datenschutzerklärung. Platzhalter: {site_name}, {site_url}, {privacy_policy_url}. Leer: keine Fußzeile. Prüfe den Wortlaut mit deiner Rechtsberatung."
+
+msgid "Footer of messages to customers"
+msgstr "Fußzeile der Nachrichten an Kunden"
+
+msgid "Name shown as sender of messages from workflows. Used together with the sender address."
+msgstr "Name, der als Absender von Nachrichten aus Workflows erscheint. Gilt zusammen mit der Absenderadresse."
+
+msgid "Replies to messages from workflows go here. Empty: to the sender."
+msgstr "Antworten auf Nachrichten aus Workflows gehen an diese Adresse. Leer: an den Absender."
+
+msgid "Reply address"
+msgstr "Antwortadresse"
+
+msgid "Sender address"
+msgstr "Absenderadresse"
+
+msgid "Sender and footer"
+msgstr "Absender und Fußzeile"
+
+msgid "Sender name"
+msgstr "Absendername"
+
+#, php-format
+msgid "“%s” is not a valid e-mail address and was not saved."
+msgstr "„%s“ ist keine gültige E-Mail-Adresse und wurde nicht gespeichert."

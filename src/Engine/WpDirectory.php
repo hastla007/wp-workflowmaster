@@ -9,7 +9,7 @@ namespace WorkflowCaptain\Engine;
 
 defined( 'ABSPATH' ) || exit;
 
-final class WpDirectory implements Directory, SiteMembers, Marketing {
+final class WpDirectory implements MessageFooter, Directory, SiteMembers, Marketing {
 
 	public function user_can( int $user_id, string $capability ): bool {
 		return $user_id > 0 && false !== get_userdata( $user_id ) && user_can( $user_id, $capability );
@@ -54,7 +54,12 @@ final class WpDirectory implements Directory, SiteMembers, Marketing {
 			$to      = \WorkflowCaptain\TestMode::catch_address();
 			$subject = '[Test] ' . $subject;
 		}
-		return (bool) wp_mail( $to, $subject, $message );
+		return (bool) wp_mail( $to, $subject, $message, \WorkflowCaptain\Messages::headers( \WorkflowCaptain\Messages::config() ) );
+	}
+
+	/** Footer of messages to customers (SET-WC-10); empty when none is set. */
+	public function footer(): string {
+		return \WorkflowCaptain\Messages::site_footer();
 	}
 
 	/**
@@ -86,7 +91,7 @@ final class WpDirectory implements Directory, SiteMembers, Marketing {
 			$to      = \WorkflowCaptain\TestMode::catch_address();
 			$subject = '[Test] ' . $subject;
 		}
-		$headers = array( 'List-Unsubscribe: <' . esc_url_raw( $unsubscribe_url ) . '>', 'List-Unsubscribe-Post: List-Unsubscribe=One-Click' );
+		$headers = array_merge( \WorkflowCaptain\Messages::headers( \WorkflowCaptain\Messages::config() ), array( 'List-Unsubscribe: <' . esc_url_raw( $unsubscribe_url ) . '>', 'List-Unsubscribe-Post: List-Unsubscribe=One-Click' ) );
 		return (bool) wp_mail( $to, $subject, $message, $headers );
 	}
 }

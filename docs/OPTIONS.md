@@ -11,6 +11,7 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `workflow_captain_emergency_pause` | Notfallpause: aktiv, seit, von Benutzer | aus | Übersicht, `wp workflow-captain pause` | ja |
 | `workflow_captain_adapters` | Produkte, deren Adapter zuletzt angemeldet waren (für das Pausieren bei Wegfall, C-15) | leer | `Plugin::register_adapters()` | ja |
 | `workflow_captain_audit` | letzte 50 (einstellbar 10–500, `audit_keep`) sicherheitsrelevante Änderungen: Zeit, Benutzer-ID, Art (Einstellungen, Rechte, Notfallpause), geänderte Schlüssel | leer | `Audit::record()` | ja |
+| `workflow_captain_messages` | Absender (Name, Adresse), Antwortadresse und Fußzeile der Nachrichten aus Workflows (SET-WC-10); Absender und Antwortadresse für alle Nachrichten, die Fußzeile nur für Nachrichten an Kunden | leer = heutiges Verhalten | Einstellungen → Nachrichten | ja |
 | `workflow_captain_notify` | Empfänger (bis zu zehn Adressen) und Arten der täglichen Hinweis-Mail | leer = Adresse der Website, alle Arten | Einstellungen → Benachrichtigungen | ja |
 | `workflow_captain_settings_backup` | Stand vor dem letzten Import, Zurücksetzen oder Rückgängig der Einstellungen (Zeit, Benutzer-ID, Quelle, Werte inkl. Empfänger), 30 Tage für „Rückgängig“, danach von der täglichen Wartung gelöscht | leer | `SettingsTransfer::apply()` | ja |
 | `workflow_captain_rejected` | Zahl abgelehnter Umschläge und die letzten Regelcodes, nie Werte | leer | `Plugin::record_rejection()` | ja |
@@ -41,6 +42,10 @@ Stand: Plugin 0.2.x. Aufgaben WF-SET-01, WF-SET-14 und WF-SEO-01 in [`../TODO.md
 | `daily_limit` | `workflow_captain_settings` | Zahl | 0 = keine Grenze | 0–20 je Kunde und Kalendertag | Nachrichten | ja |
 | `daily_limit_action` | `workflow_captain_settings` | Auswahl | 0 = am nächsten Tag senden (1 = überspringen) | 0–1 | Nachrichten | ja |
 | `notify_daily` | `workflow_captain_settings` | ja/nein | ja | – | Benachrichtigungen | ja |
+| `sender_name` | `workflow_captain_messages` | Text | leer | bis 100 Zeichen | Nachrichten | ja |
+| `sender_email` | `workflow_captain_messages` | Adresse | leer = Absender von WordPress bzw. des Mail-Plugins | eine Adresse | Nachrichten | nein (an die Installation gebunden) |
+| `reply_to` | `workflow_captain_messages` | Adresse | leer = an den Absender | eine Adresse | Nachrichten | nein (an die Installation gebunden) |
+| `message_footer` | `workflow_captain_messages` | Text (mehrzeilig) | leer = keine Fußzeile | bis 1000 Zeichen; Platzhalter `{site_name}`, `{site_url}`, `{privacy_policy_url}` | Nachrichten | ja |
 | `recipients` | `workflow_captain_notify` | Adressen | leer = Adresse der Website | bis 10 | Benachrichtigungen | nein (personenbezogen, an die Installation gebunden) |
 | `notify_admin_roles` | `workflow_captain_notify` | Rollen | keine | bis 20 Rollen dieser Website | Benachrichtigungen | ja |
 | `kinds` | `workflow_captain_notify` | Auswahl | alle sechs Arten | – | Benachrichtigungen | ja |

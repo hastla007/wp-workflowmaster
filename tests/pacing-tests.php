@@ -10,6 +10,7 @@
 use WorkflowCaptain\Engine\EngineStore;
 use WorkflowCaptain\Engine\Pacing;
 use WorkflowCaptain\Engine\WpdbEngineStore;
+use WorkflowCaptain\Messages;
 use WorkflowCaptain\Settings;
 use WorkflowCaptain\SettingsRegistry;
 use WorkflowCaptain\SettingsTransfer;
@@ -123,3 +124,28 @@ check( 'SET-WC-07 import: quiet time and limit are checked against their range',
 check( 'SET-WC-07 the log and the import preview show days and hours by name', 'Monday, Friday' === \WorkflowCaptain\Admin\SettingsPage::display_value( 'send_days', 17 ) && '07:00' === \WorkflowCaptain\Admin\SettingsPage::display_value( 'quiet_hours_end', 7 ) && 'Off' === \WorkflowCaptain\Admin\SettingsPage::display_value( 'quiet_hours_start', -1 ) );
 check( 'SET-WC-07 the values are exported (site policy, no personal data)', array( 'quiet_hours_start', 'quiet_hours_end', 'send_days', 'daily_limit', 'daily_limit_action' ) === array_values( array_intersect( array_keys( SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ), array( 'quiet_hours_start', 'quiet_hours_end', 'send_days', 'daily_limit', 'daily_limit_action' ) ) ) );
 check( 'SET-WC-07 a filter can set the days as a list too', 3 === SettingsRegistry::clean( 'send_days', array( 1, 2 ) ) );
+
+// ----- SET-WC-10 sender, reply address, footer (S6) -------------------------------------------------------------
+
+echo "\n# SET-WC-10 sender, reply address and footer\n";
+
+$wfc_m0 = Messages::sanitize( array() );
+check( 'SET-WC-10 empty by default: no From, no Reply-To, no footer (today\'s behaviour)', array() === Messages::headers( $wfc_m0 ) && '' === Messages::footer( $wfc_m0, array() ) && array( 'sender_name', 'sender_email', 'reply_to', 'message_footer' ) === array_keys( $wfc_m0 ) );
+$wfc_m = Messages::sanitize( array( 'sender_name' => "Shop \"Nord\"\r\nBcc: x@evil.example", 'sender_email' => ' Info@Shop.Example ', 'reply_to' => 'service@shop.example', 'message_footer' => "Shop Nord GmbH\r\n<b>Impressum</b>: {site_url}impressum\nDatenschutz: {privacy_policy_url}" ) );
+$wfc_h = Messages::headers( $wfc_m );
+check( 'SET-WC-10 sender and reply address become headers; the name cannot inject a header line', 2 === count( $wfc_h ) && str_starts_with( $wfc_h[0], 'From: "Shop Nord Bcc: x@evil.example" <info@shop.example>' ) && 'Reply-To: <service@shop.example>' === $wfc_h[1] && ! preg_match( '/[\r\n]/', implode( '', $wfc_h ) ) );
+check( 'SET-WC-10 an invalid address is not stored', '' === Messages::sanitize( array( 'sender_email' => 'kein-mail' ) )['sender_email'] && array( false, null, 'invalid_address' ) === SettingsTransfer::check( 'reply_to', 'kein-mail' ) && array( true, '', '' ) === SettingsTransfer::check( 'reply_to', '' ) );
+check( 'SET-WC-10 the footer is plain text with placeholders filled', "Shop Nord GmbH\nImpressum: https://shop.example/impressum\nDatenschutz: https://shop.example/datenschutz" === Messages::footer( $wfc_m, array( 'site_url' => 'https://shop.example/', 'privacy_policy_url' => 'https://shop.example/datenschutz' ) ) );
+check( 'SET-WC-10 texts are cut to their length; import rejects a longer text instead of cutting it', 100 === mb_strlen( Messages::sanitize( array( 'sender_name' => str_repeat( 'ä', 150 ) ) )['sender_name'] ) && array( false, null, 'too_long' ) === SettingsTransfer::check( 'message_footer', str_repeat( 'x', 1001 ) ) && array( false, null, 'not_text' ) === SettingsTransfer::check( 'sender_name', array( 'x' ) ) );
+check( 'SET-WC-10 addresses stay out of an export; name and footer go with it', ! array_key_exists( 'sender_email', SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ) && ! array_key_exists( 'reply_to', SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ) && array_key_exists( 'message_footer', SettingsTransfer::export( SettingsTransfer::defaults(), '0' )['settings'] ) );
+$wfc_dir         = new FakeDirectory();
+$wfc_dir->footer = 'Shop Nord GmbH · Impressum';
+$wfc_nu          = new \WorkflowCaptain\Engine\Actions\NotifyUser( $wfc_dir );
+$wfc_ctx         = static fn( array $config ) => new \WorkflowCaptain\Engine\ActionContext( array( 'type' => 'pass.ticket.checked_in', 'actor_user_id' => 17, 'subject' => array( 'id' => '5' ), 'data' => array() ), $config + array( 'subject' => 'Hallo', 'message' => 'Text' ), 'k', 9, 1, 1, 1 );
+$wfc_nu->execute( $wfc_ctx( array() ) );
+check( 'SET-WC-10 the footer is added below a message to a customer', "Text\n\nShop Nord GmbH · Impressum" === end( $wfc_dir->sent )[2] );
+$wfc_dir->consent = array( 17 );
+$wfc_nu->execute( $wfc_ctx( array( 'purpose' => 'promotional' ) ) );
+check( 'SET-WC-10 in a promotional message the footer comes before the unsubscribe line', 1 === preg_match( "/^Text\n\nShop Nord GmbH · Impressum\n\n-- \n/", end( $wfc_dir->sent )[2] ) );
+check( 'SET-WC-10 messages to the operator get sender and reply address, but no footer', ! str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/Actions/NotifyAdmin.php' ), 'footer' ) && 2 === substr_count( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Engine/WpDirectory.php' ), 'Messages::headers(' ) );
+check( 'SET-WC-10 the option is removed on a confirmed uninstall and its form is logged', str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Install.php' ), "'workflow_captain_messages'" ) && str_contains( (string) file_get_contents( WORKFLOW_CAPTAIN_PATH . 'src/Audit.php' ), 'Messages::OPTION' ) );

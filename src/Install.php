@@ -376,7 +376,7 @@ final class Install {
 			// Table names are the plugin's own (prefix + fixed name), never input; uninstall removes its tables.
 			$wpdb->query( 'DROP TABLE IF EXISTS ' . $table ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
 		}
-		foreach ( array( self::DB_OPTION, Migrator::LOCK_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at', 'workflow_captain_settings_backup' ) as $option ) {
+		foreach ( array( self::DB_OPTION, Migrator::LOCK_OPTION, 'workflow_captain_adapters', 'workflow_captain_rejected', 'workflow_captain_settings', 'workflow_captain_emergency_pause', 'workflow_captain_audit', 'workflow_captain_notify', 'workflow_captain_messages', 'workflow_captain_connectors', 'workflow_captain_connectors_registered', 'workflow_captain_schedule_fired', 'workflow_captain_maintenance_at', 'workflow_captain_settings_backup' ) as $option ) {
 			delete_option( $option );
 		}
 		// Short-lived transients per user (import preview, notices, dry run); fixed names, no input.

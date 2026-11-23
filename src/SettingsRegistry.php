@@ -29,6 +29,12 @@ final class SettingsRegistry {
 	const TYPE_ROLES  = 'roles';
 	/** Weekdays as a bit mask stored as a number: 1 = Monday … 64 = Sunday (SET-WC-07). */
 	const TYPE_DAYS   = 'days';
+	/** One address or empty (SET-WC-10). */
+	const TYPE_EMAIL    = 'email';
+	/** One line of text, at most `max` characters. */
+	const TYPE_TEXT     = 'text';
+	/** Several lines of plain text, at most `max` characters. */
+	const TYPE_TEXTAREA = 'textarea';
 
 	/**
 	 * key => array( option, type, default, min, max, tab, export ). `export` false: the value is tied to this
@@ -55,6 +61,10 @@ final class SettingsRegistry {
 		'daily_limit'        => array( Settings::OPTION, self::TYPE_INT, 0, 0, 20, 'messages', true ),
 		'daily_limit_action' => array( Settings::OPTION, self::TYPE_INT, 0, 0, 1, 'messages', true ),
 		'notify_daily'       => array( Settings::OPTION, self::TYPE_BOOL, 1, 0, 1, 'notify', true ),
+		'sender_name'        => array( Messages::OPTION, self::TYPE_TEXT, '', 0, 100, 'messages', true ),
+		'sender_email'       => array( Messages::OPTION, self::TYPE_EMAIL, '', 0, 0, 'messages', false ),
+		'reply_to'           => array( Messages::OPTION, self::TYPE_EMAIL, '', 0, 0, 'messages', false ),
+		'message_footer'     => array( Messages::OPTION, self::TYPE_TEXTAREA, '', 0, 1000, 'messages', true ),
 		'recipients'         => array( Notifications::OPTION, self::TYPE_EMAILS, '', 0, 10, 'notify', false ),
 		'kinds'              => array( Notifications::OPTION, self::TYPE_KINDS, Notifications::KINDS, 0, 0, 'notify', true ),
 		'notify_admin_roles' => array( Notifications::OPTION, self::TYPE_ROLES, array(), 0, 20, 'notify', true ),
@@ -64,6 +74,7 @@ final class SettingsRegistry {
 	const GROUPS = array(
 		Settings::OPTION      => 'workflow_captain',
 		Notifications::OPTION => 'workflow_captain_notify',
+		Messages::OPTION      => 'workflow_captain_messages',
 	);
 
 	/** Capability needed to change a setting. */
@@ -116,6 +127,15 @@ final class SettingsRegistry {
 			case self::TYPE_DAYS:
 				$value = is_array( $value ) ? self::days_mask( $value ) : $value;
 				return is_numeric( $value ) && (int) $value >= $f['min'] && (int) $value <= $f['max'] ? (int) $value : $f['default'];
+			case self::TYPE_EMAIL:
+				$address = is_scalar( $value ) ? strtolower( trim( (string) $value ) ) : '';
+				return false !== filter_var( $address, FILTER_VALIDATE_EMAIL ) ? $address : '';
+			case self::TYPE_TEXT:
+				$text = is_scalar( $value ) ? trim( preg_replace( '/[\x00-\x1F\x7F]+/u', ' ', strip_tags( (string) $value ) ) ?? '' ) : '';
+				return self::cut( $text, $f['max'] );
+			case self::TYPE_TEXTAREA:
+				$text = is_scalar( $value ) ? str_replace( array( "\r\n", "\r" ), "\n", strip_tags( (string) $value ) ) : '';
+				return self::cut( trim( preg_replace( '/[\x00-\x08\x0B-\x1F\x7F]+/u', '', $text ) ?? '' ), $f['max'] );
 			case self::TYPE_EMAILS:
 				$list = array();
 				foreach ( preg_split( '/[\s,;]+/', is_scalar( $value ) ? (string) $value : '' ) ?: array() as $address ) {
@@ -195,6 +215,11 @@ final class SettingsRegistry {
 		return array_values( array_filter( range( 1, 7 ), static fn( int $d ): bool => 0 !== ( $mask & ( 1 << ( $d - 1 ) ) ) ) );
 	}
 
+	/** Text shortened to $max characters (multibyte-safe). */
+	public static function cut( string $text, int $max ): string {
+		return function_exists( 'mb_substr' ) ? mb_substr( $text, 0, $max, 'UTF-8' ) : substr( $text, 0, $max );
+	}
+
 	/** A role slug of this site (any well-formed slug where WordPress is not loaded, as in the tests). */
 	public static function is_role( string $role ): bool {
 		if ( ! preg_match( '/^[a-z0-9_-]{1,60}$/', $role ) ) {
@@ -225,6 +250,10 @@ final class SettingsRegistry {
 				return is_numeric( $filtered ) ? self::clean( $key, $filtered ) : $value;
 			case self::TYPE_DAYS:
 				return is_numeric( $filtered ) || is_array( $filtered ) ? self::clean( $key, $filtered ) : $value;
+			case self::TYPE_EMAIL:
+			case self::TYPE_TEXT:
+			case self::TYPE_TEXTAREA:
+				return is_scalar( $filtered ) ? self::clean( $key, $filtered ) : $value;
 			case self::TYPE_EMAILS:
 				if ( is_array( $filtered ) ) {
 					$filtered = implode( ', ', array_filter( $filtered, 'is_scalar' ) );
@@ -263,6 +292,10 @@ final class SettingsRegistry {
 			'send_days'          => array( __( 'Sending days', 'workflow-captain' ), __( 'On other days, messages to customers wait for the next sending day. At least one day.', 'workflow-captain' ) ),
 			'daily_limit'        => array( __( 'Messages per customer and day', 'workflow-captain' ), __( 'At most this many messages from all workflows together to one customer per calendar day of the site. 0: no limit.', 'workflow-captain' ) ),
 			'daily_limit_action' => array( __( 'When the limit is reached', 'workflow-captain' ), __( '“Send on the next day” keeps every message; “Skip” drops the surplus and notes it in the run.', 'workflow-captain' ) ),
+			'sender_name'        => array( __( 'Sender name', 'workflow-captain' ), __( 'Name shown as sender of messages from workflows. Used together with the sender address.', 'workflow-captain' ) ),
+			'sender_email'       => array( __( 'Sender address', 'workflow-captain' ), __( 'Empty: the sender WordPress or your mail plugin sets (today’s behaviour). Use an address of your own domain, otherwise messages may land in spam.', 'workflow-captain' ) ),
+			'reply_to'           => array( __( 'Reply address', 'workflow-captain' ), __( 'Replies to messages from workflows go here. Empty: to the sender.', 'workflow-captain' ) ),
+			'message_footer'     => array( __( 'Footer of messages to customers', 'workflow-captain' ), __( 'Added below every “Message to user”, for example your contact details and links to your legal notice and privacy policy. Placeholders: {site_name}, {site_url}, {privacy_policy_url}. Empty: no footer. Check the wording with your legal advisor.', 'workflow-captain' ) ),
 			'notify_daily'       => array( __( 'Daily notice email to the site operator address', 'workflow-captain' ), __( 'Only sent when decisions are waiting, events have failed, work is stuck or the emergency pause is on. Without event contents.', 'workflow-captain' ) ),
 			'recipients'         => array( __( 'Recipients', 'workflow-captain' ), __( 'Up to ten addresses, separated by commas. Empty: the site\'s address.', 'workflow-captain' ) ),
 			'kinds'              => array( __( 'Notice types', 'workflow-captain' ), '' ),

@@ -57,6 +57,7 @@ final class SettingsPage {
 	public function register_setting(): void {
 		register_setting( 'workflow_captain', Settings::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Settings::class, 'sanitize_and_report' ), 'default' => Settings::defaults() ) );
 		// Own group: options.php resets every option of a group that is missing in the request.
+		register_setting( 'workflow_captain_messages', \WorkflowCaptain\Messages::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( \WorkflowCaptain\Messages::class, 'sanitize_and_report' ), 'default' => \WorkflowCaptain\Messages::sanitize( array() ) ) );
 		register_setting( 'workflow_captain_notify', Notifications::OPTION, array( 'type' => 'array', 'sanitize_callback' => array( Notifications::class, 'sanitize_and_report' ), 'default' => Notifications::sanitize( array() ) ) );
 	}
 
@@ -153,7 +154,7 @@ final class SettingsPage {
 				// Weekdays as checkboxes in a group; the hidden field marks the list as sent (no day = error, SET-WC-07).
 				echo '<fieldset id="' . esc_attr( $id ) . '"' . ( '' !== $described ? ' aria-describedby="' . esc_attr( $described ) . '"' : '' ) . ( $invalid ? ' aria-invalid="true"' : '' ) . '><legend class="screen-reader-text">' . esc_html( $label ) . '</legend><input type="hidden" name="' . esc_attr( $name . '[]' ) . '" value="">';
 				foreach ( \WorkflowCaptain\SettingsRegistry::weekdays() as $day => $day_name ) {
-					echo '<label style="margin-right:1em"><input type="checkbox" name="' . esc_attr( $name . '[]' ) . '" value="' . (int) $day . '" data-default="' . ( 0 !== ( (int) $default & ( 1 << ( $day - 1 ) ) ) ? '1' : '0' ) . '"' . ( 0 !== ( $s[ $key ] & ( 1 << ( $day - 1 ) ) ) ? ' checked' : '' ) . '> ' . esc_html( $day_name ) . '</label> ';
+					echo '<label class="wfc-confirm" style="margin-right:1em"><input type="checkbox" name="' . esc_attr( $name . '[]' ) . '" value="' . (int) $day . '" data-default="' . ( 0 !== ( (int) $default & ( 1 << ( $day - 1 ) ) ) ? '1' : '0' ) . '"' . ( 0 !== ( $s[ $key ] & ( 1 << ( $day - 1 ) ) ) ? ' checked' : '' ) . '> ' . esc_html( $day_name ) . '</label> ';
 				}
 				echo '</fieldset>';
 			} elseif ( 0 === $min && 1 === $max ) {
@@ -183,6 +184,9 @@ final class SettingsPage {
 		echo '</form>';
 		if ( 'notify' === $tab ) {
 			$this->notify( $errors );
+		}
+		if ( 'messages' === $tab ) {
+			$this->sender( $errors );
 		}
 		if ( 'execution' === $tab ) {
 			$this->execution_help();
@@ -252,6 +256,45 @@ final class SettingsPage {
 			return implode( ', ', array_map( static fn( $p ): string => is_scalar( $p ) ? (string) $p : '', $value ) );
 		}
 		return is_scalar( $value ) || null === $value ? (string) $value : '';
+	}
+
+	/**
+	 * Sender, reply address and footer of messages from workflows (SET-WC-10): own option and form.
+	 *
+	 * @param array<string,string> $errors Field errors of the last save (id => message).
+	 */
+	private function sender( array $errors ): void {
+		$c      = \WorkflowCaptain\Messages::stored();
+		$active = \WorkflowCaptain\Messages::config();
+		$texts  = \WorkflowCaptain\SettingsRegistry::texts();
+		echo '<h2>' . esc_html__( 'Sender and footer', 'workflow-captain' ) . '</h2><form method="post" action="options.php" class="wfc-settings-form">';
+		settings_fields( 'workflow_captain_messages' );
+		echo '<table class="form-table" role="presentation">';
+		foreach ( \WorkflowCaptain\SettingsRegistry::keys( \WorkflowCaptain\Messages::OPTION ) as $key ) {
+			$f         = \WorkflowCaptain\SettingsRegistry::field( $key );
+			$id        = 'wfc-' . $key;
+			$name      = \WorkflowCaptain\Messages::OPTION . '[' . $key . ']';
+			$invalid   = isset( $errors[ $id ] );
+			$described = trim( ( $invalid ? $id . '-error ' : '' ) . $id . '-help' );
+			$attrs     = ' name="' . esc_attr( $name ) . '" data-default="" aria-describedby="' . esc_attr( $described ) . '"' . ( $invalid ? ' aria-invalid="true"' : '' );
+			echo '<tr><th scope="row"><label for="' . esc_attr( $id ) . '">' . esc_html( $texts[ $key ][0] ) . '</label></th><td>';
+			if ( \WorkflowCaptain\SettingsRegistry::TYPE_TEXTAREA === $f['type'] ) {
+				echo '<textarea id="' . esc_attr( $id ) . '"' . $attrs . ' rows="4" class="large-text" maxlength="' . (int) $f['max'] . '">' . esc_textarea( $c[ $key ] ) . '</textarea>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is escaped above.
+			} else {
+				echo '<input id="' . esc_attr( $id ) . '"' . $attrs . ' type="' . ( \WorkflowCaptain\SettingsRegistry::TYPE_EMAIL === $f['type'] ? 'email' : 'text' ) . '" class="regular-text"' . ( \WorkflowCaptain\SettingsRegistry::TYPE_TEXT === $f['type'] ? ' maxlength="' . (int) $f['max'] . '"' : '' ) . ' value="' . esc_attr( $c[ $key ] ) . '">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $attrs is escaped above.
+			}
+			if ( $invalid ) {
+				echo '<p id="' . esc_attr( $id . '-error' ) . '" class="wfc-field-error" style="color:#b32d2e">' . esc_html( $errors[ $id ] ) . '</p>';
+			}
+			echo '<p id="' . esc_attr( $id . '-help' ) . '" class="description">' . esc_html( $texts[ $key ][1] ) . '</p>';
+			if ( $active[ $key ] !== $c[ $key ] ) {
+				echo '<p class="description">' . esc_html( self::filter_note( $key, (string) $active[ $key ] ) ) . '</p>';
+			}
+			echo '</td></tr>';
+		}
+		echo '</table><p class="submit">';
+		submit_button( null, 'primary', 'submit', false, array( 'id' => 'wfc-messages-submit' ) );
+		echo '</p></form>';
 	}
 
 	/**

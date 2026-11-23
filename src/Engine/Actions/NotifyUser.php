@@ -21,6 +21,7 @@ use WorkflowCaptain\Engine\Action;
 use WorkflowCaptain\Engine\ActionContext;
 use WorkflowCaptain\Engine\Directory;
 use WorkflowCaptain\Engine\Marketing;
+use WorkflowCaptain\Engine\MessageFooter;
 use WorkflowCaptain\Engine\NetworkSafe;
 use WorkflowCaptain\Engine\Pacing;
 use WorkflowCaptain\Engine\SiteMembers;
@@ -109,6 +110,11 @@ final class NotifyUser implements Action, NetworkSafe {
 		}
 		$subject = str_replace( array( "\r", "\n" ), ' ', Template::render( (string) $context->config['subject'], $context->envelope ) );
 		$message = Template::render( (string) $context->config['message'], $context->envelope );
+		// Footer of the site (SET-WC-10): contact details, legal notice; before an unsubscribe line.
+		$footer = $this->directory instanceof MessageFooter ? trim( $this->directory->footer() ) : '';
+		if ( '' !== $footer ) {
+			$message .= "\n\n" . $footer;
+		}
 		if ( self::PURPOSE_PROMOTIONAL === ( $context->config['purpose'] ?? self::PURPOSE_TRANSACTIONAL ) ) {
 			return $this->promotional( (int) $user_id, $address, $subject, $message, $context );
 		}
