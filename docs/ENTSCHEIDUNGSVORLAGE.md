@@ -17,7 +17,6 @@ Diese Fragen sind offen, aber Code und Spezifikation folgen schon der Empfehlung
 | F-09 | Reicht eine gültige Lizenz des Produkt-Add-ons | ja, kein eigenes Recht je Produkt |
 | F-10 | Verarbeitet der kostenlose Kern Captain-Ereignisse | nein: Captain-Produkte nur mit Workflow Captain Pro; Lizenzereignisse im Shop über Pro |
 | F-14 | Verlust zwischen Commit des Kerns und Speichern | für Version 1 hinnehmen, im Handbuch nennen |
-| F-15 | Acht Versuche, Kettentiefe 3 | ja (gebaut, getestet) |
 | F-21 | Beantragter Partnercode „öffentlich“? | nein, erst nach Freigabe |
 | F-23 | Review-Einladung als Workflow-Befehl | nicht in Version 1; später höchstens `review.request.plan`/`.cancel` über den Planer von Review Captain Pro |
 | W-1 bis W-9, W-13 | Widersprüche zwischen den Entscheidungen vom 16.11. | so auflösen, wie Teil 2 der offenen Fragen es beschreibt (alle so gebaut) |
@@ -29,7 +28,6 @@ Diese Fragen sind offen, aber Code und Spezifikation folgen schon der Empfehlung
 | Nr. | Frage | Empfehlung | Gibt frei |
 |---|---|---|---|
 | E9 / F-19 | Preise Workflow Captain Pro (Vorschlag 129 / 229 / 399 € netto für 1 / 5 / 25 Websites) | bestätigen oder Beträge nennen; gleiche Pro-Funktionen in allen Tarifen | WF-INT-13, Produktkey und Jahrespläne im Shop, Website (WEB-1) |
-| F-04 | Aufbewahrung (30 Tage erledigt, 90 Tage fehlgeschlagen, Benutzer-ID leeren, sobald kein Lauf wartet) | als Voreinstellung bestätigen, nur nach unten änderbar; endgültig nach der Rechtsprüfung | WF-SPEC-11 |
 | F-16 | Ist Course Captain ein Suite-Produkt mit Add-on und Präfix `course.` | ja (Course Captain baut schon so: `COURSE_CAPTAIN_CONTRACT_VERSION`, Pro-Funktionen) | Katalog `course.*`, CC-1 bis CC-4 |
 | F-24 | Schreibende Workflow-Aktionen für Course Captain (Zugang anlegen/entziehen) | nicht in Version 1; danach als Befehle nach dem Muster der Gutschein-Befehle, Aktion in Workflow Captain Pro | Antwort an Course Captain (E-39b) |
 | r4b | Volle WooCommerce-Erstattung: `affiliate.commission.adjusted` ohne `refund_id` (Affiliate bucht über den Bestellstatus) | Spezifikation: `refund_id` bei voller Erstattung über den Status optional; Affiliate muss nichts ändern | „Woo/Refund-Verknüpfung testen“ |
@@ -39,11 +37,14 @@ Diese Fragen sind offen, aber Code und Spezifikation folgen schon der Empfehlung
 
 ## 2a. Entschieden am 23.11.2026, Umsetzung läuft
 
-Gemeldet von der koordinierenden Form-Sitzung (Entscheidungen der Inhaberin in der Gutschein-Sitzung); in der Spezifikation als entschieden vermerkt.
+F-05a und F-13 gemeldet von der koordinierenden Form-Sitzung (Entscheidungen der Inhaberin in der Gutschein-Sitzung); F-04, F-15 und E-S1 bis E-S8 von der Inhaberin in der Workflow-Sitzung („mach was du empfiehlst“). In der Spezifikation als entschieden vermerkt.
 
 | Nr. | Entscheidung | Umsetzung |
 |---|---|---|
 | F-05a | Höchstbetrag 100 auch in CHF, USD und GBP; in anderen Währungen trägt der Betreiber den Betrag selbst ein | wp-couponmaster Pull Request #20 (offen) |
+| F-04 | Aufbewahrung: Vorgaben 30/90 Tage, bis 180 Tage frei verlängerbar, darüber Pro (E-S7) | SET-WC-28 |
+| F-15 | Wiederholungen 8, Tiefe 3 als Vorgabe, einstellbar 1–8 (E-S5) | SET-WC-09 |
+| E-S1 bis E-S8 | Einstellungen für den Verkauf: alle wie empfohlen (`SETTINGS-ANALYSE.md`) | SET-WC-01 bis -28 |
 | F-13 | „Ja, nach Rechtsprüfung“: Kontakt und Einwilligung je Gutschein-ID bzw. Ticket lesbar, ab Werk aus | Voucher: Vertrag 1.5.0 in wp-couponmaster #20 (offen); Pass: mit Pass Captain 1.7.0 (PASS-E17-01) |
 
 ## 3. Extern (nicht durch eine Antwort lösbar)

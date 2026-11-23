@@ -2,7 +2,7 @@
 
 Stand: 16.11.2026 (Abend), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.6. Die Folgeentscheidungen D8b, D11b und D13, Entscheidung 17 (Kundenconnectoren) und die Preisbestätigung für Form Captain Pro sind eingearbeitet; erledigte Fragen und Widersprüche bleiben stehen und tragen den Vermerk „Entschieden am 16.11.2026“.
 
-**Noch offen:** F-02 bis F-04, F-06, F-08 bis F-10, F-14 bis F-16, F-19 (ohne Form), F-21, F-23, F-24 (neu am 23.11.2026) und W-1 bis W-9, W-13. **Am 23.11.2026 entschieden:** F-05a, F-13. **Am 16.11.2026 entschieden:** F-01, F-07, F-12 (Form und Review), F-18a, F-20, F-22, W-11; dazu: Lizenzserver liest über `LicenseReader` (Branch `claude/zen-babbage-7q4nac`), die eigene Lesefassade `ReadFacade` ist zurückgezogen; Pass Captain 1.6.0 und Voucher Captain 1.3.0 erhöhen ihre Plugin-Version für die neuen Lesefunktionen.
+**Noch offen:** F-02, F-03, F-06, F-08 bis F-10, F-14, F-16, F-19 (ohne Form), F-21, F-23, F-24 (neu am 23.11.2026) und W-1 bis W-9, W-13. **Am 23.11.2026 entschieden:** F-04, F-05a, F-13, F-15. **Am 16.11.2026 entschieden:** F-01, F-07, F-12 (Form und Review), F-18a, F-20, F-22, W-11; dazu: Lizenzserver liest über `LicenseReader` (Branch `claude/zen-babbage-7q4nac`), die eigene Lesefassade `ReadFacade` ist zurückgezogen; Pass Captain 1.6.0 und Voucher Captain 1.3.0 erhöhen ihre Plugin-Version für die neuen Lesefunktionen.
 
 Hier steht alles, was die Entscheidungen des Inhabers vom 16.11.2026 nicht festlegen. Jede Frage nennt, was die Spezifikation bis zur Antwort annimmt, und eine Empfehlung. Teil 2 nennt Widersprüche zwischen den Entscheidungen selbst.
 
@@ -35,7 +35,10 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Annahme der Spezifikation:** `<PREFIX>_CONTRACT_VERSION`, wobei `<PREFIX>` der Präfix der vorhandenen Versionskonstante ist.
 - **Empfehlung:** Dieses Muster bestätigen, also `REVIEW_CAPTAIN_CONTRACT_VERSION`, `WPLC_CONTRACT_VERSION`, `COURSE_CAPTAIN_CONTRACT_VERSION` und `WORKFLOW_CAPTAIN_CONTRACT_VERSION`. Vorhandene Konstanten nicht umbenennen. Abkündigungsfrist: zwei MINOR-Versionen und mindestens sechs Monate.
 
-### F-04 · Aufbewahrung im Ereignisspeicher
+### F-04 · Aufbewahrung im Ereignisspeicher — **entschieden am 23.11.2026**
+
+**Entscheidung der Inhaberin („mach was du empfiehlst“, E-S7 in `SETTINGS-ANALYSE.md`):** Vorgaben 30 Tage (erledigt) und 90 Tage (fehlgeschlagen) bleiben; der Betreiber kann bis 180 Tage frei verlängern, darüber nur mit Workflow Captain Pro (`workflow.extended_logs`). Fristen mit rechtlichem Gewicht bleiben Sache der Rechtsprüfung.
+
 
 - **Frage:** Wie lange bleiben gespeicherte Ereignisse, und wann werden Benutzer-ID und Nutzdaten geleert?
 - **Annahme der Spezifikation:** erledigte Ereignisse 30 Tage, `dead_letter` und `paused` 90 Tage; Benutzer-ID und Nutzdaten werden geleert, sobald kein Lauf mehr darauf wartet (R-12.4).
@@ -129,7 +132,10 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Annahme der Spezifikation:** ja (R-7.2).
 - **Empfehlung:** Hinnehmen für Version 1 und im Handbuch sagen. Später kann ein Adapter über die Lesefunktionen nachsehen, ob ihm etwas fehlt; dafür braucht kein Kern eine Ausgangstabelle.
 
-### F-15 · Zahlen für Wiederholung und Schleifenschutz
+### F-15 · Zahlen für Wiederholung und Schleifenschutz — **entschieden am 23.11.2026**
+
+**Entscheidung der Inhaberin (E-S5):** acht Versuche mit den Abständen aus 7.4 und Tiefe 3 als Vorgabe; beides vom Betreiber einstellbar zwischen 1 und 8 (SET-WC-09).
+
 
 - **Frage:** Gelten acht Versuche mit den Abständen aus Abschnitt 7.4 und die Tiefe 3 für Ketten?
 - **Empfehlung:** Ja. Acht Versuche nutzen Pass Captain und Affiliate Captain schon. Tiefe 3 reicht für jede Kette, die `konzept.md` beschreibt.
