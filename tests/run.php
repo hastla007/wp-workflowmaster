@@ -159,6 +159,9 @@ foreach ( array(
 	"\$k = 'voucher-captain-pro';"               => 'product key',
 	"wp_set_current_user( 1 );"                  => 'wp_set_current_user',
 	"add_filter( 'pre_wp_mail', '__return_true' );" => 'mail filter',
+	"\$r = 'workflow.advanced_logic';"          => 'Pro right in a hint (E-S8: grey line without function code)',
+	"\$r = 'workflow.branding';"                => 'reserved Pro right workflow.branding (E-S8)',
+	"\$r = 'workflow.webhooks';"                => 'Pro right workflow.webhooks',
 ) as $line => $what ) {
 	file_put_contents( $tmp . '/src/Planted.php', "<?php\n{$line}\n" );
 	exec( escapeshellarg( PHP_BINARY ) . ' ' . escapeshellarg( __DIR__ . '/license-guard.php' ) . ' ' . escapeshellarg( $tmp ) . ' 2>&1', $o, $c );
