@@ -632,7 +632,8 @@ final class SettingsPage {
 		exit;
 	}
 
-	private static function import_error( string $code ): string {
+	/** Text of an error code of SettingsTransfer::check() and the profile selection (also used by the setup assistant). */
+	public static function import_error( string $code ): string {
 		$texts = array(
 			'not_a_settings_file' => __( 'not a Workflow Captain settings file', 'workflow-captain' ),
 			'other_plugin'        => __( 'the file belongs to a different plugin', 'workflow-captain' ),
@@ -644,6 +645,8 @@ final class SettingsPage {
 			'unknown_kind'        => __( 'unknown type', 'workflow-captain' ),
 			'invalid_address'     => __( 'invalid address', 'workflow-captain' ),
 			'not_in_profile'      => __( 'not part of this profile', 'workflow-captain' ),
+			'too_long'            => __( 'too long', 'workflow-captain' ),
+			'not_text'            => __( 'not text', 'workflow-captain' ),
 		);
 		return $texts[ $code ] ?? $code;
 	}
@@ -761,6 +764,8 @@ final class SettingsPage {
 			'settings_undo'   => __( 'Settings restored', 'workflow-captain' ),
 			'settings_cli'    => __( 'Setting changed via WP-CLI', 'workflow-captain' ),
 			'settings_profile' => __( 'Values of a country profile applied', 'workflow-captain' ),
+			'settings_setup'   => __( 'Settings applied in the setup assistant', 'workflow-captain' ),
+			'setup_recipe'     => __( 'Recipe added as draft by the setup assistant', 'workflow-captain' ),
 			'roles'     => __( 'Role capabilities changed', 'workflow-captain' ),
 			'pause_on'  => __( 'Emergency pause turned on', 'workflow-captain' ),
 			'pause_off' => __( 'Emergency pause lifted', 'workflow-captain' ),

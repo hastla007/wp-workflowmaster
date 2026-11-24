@@ -2940,3 +2940,163 @@ msgstr "Workflow Captain: Einstellungen"
 
 msgid "Workflow Captain: notice recipients"
 msgstr "Workflow Captain: Empfänger der Hinweis-Mail"
+
+#. translators: %d: number of changed settings
+#: src/Admin/SetupWizard.php:573
+msgid "%d setting changed."
+msgid_plural "%d settings changed."
+msgstr[0] "%d Einstellung geändert."
+msgstr[1] "%d Einstellungen geändert."
+
+#: src/Admin/SetupWizard.php:527
+msgid "(empty)"
+msgstr "(leer)"
+
+#: src/Admin/SetupWizard.php:499
+msgid "A recipe is added as a draft and never runs on its own. Review it, start a test run, then publish."
+msgstr "Ein Rezept wird als Entwurf angelegt und läuft nie von selbst. Prüfen Sie es, starten Sie einen Testlauf und veröffentlichen Sie es dann."
+
+#: src/Admin/SetupWizard.php:545
+msgid "Apply and finish setup"
+msgstr "Übernehmen und Einrichtung abschließen"
+
+#: src/Admin/SetupWizard.php:376
+msgid "Back"
+msgstr "Zurück"
+
+#: src/Admin/SetupWizard.php:383
+msgid "Cancel setup – nothing is changed"
+msgstr "Einrichtung abbrechen – nichts wird geändert"
+
+#: src/Admin/SetupWizard.php:525
+msgid "Changes of the setup"
+msgstr "Änderungen der Einrichtung"
+
+#: src/Admin/SetupWizard.php:471
+msgid "Empty fields keep today’s behaviour: the sender of WordPress or your mail plugin, replies to the sender, no footer."
+msgstr "Leere Felder behalten das heutige Verhalten: Absender von WordPress oder Ihrem Mail-Plugin, Antworten an den Absender, keine Fußzeile."
+
+#: src/Admin/SetupWizard.php:545
+msgid "Finish setup"
+msgstr "Einrichtung abschließen"
+
+#: src/Admin/SetupWizard.php:401 src/Admin/SetupWizard.php:498 src/Admin/SetupWizard.php:500
+msgid "First recipe"
+msgstr "Erstes Rezept"
+
+#: src/Admin/SetupWizard.php:284
+msgid "Hide this notice"
+msgstr "Hinweis ausblenden"
+
+#: src/Admin/SetupWizard.php:379
+msgid "Next"
+msgstr "Weiter"
+
+#: src/Admin/SetupWizard.php:501
+msgid "No recipe"
+msgstr "Kein Rezept"
+
+#: src/Admin/SetupWizard.php:537
+msgid "No recipe will be added."
+msgstr "Es wird kein Rezept angelegt."
+
+#: src/Admin/SetupWizard.php:523
+msgid "No setting will be changed."
+msgstr "Keine Einstellung wird geändert."
+
+#: src/Admin/SetupWizard.php:559
+msgid "Nothing was changed."
+msgstr "Es wurde nichts geändert."
+
+#: src/Admin/SetupWizard.php:567
+msgid "Nothing was changed:"
+msgstr "Es wurde nichts geändert:"
+
+#: src/Admin/SetupWizard.php:575
+msgid "Open the new draft"
+msgstr "Neuen Entwurf öffnen"
+
+#: src/Admin/SetupWizard.php:519
+msgid "Please correct this first; nothing can be applied:"
+msgstr "Korrigieren Sie das zuerst, vorher kann nichts übernommen werden:"
+
+#: src/Admin/SettingsPage.php:768
+msgid "Recipe added as draft by the setup assistant"
+msgstr "Rezept als Entwurf angelegt (Einrichtungsassistent)"
+
+#: src/Admin/SetupWizard.php:462
+msgid "Selected values are only taken over after you confirm the summary at the end."
+msgstr "Ausgewählte Werte werden erst übernommen, wenn Sie am Ende die Zusammenfassung bestätigen."
+
+#: src/Admin/SetupWizard.php:400 src/Admin/SetupWizard.php:470
+msgid "Sender and footer"
+msgstr "Absender und Fußzeile"
+
+#: src/Admin/SettingsPage.php:767
+msgid "Settings applied in the setup assistant"
+msgstr "Einstellungen im Einrichtungsassistenten übernommen"
+
+#: src/Admin/SetupWizard.php:581
+msgid "Settings → Status (undo, change log)"
+msgstr "Einstellungen → Status (Rückgängig, Änderungsprotokoll)"
+
+#: src/Admin/SetupWizard.php:60 src/Admin/SetupWizard.php:60 src/Admin/SetupWizard.php:340
+msgid "Setup"
+msgstr "Einrichtung"
+
+#: src/Admin/SetupWizard.php:380
+msgid "Skip this step"
+msgstr "Schritt überspringen"
+
+#: src/Admin/SetupWizard.php:282 src/Admin/SetupWizard.php:568
+msgid "Start setup"
+msgstr "Einrichtung starten"
+
+#: src/Admin/SetupWizard.php:402 src/Admin/SetupWizard.php:513
+msgid "Summary"
+msgstr "Zusammenfassung"
+
+#. translators: %s: name of the recipe
+#: src/Admin/SetupWizard.php:539
+msgid "The recipe “%s” will be added as a draft. It does not run until you publish it."
+msgstr "Das Rezept „%s“ wird als Entwurf angelegt. Es läuft erst, wenn Sie es veröffentlichen."
+
+#: src/Admin/SetupWizard.php:559 src/Admin/SetupWizard.php:571
+msgid "The setup is finished."
+msgstr "Die Einrichtung ist abgeschlossen."
+
+#: src/Admin/SetupWizard.php:281
+msgid "Three short steps: country profile, sender and footer, first recipe. Every step can be skipped, and nothing is changed until you confirm the summary."
+msgstr "Drei kurze Schritte: Länderprofil, Absender und Fußzeile, erstes Rezept. Jeden Schritt können Sie überspringen, und nichts wird geändert, bevor Sie die Zusammenfassung bestätigen."
+
+#: src/Admin/SetupWizard.php:280
+msgid "Workflow Captain: set up the basics"
+msgstr "Workflow Captain: Grundlagen einrichten"
+
+#: src/Admin/SetupWizard.php:285
+msgid "You can start the setup later at any time under Workflow Captain → Setup."
+msgstr "Sie können die Einrichtung jederzeit später unter Workflow Captain → Einrichtung starten."
+
+#: src/Admin/SetupWizard.php:548
+msgid "You can undo the changed settings for 30 days in Settings → Status, until the next import, reset or profile."
+msgstr "Die geänderten Einstellungen können Sie 30 Tage lang unter Einstellungen → Status rückgängig machen, bis zum nächsten Import, Zurücksetzen oder Profil."
+
+#: src/Admin/SettingsPage.php:649
+msgid "not text"
+msgstr "kein Text"
+
+#: src/Admin/SetupWizard.php:577
+msgid "the editor shows what is still needed before publishing."
+msgstr "der Editor zeigt, was vor dem Veröffentlichen noch fehlt."
+
+#: src/Admin/SettingsPage.php:648
+msgid "too long"
+msgstr "zu lang"
+
+#: src/Admin/SetupWizard.php:531
+msgid "your own entry"
+msgstr "Ihre Eingabe"
+
+#: src/Admin/SetupWizard.php:435
+msgid "– no profile –"
+msgstr "– kein Profil –"
