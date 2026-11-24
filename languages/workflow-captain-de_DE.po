@@ -2940,3 +2940,104 @@ msgstr "Workflow Captain: Einstellungen"
 
 msgid "Workflow Captain: notice recipients"
 msgstr "Workflow Captain: Empfänger der Hinweis-Mail"
+
+msgid "Delete tags and notes after (days)"
+msgstr "Markierungen und Notizen löschen nach (Tagen)"
+
+msgid "Tags and notes that workflows set on objects (for example an order or a ticket). 0 (default): no period, they stay until a workflow removes them. Otherwise the daily maintenance deletes those set longer ago than this; a workflow that asks for the tag then no longer finds it. At most 180 days. Check with your legal advisor which period applies."
+msgstr "Markierungen und Notizen, die Workflows an Objekten setzen (zum Beispiel an einer Bestellung oder einem Ticket). 0 (Standard): keine Frist, sie bleiben, bis ein Workflow sie entfernt. Sonst löscht die tägliche Wartung alle, die vor längerer Zeit gesetzt wurden; ein Workflow, der nach der Markierung fragt, findet sie dann nicht mehr. Höchstens 180 Tage. Kläre mit deiner Rechtsberatung, welche Frist gilt."
+
+msgid "Suggestion – have it checked legally before use."
+msgstr "Vorschlag – vor Verwendung rechtlich prüfen lassen."
+
+msgid "This text was put together by Workflow Captain from its current settings. It is not legal advice and does not know which workflows you have set up. Adjust it to your workflows, add the purpose and the legal basis, and have it checked before you publish it. If you change a period in the settings, update the text."
+msgstr "Workflow Captain hat diesen Text aus seinen aktuellen Einstellungen zusammengestellt. Er ist keine Rechtsberatung und kennt deine Workflows nicht. Passe ihn an deine Workflows an, ergänze Zweck und Rechtsgrundlage und lass ihn prüfen, bevor du ihn veröffentlichst. Wenn du eine Frist in den Einstellungen änderst, passe den Text an."
+
+msgid "Automated workflows"
+msgstr "Automatisierte Abläufe"
+
+msgid "We use the plugin Workflow Captain to run automated workflows on this website, for example to send a message after an order or to mark an object. For this, the following data is processed on the server of this website:"
+msgstr "Wir nutzen auf dieser Website das Plugin Workflow Captain für automatisierte Abläufe, zum Beispiel um nach einer Bestellung eine Nachricht zu senden oder ein Objekt zu markieren. Dafür werden auf dem Server dieser Website folgende Daten verarbeitet:"
+
+msgid "Events:"
+msgstr "Ereignisse:"
+
+msgid "When something happens on this website (for example an order, a check-in or a change of status), an event is stored: the type of event, the object concerned (for example an order number), the time, status values and amounts, and the user ID of the person who triggered it, if any. Email addresses, names and codes are not stored. The user ID is removed as soon as no workflow waits for the event any more. Completed events are deleted after %1$s, failed and paused events after %2$s."
+msgstr "Wenn auf dieser Website etwas geschieht (zum Beispiel eine Bestellung, ein Einlass oder eine Statusänderung), wird ein Ereignis gespeichert: die Art des Ereignisses, das betroffene Objekt (zum Beispiel eine Bestellnummer), der Zeitpunkt, Statuswerte und Beträge sowie die Benutzer-ID der auslösenden Person, falls vorhanden. E-Mail-Adressen, Namen und Codes werden nicht gespeichert. Die Benutzer-ID wird entfernt, sobald kein Ablauf mehr auf das Ereignis wartet. Erledigte Ereignisse werden nach %1$s gelöscht, fehlgeschlagene und pausierte nach %2$s."
+
+msgid "Runs and logs:"
+msgstr "Läufe und Protokolle:"
+
+msgid "Each run of a workflow keeps a copy of the event and a log of its steps (state and a shortened result, no message content). Completed, failed and cancelled runs are deleted %s after they end; runs that still wait are kept until they end."
+msgstr "Jeder Lauf eines Ablaufs hält eine Kopie des Ereignisses und ein Protokoll seiner Schritte (Zustand und ein gekürztes Ergebnis, keine Nachrichteninhalte). Erledigte, fehlgeschlagene und abgebrochene Läufe werden nach %s ab ihrem Ende gelöscht; Läufe, die noch warten, bleiben bis zu ihrem Ende."
+
+msgid "Tags and notes:"
+msgstr "Markierungen und Notizen:"
+
+msgid "Workflows can set tags and notes on objects (for example on an order). They contain only the text set in the workflow."
+msgstr "Abläufe können Markierungen und Notizen an Objekten setzen (zum Beispiel an einer Bestellung). Sie enthalten nur den Text, der im Ablauf festgelegt ist."
+
+msgid "They are deleted after %s."
+msgstr "Sie werden nach %s gelöscht."
+
+msgid "They are kept until a workflow removes them; no period is set."
+msgstr "Sie bleiben gespeichert, bis ein Ablauf sie entfernt; eine Frist ist nicht eingestellt."
+
+msgid "Messages:"
+msgstr "Nachrichten:"
+
+msgid "If a workflow sends an email, the address is looked up from the user account only at the time of sending and is not stored by Workflow Captain. The email is sent through WordPress and the mail service of this website."
+msgstr "Sendet ein Ablauf eine E-Mail, wird die Adresse erst beim Versand aus dem Benutzerkonto gelesen und von Workflow Captain nicht gespeichert. Die E-Mail wird über WordPress und den Mailversand dieser Website verschickt."
+
+msgid "To limit the number of messages per day, the number of messages sent to a user ID is counted per calendar day; these counters are deleted after %s."
+msgstr "Um die Zahl der Nachrichten pro Tag zu begrenzen, wird je Kalendertag gezählt, wie viele Nachrichten an eine Benutzer-ID gingen; diese Zähler werden nach %s gelöscht."
+
+msgid "Unsubscribing:"
+msgstr "Abmeldung:"
+
+msgid "Promotional messages contain a link to unsubscribe. If it is used, the time of unsubscribing is stored in the user account, so that no further promotional messages are sent. It is kept as long as the user account exists."
+msgstr "Werbenachrichten enthalten einen Link zur Abmeldung. Wird er genutzt, wird der Zeitpunkt der Abmeldung im Benutzerkonto gespeichert, damit keine weiteren Werbenachrichten gesendet werden. Er bleibt gespeichert, solange das Benutzerkonto besteht."
+
+msgid "Notices to the site operator:"
+msgstr "Hinweise an den Betreiber:"
+
+msgid "A daily notice email goes only to the addresses of the site operator and contains no event content. A change log keeps the last %d changes to settings and capabilities with the user ID of the staff member who made them."
+msgstr "Eine tägliche Hinweis-Mail geht nur an Adressen des Betreibers und enthält keine Ereignisinhalte. Ein Änderungsprotokoll hält die letzten %d Änderungen an Einstellungen und Rechten mit der Benutzer-ID der Person aus dem Team, die sie vorgenommen hat."
+
+msgid "Transfer to others:"
+msgstr "Weitergabe:"
+
+msgid "Apart from the emails described above, Workflow Captain itself sends no data to other services."
+msgstr "Außer den beschriebenen E-Mails sendet Workflow Captain selbst keine Daten an andere Dienste."
+
+msgid "If you use an add-on that sends data to external services (outgoing webhooks, n8n), name here the recipients, the data sent and the purpose. Workflow Captain does not know these settings."
+msgstr "Wenn du eine Erweiterung nutzt, die Daten an externe Dienste sendet (ausgehende Webhooks, n8n), nenne hier die Empfänger, die gesendeten Daten und den Zweck. Workflow Captain kennt diese Einstellungen nicht."
+
+msgid "Your rights:"
+msgstr "Deine Rechte:"
+
+msgid "Workflow Captain is connected to the WordPress tools for exporting and erasing personal data. The export contains the stored events and runs, tags and notes on the user account and the time of unsubscribing. On erasure, or when a user account is deleted, the user ID is removed from stored events and runs, and tags and notes on the user account and the message counters are deleted. The unsubscribe from promotional messages is kept, so that none are sent again."
+msgstr "Workflow Captain ist an die Werkzeuge von WordPress für Export und Löschung personenbezogener Daten angebunden. Der Export enthält die gespeicherten Ereignisse und Läufe, Markierungen und Notizen am Benutzerkonto und den Zeitpunkt der Abmeldung. Bei einer Löschung oder wenn ein Benutzerkonto gelöscht wird, wird die Benutzer-ID aus gespeicherten Ereignissen und Läufen entfernt, und Markierungen und Notizen am Benutzerkonto sowie die Nachrichtenzähler werden gelöscht. Die Abmeldung von Werbenachrichten bleibt erhalten, damit keine mehr gesendet werden."
+
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] "%d Tag"
+msgstr[1] "%d Tagen"
+
+msgid "Workflow Captain: Tags"
+msgstr "Workflow Captain: Markierungen"
+
+msgid "Set (UTC)"
+msgstr "Gesetzt (UTC)"
+
+msgid "Workflow Captain: Notes"
+msgstr "Workflow Captain: Notizen"
+
+msgid "Workflow Captain: Unsubscribed from promotional messages"
+msgstr "Workflow Captain: Abmeldung von Werbenachrichten"
+
+msgid "Unsubscribed (UTC)"
+msgstr "Abgemeldet (UTC)"
+
+msgid "Workflow Captain keeps the unsubscribe from promotional messages, so that none are sent again. It is deleted with the user account."
+msgstr "Workflow Captain behält die Abmeldung von Werbenachrichten, damit keine mehr gesendet werden. Sie wird mit dem Benutzerkonto gelöscht."

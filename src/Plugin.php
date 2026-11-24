@@ -90,6 +90,8 @@ final class Plugin {
 		add_action( 'add_option_' . Settings::OPTION, array( LogLevel::class, 'added' ), 10, 2 );
 		add_filter( 'workflow_captain_retention_days', array( Settings::class, 'retention' ), 5, 2 );
 		( new Privacy( array( $this, 'store' ), null, array( $this, 'engine_store' ) ) )->register();
+		// SET-WC-34: suggested text for the privacy policy guide (wording pending legal review).
+		\WorkflowCaptain\Privacy\PolicyText::register();
 		// SET-WC-04 (S11): the one public address, the unsubscribe link of promotional messages.
 		Unsubscribe::register();
 		if ( defined( 'WP_CLI' ) && WP_CLI && class_exists( '\WP_CLI' ) ) {
