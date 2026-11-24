@@ -1,6 +1,6 @@
 {
   "$comment": "Machine-readable part of docs/SPEC-suite-events.md (sections 4.2 to 4.10, 6, 11). The spec text is normative; this file must match it. Checked by bin/validate-spec-examples.py.",
-  "spec_version": "1.0.0-draft.13",
+  "spec_version": "1.0.0-draft.14",
   "catalog_version": "1.0",
   "products": {
     "pass-captain": {
