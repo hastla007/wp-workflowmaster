@@ -3216,3 +3216,9 @@ msgstr "Absenderadresse der Nachrichten"
 
 msgid "Reply-to address of the messages"
 msgstr "Antwortadresse der Nachrichten"
+
+msgid "Waiting (on hold)"
+msgstr "Wartet (angehalten)"
+
+msgid "until it is resumed"
+msgstr "bis zur Fortsetzung"

@@ -204,7 +204,7 @@ final class WpdbEngineStore implements EngineStore {
 	public function older_open_run( int $workflow_id, int $run_id, string $serial_key ): bool {
 		return null !== $this->db->get_var(
 			$this->db->prepare(
-				"SELECT id FROM {$this->t( 'runs' )} WHERE workflow_id = %d AND serial_key = %s AND id < %d AND state IN ('running','action_required','paused') LIMIT 1",
+				"SELECT id FROM {$this->t( 'runs' )} WHERE workflow_id = %d AND serial_key = %s AND id < %d AND state IN ('running','action_required','paused','waiting') LIMIT 1",
 				$workflow_id,
 				$serial_key,
 				$run_id
@@ -216,7 +216,7 @@ final class WpdbEngineStore implements EngineStore {
 		$rows = $this->db->get_results(
 			$this->db->prepare(
 				"SELECT s.id, s.run_id, r.workflow_id, r.serial_key FROM {$this->t( 'steps' )} s JOIN {$this->t( 'runs' )} r ON r.id = s.run_id
-				WHERE ( ( s.state IN ('queued','retry_wait') AND s.due_at <= %s ) OR ( s.state = 'running' AND s.lease_until < %s ) )
+				WHERE ( ( s.state IN ('queued','retry_wait','waiting') AND s.due_at <= %s ) OR ( s.state = 'running' AND s.lease_until < %s ) )
 				ORDER BY s.due_at ASC, s.id ASC LIMIT %d",
 				$now,
 				$now,
@@ -251,7 +251,7 @@ final class WpdbEngineStore implements EngineStore {
 		$hit = $this->db->query(
 			$this->db->prepare(
 				"UPDATE {$this->t( 'steps' )} SET state = 'running', lease_owner = %s, lease_until = %s, updated_at = %s
-				WHERE id = %d AND ( ( state IN ('queued','retry_wait') AND due_at <= %s ) OR ( state = 'running' AND lease_until < %s ) )",
+				WHERE id = %d AND ( ( state IN ('queued','retry_wait','waiting') AND due_at <= %s ) OR ( state = 'running' AND lease_until < %s ) )",
 				$owner,
 				$lease_until,
 				$now,
@@ -403,7 +403,7 @@ final class WpdbEngineStore implements EngineStore {
 	}
 
 	public function claim_steps( int $limit, string $now, string $owner, string $lease_until ): array {
-		$cond = "( ( state IN ('queued','retry_wait') AND due_at <= %s ) OR ( state = 'running' AND lease_until < %s ) )";
+		$cond = "( ( state IN ('queued','retry_wait','waiting') AND due_at <= %s ) OR ( state = 'running' AND lease_until < %s ) )";
 		$ids  = $this->db->get_col( $this->db->prepare( "SELECT id FROM {$this->t( 'steps' )} WHERE {$cond} ORDER BY due_at ASC, id ASC LIMIT %d", $now, $now, $limit ) );
 		$out  = array();
 		foreach ( (array) $ids as $id ) {
@@ -473,9 +473,19 @@ final class WpdbEngineStore implements EngineStore {
 		);
 	}
 
+	public function wake_step( int $id, string $now ): bool {
+		$hit = $this->db->query( $this->db->prepare( "UPDATE {$this->t( 'steps' )} SET state = 'queued', due_at = %s, updated_at = %s WHERE id = %d AND state = 'waiting'", $now, $now, $id ) );
+		if ( 1 !== (int) $hit ) {
+			return false;
+		}
+		$run_id = (int) $this->db->get_var( $this->db->prepare( "SELECT run_id FROM {$this->t( 'steps' )} WHERE id = %d", $id ) );
+		$this->db->query( $this->db->prepare( "UPDATE {$this->t( 'runs' )} SET state = 'running', last_error = NULL, updated_at = %s WHERE id = %d AND state = 'waiting'", $now, $run_id ) );
+		return true;
+	}
+
 	public function cancel_steps( int $run_id, string $now ): int {
 		return (int) $this->db->query(
-			$this->db->prepare( "UPDATE {$this->t( 'steps' )} SET state = 'cancelled', lease_owner = NULL, lease_until = NULL, updated_at = %s WHERE run_id = %d AND state IN ('queued','retry_wait','action_required','paused')", $now, $run_id )
+			$this->db->prepare( "UPDATE {$this->t( 'steps' )} SET state = 'cancelled', lease_owner = NULL, lease_until = NULL, updated_at = %s WHERE run_id = %d AND state IN ('queued','retry_wait','action_required','paused','waiting')", $now, $run_id )
 		);
 	}
 

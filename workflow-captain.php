@@ -32,7 +32,7 @@ define( 'WORKFLOW_CAPTAIN_DB_VERSION', '5' );
  * Independent of the plugin version. MAJOR = generation of the adapter interface, MINOR rises when methods or hooks are
  * added. 0.x: not stable before the specification reaches 1.0.0 (R-13.2).
  */
-define( 'WORKFLOW_CAPTAIN_CONTRACT_VERSION', '0.1.0' );
+define( 'WORKFLOW_CAPTAIN_CONTRACT_VERSION', '0.2.0' );
 define( 'WORKFLOW_CAPTAIN_FILE', __FILE__ );
 define( 'WORKFLOW_CAPTAIN_PATH', plugin_dir_path( __FILE__ ) );
 

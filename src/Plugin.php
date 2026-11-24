@@ -83,6 +83,7 @@ final class Plugin {
 		add_action( 'init', array( self::class, 'schedule_events' ) );
 		add_action( 'init', array( $this, 'register_adapters' ), 20 );
 		add_action( 'init', array( $this, 'register_connectors' ), 20 );
+		add_action( 'init', array( $this, 'announce_waiting' ), 20 );
 		add_action( Install::CRON_PROCESS, array( $this, 'run_worker' ) );
 		add_action( Install::CRON_DAILY, array( $this, 'run_maintenance' ) );
 		// SET-WC-21: switching the log level on starts its 7-day period, whichever way the option is written.
@@ -192,6 +193,26 @@ final class Plugin {
 			do_action( 'workflow_captain_foreign_runs_v1', $this->engine->foreign() );
 		}
 		return $this->engine;
+	}
+
+	/**
+	 * Hands add-ons the object that wakes waiting steps (Suspend), once per request: on init, priority 20, also in cron,
+	 * WP-CLI and during the emergency pause. It needs only the tables, not the engine with its actions.
+	 */
+	public function announce_waiting(): void {
+		if ( did_action( 'workflow_captain_waiting_v1' ) ) {
+			return;
+		}
+		global $wpdb;
+		$waiting = null !== $this->engine ? $this->engine->waiting() : new \WorkflowCaptain\Engine\Waiting( new \WorkflowCaptain\Engine\WpdbEngineStore( $wpdb ), new Clock() );
+		/**
+		 * Wake steps that wait after an action threw \WorkflowCaptain\Engine\Suspend: $waiting->resume( $step_id, $action_key ).
+		 * resume() checks no user rights; the caller checks them and keeps its own audit entry.
+		 *
+		 * @since 0.2.0 (contract 0.2.0)
+		 * @param \WorkflowCaptain\Engine\Waiting $waiting
+		 */
+		do_action( 'workflow_captain_waiting_v1', $waiting );
 	}
 
 	public function engine_store(): \WorkflowCaptain\Engine\EngineStore {

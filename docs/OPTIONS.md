@@ -73,8 +73,8 @@ Capabilities bei Aktivierung für Administratoren: `manage_workflow_captain`, `e
 | `causes` | welcher Befehl welches Objekt erzeugt hat (R-7.12) | keiner | 7 Tage |
 | `workflows` | Name, Zustand, Entwurf | keiner | bis zur Deinstallation; „Löschen“ archiviert |
 | `versions` | unveränderliche veröffentlichte Graphen, `authorized_by_user_id` | Benutzer-ID des Veröffentlichenden | mit dem Workflow |
-| `runs` | Lauf mit Kopie des Umschlags | `actor_user_id` | erledigte Läufe 30 Tage (eigene Frist, einstellbar 1–180 Tage), offene bleiben |
-| `steps` | Schritte, Sperrfrist, Buchung des Seiteneffekts, redigiertes Ergebnis | keiner | mit dem Lauf |
+| `runs` | Lauf mit Kopie des Umschlags | `actor_user_id` | erledigte Läufe 30 Tage (eigene Frist, einstellbar 1–180 Tage), offene (auch wartende, `waiting`) bleiben |
+| `steps` | Schritte, Sperrfrist, Buchung des Seiteneffekts, redigiertes Ergebnis; ein wartender Schritt (`waiting`) hat seine Frist in `due_at`, ohne Frist `9999-12-31 23:59:59` | keiner | mit dem Lauf |
 | `tags`, `notes` | Markierungen und Notizen an Objekten | Objekt Benutzer (`subject_type = user`, Kennung = Benutzer-ID) oder Personenbezug, den der Betreiber in eine Notiz schreibt; die am Benutzer gehen in Auskunft und Löschung ein (auch bei gelöschtem Benutzer, R-12.5) | `retention_tags_notes`: 0 = bis zur Löschung (Vorgabe), sonst nach so vielen Tagen ab dem Setzen (tägliche Wartung, SET-WC-34) |
 | `sends` | Zähler der Tagesgrenze (SET-WC-08): Kalendertag, Benutzer-ID, Zahl der Nachrichten | Benutzer-ID | 2 Tage (tägliche Wartung); Löscher und gelöschter Benutzer entfernen sie sofort |
 
