@@ -129,6 +129,7 @@ None. Workflow Captain does not call any external service.
 * Privacy: the personal data export and erasure of WordPress now cover addresses in the notice recipients and in the settings backup.
 * Privacy: the export and erasure now also cover tags and notes on a user, and the export names an unsubscribe record (kept on erasure so no marketing goes out again; removed with the account).
 * Privacy: a suggested text for the privacy policy (Settings → Privacy, marked "have it checked legally before use"), with the retention periods filled in from the settings.
+* Setup wizard (Workflow Captain → Setup): country profile as a proposal with before/after, sender and footer, a first recipe as a draft. Nothing is saved until "Apply"; every step can be skipped.
 * New setting "Keep tags and notes" (days, 0 = no limit, the previous behaviour).
 * Fixes: the first save of the settings no longer logs every field as changed; sender settings appear in the change log, sender and reply-to addresses are masked there; a daily-limit slot of a failed mail goes back to the day it was taken; schedule list and undo show times in the Workflow Captain time zone; reset knows the sections General and Messages.
 
