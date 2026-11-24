@@ -94,6 +94,7 @@ final class Privacy {
 		if ( is_array( $backup ) && self::in_list( (string) ( $backup['values']['recipients'] ?? '' ), $email ) ) {
 			$where[] = __( 'Backup of the settings for “undo” (kept 30 days)', 'workflow-captain' );
 		}
+		$where = array_merge( $where, self::sender_roles( \WorkflowCaptain\Messages::stored(), $email ) );
 		foreach ( $where as $i => $label ) {
 			$items[] = array(
 				'group_id'    => 'workflow-captain-settings',
@@ -124,7 +125,30 @@ final class Privacy {
 			update_option( \WorkflowCaptain\SettingsTransfer::BACKUP_OPTION, $backup, false );
 			$removed = true;
 		}
-		return array( 'items_removed' => $removed, 'items_retained' => false, 'messages' => array(), 'done' => true );
+		// Owner decision of 24.11.2026: the sender and reply-to address are an operating setting. They are named in the
+		// export but kept on erasure (clearing them would change the sender of every mail); the report says so.
+		$kept     = array() !== self::sender_roles( \WorkflowCaptain\Messages::stored(), $email );
+		$messages = $kept ? array( __( 'The address is set as sender or reply-to address of Workflow Captain’s messages and was kept, because it is an operating setting. Change it under Settings → Messages.', 'workflow-captain' ) ) : array();
+		return array( 'items_removed' => $removed, 'items_retained' => $kept, 'messages' => $messages, 'done' => true );
+	}
+
+	/**
+	 * Owner decision of 24.11.2026: where $email is stored as sender or reply-to address of the messages
+	 * (option workflow_captain_messages). Labels for the export; empty when it is neither.
+	 *
+	 * @param array<string,string> $messages Stored values of Messages::stored().
+	 * @return list<string>
+	 */
+	public static function sender_roles( array $messages, string $email ): array {
+		$email = strtolower( trim( $email ) );
+		$roles = array();
+		if ( '' !== $email && strtolower( trim( (string) ( $messages['sender_email'] ?? '' ) ) ) === $email ) {
+			$roles[] = __( 'Sender address of the messages', 'workflow-captain' );
+		}
+		if ( '' !== $email && strtolower( trim( (string) ( $messages['reply_to'] ?? '' ) ) ) === $email ) {
+			$roles[] = __( 'Reply-to address of the messages', 'workflow-captain' );
+		}
+		return $roles;
 	}
 
 	/** Whether a comma separated address list holds $email (case-insensitive). */

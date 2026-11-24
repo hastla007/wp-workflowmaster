@@ -704,7 +704,7 @@ msgstr ""
 msgid "Else"
 msgstr ""
 
-#: src/Privacy/Privacy.php:103
+#: src/Privacy/Privacy.php:104
 msgid "Email address"
 msgstr ""
 
@@ -766,7 +766,7 @@ msgstr ""
 msgid "European Union (general)"
 msgstr ""
 
-#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:144 src/Admin/WorkflowsPage.php:218 src/Admin/WorkflowsPage.php:632 src/Admin/WorkflowsPage.php:734 src/Privacy/Privacy.php:152 src/Privacy/Privacy.php:174
+#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:144 src/Admin/WorkflowsPage.php:218 src/Admin/WorkflowsPage.php:632 src/Admin/WorkflowsPage.php:734 src/Privacy/Privacy.php:176 src/Privacy/Privacy.php:198
 msgid "Event"
 msgstr ""
 
@@ -1352,7 +1352,7 @@ msgstr ""
 msgid "Not saved (invalid or more than ten addresses): %s. The other addresses were saved."
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:60 src/Privacy/Privacy.php:214
+#: src/Admin/WorkflowsPage.php:60 src/Privacy/Privacy.php:238
 msgid "Note"
 msgstr ""
 
@@ -1376,7 +1376,7 @@ msgstr ""
 msgid "Notifications"
 msgstr ""
 
-#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:735 src/Privacy/Privacy.php:153 src/Privacy/Privacy.php:175
+#: src/Admin/EventsPage.php:134 src/Admin/WorkflowsPage.php:735 src/Privacy/Privacy.php:177 src/Privacy/Privacy.php:199
 msgid "Object"
 msgstr ""
 
@@ -1511,7 +1511,7 @@ msgstr ""
 msgid "Processing"
 msgstr ""
 
-#: src/Admin/ProvidersPage.php:133 src/Privacy/Privacy.php:203 src/Privacy/Privacy.php:215
+#: src/Admin/ProvidersPage.php:133 src/Privacy/Privacy.php:227 src/Privacy/Privacy.php:239
 msgid "Product"
 msgstr ""
 
@@ -1675,6 +1675,10 @@ msgstr ""
 
 #: src/SettingsRegistry.php:316
 msgid "Reply address"
+msgstr ""
+
+#: src/Privacy/Privacy.php:149
+msgid "Reply-to address of the messages"
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:168
@@ -1920,6 +1924,10 @@ msgstr ""
 msgid "Sender address"
 msgstr ""
 
+#: src/Privacy/Privacy.php:146
+msgid "Sender address of the messages"
+msgstr ""
+
 #: src/Admin/SetupWizard.php:405 src/Admin/SetupWizard.php:476
 msgid "Sender and footer"
 msgstr ""
@@ -1936,7 +1944,7 @@ msgstr ""
 msgid "Sending days"
 msgstr ""
 
-#: src/Privacy/Privacy.php:204 src/Privacy/Privacy.php:216
+#: src/Privacy/Privacy.php:228 src/Privacy/Privacy.php:240
 msgid "Set (UTC)"
 msgstr ""
 
@@ -2074,11 +2082,11 @@ msgstr ""
 msgid "Started (%s)"
 msgstr ""
 
-#: src/Privacy/Privacy.php:177
+#: src/Privacy/Privacy.php:201
 msgid "Started (UTC)"
 msgstr ""
 
-#: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:119 src/Admin/WorkflowsPage.php:461 src/Admin/WorkflowsPage.php:632 src/Admin/WorkflowsPage.php:756 src/Privacy/Privacy.php:155 src/Privacy/Privacy.php:176
+#: src/Admin/EventsPage.php:134 src/Admin/SchedulesPage.php:119 src/Admin/WorkflowsPage.php:461 src/Admin/WorkflowsPage.php:632 src/Admin/WorkflowsPage.php:756 src/Privacy/Privacy.php:179 src/Privacy/Privacy.php:200
 msgid "State"
 msgstr ""
 
@@ -2124,7 +2132,7 @@ msgstr ""
 msgid "Store secrets only with your own key"
 msgstr ""
 
-#: src/Privacy/Privacy.php:104
+#: src/Privacy/Privacy.php:105
 msgid "Stored as"
 msgstr ""
 
@@ -2177,7 +2185,7 @@ msgstr ""
 msgid "System/WP-CLI"
 msgstr ""
 
-#: src/Admin/WorkflowsPage.php:58 src/Admin/WorkflowsPage.php:59 src/Privacy/Privacy.php:202
+#: src/Admin/WorkflowsPage.php:58 src/Admin/WorkflowsPage.php:59 src/Privacy/Privacy.php:226
 msgid "Tag"
 msgstr ""
 
@@ -2265,6 +2273,10 @@ msgstr ""
 
 #: src/Admin/SiteHealth.php:63
 msgid "The Workflow Captain worker is scheduled."
+msgstr ""
+
+#: src/Privacy/Privacy.php:131
+msgid "The address is set as sender or reply-to address of Workflow Captain’s messages and was kept, because it is an operating setting. Change it under Settings → Messages."
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:206
@@ -2483,7 +2495,7 @@ msgstr ""
 msgid "Timestamp (%s)"
 msgstr ""
 
-#: src/Privacy/Privacy.php:154
+#: src/Privacy/Privacy.php:178
 msgid "Timestamp (UTC)"
 msgstr ""
 
@@ -2564,7 +2576,7 @@ msgstr ""
 msgid "Unsubscribe"
 msgstr ""
 
-#: src/Privacy/Privacy.php:227
+#: src/Privacy/Privacy.php:251
 msgid "Unsubscribed (UTC)"
 msgstr ""
 
@@ -2717,7 +2729,7 @@ msgstr ""
 msgid "Workflow Captain is connected to the WordPress tools for exporting and erasing personal data. The export contains the stored events and runs, tags and notes on the user account and the time of unsubscribing. On erasure, or when a user account is deleted, the user ID is removed from stored events and runs, and tags and notes on the user account and the message counters are deleted. The unsubscribe from promotional messages is kept, so that none are sent again."
 msgstr ""
 
-#: src/Privacy/Privacy.php:249
+#: src/Privacy/Privacy.php:273
 msgid "Workflow Captain keeps the unsubscribe from promotional messages, so that none are sent again. It is deleted with the user account."
 msgstr ""
 
@@ -2726,11 +2738,11 @@ msgstr ""
 msgid "Workflow Captain requires PHP %1$s and WordPress %2$s or newer; this site uses PHP %3$s and WordPress %4$s. The plugin stays inactive; saved data is kept."
 msgstr ""
 
-#: src/Privacy/Privacy.php:162
+#: src/Privacy/Privacy.php:186
 msgid "Workflow Captain: Events"
 msgstr ""
 
-#: src/Privacy/Privacy.php:211
+#: src/Privacy/Privacy.php:235
 msgid "Workflow Captain: Notes"
 msgstr ""
 
@@ -2738,15 +2750,15 @@ msgstr ""
 msgid "Workflow Captain: Please check"
 msgstr ""
 
-#: src/Privacy/Privacy.php:171
+#: src/Privacy/Privacy.php:195
 msgid "Workflow Captain: Runs"
 msgstr ""
 
-#: src/Privacy/Privacy.php:100
+#: src/Privacy/Privacy.php:101
 msgid "Workflow Captain: Settings"
 msgstr ""
 
-#: src/Privacy/Privacy.php:199
+#: src/Privacy/Privacy.php:223
 msgid "Workflow Captain: Tags"
 msgstr ""
 
@@ -2771,7 +2783,7 @@ msgstr ""
 msgid "Workflow Captain: The emergency pause is active. Events are saved, but no step is executed."
 msgstr ""
 
-#: src/Privacy/Privacy.php:224
+#: src/Privacy/Privacy.php:248
 msgid "Workflow Captain: Unsubscribed from promotional messages"
 msgstr ""
 
