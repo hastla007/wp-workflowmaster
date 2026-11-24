@@ -27,7 +27,7 @@ final class Diagnostics {
 	 */
 	public static function report( EventStore $events, EngineStore $engine, AdapterRegistry $adapters, array $environment ): array {
 		$runs = array();
-		foreach ( array( EngineStore::RUN_RUNNING, EngineStore::RUN_ACTION_REQUIRED, EngineStore::RUN_PAUSED, EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_FAILED, EngineStore::RUN_CANCELLED ) as $state ) {
+		foreach ( array( EngineStore::RUN_RUNNING, EngineStore::RUN_WAITING, EngineStore::RUN_ACTION_REQUIRED, EngineStore::RUN_PAUSED, EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_FAILED, EngineStore::RUN_CANCELLED ) as $state ) {
 			$runs[ $state ] = $engine->count_runs( array( 'state' => $state ) );
 		}
 		$reasons = array();

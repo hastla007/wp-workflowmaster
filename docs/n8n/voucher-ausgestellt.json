@@ -10,6 +10,7 @@
         0,
         0
       ],
+      "webhookId": "673491cd-e34d-5922-89ce-0552ce5e3395",
       "parameters": {
         "httpMethod": "POST",
         "path": "workflow-captain-voucher-issued",
@@ -29,7 +30,8 @@
         0
       ],
       "parameters": {
-        "operation": "removeItemsRepeatedInPreviousExecutions",
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "logic": "removeItemsWithAlreadySeenKeyValues",
         "dedupeValue": "={{ $json.body.id }}",
         "options": {}
       },

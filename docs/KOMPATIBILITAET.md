@@ -1,10 +1,30 @@
 # Kompatibilitätsmatrix der Provider
 
-Stand: 23.11.2026 (Provider-Matrix nach Prüfung aller Suite-Repositories; Mindestversionen MINVER-1 vom 17.11.2026), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.8, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Which versions of the Captain plugins work together?“).
+Stand: 24.11.2026 (Provider-Matrix an den aktuellen `main`-Ständen geprüft; davor 23.11.2026; Mindestversionen MINVER-1 vom 17.11.2026), zu [`SPEC-suite-events.md`](SPEC-suite-events.md) Version 1.0.0-draft.8, Workflow Captain 0.2.x und Workflow Captain Pro 0.1.0 (Entwicklungsstand `captain-pro` mit Gutschein-Befehlen und Form-Adapter). Aufgabe in [`../TODO.md`](../TODO.md): „Kompatible Versionen der einzelnen Captain-Provider je Plugin in einer Matrix veröffentlichen“. Verlinkt aus `readme.txt` (FAQ „Which versions of the Captain plugins work together?“).
 
 Ein Adapter meldet sich nur an, wenn die Vertragskonstante des Kerns mindestens die Mindestversion hat und dieselbe MAJOR-Version trägt (R-3.3, R-13.4). Die Plugin-Version allein entscheidet nicht. Alle Angaben sind am Code gelesen; „Branch“ heißt: noch nicht nach `main` gemergt.
 
 ## Aktuelle Matrix
+
+Prüfung am 24.11.2026 an frischen Klonen der `main`-Stände (nur gelesen). Seit dem 23.11.2026 sind alle Provider-Linien, die die Adapter brauchen, auf `main`; die Spalte „Branch“ entfällt deshalb. Workflow Captain Pro liegt auf captain-pro `main` `0ee78f6` (zurückgehalten, `addons/workflow-captain-pro/wplc-catalog.php:26-29`), Mindestvertrag je Adapter als `MIN_CONTRACT` in `addons/workflow-captain-pro/src/Suite/*Adapter.php`.
+
+| Provider | `main` (24.11.2026) | Vertragskonstante | Adapter verlangt (Workflow Captain Pro) | Ereignistypen | Adapter |
+|---|---|---|---|---|---|
+| WordPress | – | `$wp_version` | WordPress ≥ 7.0 (MINVER-1) | `wordpress.user.registered`, `wordpress.post.published` | im kostenlosen Kern |
+| WooCommerce | – | `WC_VERSION` | WooCommerce ≥ 11.2.2 (MINVER-1, `src/Requirements.php`; darunter „abgelehnt – provider_too_old“), HPOS und klassische Bestelltabellen | `woocommerce.order.*` (5) | im kostenlosen Kern |
+| Workflow Captain (Zeitplan, eingehende Auslöser) | Kern 0.2.x | `WORKFLOW_CAPTAIN_CONTRACT_VERSION` = `0.2.0` (seit 24.11.2026; 0.2.0 = `Suspend`, `Halt`, `Waiting`, Hook `workflow_captain_waiting_v1`) | – | `workflow.schedule.due`; `workflow.inbound.<auslöser>` | im kostenlosen Kern |
+| Pass Captain | `wp-passmaster` `a5039c1`, Plugin 1.6.0 | `WPCAP_CONTRACT_VERSION` = `1.3.0` (`pass-captain.php:189`; 1.2.0 = `service_date`, 1.3.0 = Lesefassade) | `1.1.0` (`PassAdapter::MIN_CONTRACT`, Rückfall); Lesefassade ab `1.3.0` (`FACADE_CONTRACT`, `PassAdapter.php:55`) | 13 | Pro, `PassAdapter`. Achtung: `main` enthält wieder einen eigenen Workflow-Provider mit Mail-Übergabe (`src/Workflow/*`, PC-7) |
+| Voucher Captain | `wp-couponmaster` `503d96c`, Plugin 1.3.0 | `VCAP_CONTRACT_VERSION` = `1.8.0` (`voucher-captain.php:52`) | `1.1.0` (Rückfall); Lesefassade ab `1.2.0`; Gutschein-Befehle ab `1.3.0` (`VoucherCommand::MIN_CONTRACT`), Grenzen lesen ab `1.6.0` (`LIMITS_CONTRACT`); `journal_id` ab `1.7.0` | 16 (`voucher.voucher.expiring` erst mit Vertrag 1.9.0, VC-13/CP-4) | Pro, `VoucherAdapter`, `VoucherCommand` |
+| Affiliate Captain | `wpaffiliatemaster` `4782092` (Tag `v0.22.0`), Plugin 0.22.0 | `WPAC_CONTRACT_VERSION` = `1.10.0` (`affiliate-captain.php:63`; 1.7.0 `$old`, 1.10.0 `$event_id`) | `1.4.0`; `$old` und `$event_id` werden genutzt, wenn übergeben (`AffiliateAdapter.php:335-339`, `:774-776`) | 21 | Pro, `AffiliateAdapter`; volle Erstattung über den Status ohne echte `refund_id` (r4b) |
+| Lizenzserver (nur im Shop des Anbieters) | `wp-license` `40eb158`, Plugin 0.2.0 | `WPLC_CONTRACT_VERSION` = `1.0.0` (`wp-license.php:27`) | `1.0.0` mit `LicenseReader::get()`; ohne Konstante Plugin ≥ 0.2.0 (`LicenseAdapter.php:46-48`) | 3 | Pro, `LicenseAdapter` |
+| Form Captain | `wp-formmaster` `4c740e1`, Plugin 1.0.0-dev | `FORM_CAPTAIN_CONTRACT_VERSION` = `1.5.0` (`form-captain.php:29`; 1.2.0 bis 1.5.0 additiv, `docs/spec/api-v1.md:8-16`) | Major 1, mindestens `1.0.0` (`FormAdapter.php:46`); der ganze Katalog braucht `1.1.0` | 8 | Pro, `FormAdapter`; Form Captain Pro auf captain-pro `main` freigegeben |
+| Review Captain | `wp-reviewmaster` `b64d48a`, Plugin 0.1.0-dev | `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.1.0` (`review-captain.php:24`); daneben `WorkflowService::CONTRACT` = `1.0` (RC-5) | Major 1, mindestens `1.0.0` (`ReviewAdapter.php:49`), Sterne ab `1.1.0` (`RATING_CONTRACT`); Befehle über `WorkflowService::CONTRACT` ≥ `1.0` (`ReviewCommand.php:59`) | 3 | Pro, `ReviewAdapter`, `ReviewCommand`; Review Captain Pro auf captain-pro `main` freigegeben |
+| Course Captain | nicht erneut geprüft (23.11.2026: `5af78c3`, nur Dokumente) | – | – (kein Katalog `course.*`, 4.6.4) | – | keiner |
+| Eigene Connectoren | eigenes Plugin | `contract` im Manifest (`CONNECTOR-CONTRACT.md`) | Workflow Captain Pro als Laufzeit (Filter `workflow_captain_connector_runtime_allowed_v1`, F-18a) | eigene Typen `x<präfix>.*` | im Kern, freigeschaltet durch Pro |
+
+Belegt mit PHPUnit in captain-pro `main` (`tests/Addons/WorkflowSuiteAdaptersTest.php`, `WorkflowFormAdapterTest.php`, `WorkflowReviewAdapterTest.php`): Anmeldung nur mit bekannter MAJOR-Version, aus ohne Produkt-Add-on oder dessen Lizenz, Hinweis bei fehlendem Plugin. Ein Lauf gegen genau diese Stände in einer echten WordPress-Installation steht aus.
+
+## Verlauf: Stand 23.11.2026
 
 Prüfung am 23.11.2026 an allen Suite-Repositories (nur gelesen). Spalte „`main`“ ist der veröffentlichte Stand, Spalte „Branch“ der weiteste ungemergte Stand.
 
@@ -80,7 +100,9 @@ Prüfung am 23.11.2026 an allen Suite-Repositories (nur gelesen). Spalte „`mai
 
 Keiner dieser Branches ist gemergt. Die Plugin-Versionen von Pass Captain (1.5.0) und Voucher Captain (1.2.0) wurden nicht erhöht; Add-ons prüfen deshalb die Vertragsversion, nicht die Plugin-Version.
 
-## Stände auf `main`, die **nicht** genügen (23.11.2026)
+## Verlauf: Stände auf `main`, die am 23.11.2026 **nicht** genügten
+
+Stand 24.11.2026: überholt, alle drei sind auf `main` nachgezogen (siehe „Aktuelle Matrix“).
 
 | Provider | `main` | Warum nicht |
 |---|---|---|
@@ -95,7 +117,7 @@ Ein Adapter, der gegen `main` von Pass oder Voucher Captain läuft, meldet sich 
 
 | Paket | Gelesener Stand | Für Adapter nötig | Stand |
 |---|---|---|---|
-| `captain-pro` `packages/addon-kernel` | `07b5365` und `main` `2f23da7` | Prüfung der Lizenz eines anderen Add-ons und mehrere Kerne je Add-on (F-06, CP-1, CP-2 in [`ANFORDERUNGEN-andere-repos.md`](ANFORDERUNGEN-andere-repos.md)) | fehlt |
+| `captain-pro` `packages/addon-kernel` | `main` `0ee78f6`, Kernel 1.7.0 (`packages/addon-kernel/src/Addon.php:44`) | Prüfung der Lizenz eines anderen Add-ons und mehrere Kerne je Add-on (F-06, CP-1, CP-2 in [`ANFORDERUNGEN-andere-repos.md`](ANFORDERUNGEN-andere-repos.md)) | Lizenz eines anderen Add-ons: vorhanden seit Kernel 1.2.0 (Filter `captain_addon_entitled_v1`, `Addon::other_addon_entitled()`, `Addon.php:1933-1958`; CP-2). Mehrere Kerne: über `Suite\Gate` und Konstanten in `requires()` gelöst; die Gruppierung je Kern im Kernel (N12 a, CP-1) fehlt weiter. Stand bis 23.11.2026: fehlte (`07b5365`, `main` `2f23da7`) |
 
 ## Laufzeitumgebung
 

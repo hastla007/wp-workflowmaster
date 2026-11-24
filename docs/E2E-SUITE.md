@@ -125,7 +125,7 @@ Prüfungen nach den Commits: Kern `php tests/run.php` 627 bestanden, `license-gu
 | Fall | Ergebnis | Prüfungen |
 | --- | --- | --- |
 | WordPress 6.9.11, PHP 8.3.6, WooCommerce 9.9.5 HPOS, Action Scheduler, `DISABLE_WP_CRON` | läuft | alle |
-| Multisite lokal je Website (Provider je Website, Isolation) | läuft | t103/* |
+| Multisite lokal je Website (Provider je Website, Isolation) | läuft | t103/* (Voucher, WordPress, WooCommerce; Pass, Affiliate, Lizenzserver seit 24.11.2026, `ms-providers.sh`) |
 | Multisite netzwerkweit mit Pro-Lizenz | läuft nach `0ce26a7`, `a22b127`, `4223dea` | ms1–ms26 |
 | Free (ohne Pro) | nur Kern-Adapter; Connector-Laufzeit ab Werk frei | f1–f5 |
 | Pro ohne Lizenz / Basis / Agentur / abgelaufen / verlängert | je Recht an und aus wie dokumentiert | n, b, k, x, y |
@@ -756,3 +756,115 @@ Prüfungen: captain-pro PHPUnit 672 Tests (8 übersprungen), `bin/lint.sh`, `mak
 | g19 | ZIP site: the license can be removed from the site (deactivation) | **PASS** | wplc_not_activated |
 | g20 | ZIP site PHP error log has no fatal/warning/deprecation from the suite plugins | **PASS** | clean |
 | z1 | suite PHP error log has no fatal/warning/deprecation from the suite plugins | **PASS** | clean |
+
+## Provider je Website: Pass, Affiliate, Lizenzserver (24.11.2026)
+
+**63 von 63 Prüfungen bestehen** (`bin/e2e/suite/ms-providers.sh`, frische Datenbanken, eigene Websites
+`msprov/shop` Port 8093 und `msprov/net` Port 8094, Datenbanken `wp_e2e_msprov`, `wp_e2e_msprov_ms`). Ergänzt t103 um die
+drei noch fehlenden Pflicht-Provider. Jeder Provider ist auf **genau einer** Unterwebsite aktiv: 2 `quelle` Pass Captain
+mit Pass Captain Pro, 3 `ziel` Affiliate Captain mit Affiliate Captain Pro, 4 `drei` WP License Captain (Lizenzserver),
+5 `vier` keiner, 1 Hauptwebsite ohne Aktivierung. Workflow Captain und Workflow Captain Pro sind netzwerkweit aktiv,
+jede Unterwebsite aktiviert den Netzwerkplan selbst (B2), die Produktlizenzen von Pass und Affiliate nur auf ihrer
+Website (Shop = `msprov/shop`).
+
+**Einschränkung, wichtig:** Der Prüfcontainer hat nur PHP 8.3.6; ein PHP 8.5 aus dem Quellcode ließ sich in dieser
+Sitzung nicht bauen (php.net nicht erreichbar, der Bau aus dem `php-src`-Tag wurde von der Sitzung abgelehnt). Das
+Skript setzt deshalb mit `E2E_IGNORE_PHP_MIN=1` in den **Kopien** der Plugins nur die PHP-Mindestversion (Versionsprüfung
+und Kopfzeile „Requires PHP“, beim Lizenzserver die vorhandene Konstante `WPLC_TESTS_IGNORE_PHP_MINIMUM`) auf die
+laufende Version herab; sonst nichts. WordPress 7.1.4 und WooCommerce 11.3.0 sind die echten Mindest-/Zielversionen
+(Kopie der Staging-Website), MariaDB 10.11.14 liegt unter der Empfehlung (nur Hinweis). Alle Quellen wurden vor dem Lauf
+auf PHP 8.3 geparst (0 Syntaxfehler). Der Lauf auf PHP 8.5 steht damit weiter aus (CI `e2e-db.yml` prüft keine Multisite
+mit Pro).
+
+| Plugin | Quelle |
+| --- | --- |
+| Workflow Captain | dieser Branch (`claude/plugin-todo-liste-2a83v4`, Kopie des Checkouts) |
+| Workflow Captain Pro, Pass Captain Pro, Affiliate Captain Pro | captain-pro `main` `0ee78f6`, `build/build.php --in-place` |
+| Pass Captain | wp-passmaster `main` `a5039c1` |
+| Affiliate Captain | wpaffiliatemaster `main` `4782092` |
+| WP License Captain | wp-license `main` `40eb158` (Shop und Website 4) |
+
+| Fall | Pass Captain (Website 2) | Affiliate Captain (Website 3) | Lizenzserver (Website 4) |
+| --- | --- | --- | --- |
+| Adapter nur dort registriert, auf 1 und den anderen drei Websites nicht | t103/2/pass-captain, t103/{1,3,4,5}/-pass-captain | t103/3/affiliate-captain, t103/{1,2,4,5}/-affiliate-captain | t103/4/wp-license, t103/{1,2,3,5}/-wp-license |
+| Ereignisse nur in den Tabellen dieser Website gespeichert und verarbeitet | t103/pass/iso (`pass.order.paid`, `pass.order.tickets_issued`) | t103/affiliate/iso (`affiliate.affiliate.created`, `sale.attributed`, `commission.created`) | t103/license/iso (`license.license.issued`) |
+| Deaktivierung pausiert nur dort (`adapter_unregistered`) | t103/pass/wait, t103/pass/off | t103/affiliate/wait, t103/affiliate/off | t103/license/wait, t103/license/off (`license.license.status_changed`) |
+| Andere Websites behalten ihre Adapter | t103/off-pass/* | t103/off-affiliate/* | t103/off-license/* |
+| Wieder aktiv: Requeue verarbeitet die pausierten Ereignisse dort | t103/pass/on | t103/affiliate/on | t103/license/on |
+
+Beobachtung: `license.license.issued` verlässt den Lizenzserver über den Action Scheduler (verzögert), der auch den
+Worker von Workflow Captain ausführt; für den Deaktivierungsfall nimmt das Skript deshalb eine Statusänderung durch den
+Admin (`license.license.status_changed`), die sofort gemeldet wird.
+
+Nicht geprüft: **Form Captain und Review Captain.** Form Captain braucht `composer install` in wp-formmaster (in dieser
+Sitzung untersagt); Review Captain wurde aus Zeitgründen nicht aufgesetzt. **Site A → Site B je Provider** ist hier
+nicht Gegenstand: Produktereignisse sind nicht netzwerkfähig erklärt und Produktbefehle nicht `NetworkSafe` (Befunde 7
+und 8); A → B ist mit Kern-Ereignissen belegt (ms5–ms17).
+
+### Ergebnisse (24.11.2026)
+
+| ID | Prüfung | Ergebnis | Detail |
+| --- | --- | --- | --- |
+| msp0 | shop signing key pinned for the Pro add-ons | **PASS** | CZC/ujcEBubNEbY0rCYQNhNvWFHM1RTdR8Ikj/s6J7k= |
+| s1 | WP License Captain active with its tables (vendor shop on the suite site) | **PASS** | 0.2.0 |
+| s0/agency | license plan agency (workflow-captain-pro) mapped to a product | **PASS** | workflow.suite_integrations,workflow.webhooks,workflow.event_correlation,workflow.advanced_logic,workflow.recipe_templates,workflow.extended_logs,workflow.cu... |
+| s0/basic | license plan basic (workflow-captain-pro) mapped to a product | **PASS** | workflow.suite_integrations,workflow.webhooks limit 3 |
+| s0/single | license plan single (workflow-captain-pro) mapped to a product | **PASS** | workflow.suite_integrations,workflow.webhooks,workflow.event_correlation,workflow.advanced_logic,workflow.recipe_templates,workflow.extended_logs,workflow.cu... |
+| s0/network4 | license plan network4 (workflow-captain-pro) mapped to a product | **PASS** | workflow.suite_integrations,workflow.webhooks,workflow.event_correlation,workflow.advanced_logic,workflow.recipe_templates,workflow.extended_logs,workflow.cu... |
+| s0/pro | license plan pro (pass-captain-pro) mapped to a product | **PASS** | pass.write_api limit 3 |
+| s0/pro | license plan pro (voucher-captain-pro) mapped to a product | **PASS** | voucher.white_label limit 3 |
+| s0/pro | license plan pro (affiliate-captain-pro) mapped to a product | **PASS** | affiliate.extended_api limit 3 |
+| s2/wcp_full | paid order issues a license (wcp_full) | **PASS** | workflow-captain-pro active until 2027-11-24 08:35:31 |
+| s2/wcp_basic | paid order issues a license (wcp_basic) | **PASS** | workflow-captain-pro active until 2027-11-24 08:35:32 |
+| s2/wcp_one | paid order issues a license (wcp_one) | **PASS** | workflow-captain-pro active until 2027-11-24 08:35:32 |
+| s2/wcp_net | paid order issues a license (wcp_net) | **PASS** | workflow-captain-pro active until 2027-11-24 08:35:32 |
+| s2/pass | paid order issues a license (pass) | **PASS** | pass-captain-pro active until 2027-11-24 08:35:32 |
+| s2/voucher | paid order issues a license (voucher) | **PASS** | voucher-captain-pro active until 2027-11-24 08:35:33 |
+| s2/affiliate | paid order issues a license (affiliate) | **PASS** | affiliate-captain-pro active until 2027-11-24 08:35:33 |
+| s3 | agency plan grants all eight workflow.* rights | **PASS** | ["workflow.suite_integrations","workflow.webhooks","workflow.event_correlation","workflow.advanced_logic","workflow.recipe_templates","workflow.extended_logs... |
+| ms1 | Pro network-activated licenses per site (kernel option network is off; every subsite has its own activation, B2) | **PASS** | false |
+| ms4 | network tables created (schema current) | **PASS** | current |
+| ms2/2/wcp_net | site 2: own activation of the wcp_net license (production) against the shop | **PASS** | active production 1/4 |
+| ms2/3/wcp_net | site 3: own activation of the wcp_net license (production) against the shop | **PASS** | active production 2/4 |
+| ms2/4/wcp_net | site 4: own activation of the wcp_net license (production) against the shop | **PASS** | active production 3/4 |
+| ms2/5/wcp_net | site 5: own activation of the wcp_net license (production) against the shop | **PASS** | active production 4/4 |
+| l/pass | license pass activated in PassCaptainPro against the local shop (signed answer, pinned key) | **PASS** | ok active pass.write_api |
+| l/affiliate | license affiliate activated in AffiliateCaptainPro against the local shop (signed answer, pinned key) | **PASS** | ok active affiliate.extended_api |
+| t103/1/-pass-captain | site 1: adapter pass-captain not registered | **PASS** | workflow-captain,wordpress |
+| t103/1/-affiliate-captain | site 1: adapter affiliate-captain not registered | **PASS** | workflow-captain,wordpress |
+| t103/1/-wp-license | site 1: adapter wp-license not registered | **PASS** | workflow-captain,wordpress |
+| t103/2/pass-captain | site 2: adapter pass-captain registered | **PASS** | workflow-captain,wordpress,woocommerce,pass-captain |
+| t103/2/-affiliate-captain | site 2: adapter affiliate-captain not registered | **PASS** | workflow-captain,wordpress,woocommerce,pass-captain |
+| t103/2/-wp-license | site 2: adapter wp-license not registered | **PASS** | workflow-captain,wordpress,woocommerce,pass-captain |
+| t103/3/-pass-captain | site 3: adapter pass-captain not registered | **PASS** | workflow-captain,wordpress,woocommerce,affiliate-captain |
+| t103/3/affiliate-captain | site 3: adapter affiliate-captain registered | **PASS** | workflow-captain,wordpress,woocommerce,affiliate-captain |
+| t103/3/-wp-license | site 3: adapter wp-license not registered | **PASS** | workflow-captain,wordpress,woocommerce,affiliate-captain |
+| t103/4/-pass-captain | site 4: adapter pass-captain not registered | **PASS** | workflow-captain,wordpress,woocommerce,wp-license |
+| t103/4/-affiliate-captain | site 4: adapter affiliate-captain not registered | **PASS** | workflow-captain,wordpress,woocommerce,wp-license |
+| t103/4/wp-license | site 4: adapter wp-license registered | **PASS** | workflow-captain,wordpress,woocommerce,wp-license |
+| t103/5/-pass-captain | site 5: adapter pass-captain not registered | **PASS** | workflow-captain,wordpress |
+| t103/5/-affiliate-captain | site 5: adapter affiliate-captain not registered | **PASS** | workflow-captain,wordpress |
+| t103/5/-wp-license | site 5: adapter wp-license not registered | **PASS** | workflow-captain,wordpress |
+| t103/pass/iso | pass events of site 2 are stored and processed only in the tables of site 2 (none on the other four sites) | **PASS** | {"made":"order 10 processing","site2":["pass.order.paid:done","pass.order.tickets_issued:done"],"others":{"1":0,"3":0,"4":0,"5":0}} |
+| t103/affiliate/iso | affiliate events of site 3 are stored and processed only in the tables of site 3 (none on the other four sites) | **PASS** | {"made":"order 10 processing, affiliate 1","site3":["affiliate.affiliate.created:done","affiliate.sale.attributed:done","affiliate.commission.created:done"],... |
+| s0/ms-plan-cJ1o | license plan ms-plan-cJ1o (ms-test-product) mapped to a product | **PASS** | ms.test limit 1 |
+| t103/license/iso | license events of site 4 are stored and processed only in the tables of site 4 (none on the other four sites) | **PASS** | {"made":"license 1 active","site4":["license.license.issued:done"],"others":{"1":0,"2":0,"3":0,"5":0}} |
+| t103/pass/wait | site 2: new pass events wait for the worker (received) before the plugin is deactivated | **PASS** | {"made":"order 12 processing","events":[{"id":"13","type":"pass.order.paid","state":"received","last_error":null},{"id":"14","type":"pass.order.tickets_issue... |
+| t103/pass/off | provider pass deactivated on site 2: its waiting events pause there (adapter_unregistered), none lost or failed | **PASS** | ["pass.order.paid:paused:adapter_unregistered","pass.order.tickets_issued:paused:adapter_unregistered"] |
+| t103/off-pass/2/-pass-captain | site 2: adapter pass-captain not registered (off-pass) | **PASS** | workflow-captain,wordpress,woocommerce |
+| t103/off-pass/3/affiliate-captain | site 3: adapter affiliate-captain registered (off-pass) | **PASS** | workflow-captain,wordpress,woocommerce,affiliate-captain |
+| t103/off-pass/4/wp-license | site 4: adapter wp-license registered (off-pass) | **PASS** | workflow-captain,wordpress,woocommerce,wp-license |
+| t103/pass/on | provider pass active again on site 2: requeue processes the paused events there | **PASS** | {"requeued":2,"of":2,"left":[]} |
+| t103/affiliate/wait | site 3: new affiliate events wait for the worker (received) before the plugin is deactivated | **PASS** | {"made":"order 12 processing, affiliate 1","events":[{"id":"15","type":"affiliate.sale.attributed","state":"received","last_error":null},{"id":"16","type":"a... |
+| t103/affiliate/off | provider affiliate deactivated on site 3: its waiting events pause there (adapter_unregistered), none lost or failed | **PASS** | ["affiliate.sale.attributed:paused:adapter_unregistered","affiliate.commission.created:paused:adapter_unregistered"] |
+| t103/off-affiliate/3/-affiliate-captain | site 3: adapter affiliate-captain not registered (off-affiliate) | **PASS** | workflow-captain,wordpress,woocommerce |
+| t103/off-affiliate/2/pass-captain | site 2: adapter pass-captain registered (off-affiliate) | **PASS** | workflow-captain,wordpress,woocommerce,pass-captain |
+| t103/off-affiliate/4/wp-license | site 4: adapter wp-license registered (off-affiliate) | **PASS** | workflow-captain,wordpress,woocommerce,wp-license |
+| t103/affiliate/on | provider affiliate active again on site 3: requeue processes the paused events there | **PASS** | {"requeued":2,"of":2,"left":[]} |
+| t103/license/wait | site 4: new license events wait for the worker (received) before the plugin is deactivated | **PASS** | {"made":"license 1 suspended","events":[{"id":"11","type":"license.license.status_changed","state":"received","last_error":null}]} |
+| t103/license/off | provider license deactivated on site 4: its waiting events pause there (adapter_unregistered), none lost or failed | **PASS** | ["license.license.status_changed:paused:adapter_unregistered"] |
+| t103/off-license/4/-wp-license | site 4: adapter wp-license not registered (off-license) | **PASS** | workflow-captain,wordpress,woocommerce |
+| t103/off-license/2/pass-captain | site 2: adapter pass-captain registered (off-license) | **PASS** | workflow-captain,wordpress,woocommerce,pass-captain |
+| t103/off-license/3/affiliate-captain | site 3: adapter affiliate-captain registered (off-license) | **PASS** | workflow-captain,wordpress,woocommerce,affiliate-captain |
+| t103/license/on | provider license active again on site 4: requeue processes the paused events there | **PASS** | {"requeued":1,"of":1,"left":[]} |
+| msp-log | no PHP fatal or warning from the suite plugins in the logs of shop and network | **PASS** | clean |

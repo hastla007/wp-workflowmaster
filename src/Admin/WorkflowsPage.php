@@ -590,7 +590,7 @@ final class WorkflowsPage {
 			echo '</div>';
 			return;
 		}
-		$states   = array( EngineStore::RUN_RUNNING, EngineStore::RUN_ACTION_REQUIRED, EngineStore::RUN_PAUSED, EngineStore::RUN_FAILED, EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_CANCELLED );
+		$states   = array( EngineStore::RUN_RUNNING, EngineStore::RUN_WAITING, EngineStore::RUN_ACTION_REQUIRED, EngineStore::RUN_PAUSED, EngineStore::RUN_FAILED, EngineStore::RUN_SUCCEEDED, EngineStore::RUN_STOPPED, EngineStore::RUN_CANCELLED );
 		$state    = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display filter or notice after a redirect, read only.
 		$state    = in_array( $state, $states, true ) ? $state : '';
 		$corr     = EventsPage::correlation_param();
@@ -739,6 +739,11 @@ final class WorkflowsPage {
 		if ( '' !== (string) $run['last_error'] ) {
 			$meta[ __( 'Reason', 'workflow-captain' ) ] = '<code>' . esc_html( (string) $run['last_error'] ) . '</code>';
 		}
+		if ( EngineStore::RUN_WAITING === $run['state'] ) {
+			$until = self::waiting_until( $store->steps_for_run( $run['id'] ) );
+			/* translators: %s: time zone */
+			$meta[ sprintf( __( 'Waiting until (%s)', 'workflow-captain' ), Time::label() ) ] = null === $until ? esc_html__( 'until it is resumed', 'workflow-captain' ) : Time::html( $until );
+		}
 		if ( '' !== $corr ) {
 			$meta[ __( 'Correlation', 'workflow-captain' ) ] = '<code>' . esc_html( $corr ) . '</code> (<a href="' . esc_url( self::url( self::SLUG_RUNS, array( 'correlation' => $corr ) ) ) . '">' . esc_html__( 'Runs with this correlation', 'workflow-captain' ) . '</a> | <a href="' . esc_url( add_query_arg( array( 'page' => EventsPage::SLUG, 'correlation' => $corr ), admin_url( 'admin.php' ) ) ) . '">' . esc_html__( 'Events with this correlation', 'workflow-captain' ) . '</a>)';
 		}
@@ -829,6 +834,21 @@ final class WorkflowsPage {
 	 * @param array<int,array<string,mixed>> $steps From EngineStore::steps_for_run().
 	 * @return array<int,array{node:string,state:string,started:string,wait_until:?string,ended:?string,attempts:int,result:array,error:?string}>
 	 */
+	/**
+	 * Deadline of the waiting step of a run (Suspend): UTC "Y-m-d H:i:s", or null when only a resume wakes it (or no
+	 * step waits).
+	 *
+	 * @param array<int,array<string,mixed>> $steps From EngineStore::steps_for_run().
+	 */
+	public static function waiting_until( array $steps ): ?string {
+		foreach ( $steps as $step ) {
+			if ( EngineStore::STEP_WAITING === $step['state'] ) {
+				return EngineStore::WAIT_NO_DEADLINE === (string) $step['due_at'] ? null : (string) $step['due_at'];
+			}
+		}
+		return null;
+	}
+
 	public static function timeline( array $steps ): array {
 		$ended_states = array( EngineStore::STEP_SUCCEEDED, EngineStore::STEP_CANCELLED, EngineStore::STEP_ACTION_REQUIRED, EngineStore::STEP_PAUSED );
 		$out          = array();
@@ -837,7 +857,7 @@ final class WorkflowsPage {
 				'node'       => (string) $step['node_id'],
 				'state'      => (string) $step['state'],
 				'started'    => (string) $step['created_at'],
-				'wait_until' => (string) $step['due_at'] > (string) $step['created_at'] ? (string) $step['due_at'] : null,
+				'wait_until' => (string) $step['due_at'] > (string) $step['created_at'] && EngineStore::WAIT_NO_DEADLINE !== (string) $step['due_at'] ? (string) $step['due_at'] : null,
 				'ended'      => in_array( $step['state'], $ended_states, true ) ? (string) $step['updated_at'] : null,
 				'attempts'   => (int) $step['attempts'],
 				'result'     => \WorkflowCaptain\Engine\Engine::redact( (array) ( $step['result'] ?? array() ) ),
@@ -860,6 +880,7 @@ final class WorkflowsPage {
 			EngineStore::STEP_ACTION_REQUIRED => __( 'Action required', 'workflow-captain' ),
 			EngineStore::STEP_PAUSED          => __( 'Paused', 'workflow-captain' ),
 			EngineStore::STEP_CANCELLED       => __( 'Canceled', 'workflow-captain' ),
+			EngineStore::STEP_WAITING         => __( 'Waiting (on hold)', 'workflow-captain' ),
 		);
 		return $labels[ $state ] ?? $state;
 	}
@@ -884,6 +905,7 @@ final class WorkflowsPage {
 			EngineStore::RUN_ACTION_REQUIRED => __( 'Action required', 'workflow-captain' ),
 			EngineStore::RUN_PAUSED          => __( 'Paused', 'workflow-captain' ),
 			EngineStore::RUN_CANCELLED       => __( 'Canceled', 'workflow-captain' ),
+			EngineStore::RUN_WAITING         => __( 'Waiting', 'workflow-captain' ),
 		);
 		return $labels[ $state ] ?? $state;
 	}

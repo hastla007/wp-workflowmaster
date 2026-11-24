@@ -96,7 +96,7 @@ Alle Kernprüfungen grün nach jedem Commit: `php tests/run.php` (619), `php tes
 ## Nicht geprüft und warum
 
 - **n8n (WF-N8N-12):** übersprungen. `npm install n8n` ist sehr groß, und der Verbindungstest von Workflow Captain Pro
-  sendet nur mit Lizenz (Funktion `workflow.webhooks` ohne Lizenz aus); ein Lizenzserver (wp-license) lief hier nicht.
+  sendet nur mit Lizenz (Funktion `workflow.webhooks` ohne Lizenz aus); ein Lizenzserver (wp-license) lief hier nicht. **Nachtrag 24.11.2026:** Mit n8n 1.123.92 (npm, nur 127.0.0.1) nachgeholt: `bin/e2e/n8n.sh`, Ergebnisse in [`n8n/MATRIX.md`](n8n/MATRIX.md), Abschnitt 4.
 - **Workflow Captain Pro mit Lizenz:** Das Add-on hat keinen Schalter, der Funktionen ohne Lizenz freigibt (nur
   `WORKFLOW_CAPTAIN_PRO_LICENSE_DEV` für andere Server-Schlüssel). Geprüft wurde: lädt netzwerkweit ohne PHP-Fehler,
   alle Netzwerk- und Website-Seiten antworten 200, jede sagt, warum Funktionen aus sind („The license does not grant

@@ -2,7 +2,7 @@
 
 Stand: 16.11.2026. Aufgabe WF-N8N-10 in [`../../TODO.md`](../../TODO.md). Vertrag: [`../../konzept.md`](../../konzept.md), Abschnitt 17.12, „Vertrag der Version 1“.
 
-**Entwurf.** Der Versand an n8n kommt mit Workflow Captain Pro. Die Vorlagen zeigen, wie ein n8n-Workflow die Ereignisse empfängt, die Workflow Captain nach der Spezifikation sendet (Umschlag aus [`../SPEC-suite-events.md`](../SPEC-suite-events.md), Abschnitt 6). Sie sind gegen keine n8n-Instanz importiert worden. Vor der Freigabe in der unterstützten n8n-Version importieren und testen (WF-N8N-12).
+**Entwurf.** Der Versand an n8n kommt mit Workflow Captain Pro. Die Vorlagen zeigen, wie ein n8n-Workflow die Ereignisse empfängt, die Workflow Captain nach der Spezifikation sendet (Umschlag aus [`../SPEC-suite-events.md`](../SPEC-suite-events.md), Abschnitt 6). Am 24.11.2026 in n8n 1.123.92 (selbst gehostet) importiert, aktiviert und mit Workflow Captain Pro geprüft (`bin/e2e/n8n.sh`, Ergebnisse in [`MATRIX.md`](MATRIX.md)); dabei korrigiert: feste `webhookId`, eigener Pfad für die WooCommerce-Vorlage, Operation von „Doppelte verwerfen“. In n8n Cloud nicht geprüft (WF-N8N-12).
 
 | Datei | Ereignis | Zweck |
 |---|---|---|
@@ -18,6 +18,10 @@ Stand: 16.11.2026. Aufgabe WF-N8N-10 in [`../../TODO.md`](../../TODO.md). Vertra
 3. **Filter auf den Ereignistyp**, falls eine Verbindung mehrere Typen sendet.
 4. **Felder auswählen:** nur, was der nächste Schritt braucht.
 5. **Ihr nächster Schritt:** Platzhalter für CRM, Helpdesk, Tabelle oder Reporting.
+
+## Header-Wert in den n8n-Ausführungen
+
+n8n speichert bei jeder Ausführung die eingehenden Header, also auch den Header-Auth-Wert und die Signatur (geprüft mit n8n 1.123.92). Wer Ausführungen in n8n einsehen kann, sieht damit den Wert. Zugriff auf die Ausführungen in n8n beschränken oder erfolgreiche Ausführungen nicht speichern (Workflow-Einstellung „Save successful production executions“ bzw. `EXECUTIONS_DATA_SAVE_ON_SUCCESS=none`); nach einem Verdacht den Wert in Workflow Captain neu erzeugen und das Credential in n8n nachziehen.
 
 ## Test- und Produktions-URL
 

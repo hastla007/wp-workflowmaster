@@ -91,6 +91,7 @@ Die Kürzel der Repositories und die gelesenen Stände stehen in Abschnitt 0 der
 - **Frage:** Genügt irgendeine gültige Lizenz des Produkt-Add-ons, oder braucht es ein eigenes Recht wie `pass.suite_integrations`?
 - **Stand:** D6 sagt „Pro-Lizenz des Produkt-Add-ons“. Ein Recht `<produkt>.suite_integrations` gibt es nur als Vorschlag bei Review Captain.
 - **Empfehlung:** Eine gültige Lizenz des Produkt-Add-ons genügt; keine neuen Rechte je Produkt. Alle Tarife haben denselben Funktionsumfang, ein zusätzliches Recht würde nichts unterscheiden.
+- **Entschieden (24.11.2026, Inhaberin):** wie empfohlen. Eine gültige Lizenz des Produkt-Add-ons genügt, es gibt kein eigenes Recht je Produkt.
 
 ### F-10 · Grenze zwischen kostenlosem Kern und Pro (D3)
 

@@ -14,7 +14,7 @@ Diese Fragen sind offen, aber Code und Spezifikation folgen schon der Empfehlung
 | F-03 | Muster der Vertragskonstanten, Abkündigungsfrist | `<PRODUKT>_CONTRACT_VERSION`; inzwischen haben Review (`REVIEW_CAPTAIN_CONTRACT_VERSION`), Lizenzserver (`WPLC_CONTRACT_VERSION`) und Course (`COURSE_CAPTAIN_CONTRACT_VERSION`, Branch) dieses Muster. Abkündigung: zwei MINOR-Versionen und mindestens sechs Monate |
 | F-06 | Lizenz eines anderen Add-ons prüfen | Erweiterung des Kernels in captain-pro (N12); bis dahin die Übergangslösung `Suite\Gate`/`Suite\ProductLicenses` in Workflow Captain Pro (auf captain-pro `main`) |
 | F-08 | Wo liegen Adapter, wer plant Review-Einladungen | Adapter in Workflow Captain Pro (gebaut, captain-pro `main`); Einladungen plant Review Captain Pro |
-| F-09 | Reicht eine gültige Lizenz des Produkt-Add-ons | ja, kein eigenes Recht je Produkt |
+| F-09 | Reicht eine gültige Lizenz des Produkt-Add-ons | ja, kein eigenes Recht je Produkt  **Entschieden 24.11.2026: ja.** |
 | F-10 | Verarbeitet der kostenlose Kern Captain-Ereignisse | nein: Captain-Produkte nur mit Workflow Captain Pro; Lizenzereignisse im Shop über Pro |
 | F-14 | Verlust zwischen Commit des Kerns und Speichern | für Version 1 hinnehmen, im Handbuch nennen |
 | F-21 | Beantragter Partnercode „öffentlich“? | nein, erst nach Freigabe |
@@ -29,7 +29,7 @@ Diese Fragen sind offen, aber Code und Spezifikation folgen schon der Empfehlung
 | E9 / F-19 | Preise Workflow Captain Pro (Vorschlag 129 / 229 / 399 € netto für 1 / 5 / 25 Websites) | bestätigen oder Beträge nennen; gleiche Pro-Funktionen in allen Tarifen | WF-INT-13, Produktkey und Jahrespläne im Shop, Website (WEB-1) |
 | F-16 | Ist Course Captain ein Suite-Produkt mit Add-on und Präfix `course.` | ja (Course Captain baut schon so: `COURSE_CAPTAIN_CONTRACT_VERSION`, Pro-Funktionen) | Katalog `course.*`, CC-1 bis CC-4 |
 | F-24 | Schreibende Workflow-Aktionen für Course Captain (Zugang anlegen/entziehen) | nicht in Version 1; danach als Befehle nach dem Muster der Gutschein-Befehle, Aktion in Workflow Captain Pro | Antwort an Course Captain (E-39b) |
-| r4b | Volle WooCommerce-Erstattung: `affiliate.commission.adjusted` ohne `refund_id` (Affiliate bucht über den Bestellstatus) | Spezifikation: `refund_id` bei voller Erstattung über den Status optional; Affiliate muss nichts ändern | „Woo/Refund-Verknüpfung testen“ |
+| r4b | Volle WooCommerce-Erstattung: `affiliate.commission.adjusted` ohne `refund_id` (Affiliate bucht über den Bestellstatus) | Spezifikation: `refund_id` bei voller Erstattung über den Status optional; Affiliate muss nichts ändern | „Woo/Refund-Verknüpfung testen“  **Entschieden 24.11.2026 anders als empfohlen:** Affiliate liefert bei voller Erstattung die echte WooCommerce-Erstattungs-ID als `refund_id` (zusätzlich `refund_key`, Vertrag 1.11.0, AC-6); die künstliche Kennung bleibt nur ohne Erstattungsobjekt. |
 | Z. 88 | Form und Review: Verhalten „Plugin fehlt, Lizenz fehlt, Vertrags-MAJOR“ nur per PHPUnit belegt, E2E erst mit freigegebenem Form/Review Captain Pro | so akzeptieren und abhaken | Provider-Verhalten |
 | WF-SEO-09 | Headless-Anwendung | zurückstellen, bis es eine Produktanforderung gibt; Aufgabe schließen | – |
 | Sprache | Die Texte im Admin sind im Code deutsch; WordPress.org erwartet englische Ausgangstexte (übersetzt über translate.wordpress.org) | vor dem ersten Release auf WordPress.org umstellen (deutsch dann als Übersetzung `de_DE`) | Veröffentlichung auf WordPress.org |
