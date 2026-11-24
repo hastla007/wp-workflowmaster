@@ -19,7 +19,8 @@ defined( 'ABSPATH' ) || exit;
 $s_section = $args[0] ?? '';
 $s_param   = $args[1] ?? '';
 
-const S_STATE = '/home/user/wp-e2e/logs/suite-state.json';
+// E2E_STATE: own state file of a separate run (bin/e2e/suite/ms-providers.sh).
+define( 'S_STATE', getenv( 'E2E_STATE' ) ?: '/home/user/wp-e2e/logs/suite-state.json' );
 
 /** Records one result line. */
 function s_check( string $id, string $name, bool $ok, $detail = '' ): bool {
