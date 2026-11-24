@@ -650,6 +650,7 @@ require __DIR__ . '/country-profile-tests.php';
 require __DIR__ . '/settings-hints-tests.php';
 require __DIR__ . '/language-tests.php';
 require __DIR__ . '/decisions-tests.php';
+require __DIR__ . '/settings-round2-tests.php';
 
 echo "\n{$passed} passed, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );

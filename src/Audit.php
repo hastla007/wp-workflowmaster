@@ -57,8 +57,16 @@ final class Audit {
 		return is_array( $log ) ? $log : array();
 	}
 
-	/** Hook for update_option_ of both settings options (form save through options.php). */
-	public static function settings_updated( $old, $new ): void {
+	/**
+	 * Hook for update_option_ of the settings options (form save through options.php). With the option name both sides
+	 * are read as stored values: Install::settings_not_autoloaded() creates each option as an empty array, so the
+	 * first save would otherwise list every field as changed from nothing (P1 round 2).
+	 */
+	public static function settings_updated( $old, $new, $option = '' ): void {
+		if ( '' !== $option ) {
+			$old = self::normalized( (string) $option, $old );
+			$new = self::normalized( (string) $option, $new );
+		}
 		$changed = self::changed( is_array( $old ) ? $old : array(), is_array( $new ) ? $new : array() );
 		if ( $changed ) {
 			self::record( 'settings', self::masked( $changed ) );
@@ -70,17 +78,29 @@ final class Audit {
 	 * it, so update_option_ does not fire (P1 finding). The change is recorded against the defaults.
 	 */
 	public static function settings_added( $option, $value ): void {
-		$defaults = Settings::OPTION === $option ? Settings::defaults() : Notifications::sanitize( array() );
 		// Compare like for like: fields the value does not name count as their default, not as a change.
-		$value = Settings::OPTION === $option ? Settings::sanitize( $value ) : Notifications::sanitize( $value );
-		self::settings_updated( $defaults, $value );
+		self::settings_updated( array(), $value, (string) $option );
+	}
+
+	/** A value of one settings option in its stored form (defaults for missing fields); other options as they are. */
+	private static function normalized( string $option, $value ): array {
+		$value = is_array( $value ) ? $value : array();
+		switch ( $option ) {
+			case Settings::OPTION:
+				return Settings::sanitize( $value );
+			case Notifications::OPTION:
+				return Notifications::sanitize( $value );
+			case Messages::OPTION:
+				return Messages::sanitize( $value );
+		}
+		return $value;
 	}
 
 	/** Addresses are personal data: the log names the field, not the value (as SettingsTransfer::apply()). */
 	private static function masked( array $changed ): array {
 		foreach ( $changed as $key => $pair ) {
 			$field = SettingsRegistry::field( (string) $key );
-			if ( null !== $field && SettingsRegistry::TYPE_EMAILS === $field['type'] ) {
+			if ( null !== $field && in_array( $field['type'], array( SettingsRegistry::TYPE_EMAILS, SettingsRegistry::TYPE_EMAIL ), true ) ) {
 				$changed[ $key ] = array( '…', '…' );
 			}
 		}
@@ -94,7 +114,7 @@ final class Audit {
 	public static function watch_settings( bool $on ): void {
 		foreach ( array( Settings::OPTION, Notifications::OPTION, Messages::OPTION ) as $option ) {
 			if ( $on ) {
-				add_action( 'update_option_' . $option, array( self::class, 'settings_updated' ), 10, 2 );
+				add_action( 'update_option_' . $option, array( self::class, 'settings_updated' ), 10, 3 );
 				add_action( 'add_option_' . $option, array( self::class, 'settings_added' ), 10, 2 );
 			} else {
 				remove_action( 'update_option_' . $option, array( self::class, 'settings_updated' ), 10 );
