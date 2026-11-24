@@ -593,13 +593,94 @@ switch ( $s_section ) {
 
 	// ---- T103: providers per site in a multisite --------------------------------------------------------------------
 	case 'ms_provider':
-		// Run on the site given by --url. Param: expected adapters "voucher-captain" (or "-voucher-captain" for absent).
-		$r = s_registered();
-		foreach ( array_filter( explode( ',', $s_param ) ) as $want ) {
+		// Run on the site given by --url. Param: expected adapters "voucher-captain" (or "-voucher-captain" for absent),
+		// optionally after a label: "<label>|<list>" gives the IDs t103/<label>/<blog>/<adapter> (ms-providers.sh).
+		$r     = s_registered();
+		$label = '';
+		$list  = $s_param;
+		if ( str_contains( $s_param, '|' ) ) {
+			list( $label, $list ) = explode( '|', $s_param, 2 );
+		}
+		foreach ( array_filter( explode( ',', $list ) ) as $want ) {
 			$absent = str_starts_with( $want, '-' );
 			$name   = ltrim( $want, '-' );
-			s_check( 't103/' . get_current_blog_id() . '/' . $want, 'site ' . get_current_blog_id() . ': adapter ' . $name . ( $absent ? ' not registered' : ' registered' ), $absent !== in_array( $name, $r, true ), implode( ',', $r ) );
+			s_check( 't103/' . ( '' !== $label ? $label . '/' : '' ) . get_current_blog_id() . '/' . $want, 'site ' . get_current_blog_id() . ': adapter ' . $name . ( $absent ? ' not registered' : ' registered' ) . ( '' !== $label ? ' (' . $label . ')' : '' ), $absent !== in_array( $name, $r, true ), implode( ',', $r ) );
 		}
+		break;
+
+	// ---- T103 per provider (ms-providers.sh): Pass on site 2, Affiliate on site 3, license server on site 4 ----------
+	case 'ms_prov_emit':
+		// Run on the provider's site. Param "<provider>" (pass|affiliate|license) or "<provider>:wait" (the worker does
+		// not run: the event stays "received" for the deactivation case).
+		list( $prov, $mode ) = array_pad( explode( ':', $s_param ), 2, '' );
+		$blog                = get_current_blog_id();
+		$before              = count( s_site_events( $blog, $prov . '.%' ) );
+		$made                = 'nothing';
+		if ( 'pass' === $prov ) {
+			$order = s_wc_order( array( s_pass_ticket_product() ) );
+			$made  = 'order ' . $order->get_id() . ' ' . $order->get_status();
+		} elseif ( 'affiliate' === $prov ) {
+			$order = s_wc_order( array( s_plain_product() ), s_affiliate() );
+			$made  = 'order ' . $order->get_id() . ' ' . $order->get_status() . ', affiliate ' . s_affiliate();
+		} elseif ( 'license' === $prov && 'wait' === $mode ) {
+			// license.license.issued leaves the license server through Action Scheduler (deferred), which would also run
+			// the worker of Workflow Captain; a status change by the admin is emitted at once.
+			$id   = (int) s_state( 'msprov_license' );
+			$r    = \WPLC\License\LicenseLifecycle::admin_set_status( $id, 'suspended', 'ms-providers e2e', s_admin_id() );
+			$made = 'license ' . $id . ' suspended' . ( is_wp_error( $r ) ? ': ' . $r->get_error_code() : '' );
+		} elseif ( 'license' === $prov ) {
+			$product = s_plan( 'MS Lizenz ' . $blog, 'ms-test-product', 'ms-plan-' . wp_generate_password( 4, false, false ), array( 'ms.test' ), 1 );
+			$license = s_buy( s_customer( 'mskunde' ), $product );
+			$made    = 'license ' . ( $license['id'] ?? 0 ) . ' ' . ( $license['status'] ?? 'none' );
+			s_state( 'msprov_license', (int) ( $license['id'] ?? 0 ) );
+		}
+		if ( 'wait' !== $mode ) {
+			s_run_as();
+			s_work( 6 );
+		}
+		$here = s_site_events( $blog, $prov . '.%' );
+		$new  = array_slice( $here, $before );
+		if ( 'wait' === $mode ) {
+			s_state( 'msprov_wait_' . $prov, array_map( 'intval', array_column( $new, 'id' ) ) );
+			s_check( 't103/' . $prov . '/wait', 'site ' . $blog . ': new ' . $prov . ' events wait for the worker (received) before the plugin is deactivated', array() !== $new && array() === array_filter( $new, static fn( $e ) => 'received' !== $e['state'] ), array( 'made' => $made, 'events' => $new ) );
+			break;
+		}
+		$others = array();
+		foreach ( array( 1, 2, 3, 4, 5 ) as $b ) {
+			if ( $b !== $blog ) {
+				$others[ $b ] = count( s_site_events( $b, $prov . '.%' ) );
+			}
+		}
+		$done = array_values( array_filter( $new, static fn( $e ) => 'done' === $e['state'] ) );
+		s_check( 't103/' . $prov . '/iso', $prov . ' events of site ' . $blog . ' are stored and processed only in the tables of site ' . $blog . ' (none on the other four sites)', array() !== $new && count( $done ) === count( $new ) && array() === array_filter( $others ), array( 'made' => $made, 'site' . $blog => array_map( static fn( $e ) => $e['type'] . ':' . $e['state'], $new ), 'others' => $others ) );
+		break;
+
+	case 'ms_prov_paused':
+		// Run on the provider's site after its plugin was deactivated there. Param "<provider>".
+		$ids = array_map( 'intval', (array) s_state( 'msprov_wait_' . $s_param ) );
+		s_work( 3 );
+		$rows = array();
+		foreach ( $ids as $id ) {
+			$row    = $wpdb->get_row( $wpdb->prepare( "SELECT type, state, last_error FROM {$wpdb->prefix}workflow_captain_events WHERE id = %d", $id ), ARRAY_A );
+			$rows[] = $row ? $row['type'] . ':' . $row['state'] . ':' . $row['last_error'] : $id . ':missing';
+		}
+		s_check( 't103/' . $s_param . '/off', 'provider ' . $s_param . ' deactivated on site ' . get_current_blog_id() . ': its waiting events pause there (adapter_unregistered), none lost or failed', array() !== $rows && array() === array_filter( $rows, static fn( $r ) => ! str_contains( $r, ':paused:adapter_unregistered' ) ), $rows );
+		break;
+
+	case 'ms_prov_resume':
+		// Run on the provider's site after its plugin is active again. Param "<provider>".
+		$ids = array_map( 'intval', (array) s_state( 'msprov_wait_' . $s_param ) );
+		$ok  = Plugin::instance()->consumer()->requeue_many( $ids );
+		s_run_as();
+		s_work( 6 );
+		$left = array();
+		foreach ( $ids as $id ) {
+			$st = (string) $wpdb->get_var( $wpdb->prepare( "SELECT state FROM {$wpdb->prefix}workflow_captain_events WHERE id = %d", $id ) );
+			if ( 'done' !== $st ) {
+				$left[ $id ] = $st;
+			}
+		}
+		s_check( 't103/' . $s_param . '/on', 'provider ' . $s_param . ' active again on site ' . get_current_blog_id() . ': requeue processes the paused events there', count( $ids ) === $ok && array() === $left, array( 'requeued' => $ok, 'of' => count( $ids ), 'left' => $left ) );
 		break;
 
 	case 'ms_provider_event':
