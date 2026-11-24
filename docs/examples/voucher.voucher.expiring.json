@@ -1,0 +1,31 @@
+{
+  "id": "4f0c2a9e-6b1d-4e57-9a3c-1d2e8f7b6a50",
+  "type": "voucher.voucher.expiring",
+  "spec_version": "1.0",
+  "source": {
+    "product": "voucher-captain",
+    "core_version": "1.4.0",
+    "contract_version": "1.9.0"
+  },
+  "occurred_at": "2026-11-24T03:10:00Z",
+  "site": {
+    "blog_id": 1
+  },
+  "subject": {
+    "type": "voucher",
+    "id": "4828",
+    "id_kind": "record"
+  },
+  "data": {
+    "balance_minor": 1250,
+    "currency": "EUR",
+    "voucher_type": "giftcard",
+    "expires_at": "2026-12-24T23:59:59Z",
+    "days_before": 30,
+    "grace_days": 0
+  },
+  "idempotency_key": "f51548eab8b7999eca4ff1445b5161e870258cc59c69f64ce9278216ccd53a17",
+  "correlation_id": "4f0c2a9e-6b1d-4e57-9a3c-1d2e8f7b6a50",
+  "causation_id": null,
+  "chain_depth": 0
+}

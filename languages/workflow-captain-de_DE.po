@@ -3201,3 +3201,9 @@ msgstr "deine Eingabe"
 #: src/Admin/SetupWizard.php:435
 msgid "– no profile –"
 msgstr "– kein Profil –"
+
+msgid "setting vcap_expiry_reminder_days (0 = off, default); can also be turned off under WooCommerce → Settings → Emails"
+msgstr "Einstellung vcap_expiry_reminder_days (0 = aus, Standard); auch abschaltbar unter WooCommerce → Einstellungen → E-Mails"
+
+msgid "only on the reminder days of that setting; then a workflow on this event should not send a second reminder"
+msgstr "nur an den Erinnerungstagen dieser Einstellung; dann sollte ein Workflow auf dieses Ereignis keine zweite Erinnerung senden"

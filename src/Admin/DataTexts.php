@@ -53,6 +53,8 @@ final class DataTexts {
 			'cannot be turned off (only with a code filter)' => __( 'cannot be turned off (only with a code filter)', 'workflow-captain' ),
 			'only with the filter wpac_notify_credit_note' => __( 'only with the filter wpac_notify_credit_note', 'workflow-captain' ),
 			'only with the filter wpcap_send_refund_mail' => __( 'only with the filter wpcap_send_refund_mail', 'workflow-captain' ),
+			'setting vcap_expiry_reminder_days (0 = off, default); can also be turned off under WooCommerce → Settings → Emails' => __( 'setting vcap_expiry_reminder_days (0 = off, default); can also be turned off under WooCommerce → Settings → Emails', 'workflow-captain' ),
+			'only on the reminder days of that setting; then a workflow on this event should not send a second reminder' => __( 'only on the reminder days of that setting; then a workflow on this event should not send a second reminder', 'workflow-captain' ),
 		);
 	}
 

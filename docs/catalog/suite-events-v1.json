@@ -1,6 +1,6 @@
 {
   "$comment": "Machine-readable part of docs/SPEC-suite-events.md (sections 4.2 to 4.10, 6, 11). The spec text is normative; this file must match it. Checked by bin/validate-spec-examples.py.",
-  "spec_version": "1.0.0-draft.11",
+  "spec_version": "1.0.0-draft.12",
   "catalog_version": "1.0",
   "products": {
     "pass-captain": {
@@ -557,6 +557,31 @@
             "balance_minor": "integer",
             "currency": "currency",
             "voucher_type": "string"
+          }
+        },
+        {
+          "type": "voucher.voucher.expiring",
+          "hook": "vcap_voucher_expiring",
+          "since": "1.9.0",
+          "subject_type": "voucher",
+          "id_kind": "record",
+          "data_fields": [
+            "balance_minor",
+            "currency",
+            "voucher_type",
+            "expires_at",
+            "days_before",
+            "grace_days"
+          ],
+          "actor_user_id": "none",
+          "after_commit": "yes",
+          "data_types": {
+            "balance_minor": "integer",
+            "currency": "currency",
+            "voucher_type": "string",
+            "expires_at": "datetime",
+            "days_before": "integer",
+            "grace_days": "integer"
           }
         },
         {
