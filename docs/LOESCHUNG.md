@@ -13,7 +13,8 @@ Jedes Plugin löscht nur, was es selbst gespeichert hat. Workflow Captain lösch
 | Kern-Plugin (Pass, Voucher, Affiliate, Lizenzserver, WooCommerce) | Namen, Adressen, E-Mail, Zahlungsdaten im eigenen Geschäftsbuch | eigener Löscher des Kerns; Geschäftsbuch nach Aufbewahrungsregeln | Regeln des Kerns |
 | Workflow Captain – Ereignisse | `actor_user_id`, Kennungen im Gegenstand | Löscher von Workflow Captain anonymisiert `actor_user_id` | erledigt 30 Tage, fehlgeschlagen 90 Tage (nur kürzer) |
 | Workflow Captain – Läufe | Kopie des Umschlags mit `actor_user_id` | anonymisiert | 30 Tage nach Ende |
-| Workflow Captain – Markierungen, Notizen | nur, wenn der Betreiber Personenbezug hineinschreibt | Notizen mit Benutzerbezug werden mit exportiert und gelöscht | bis zur Löschung |
+| Workflow Captain – Markierungen, Notizen | Objekt Benutzer (`subject_type = user`) oder Personenbezug, den der Betreiber hineinschreibt | Markierungen und Notizen am Benutzer werden mit exportiert und gelöscht (auch bei gelöschtem Benutzer); Freitext an anderen Objekten erkennt das Plugin nicht | bis zur Löschung, oder einstellbar 1–180 Tage (`retention_tags_notes`, SET-WC-34) |
+| Workflow Captain – Abmeldung von Werbenachrichten | Benutzer-Option `workflow_captain_unsubscribed` (Zeitpunkt) | wird exportiert; die Löschung behält sie und meldet sie als behalten (sonst gingen wieder Werbenachrichten hinaus, R-9.7) – Rechtsprüfung | mit dem Benutzerkonto |
 | Workflow Captain Pro – Ausgangswarteschlange (Webhooks) | Umschlag mit Feldfilter, ohne Personendaten | nicht nötig: keine Personendaten | gesendet 7 Tage, fehlgeschlagen 30 Tage |
 | Workflow Captain Pro – Netzwerkläufe | Elternlauf mit minimalem Umschlag, ohne `actor_user_id` | Export und Löschung je Website | Netzwerk-Aufbewahrung |
 | Empfänger außerhalb (n8n, Webhook-Ziele) | was der Betreiber weitergibt (nur freigegebene Felder) | in der Verantwortung des Empfängers | – |
