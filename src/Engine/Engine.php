@@ -174,6 +174,11 @@ final class Engine implements Dispatcher {
 		return $this->actions;
 	}
 
+	/** Wakes steps that wait after Suspend (Plugin hands one to "workflow_captain_waiting_v1"). */
+	public function waiting(): Waiting {
+		return new Waiting( $this->store, $this->clock );
+	}
+
 	// ----- Dispatcher -----------------------------------------------------------------------------------------
 
 	public function dispatch( array $envelope, ?int $exclude_workflow_id ): DispatchResult {
@@ -305,6 +310,11 @@ final class Engine implements Dispatcher {
 			$this->finish( $step, $owner, EngineStore::STEP_CANCELLED );
 			return;
 		}
+		if ( EngineStore::RUN_WAITING === $run['state'] ) {
+			// The waiting step is due again (its time has passed): the run continues.
+			$this->run_state( $run, EngineStore::RUN_RUNNING, null );
+			$run['state'] = EngineStore::RUN_RUNNING;
+		}
 		$foreign = ForeignRuns::is_foreign( $run );
 		$version = $foreign ? $this->foreign->version( $run ) : $this->store->get_version( (int) $run['version_id'] );
 		if ( $foreign && null === $version ) {
@@ -357,6 +367,43 @@ final class Engine implements Dispatcher {
 					return;
 			}
 			$this->stop( $step, $owner, $run, EngineStore::STEP_ACTION_REQUIRED, EngineStore::RUN_ACTION_REQUIRED, 'unknown_node_type', $attempts );
+		} catch ( Suspend $s ) {
+			// The action waits for something outside the run: nothing happened. No lease, no attempt, no side effect.
+			if ( ForeignRuns::is_foreign( $run ) ) {
+				// A run of another site cannot be woken here (the add-on that resumes it lives on the source site).
+				$this->finish( $step, $owner, EngineStore::STEP_PAUSED, array( 'attempts' => $attempts - 1, 'effect' => EngineStore::EFFECT_NONE, 'last_error' => 'suspend_not_network_safe' ) );
+				$this->run_state( $run, EngineStore::RUN_PAUSED, 'suspend_not_network_safe' );
+				return;
+			}
+			$reason = self::code( $s->reason );
+			$this->finish(
+				$step,
+				$owner,
+				EngineStore::STEP_WAITING,
+				array(
+					'attempts'   => $attempts - 1,
+					'due_at'     => null === $s->until ? EngineStore::WAIT_NO_DEADLINE : $this->clock->mysql( $s->until ),
+					'effect'     => EngineStore::EFFECT_NONE,
+					'last_error' => null,
+					'result'     => array( 'waiting' => $reason, 'until' => null === $s->until ? null : $this->clock->rfc3339( $s->until ) ),
+				)
+			);
+			$this->run_state( $run, EngineStore::RUN_WAITING, $reason );
+		} catch ( Halt $h ) {
+			// The action ends the run regularly here: the step succeeded, no further step (like a condition "stop").
+			$reason = self::code( $h->reason );
+			$this->finish(
+				$step,
+				$owner,
+				EngineStore::STEP_SUCCEEDED,
+				array(
+					'attempts'   => $attempts,
+					'effect'     => EngineStore::EFFECT_DONE,
+					'last_error' => null,
+					'result'     => array( 'halted' => $reason ) + self::redact( $h->result ),
+				)
+			);
+			$this->run_state( $run, EngineStore::RUN_STOPPED, $reason );
 		} catch ( Deferred $d ) {
 			// Not yet (sending window, daily limit; SET-WC-07/-08): nothing happened. Back to the queue until the
 			// window opens, without counting an attempt; the reason and time are visible in the step log.

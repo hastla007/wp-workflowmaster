@@ -1,6 +1,6 @@
 # Workflow Captain – Entwickler-SDK
 
-Stand: Plugin 0.2.0, Spezifikation [`SPEC-suite-events.md`](SPEC-suite-events.md) 1.0.0-draft.7. Die Schnittstellen sind vor Version 1.0.0 der Spezifikation **nicht stabil** (R-13.2); ihre Version steht in `WORKFLOW_CAPTAIN_CONTRACT_VERSION`.
+Stand: Plugin 0.2.0, Spezifikation [`SPEC-suite-events.md`](SPEC-suite-events.md) 1.0.0-draft.7. Die Schnittstellen sind vor Version 1.0.0 der Spezifikation **nicht stabil** (R-13.2); ihre Version steht in `WORKFLOW_CAPTAIN_CONTRACT_VERSION` (seit diesem Stand `0.2.0`: MINOR-Erhöhung für `Suspend`, `Halt`, `Waiting` und den Hook `workflow_captain_waiting_v1`, Abschnitt 3a; Adapter und Connectoren mit `0.1.0` bleiben gültig).
 
 ## 1. Bausteine
 
@@ -104,6 +104,43 @@ add_action( 'workflow_captain_actions_v1', function ( $registry ) {
 - `execute()` wirft `TransientFailure` (Wiederholung nach Plan, R-8.11) oder `PermanentFailure` (Aktion erforderlich; mit `pause = true` pausiert). Das Ergebnis ist ein flaches Array ohne persönliche Daten; Werte mit `@` werden verworfen.
 - Ereignisse, die eine Aktion im selben Prozess auslöst, bekommen die Kausalkette automatisch (R-7.12). Erzeugt eine Aktion ein Objekt, das später Ereignisse auslöst, ruft sie `Consumer::remember_cause()` auf.
 - Ausdrücklich verboten sind alle Befehle aus 8.2. Das Testkit prüft das (A-9).
+- Seit Vertrag `0.2.0` darf `execute()` außerdem `Engine\Suspend` (Lauf anhalten) oder `Engine\Halt` (Lauf regulär beenden) werfen (Abschnitt 3a).
+
+## 3a. Lauf anhalten, fortsetzen, regulär beenden (Vertrag 0.2.0)
+
+Für Aktionen, die auf etwas außerhalb des Laufs warten (zum Beispiel eine Freigabe durch einen Menschen), oder die den Lauf an dieser Stelle ordentlich beenden. Ab `WORKFLOW_CAPTAIN_CONTRACT_VERSION` `0.2.0`; ein Add-on prüft vorher `version_compare( WORKFLOW_CAPTAIN_CONTRACT_VERSION, '0.2.0', '>=' )`.
+
+```php
+final class Suspend extends \RuntimeException { // WorkflowCaptain\Engine\Suspend
+	public function __construct( public readonly string $reason, public readonly ?int $until = null ) {}
+}
+final class Halt extends \RuntimeException {    // WorkflowCaptain\Engine\Halt
+	public function __construct( public readonly string $reason, public readonly array $result = array() ) {}
+}
+final class Waiting {                            // WorkflowCaptain\Engine\Waiting
+	public function resume( int $step_id, string $action_key ): bool;
+	public function state( int $step_id ): ?string;
+}
+```
+
+- **Grund** (`$reason`) ist bei beiden ein fester Code aus `a-z`, `0-9`, `_`, `:`, `.`, `-`, höchstens 64 Zeichen, nie ein Wert aus dem Ereignis. Sonst wirft der Konstruktor `InvalidArgumentException`.
+- **`throw new Suspend( 'needs_release', $until )`**: Es ist nichts passiert. Der Schritt geht in den Zustand `waiting` (`EngineStore::STEP_WAITING`), der Lauf in `waiting` (`EngineStore::RUN_WAITING`, Grund in `last_error`). Die Sperre (Lease) wird frei, **kein Versuch** wird gezählt, **kein Seiteneffekt** gebucht (auch bei nicht idempotenten Aktionen). Schrittprotokoll: `{"waiting":"<grund>","until":"<RFC 3339>"|null}`. Mit `$until` (UTC-Zeitstempel) ist der Schritt ab diesem Zeitpunkt wieder fällig; mit `null` weckt ihn nur `Waiting::resume()`.
+- Nach dem Wecken führt der Worker **dieselbe** Aktion erneut aus, mit derselben `ActionContext::$step_id` und demselben `$idempotency_key`. Wirft sie wieder `Suspend`, wartet der Schritt erneut.
+- Ein wartender Schritt belegt keinen Worker-Platz, gilt nie als überfällig (`overdue`, Nachholgrenze) und nie als hängend (Diagnose, `stuck`); die Wartezeit zählt nicht. Ein wartender Lauf ist **offen**: er hält bei `serialize` spätere Läufe desselben Objekts zurück, fällt nicht unter die Aufbewahrung beendeter Läufe und kann abgebrochen werden (der wartende Schritt wird mit abgebrochen). Notpause, Testmodus und Parallelitätsgrenzen gelten wie für jeden Schritt.
+- In Läufen von einer anderen Website des Netzwerks (Abschnitt 5b) ist `Suspend` nicht erlaubt: der Schritt pausiert mit `suspend_not_network_safe`.
+- **`throw new Halt( 'limit_reached', array( 'count' => 3 ) )`**: Der Schritt ist erfolgreich, sein Ergebnis ist `$result` (redigiert wie jedes Ergebnis) plus `{"halted":"<grund>"}`. Es entsteht **kein** Folgeschritt; der Lauf endet als `stopped` mit dem Grund in `last_error`, wie eine Bedingung im Modus „stop“. Keine Wiederholung, keine Handlungsaufforderung.
+- **`Waiting::resume( $step_id, $action_key )`** setzt einen wartenden Schritt atomar (`UPDATE … WHERE state = 'waiting'`) zurück in die Warteschlange, fällig sofort, und den Lauf von `waiting` auf `running`; ohne Versuch und ohne Seiteneffekt. Der nächste Worker-Durchlauf (WP-Cron/Action Scheduler jede Minute oder `wp workflow-captain process`) führt ihn aus wie jeden fälligen Schritt. `resume()` gilt nur, wenn der Knoten des Schritts die Aktion `$action_key` nutzt, und gibt `false` zurück bei unbekanntem, abgebrochenem oder schon gewecktem Schritt und bei fremder Aktion; ein zweiter Aufruf gibt `false`. `resume()` prüft **keine Benutzerrechte**: das tut der Aufrufer, einschließlich seines eigenen Audit-Eintrags.
+- **`Waiting::state( $step_id )`** liefert den Zustand des Schritts (`EngineStore::STEP_*`) oder `null`.
+- **Hook** `workflow_captain_waiting_v1` (Action, Argument `Waiting $waiting`): einmal je Anfrage auf `init` mit Priorität 20, auch in Cron, WP-CLI und während der Notpause. Wer `resume()` braucht, merkt sich das Objekt:
+
+```php
+add_action( 'workflow_captain_waiting_v1', function ( \WorkflowCaptain\Engine\Waiting $waiting ) {
+	My_Release::$waiting = $waiting; // später, nach eigener Rechteprüfung und Audit: $waiting->resume( $step_id, 'my.release' )
+} );
+```
+
+- Testlauf mit Beispieldaten (Editor): Aktionen werden dort nie ausgeführt, also auch kein `Suspend`/`Halt`; der Schritt erscheint im Pfad, gespeichert wird nichts.
+- Speicherung nur in den Kerntabellen: `steps.state` und `runs.state` (`varchar(20)`) nehmen `waiting` auf, `steps.due_at` die Frist; ohne Frist steht dort `EngineStore::WAIT_NO_DEADLINE` (`9999-12-31 23:59:59`), weil die Spalte `NOT NULL` ist. Der vorhandene Index `due (state, due_at)` deckt die Abfrage ab; kein Schemawechsel.
 
 ## 4. Workflow-Format
 
@@ -116,6 +153,7 @@ Workflows entstehen im visuellen Editor (Admin „Workflows“); darunter steht 
 | `workflow_captain_loaded` | Action | Kern ist geladen |
 | `workflow_captain_register_adapters_v1` | Action | Adapter anmelden (`init`, Priorität 20). Die eingebauten Adapter `wordpress` und `woocommerce` sind dann schon angemeldet; ein zweiter Adapter für dasselbe Produkt wird abgelehnt (`already_registered`) |
 | `workflow_captain_actions_v1` | Action | Aktionen anmelden |
+| `workflow_captain_waiting_v1` | Action | `Engine\Waiting` zum Wecken wartender Schritte (`Suspend`), einmal je Anfrage auf `init`, Priorität 20, auch in Cron, WP-CLI und Notpause (seit Vertrag 0.2.0, Abschnitt 3a) |
 | `workflow_captain_dispatcher` | Filter | eigene Engine statt der des Kerns (selten) |
 | `workflow_captain_foreign_runs_v1` | Action | Läufe von einer anderen Website des Netzwerks: Resolver, Gate und Beobachter an `Engine\ForeignRuns` setzen (Abschnitt 5b) |
 | `workflow_captain_worker_batch` | Filter | Ereignisse und Schritte je Worker-Durchlauf (1 bis 200, Standard 25) |

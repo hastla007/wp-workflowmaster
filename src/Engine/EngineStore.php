@@ -28,8 +28,10 @@ interface EngineStore {
 	const RUN_ACTION_REQUIRED = 'action_required';
 	const RUN_PAUSED          = 'paused';
 	const RUN_CANCELLED       = 'cancelled';
+	/** An action of the run threw Suspend: the run waits for a time or for Waiting::resume(). Open, not hanging. */
+	const RUN_WAITING = 'waiting';
 
-	const RUN_OPEN = array( self::RUN_RUNNING, self::RUN_ACTION_REQUIRED, self::RUN_PAUSED );
+	const RUN_OPEN = array( self::RUN_RUNNING, self::RUN_ACTION_REQUIRED, self::RUN_PAUSED, self::RUN_WAITING );
 
 	// Step states.
 	const STEP_QUEUED          = 'queued';
@@ -39,6 +41,11 @@ interface EngineStore {
 	const STEP_ACTION_REQUIRED = 'action_required';
 	const STEP_PAUSED          = 'paused';
 	const STEP_CANCELLED       = 'cancelled';
+	/** The action threw Suspend: no lease, no attempt, no side effect; due at due_at or after Waiting::resume(). */
+	const STEP_WAITING = 'waiting';
+
+	/** due_at of a waiting step without a time (the column is NOT NULL): never reached, only Waiting::resume() wakes it. */
+	const WAIT_NO_DEADLINE = '9999-12-31 23:59:59';
 
 	// Side effect booking of a step (R-8.12, konzept 15.3 "Ausführungsgarantie").
 	const EFFECT_NONE    = 'none';
@@ -103,6 +110,7 @@ interface EngineStore {
 
 	/**
 	 * Due steps that are not held by a worker, with workflow and serialisation key of their run, oldest due first.
+	 * Waiting steps count as due once their due_at has passed.
 	 *
 	 * @return array<int,array{id:int,run_id:int,workflow_id:int,serial_key:?string}>
 	 */
@@ -183,7 +191,13 @@ interface EngineStore {
 	/** A human puts an action_required or paused step back into the queue; clears the effect booking if $confirmed. */
 	public function requeue_step( int $id, bool $confirmed, string $now ): bool;
 
-	/** Cancels the open steps of a run. */
+	/**
+	 * Wakes a waiting step atomically (Waiting::resume()): state waiting -> queued, due now, and its run from waiting
+	 * to running. Attempts and side effect booking stay as they are. False when the step was not waiting.
+	 */
+	public function wake_step( int $id, string $now ): bool;
+
+	/** Cancels the open steps of a run (also waiting ones). */
 	public function cancel_steps( int $run_id, string $now ): int;
 
 	public function set_tag( string $product, string $subject_type, string $subject_id, string $tag, int $workflow_id, string $now ): void;
