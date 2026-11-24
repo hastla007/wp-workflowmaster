@@ -1,0 +1,98 @@
+{
+  "name": "E2E: Antwortcodes und Zeitüberschreitung",
+  "nodes": [
+    {
+      "id": "0d8f1c55-0001-4b6e-9a51-1d0c3a7e0001",
+      "name": "Status",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "0d8f1c55-0001-4b6e-9a51-1d0c3a7e0101",
+      "parameters": { "httpMethod": "POST", "path": "e2e-status/:code", "responseMode": "responseNode", "options": {} }
+    },
+    {
+      "id": "0d8f1c55-0002-4b6e-9a51-1d0c3a7e0002",
+      "name": "Verbindungstest?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [220, 0],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            { "id": "c1", "leftValue": "={{ $json.body.type }}", "rightValue": "workflow.connection.test", "operator": { "type": "string", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0d8f1c55-0003-4b6e-9a51-1d0c3a7e0003",
+      "name": "200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [440, -100],
+      "parameters": { "respondWith": "json", "responseBody": "={\"ok\":true}", "options": { "responseCode": 200 } }
+    },
+    {
+      "id": "0d8f1c55-0004-4b6e-9a51-1d0c3a7e0004",
+      "name": "Code aus dem Pfad",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [440, 100],
+      "parameters": { "respondWith": "json", "responseBody": "={\"ok\":false}", "options": { "responseCode": "={{ Number($('Status').item.json.params.code) }}" } }
+    },
+    {
+      "id": "0d8f1c55-0005-4b6e-9a51-1d0c3a7e0005",
+      "name": "Langsam",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "0d8f1c55-0005-4b6e-9a51-1d0c3a7e0105",
+      "parameters": { "httpMethod": "POST", "path": "e2e-slow", "responseMode": "responseNode", "options": {} }
+    },
+    {
+      "id": "0d8f1c55-0006-4b6e-9a51-1d0c3a7e0006",
+      "name": "Verbindungstest (langsam)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [220, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            { "id": "c2", "leftValue": "={{ $json.body.type }}", "rightValue": "workflow.connection.test", "operator": { "type": "string", "operation": "equals" } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "0d8f1c55-0007-4b6e-9a51-1d0c3a7e0007",
+      "name": "40 s warten",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [440, 400],
+      "webhookId": "0d8f1c55-0007-4b6e-9a51-1d0c3a7e0107",
+      "parameters": { "amount": 40, "unit": "seconds" }
+    },
+    {
+      "id": "0d8f1c55-0008-4b6e-9a51-1d0c3a7e0008",
+      "name": "200 (langsam)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 300],
+      "parameters": { "respondWith": "json", "responseBody": "={\"ok\":true}", "options": { "responseCode": 200 } }
+    }
+  ],
+  "connections": {
+    "Status": { "main": [[{ "node": "Verbindungstest?", "type": "main", "index": 0 }]] },
+    "Verbindungstest?": { "main": [[{ "node": "200", "type": "main", "index": 0 }], [{ "node": "Code aus dem Pfad", "type": "main", "index": 0 }]] },
+    "Langsam": { "main": [[{ "node": "Verbindungstest (langsam)?", "type": "main", "index": 0 }]] },
+    "Verbindungstest (langsam)?": { "main": [[{ "node": "200 (langsam)", "type": "main", "index": 0 }], [{ "node": "40 s warten", "type": "main", "index": 0 }]] },
+    "40 s warten": { "main": [[{ "node": "200 (langsam)", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

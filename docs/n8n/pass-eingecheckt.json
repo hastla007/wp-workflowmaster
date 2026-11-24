@@ -10,6 +10,7 @@
         0,
         0
       ],
+      "webhookId": "6d0cb2ed-dc1d-5116-961b-12ac5156c4b4",
       "parameters": {
         "httpMethod": "POST",
         "path": "workflow-captain-pass-checked-in",
@@ -29,7 +30,8 @@
         0
       ],
       "parameters": {
-        "operation": "removeItemsRepeatedInPreviousExecutions",
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "logic": "removeItemsWithAlreadySeenKeyValues",
         "dedupeValue": "={{ $json.body.id }}",
         "options": {}
       },

@@ -654,6 +654,7 @@ require __DIR__ . '/decisions-tests.php';
 require __DIR__ . '/settings-round2-tests.php';
 require __DIR__ . '/privacy-policy-tests.php';
 require __DIR__ . '/waiting-tests.php';
+require __DIR__ . '/n8n-template-tests.php';
 
 echo "\n{$passed} passed, {$failures} failed\n";
 exit( $failures > 0 ? 1 : 0 );
