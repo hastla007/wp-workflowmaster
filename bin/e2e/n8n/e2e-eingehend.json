@@ -1,0 +1,97 @@
+{
+  "name": "E2E: signierter Aufruf an WordPress (eingehend)",
+  "nodes": [
+    {
+      "id": "6a1e2b77-0001-4f0e-8c2d-5e9b1a2c0001",
+      "name": "Auftrag",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "6a1e2b77-0001-4f0e-8c2d-5e9b1a2c0101",
+      "parameters": { "httpMethod": "POST", "path": "e2e-inbound", "responseMode": "lastNode", "options": {} },
+      "notes": "Body: key, trigger, secret, data, optional nonce, ts_offset, wp (Basis-URL). Nur für den Test: das Geheimnis kommt im Auftrag statt aus einem n8n-Credential."
+    },
+    {
+      "id": "6a1e2b77-0002-4f0e-8c2d-5e9b1a2c0002",
+      "name": "Umschlag",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 0],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "a1", "name": "payload", "value": "={{ JSON.stringify({ data: $json.body.data }) }}", "type": "string" },
+            { "id": "a2", "name": "ts", "value": "={{ String(Math.floor(Date.now() / 1000) + Number($json.body.ts_offset || 0)) }}", "type": "string" },
+            { "id": "a3", "name": "nonce", "value": "={{ $json.body.nonce || ($now.toMillis().toString(36) + Math.random().toString(36).slice(2, 12)) }}", "type": "string" },
+            { "id": "a4", "name": "key", "value": "={{ $json.body.key }}", "type": "string" },
+            { "id": "a5", "name": "trigger", "value": "={{ $json.body.trigger }}", "type": "string" },
+            { "id": "a6", "name": "secret", "value": "={{ $json.body.secret }}", "type": "string" },
+            { "id": "a7", "name": "wp", "value": "={{ $json.body.wp || 'http://127.0.0.1:8087' }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    },
+    {
+      "id": "6a1e2b77-0003-4f0e-8c2d-5e9b1a2c0003",
+      "name": "HMAC-SHA256",
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [440, 0],
+      "parameters": { "action": "hmac", "type": "SHA256", "value": "={{ $json.ts + '.' + $json.nonce + '.' + $json.payload }}", "dataPropertyName": "signature", "secret": "={{ $json.secret }}", "encoding": "hex" }
+    },
+    {
+      "id": "6a1e2b77-0004-4f0e-8c2d-5e9b1a2c0004",
+      "name": "An WordPress",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 0],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.wp }}/wp-json/workflow-captain-pro/v1/hooks/{{ $json.key }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Workflow-Captain-Timestamp", "value": "={{ $json.ts }}" },
+            { "name": "X-Workflow-Captain-Nonce", "value": "={{ $json.nonce }}" },
+            { "name": "X-Workflow-Captain-Signature", "value": "={{ $json.signature }}" },
+            { "name": "X-Workflow-Captain-Trigger", "value": "={{ $json.trigger }}" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.payload }}",
+        "options": { "response": { "response": { "fullResponse": true, "neverError": true, "responseFormat": "json" } } }
+      }
+    },
+    {
+      "id": "6a1e2b77-0005-4f0e-8c2d-5e9b1a2c0005",
+      "name": "Ergebnis",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [880, 0],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            { "id": "r1", "name": "status", "value": "={{ $json.statusCode }}", "type": "number" },
+            { "id": "r2", "name": "body", "value": "={{ $json.body }}", "type": "object" },
+            { "id": "r3", "name": "nonce", "value": "={{ $('Umschlag').item.json.nonce }}", "type": "string" }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Auftrag": { "main": [[{ "node": "Umschlag", "type": "main", "index": 0 }]] },
+    "Umschlag": { "main": [[{ "node": "HMAC-SHA256", "type": "main", "index": 0 }]] },
+    "HMAC-SHA256": { "main": [[{ "node": "An WordPress", "type": "main", "index": 0 }]] },
+    "An WordPress": { "main": [[{ "node": "Ergebnis", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

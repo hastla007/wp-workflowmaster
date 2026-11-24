@@ -10,9 +10,10 @@
         0,
         0
       ],
+      "webhookId": "1b1cb913-2b47-54e8-83e1-9a97e297b04c",
       "parameters": {
         "httpMethod": "POST",
-        "path": "workflow-captain-pass-checked-in",
+        "path": "workflow-captain-woocommerce-order-paid",
         "authentication": "headerAuth",
         "responseMode": "onReceived",
         "options": {}
@@ -29,7 +30,8 @@
         0
       ],
       "parameters": {
-        "operation": "removeItemsRepeatedInPreviousExecutions",
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "logic": "removeItemsWithAlreadySeenKeyValues",
         "dedupeValue": "={{ $json.body.id }}",
         "options": {}
       },
