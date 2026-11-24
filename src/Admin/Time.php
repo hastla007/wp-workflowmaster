@@ -19,6 +19,15 @@ final class Time {
 		return Settings::timezone();
 	}
 
+	/** The time zone of Workflow Captain as an object, for wp_date(); UTC when the name is not usable. */
+	public static function zone( ?string $name = null ): \DateTimeZone {
+		try {
+			return new \DateTimeZone( $name ?? self::label() );
+		} catch ( \Exception $e ) {
+			return new \DateTimeZone( 'UTC' );
+		}
+	}
+
 	/** A stored UTC time ("Y-m-d H:i:s") as local time of the same form; empty stays empty, garbage stays as it is. */
 	public static function show( ?string $utc, ?string $zone = null ): string {
 		if ( null === $utc || '' === $utc ) {

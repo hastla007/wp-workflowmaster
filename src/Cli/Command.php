@@ -236,7 +236,7 @@ final class Command {
 	 * : New value. Lists (kinds) comma separated.
 	 *
 	 * [--tab=<tab>]
-	 * : For reset: execution, notify or privacy. Without: all fields.
+	 * : For reset: general, execution, messages, notify or privacy. Without: all fields.
 	 *
 	 * [--dry-run]
 	 * : For import and profile: show the changes, write nothing.
@@ -347,7 +347,7 @@ final class Command {
 			case 'reset':
 				$tab = isset( $assoc['tab'] ) ? (string) $assoc['tab'] : null;
 				if ( null !== $tab && array() === \WorkflowCaptain\SettingsRegistry::tab( $tab ) ) {
-					\WP_CLI::error( 'Unknown tab. Use execution, notify or privacy.' );
+					\WP_CLI::error( 'Unknown tab. Use ' . implode( ', ', \WorkflowCaptain\Admin\SettingsPage::RESET_TABS ) . '.' );
 				}
 				\WP_CLI::confirm( null === $tab ? 'Reset all settings to their defaults?' : sprintf( 'Reset the settings of tab %s?', $tab ), $assoc );
 				$changed = \WorkflowCaptain\SettingsTransfer::apply( \WorkflowCaptain\SettingsTransfer::reset_values( $tab ), 'reset' );

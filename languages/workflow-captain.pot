@@ -272,7 +272,7 @@ msgid "All shop managers (capability manage_woocommerce)"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:384
-msgid "All times are stored in UTC; delays in days follow the site's time zone."
+msgid "All times are stored in UTC; delays in days follow the time zone of Workflow Captain."
 msgstr ""
 
 #. translators: 1: lowest, 2: highest, 3: default value
@@ -1066,7 +1066,7 @@ msgid "Messages"
 msgstr ""
 
 #: src/SettingsRegistry.php:306
-msgid "Messages from workflows to customers (“Message to user”) are not sent during the quiet time; they wait until it ends. Off, or the same hour as “until”: no quiet time. Times in the site’s time zone. Messages to the site operator are not held back."
+msgid "Messages from workflows to customers (“Message to user”) are not sent during the quiet time; they wait until it ends. Off, or the same hour as “until”: no quiet time. Times in the time zone of Workflow Captain. Messages to the site operator are not held back."
 msgstr ""
 
 #: src/SettingsRegistry.php:309
@@ -2568,9 +2568,9 @@ msgstr ""
 msgid "Workflows"
 msgstr ""
 
-#. translators: %s: time zone of the site
+#. translators: %s: time zone of Workflow Captain
 #: src/Admin/SchedulesPage.php:118
-msgid "Workflows with the trigger “Schedule”, by name. All times in the site's time zone (%s). A missed date is made up for at most once."
+msgid "Workflows with the trigger “Schedule”, by name. All times in the time zone of Workflow Captain (%s). A missed date is made up for at most once."
 msgstr ""
 
 #: src/Admin/WorkflowsPage.php:461
@@ -2847,7 +2847,7 @@ msgstr ""
 msgid "not set – recommended: WORKFLOW_CAPTAIN_SECRET_KEY in wp-config.php"
 msgstr ""
 
-#: src/Admin/SchedulesPage.php:72 src/Admin/Time.php:47
+#: src/Admin/SchedulesPage.php:72 src/Admin/Time.php:56
 msgid "not specified"
 msgstr ""
 
