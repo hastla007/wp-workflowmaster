@@ -263,7 +263,7 @@ final class SettingsTransfer {
 		$logged = array();
 		foreach ( $changed as $key => $pair ) {
 			// Addresses are personal data: the log names the field, not the value.
-			$logged[ $key ] = SettingsRegistry::TYPE_EMAILS === SettingsRegistry::field( $key )['type'] ? array( '…', '…' ) : $pair;
+			$logged[ $key ] = in_array( SettingsRegistry::field( $key )['type'], array( SettingsRegistry::TYPE_EMAILS, SettingsRegistry::TYPE_EMAIL ), true ) ? array( '…', '…' ) : $pair;
 		}
 		Audit::record( 'settings_' . $source, $logged );
 		return $changed;

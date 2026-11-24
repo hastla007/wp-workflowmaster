@@ -146,9 +146,12 @@ final class Settings {
 		);
 	}
 
-	/** Filter callback for workflow_captain_retention_days: the setting of the group (1 to 180 days, E-S7 = F-04). */
+	/**
+	 * Filter callback for workflow_captain_retention_days: the setting of the group (1 to 180 days, E-S7 = F-04;
+	 * tags and notes 0 to 180, 0 = no period, SET-WC-34).
+	 */
 	public static function retention( $days, $group ): int {
 		$settings = self::get();
-		return array( 'finished' => $settings['retention_finished'], 'stuck' => $settings['retention_stuck'], 'runs' => $settings['retention_runs'] )[ $group ] ?? (int) $days;
+		return array( 'finished' => $settings['retention_finished'], 'stuck' => $settings['retention_stuck'], 'runs' => $settings['retention_runs'], 'tags_notes' => $settings['retention_tags_notes'] )[ $group ] ?? (int) $days;
 	}
 }

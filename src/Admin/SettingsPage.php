@@ -381,7 +381,7 @@ final class SettingsPage {
 		$rows = array(
 			__( 'Time zone', 'workflow-captain' )     => \WorkflowCaptain\Settings::timezone() . ' – ' . ( '' !== \WorkflowCaptain\Messages::config()['timezone'] ? __( 'own setting in the Messages tab', 'workflow-captain' ) : __( 'from WordPress Settings → General', 'workflow-captain' ) ),
 			__( 'Date format', 'workflow-captain' ) => (string) get_option( 'date_format' ) . ' – ' . __( 'from WordPress Settings → General', 'workflow-captain' ),
-			__( 'Storage', 'workflow-captain' )  => __( 'All times are stored in UTC; delays in days follow the site\'s time zone.', 'workflow-captain' ),
+			__( 'Storage', 'workflow-captain' )  => __( 'All times are stored in UTC; delays in days follow the time zone of Workflow Captain.', 'workflow-captain' ),
 		);
 		echo '<table class="form-table" role="presentation">';
 		foreach ( $rows as $label => $value ) {
@@ -520,14 +520,14 @@ final class SettingsPage {
 		echo '<h3>' . esc_html__( 'Reset', 'workflow-captain' ) . '</h3>';
 		echo '<form method="post" action="' . $post . '" style="display:inline-block;margin-right:1em"><input type="hidden" name="action" value="workflow_captain_settings_reset">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
 		wp_nonce_field( 'workflow_captain_settings_reset' );
-		echo '<label for="wfc-reset-scope">' . esc_html__( 'Section', 'workflow-captain' ) . '</label> <select id="wfc-reset-scope" name="tab"><option value="">' . esc_html__( 'All settings', 'workflow-captain' ) . '</option><option value="execution">' . esc_html__( 'Execution', 'workflow-captain' ) . '</option><option value="notify">' . esc_html__( 'Notifications', 'workflow-captain' ) . '</option><option value="privacy">' . esc_html__( 'Privacy & retention', 'workflow-captain' ) . '</option></select> ';
+		echo '<label for="wfc-reset-scope">' . esc_html__( 'Section', 'workflow-captain' ) . '</label> <select id="wfc-reset-scope" name="tab"><option value="">' . esc_html__( 'All settings', 'workflow-captain' ) . '</option><option value="general">' . esc_html__( 'General', 'workflow-captain' ) . '</option><option value="execution">' . esc_html__( 'Execution', 'workflow-captain' ) . '</option><option value="messages">' . esc_html__( 'Messages', 'workflow-captain' ) . '</option><option value="notify">' . esc_html__( 'Notifications', 'workflow-captain' ) . '</option><option value="privacy">' . esc_html__( 'Privacy & retention', 'workflow-captain' ) . '</option></select> ';
 		submit_button( __( 'Set to defaults', 'workflow-captain' ), 'secondary', 'submit', false, array( 'id' => 'wfc-reset-submit', 'onclick' => 'return confirm(' . wp_json_encode( __( 'Set the settings of the selected section to their default values? You can undo this for 30 days, until the next import or reset.', 'workflow-captain' ) ) . ')' ) );
 		echo '</form>';
 		$backup = \WorkflowCaptain\SettingsTransfer::backup();
 		if ( null !== $backup ) {
 			echo '<form method="post" action="' . $post . '" style="display:inline-block"><input type="hidden" name="action" value="workflow_captain_settings_undo">'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- $post is esc_url() above.
 			wp_nonce_field( 'workflow_captain_settings_undo' );
-			$when = wp_date( (string) get_option( 'date_format' ) . ' ' . (string) get_option( 'time_format' ), (int) $backup['at'] );
+			$when = wp_date( (string) get_option( 'date_format' ) . ' ' . (string) get_option( 'time_format' ), (int) $backup['at'], Time::zone() );
 			// Long on a phone: the button wraps instead of widening the page (found at 375 px).
 			submit_button(
 				/* translators: %s: date and time of the backup */
@@ -632,7 +632,8 @@ final class SettingsPage {
 		exit;
 	}
 
-	private static function import_error( string $code ): string {
+	/** Text of an error code of SettingsTransfer::check() and the profile selection (also used by the setup assistant). */
+	public static function import_error( string $code ): string {
 		$texts = array(
 			'not_a_settings_file' => __( 'not a Workflow Captain settings file', 'workflow-captain' ),
 			'other_plugin'        => __( 'the file belongs to a different plugin', 'workflow-captain' ),
@@ -644,15 +645,20 @@ final class SettingsPage {
 			'unknown_kind'        => __( 'unknown type', 'workflow-captain' ),
 			'invalid_address'     => __( 'invalid address', 'workflow-captain' ),
 			'not_in_profile'      => __( 'not part of this profile', 'workflow-captain' ),
+			'too_long'            => __( 'too long', 'workflow-captain' ),
+			'not_text'            => __( 'not text', 'workflow-captain' ),
 		);
 		return $texts[ $code ] ?? $code;
 	}
+
+	/** Tabs the reset can be limited to: every tab with fields of the register (P1 round 2: messages and general were missing in the form). */
+	const RESET_TABS = array( 'general', 'execution', 'messages', 'notify', 'privacy' );
 
 	/** Resets one tab or all settings on the server, with a backup for undo (SET-WC-23). */
 	public function handle_reset(): void {
 		self::guard( 'workflow_captain_settings_reset' );
 		$tab = isset( $_POST['tab'] ) ? sanitize_key( wp_unslash( $_POST['tab'] ) ) : '';
-		$tab = in_array( $tab, array( 'execution', 'messages', 'notify', 'privacy' ), true ) ? $tab : '';
+		$tab = in_array( $tab, self::RESET_TABS, true ) ? $tab : '';
 		$changed = \WorkflowCaptain\SettingsTransfer::apply( \WorkflowCaptain\SettingsTransfer::reset_values( '' === $tab ? null : $tab ), 'reset' );
 		/* translators: %d: number of changed settings */
 		add_settings_error( Settings::OPTION, 'wfc-reset', sprintf( __( '%d settings reset to defaults. You can undo this for 30 days, until the next import or reset.', 'workflow-captain' ), count( $changed ) ), 'success' );
@@ -761,6 +767,8 @@ final class SettingsPage {
 			'settings_undo'   => __( 'Settings restored', 'workflow-captain' ),
 			'settings_cli'    => __( 'Setting changed via WP-CLI', 'workflow-captain' ),
 			'settings_profile' => __( 'Values of a country profile applied', 'workflow-captain' ),
+			'settings_setup'   => __( 'Settings applied in the setup assistant', 'workflow-captain' ),
+			'setup_recipe'     => __( 'Recipe added as draft by the setup assistant', 'workflow-captain' ),
 			'roles'     => __( 'Role capabilities changed', 'workflow-captain' ),
 			'pause_on'  => __( 'Emergency pause turned on', 'workflow-captain' ),
 			'pause_off' => __( 'Emergency pause lifted', 'workflow-captain' ),

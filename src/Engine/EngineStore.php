@@ -196,6 +196,19 @@ interface EngineStore {
 	/** Adds a note once per key (R-8.4). */
 	public function add_note( string $key, string $product, string $subject_type, string $subject_id, string $note, int $workflow_id, int $run_id, string $now ): void;
 
+	/** Deletes tags and notes created before $before (retention, SET-WC-34). Returns the count of deleted rows. */
+	public function delete_tags_notes_older( string $before ): int;
+
+	/**
+	 * Tags and notes whose object is this user (subject type "user", any product; R-12.5, docs/LOESCHUNG.md).
+	 *
+	 * @return array{tags:array<int,array<string,mixed>>,notes:array<int,array<string,mixed>>}
+	 */
+	public function tags_notes_of_user( int $user_id ): array;
+
+	/** Deletes the tags and notes whose object is this user (privacy eraser, deleted user). Returns the count. */
+	public function erase_tags_notes_of_user( int $user_id ): int;
+
 	/** @return array<int,array<string,mixed>> */
 	public function notes_for( string $product, string $subject_type, string $subject_id ): array;
 

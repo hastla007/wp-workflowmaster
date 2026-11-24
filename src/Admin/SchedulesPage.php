@@ -61,10 +61,10 @@ final class SchedulesPage {
 	}
 
 	/**
-	 * A UTC timestamp as a time element: machine-readable in UTC, shown in the site time zone and format, e.g.
+	 * A UTC timestamp as a time element: machine-readable in UTC, shown in the time zone of Workflow Captain and the site's format, e.g.
 	 * "Mo., 23.11.2026 07:30" or "Mon, November 23, 2026 7:30 am".
 	 *
-	 * @param callable(string,int):string $format  Formats in the site time zone (wp_date() in WordPress).
+	 * @param callable(string,int):string $format  Formats in the time zone of Workflow Captain (wp_date() in WordPress).
 	 * @param string                      $pattern PHP date format, see site_format().
 	 */
 	public static function time_cell( ?int $ts, callable $format, string $pattern = self::FALLBACK_FORMAT ): string {
@@ -114,10 +114,10 @@ final class SchedulesPage {
 		$tz     = $engine->timezone();
 		$rows   = $engine->schedules( (array) get_option( 'workflow_captain_schedule_fired', array() ) );
 		echo '<div class="wrap"><h1>' . esc_html__( 'Schedules', 'workflow-captain' ) . '</h1>';
-		/* translators: %s: time zone of the site */
-		echo '<p class="description">' . esc_html( sprintf( __( 'Workflows with the trigger “Schedule”, by name. All times in the site\'s time zone (%s). A missed date is made up for at most once.', 'workflow-captain' ), $tz ) ) . '</p>';
+		/* translators: %s: time zone of Workflow Captain */
+		echo '<p class="description">' . esc_html( sprintf( __( 'Workflows with the trigger “Schedule”, by name. All times in the time zone of Workflow Captain (%s). A missed date is made up for at most once.', 'workflow-captain' ), $tz ) ) . '</p>';
 		echo '<table class="widefat striped" tabindex="0"><caption class="screen-reader-text">' . esc_html__( 'Workflow schedules', 'workflow-captain' ) . '</caption><thead><tr><th scope="col">' . esc_html__( 'Workflow', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'State', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Schedule', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Next date', 'workflow-captain' ) . '</th><th scope="col">' . esc_html__( 'Last triggered', 'workflow-captain' ) . '</th></tr></thead><tbody>';
-		$lines = self::table_rows( $rows, static fn( string $f, int $ts ): string => (string) wp_date( $f, $ts ), current_user_can( 'edit_workflows' ), self::site_format( (string) get_option( 'date_format' ), (string) get_option( 'time_format' ) ) );
+		$lines = self::table_rows( $rows, static fn( string $f, int $ts ): string => (string) wp_date( $f, $ts, Time::zone( $tz ) ), current_user_can( 'edit_workflows' ), self::site_format( (string) get_option( 'date_format' ), (string) get_option( 'time_format' ) ) );
 		if ( array() === $lines ) {
 			echo '<tr><td colspan="5">' . esc_html__( 'No active or paused workflow starts on a schedule. A draft only counts once it is published.', 'workflow-captain' ) . '</td></tr>';
 		}

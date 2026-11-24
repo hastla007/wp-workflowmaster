@@ -107,6 +107,9 @@ final class OverviewPage {
 		$runs30 = $store->count_runs( array( 'since' => WorkflowsPage::error_since( time() ) ) );
 		$colors = array( 'ok' => '#00a32a', 'warn' => '#996800', 'bad' => '#b32d2e' );
 		echo '<div class="wrap"><h1>' . esc_html__( 'Workflow Captain', 'workflow-captain' ) . '</h1>';
+		if ( current_user_can( \WorkflowCaptain\SettingsRegistry::CAPABILITY ) ) {
+			echo SetupWizard::notice_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- notice_html() escapes.
+		}
 		if ( array() === $d['adapters']['registered'] ) {
 			echo '<div class="notice notice-info inline"><p>' . esc_html__( 'No adapter registered yet. You can publish workflows for the Captain products as soon as a Pro add-on registers its adapter.', 'workflow-captain' ) . '</p></div>';
 		}

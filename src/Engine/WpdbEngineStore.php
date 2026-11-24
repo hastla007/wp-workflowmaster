@@ -522,6 +522,31 @@ final class WpdbEngineStore implements EngineStore {
 		);
 	}
 
+	public function delete_tags_notes_older( string $before ): int {
+		$tags  = (int) $this->db->query( $this->db->prepare( "DELETE FROM {$this->t( 'tags' )} WHERE created_at < %s", $before ) );
+		$notes = (int) $this->db->query( $this->db->prepare( "DELETE FROM {$this->t( 'notes' )} WHERE created_at < %s", $before ) );
+		return $tags + $notes;
+	}
+
+	public function tags_notes_of_user( int $user_id ): array {
+		if ( $user_id <= 0 ) {
+			return array( 'tags' => array(), 'notes' => array() );
+		}
+		return array(
+			'tags'  => (array) $this->db->get_results( $this->db->prepare( "SELECT product, tag, created_at FROM {$this->t( 'tags' )} WHERE subject_type = %s AND subject_id = %s ORDER BY id ASC", 'user', (string) $user_id ), ARRAY_A ),
+			'notes' => (array) $this->db->get_results( $this->db->prepare( "SELECT id, product, note, created_at FROM {$this->t( 'notes' )} WHERE subject_type = %s AND subject_id = %s ORDER BY id ASC", 'user', (string) $user_id ), ARRAY_A ),
+		);
+	}
+
+	public function erase_tags_notes_of_user( int $user_id ): int {
+		if ( $user_id <= 0 ) {
+			return 0;
+		}
+		$tags  = (int) $this->db->query( $this->db->prepare( "DELETE FROM {$this->t( 'tags' )} WHERE subject_type = %s AND subject_id = %s", 'user', (string) $user_id ) );
+		$notes = (int) $this->db->query( $this->db->prepare( "DELETE FROM {$this->t( 'notes' )} WHERE subject_type = %s AND subject_id = %s", 'user', (string) $user_id ) );
+		return $tags + $notes;
+	}
+
 	// ----- Privacy --------------------------------------------------------------------------------------------
 
 	public function runs_by_actor( int $user_id, int $limit, int $offset ): array {

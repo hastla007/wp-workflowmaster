@@ -240,8 +240,8 @@ msgid "All shop managers (capability manage_woocommerce)"
 msgstr "Alle Shop-Verwalter (Recht manage_woocommerce)"
 
 #: src/Admin/SettingsPage.php:307
-msgid "All times are stored in UTC; delays in days follow the site's time zone."
-msgstr "Alle Zeitpunkte werden in UTC gespeichert; Wartezeiten in Tagen richten sich nach der Zeitzone der Website."
+msgid "All times are stored in UTC; delays in days follow the time zone of Workflow Captain."
+msgstr "Alle Zeitpunkte werden in UTC gespeichert; Wartezeiten in Tagen richten sich nach der Zeitzone von Workflow Captain."
 
 #. translators: 1: lowest, 2: highest, 3: default value
 #: src/Admin/SettingsPage.php:133
@@ -1971,8 +1971,8 @@ msgstr "Workflows"
 
 #. translators: %s: time zone of the site
 #: src/Admin/SchedulesPage.php:118
-msgid "Workflows with the trigger “Schedule”, by name. All times in the site's time zone (%s). A missed date is made up for at most once."
-msgstr "Workflows mit dem Auslöser „Zeitplan“, nach Name. Alle Zeiten in der Zeitzone der Website (%s). Ein verpasster Termin wird höchstens einmal nachgeholt."
+msgid "Workflows with the trigger “Schedule”, by name. All times in the time zone of Workflow Captain (%s). A missed date is made up for at most once."
+msgstr "Workflows mit dem Auslöser „Zeitplan“, nach Name. Alle Zeiten in der Zeitzone von Workflow Captain (%s). Ein verpasster Termin wird höchstens einmal nachgeholt."
 
 #: src/Admin/WorkflowsPage.php:404
 msgid "Workflows, newest first"
@@ -2665,8 +2665,8 @@ msgstr "Höchstens so viele Nachrichten aller Workflows zusammen an einen Kunden
 msgid "Messages"
 msgstr "Nachrichten"
 
-msgid "Messages from workflows to customers (“Message to user”) are not sent during the quiet time; they wait until it ends. Off, or the same hour as “until”: no quiet time. Times in the site’s time zone. Messages to the site operator are not held back."
-msgstr "Nachrichten aus Workflows an Kunden („Nachricht an Benutzer“) werden in der Ruhezeit nicht gesendet; sie warten, bis sie endet. Aus oder dieselbe Stunde wie bei „bis“: keine Ruhezeit. Zeiten in der Zeitzone der Website. Nachrichten an den Betreiber werden nicht zurückgehalten."
+msgid "Messages from workflows to customers (“Message to user”) are not sent during the quiet time; they wait until it ends. Off, or the same hour as “until”: no quiet time. Times in the time zone of Workflow Captain. Messages to the site operator are not held back."
+msgstr "Nachrichten aus Workflows an Kunden („Nachricht an Benutzer“) werden in der Ruhezeit nicht gesendet; sie warten, bis sie endet. Aus oder dieselbe Stunde wie bei „bis“: keine Ruhezeit. Zeiten in der Zeitzone von Workflow Captain. Nachrichten an den Betreiber werden nicht zurückgehalten."
 
 msgid "Messages per customer and day"
 msgstr "Nachrichten je Kunde und Tag"
@@ -2940,3 +2940,264 @@ msgstr "Workflow Captain: Einstellungen"
 
 msgid "Workflow Captain: notice recipients"
 msgstr "Workflow Captain: Empfänger der Hinweis-Mail"
+
+msgid "Delete tags and notes after (days)"
+msgstr "Markierungen und Notizen löschen nach (Tagen)"
+
+msgid "Tags and notes that workflows set on objects (for example an order or a ticket). 0 (default): no period, they stay until a workflow removes them. Otherwise the daily maintenance deletes those set longer ago than this; a workflow that asks for the tag then no longer finds it. At most 180 days. Check with your legal advisor which period applies."
+msgstr "Markierungen und Notizen, die Workflows an Objekten setzen (zum Beispiel an einer Bestellung oder einem Ticket). 0 (Standard): keine Frist, sie bleiben, bis ein Workflow sie entfernt. Sonst löscht die tägliche Wartung alle, die vor längerer Zeit gesetzt wurden; ein Workflow, der nach der Markierung fragt, findet sie dann nicht mehr. Höchstens 180 Tage. Klären Sie mit Ihrer Rechtsberatung, welche Frist gilt."
+
+msgid "Suggestion – have it checked legally before use."
+msgstr "Vorschlag – vor Verwendung rechtlich prüfen lassen."
+
+msgid "This text was put together by Workflow Captain from its current settings. It is not legal advice and does not know which workflows you have set up. Adjust it to your workflows, add the purpose and the legal basis, and have it checked before you publish it. If you change a period in the settings, update the text."
+msgstr "Workflow Captain hat diesen Text aus seinen aktuellen Einstellungen zusammengestellt. Er ist keine Rechtsberatung und kennt Ihre Workflows nicht. Passen Sie ihn an Ihre Workflows an, ergänzen Sie Zweck und Rechtsgrundlage und lassen Sie ihn prüfen, bevor Sie ihn veröffentlichen. Wenn Sie eine Frist in den Einstellungen ändern, passen Sie den Text an."
+
+msgid "Automated workflows"
+msgstr "Automatisierte Abläufe"
+
+msgid "We use the plugin Workflow Captain to run automated workflows on this website, for example to send a message after an order or to mark an object. For this, the following data is processed on the server of this website:"
+msgstr "Wir nutzen auf dieser Website das Plugin Workflow Captain für automatisierte Abläufe, zum Beispiel um nach einer Bestellung eine Nachricht zu senden oder ein Objekt zu markieren. Dafür werden auf dem Server dieser Website folgende Daten verarbeitet:"
+
+msgid "Events:"
+msgstr "Ereignisse:"
+
+msgid "When something happens on this website (for example an order, a check-in or a change of status), an event is stored: the type of event, the object concerned (for example an order number), the time, status values and amounts, and the user ID of the person who triggered it, if any. Email addresses, names and codes are not stored. The user ID is removed as soon as no workflow waits for the event any more. Completed events are deleted after %1$s, failed and paused events after %2$s."
+msgstr "Wenn auf dieser Website etwas geschieht (zum Beispiel eine Bestellung, ein Einlass oder eine Statusänderung), wird ein Ereignis gespeichert: die Art des Ereignisses, das betroffene Objekt (zum Beispiel eine Bestellnummer), der Zeitpunkt, Statuswerte und Beträge sowie die Benutzer-ID der auslösenden Person, falls vorhanden. E-Mail-Adressen, Namen und Codes werden nicht gespeichert. Die Benutzer-ID wird entfernt, sobald kein Ablauf mehr auf das Ereignis wartet. Erledigte Ereignisse werden nach %1$s gelöscht, fehlgeschlagene und pausierte nach %2$s."
+
+msgid "Runs and logs:"
+msgstr "Läufe und Protokolle:"
+
+msgid "Each run of a workflow keeps a copy of the event and a log of its steps (state and a shortened result, no message content). Completed, failed and cancelled runs are deleted %s after they end; runs that still wait are kept until they end."
+msgstr "Jeder Lauf eines Ablaufs hält eine Kopie des Ereignisses und ein Protokoll seiner Schritte (Zustand und ein gekürztes Ergebnis, keine Nachrichteninhalte). Erledigte, fehlgeschlagene und abgebrochene Läufe werden nach %s ab ihrem Ende gelöscht; Läufe, die noch warten, bleiben bis zu ihrem Ende."
+
+msgid "Tags and notes:"
+msgstr "Markierungen und Notizen:"
+
+msgid "Workflows can set tags and notes on objects (for example on an order). They contain only the text set in the workflow."
+msgstr "Abläufe können Markierungen und Notizen an Objekten setzen (zum Beispiel an einer Bestellung). Sie enthalten nur den Text, der im Ablauf festgelegt ist."
+
+msgid "They are deleted after %s."
+msgstr "Sie werden nach %s gelöscht."
+
+msgid "They are kept until a workflow removes them; no period is set."
+msgstr "Sie bleiben gespeichert, bis ein Ablauf sie entfernt; eine Frist ist nicht eingestellt."
+
+msgid "Messages:"
+msgstr "Nachrichten:"
+
+msgid "If a workflow sends an email, the address is looked up from the user account only at the time of sending and is not stored by Workflow Captain. The email is sent through WordPress and the mail service of this website."
+msgstr "Sendet ein Ablauf eine E-Mail, wird die Adresse erst beim Versand aus dem Benutzerkonto gelesen und von Workflow Captain nicht gespeichert. Die E-Mail wird über WordPress und den Mailversand dieser Website verschickt."
+
+msgid "To limit the number of messages per day, the number of messages sent to a user ID is counted per calendar day; these counters are deleted after %s."
+msgstr "Um die Zahl der Nachrichten pro Tag zu begrenzen, wird je Kalendertag gezählt, wie viele Nachrichten an eine Benutzer-ID gingen; diese Zähler werden nach %s gelöscht."
+
+msgid "Unsubscribing:"
+msgstr "Abmeldung:"
+
+msgid "Promotional messages contain a link to unsubscribe. If it is used, the time of unsubscribing is stored in the user account, so that no further promotional messages are sent. It is kept as long as the user account exists."
+msgstr "Werbenachrichten enthalten einen Link zur Abmeldung. Wird er genutzt, wird der Zeitpunkt der Abmeldung im Benutzerkonto gespeichert, damit keine weiteren Werbenachrichten gesendet werden. Er bleibt gespeichert, solange das Benutzerkonto besteht."
+
+msgid "Notices to the site operator:"
+msgstr "Hinweise an den Betreiber:"
+
+msgid "A daily notice email goes only to the addresses of the site operator and contains no event content. A change log keeps the last %d changes to settings and capabilities with the user ID of the staff member who made them."
+msgstr "Eine tägliche Hinweis-Mail geht nur an Adressen des Betreibers und enthält keine Ereignisinhalte. Ein Änderungsprotokoll hält die letzten %d Änderungen an Einstellungen und Rechten mit der Benutzer-ID der Person aus dem Team, die sie vorgenommen hat."
+
+msgid "Transfer to others:"
+msgstr "Weitergabe:"
+
+msgid "Apart from the emails described above, Workflow Captain itself sends no data to other services."
+msgstr "Außer den beschriebenen E-Mails sendet Workflow Captain selbst keine Daten an andere Dienste."
+
+msgid "If you use an add-on that sends data to external services (outgoing webhooks, n8n), name here the recipients, the data sent and the purpose. Workflow Captain does not know these settings."
+msgstr "Wenn Sie eine Erweiterung nutzen, die Daten an externe Dienste sendet (ausgehende Webhooks, n8n), nennen Sie hier die Empfänger, die gesendeten Daten und den Zweck. Workflow Captain kennt diese Einstellungen nicht."
+
+msgid "Your rights:"
+msgstr "Ihre Rechte:"
+
+msgid "Workflow Captain is connected to the WordPress tools for exporting and erasing personal data. The export contains the stored events and runs, tags and notes on the user account and the time of unsubscribing. On erasure, or when a user account is deleted, the user ID is removed from stored events and runs, and tags and notes on the user account and the message counters are deleted. The unsubscribe from promotional messages is kept, so that none are sent again."
+msgstr "Workflow Captain ist an die Werkzeuge von WordPress für Export und Löschung personenbezogener Daten angebunden. Der Export enthält die gespeicherten Ereignisse und Läufe, Markierungen und Notizen am Benutzerkonto und den Zeitpunkt der Abmeldung. Bei einer Löschung oder wenn ein Benutzerkonto gelöscht wird, wird die Benutzer-ID aus gespeicherten Ereignissen und Läufen entfernt, und Markierungen und Notizen am Benutzerkonto sowie die Nachrichtenzähler werden gelöscht. Die Abmeldung von Werbenachrichten bleibt erhalten, damit keine mehr gesendet werden."
+
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] "%d Tag"
+msgstr[1] "%d Tagen"
+
+msgid "Workflow Captain: Tags"
+msgstr "Workflow Captain: Markierungen"
+
+msgid "Set (UTC)"
+msgstr "Gesetzt (UTC)"
+
+msgid "Workflow Captain: Notes"
+msgstr "Workflow Captain: Notizen"
+
+msgid "Workflow Captain: Unsubscribed from promotional messages"
+msgstr "Workflow Captain: Abmeldung von Werbenachrichten"
+
+msgid "Unsubscribed (UTC)"
+msgstr "Abgemeldet (UTC)"
+
+msgid "Workflow Captain keeps the unsubscribe from promotional messages, so that none are sent again. It is deleted with the user account."
+msgstr "Workflow Captain behält die Abmeldung von Werbenachrichten, damit keine mehr gesendet werden. Sie wird mit dem Benutzerkonto gelöscht."
+
+#. translators: %d: number of changed settings
+#: src/Admin/SetupWizard.php:573
+msgid "%d setting changed."
+msgid_plural "%d settings changed."
+msgstr[0] "%d Einstellung geändert."
+msgstr[1] "%d Einstellungen geändert."
+
+#: src/Admin/SetupWizard.php:527
+msgid "(empty)"
+msgstr "(leer)"
+
+#: src/Admin/SetupWizard.php:499
+msgid "A recipe is added as a draft and never runs on its own. Review it, start a test run, then publish."
+msgstr "Ein Rezept wird als Entwurf angelegt und läuft nie von selbst. Prüfen Sie es, starten Sie einen Testlauf und veröffentlichen Sie es dann."
+
+#: src/Admin/SetupWizard.php:545
+msgid "Apply and finish setup"
+msgstr "Übernehmen und Einrichtung abschließen"
+
+#: src/Admin/SetupWizard.php:376
+msgid "Back"
+msgstr "Zurück"
+
+#: src/Admin/SetupWizard.php:383
+msgid "Cancel setup – nothing is changed"
+msgstr "Einrichtung abbrechen – nichts wird geändert"
+
+#: src/Admin/SetupWizard.php:525
+msgid "Changes of the setup"
+msgstr "Änderungen der Einrichtung"
+
+#: src/Admin/SetupWizard.php:471
+msgid "Empty fields keep today’s behaviour: the sender of WordPress or your mail plugin, replies to the sender, no footer."
+msgstr "Leere Felder behalten das heutige Verhalten: Absender von WordPress oder Ihrem Mail-Plugin, Antworten an den Absender, keine Fußzeile."
+
+#: src/Admin/SetupWizard.php:545
+msgid "Finish setup"
+msgstr "Einrichtung abschließen"
+
+#: src/Admin/SetupWizard.php:401 src/Admin/SetupWizard.php:498 src/Admin/SetupWizard.php:500
+msgid "First recipe"
+msgstr "Erstes Rezept"
+
+#: src/Admin/SetupWizard.php:284
+msgid "Hide this notice"
+msgstr "Hinweis ausblenden"
+
+#: src/Admin/SetupWizard.php:379
+msgid "Next"
+msgstr "Weiter"
+
+#: src/Admin/SetupWizard.php:501
+msgid "No recipe"
+msgstr "Kein Rezept"
+
+#: src/Admin/SetupWizard.php:537
+msgid "No recipe will be added."
+msgstr "Es wird kein Rezept angelegt."
+
+#: src/Admin/SetupWizard.php:523
+msgid "No setting will be changed."
+msgstr "Keine Einstellung wird geändert."
+
+#: src/Admin/SetupWizard.php:559
+msgid "Nothing was changed."
+msgstr "Es wurde nichts geändert."
+
+#: src/Admin/SetupWizard.php:567
+msgid "Nothing was changed:"
+msgstr "Es wurde nichts geändert:"
+
+#: src/Admin/SetupWizard.php:575
+msgid "Open the new draft"
+msgstr "Neuen Entwurf öffnen"
+
+#: src/Admin/SetupWizard.php:519
+msgid "Please correct this first; nothing can be applied:"
+msgstr "Korrigieren Sie das zuerst, vorher kann nichts übernommen werden:"
+
+#: src/Admin/SettingsPage.php:768
+msgid "Recipe added as draft by the setup assistant"
+msgstr "Rezept als Entwurf angelegt (Einrichtungsassistent)"
+
+#: src/Admin/SetupWizard.php:462
+msgid "Selected values are only taken over after you confirm the summary at the end."
+msgstr "Ausgewählte Werte werden erst übernommen, wenn Sie am Ende die Zusammenfassung bestätigen."
+
+#: src/Admin/SetupWizard.php:400 src/Admin/SetupWizard.php:470
+msgid "Sender and footer"
+msgstr "Absender und Fußzeile"
+
+#: src/Admin/SettingsPage.php:767
+msgid "Settings applied in the setup assistant"
+msgstr "Einstellungen im Einrichtungsassistenten übernommen"
+
+#: src/Admin/SetupWizard.php:581
+msgid "Settings → Status (undo, change log)"
+msgstr "Einstellungen → Status (Rückgängig, Änderungsprotokoll)"
+
+#: src/Admin/SetupWizard.php:60 src/Admin/SetupWizard.php:60 src/Admin/SetupWizard.php:340
+msgid "Setup"
+msgstr "Einrichtung"
+
+#: src/Admin/SetupWizard.php:380
+msgid "Skip this step"
+msgstr "Schritt überspringen"
+
+#: src/Admin/SetupWizard.php:282 src/Admin/SetupWizard.php:568
+msgid "Start setup"
+msgstr "Einrichtung starten"
+
+#: src/Admin/SetupWizard.php:402 src/Admin/SetupWizard.php:513
+msgid "Summary"
+msgstr "Zusammenfassung"
+
+#. translators: %s: name of the recipe
+#: src/Admin/SetupWizard.php:539
+msgid "The recipe “%s” will be added as a draft. It does not run until you publish it."
+msgstr "Das Rezept „%s“ wird als Entwurf angelegt. Es läuft erst, wenn Sie es veröffentlichen."
+
+#: src/Admin/SetupWizard.php:559 src/Admin/SetupWizard.php:571
+msgid "The setup is finished."
+msgstr "Die Einrichtung ist abgeschlossen."
+
+#: src/Admin/SetupWizard.php:281
+msgid "Three short steps: country profile, sender and footer, first recipe. Every step can be skipped, and nothing is changed until you confirm the summary."
+msgstr "Drei kurze Schritte: Länderprofil, Absender und Fußzeile, erstes Rezept. Jeden Schritt können Sie überspringen, und nichts wird geändert, bevor Sie die Zusammenfassung bestätigen."
+
+#: src/Admin/SetupWizard.php:280
+msgid "Workflow Captain: set up the basics"
+msgstr "Workflow Captain: Grundlagen einrichten"
+
+#: src/Admin/SetupWizard.php:285
+msgid "You can start the setup later at any time under Workflow Captain → Setup."
+msgstr "Sie können die Einrichtung jederzeit später unter Workflow Captain → Einrichtung starten."
+
+#: src/Admin/SetupWizard.php:548
+msgid "You can undo the changed settings for 30 days in Settings → Status, until the next import, reset or profile."
+msgstr "Die geänderten Einstellungen können Sie 30 Tage lang unter Einstellungen → Status rückgängig machen, bis zum nächsten Import, Zurücksetzen oder Profil."
+
+#: src/Admin/SettingsPage.php:649
+msgid "not text"
+msgstr "kein Text"
+
+#: src/Admin/SetupWizard.php:577
+msgid "the editor shows what is still needed before publishing."
+msgstr "der Editor zeigt, was vor dem Veröffentlichen noch fehlt."
+
+#: src/Admin/SettingsPage.php:648
+msgid "too long"
+msgstr "zu lang"
+
+#: src/Admin/SetupWizard.php:531
+msgid "your own entry"
+msgstr "Ihre Eingabe"
+
+#: src/Admin/SetupWizard.php:435
+msgid "– no profile –"
+msgstr "– kein Profil –"
