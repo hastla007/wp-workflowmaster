@@ -3207,3 +3207,12 @@ msgstr "Einstellung vcap_expiry_reminder_days (0 = aus, Standard); auch abschalt
 
 msgid "only on the reminder days of that setting; then a workflow on this event should not send a second reminder"
 msgstr "nur an den Erinnerungstagen dieser Einstellung; dann sollte ein Workflow auf dieses Ereignis keine zweite Erinnerung senden"
+
+msgid "The address is set as sender or reply-to address of Workflow Captain’s messages and was kept, because it is an operating setting. Change it under Settings → Messages."
+msgstr "Die Adresse ist als Absender- oder Antwortadresse der Nachrichten von Workflow Captain eingetragen und wurde behalten, weil sie eine Betriebseinstellung ist. Du kannst sie unter Einstellungen → Nachrichten ändern."
+
+msgid "Sender address of the messages"
+msgstr "Absenderadresse der Nachrichten"
+
+msgid "Reply-to address of the messages"
+msgstr "Antwortadresse der Nachrichten"

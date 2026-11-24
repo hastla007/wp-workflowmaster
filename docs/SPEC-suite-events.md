@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| Version | **1.0.0-draft.12** |
-| Stand | 24.11.2026 (1.0.0-draft.12: neues Ereignis `voucher.voucher.expiring`; draft.11: Bewertungseinladungen auch für Gutscheine, R-4.30a; draft.10: Diskriminatoren aus Kennungen der Kerne, R-7.9a; draft.9: Review-Befehle nach F-23); Belege und Stände der anderen Repositories nachgetragen am 23.11.2026 (Abschnitt 16) |
+| Version | **1.0.0-draft.13** |
+| Stand | 24.11.2026 (1.0.0-draft.13: Diskriminator von `voucher.voucher.expiring` als Zeichenkette, `method` `bank`; draft.12: neues Ereignis `voucher.voucher.expiring`; draft.11: Bewertungseinladungen auch für Gutscheine, R-4.30a; draft.10: Diskriminatoren aus Kennungen der Kerne, R-7.9a; draft.9: Review-Befehle nach F-23); Belege und Stände der anderen Repositories nachgetragen am 23.11.2026 (Abschnitt 16) |
 | Status | Entwurf zur Abnahme durch den Inhaber. Seit dem 16.11.2026 gebaut (Plugin `workflow-captain` 0.2.x, Abweichung von D12). |
 | Ort | `hastla007/wp-workflowmaster`, `docs/SPEC-suite-events.md` (Entscheidung D1) |
 | Maschinenlesbar | [`schema/suite-event-v1.schema.json`](schema/suite-event-v1.schema.json), Katalog [`catalog/suite-events-v1.json`](catalog/suite-events-v1.json), Beispiele unter [`examples/`](examples/) |
@@ -316,7 +316,7 @@ Geldbeträge sind erlaubt (D8b): Der Adapter KANN bei `affiliate.sale.attributed
 | `affiliate.commission.paid` | `commission` | `affiliate_id`, `payout_id`, `amount_minor`, `currency` |
 | `affiliate.commission.pending` | `commission` | `affiliate_id`, `kind`, `amount_minor`, `currency` |
 | `affiliate.commission.review_reopened` | `commission` | `affiliate_id`, `kind`, `amount_minor`, `currency` |
-| `affiliate.payout.created` | `payout` | `affiliate_id`, `payout_number`, `status`, `method` (`sepa`, `manual`), `amount_minor`, `currency` |
+| `affiliate.payout.created` | `payout` | `affiliate_id`, `payout_number`, `status`, `method` (`sepa`, `manual`, `bank` ab Affiliate-Vertrag 1.10.0), `amount_minor`, `currency` |
 | `affiliate.payout.paid` | `payout` | `affiliate_id`, `payout_number`, `method`, `amount_minor`, `currency` |
 | `affiliate.payout.cancelled` | `payout` | `affiliate_id`, `payout_number`, `amount_minor`, `currency` |
 | `affiliate.correction.generated` | `correction` | keine weiteren Felder |
@@ -629,7 +629,7 @@ Stand je Provider:
 | `pass.ticket.checked_in`, `pass.ticket.checked_out` | `idempotency_key` aus `$context`, wenn gesetzt; sonst `occurred_at` auf die Sekunde |
 | `voucher.voucher.redeemed`, `voucher.redemption.*` | `redemption_key`, wenn nicht leer; sonst `committed_at` |
 | `voucher.redemption.reversed` | die Journal-ID |
-| `voucher.voucher.expiring` | `days_before` und `expires_at` (ein verlängerter Gutschein meldet zum neuen Datum erneut) |
+| `voucher.voucher.expiring` | die Zeichenkette `expiring:{days_before}|{expires_at}` mit `expires_at` wie in `data` (ISO 8601, UTC, `Z`); ein verlängerter Gutschein meldet zum neuen Datum erneut |
 | `voucher.store_credit.changed` | die Journal-ID der Guthabenbuchung aus dem Hook-Kontext (`journal_id`); sonst Art, `amount_minor`, `balance_minor` (Saldo danach) und Bestell-ID; erst danach `occurred_at` auf die Sekunde |
 | `voucher.gift_card.topped_up` | die Journal-ID der Aufladung (`journal_id`); sonst Bestellposition (`order_item_id`) und `balance_minor` danach |
 | `affiliate.commission.adjusted` | `refund_id`, wenn gesetzt; sonst die sortierten `adjustment_ids` des Hooks |
@@ -1084,6 +1084,7 @@ Jede Zeile ist durch einen automatischen Test zu belegen. „Erfüllt“ heißt:
 | 1.0.0-draft.10 | 23.11.2026 | MINOR nach R-13.1 (Befund P2-04 der Ablaufprüfung in captain-pro): R-7.9 nimmt für `voucher.store_credit.changed`, `voucher.gift_card.topped_up`, `affiliate.commission.adjusted` und Statuswechsel von Pass Captain Kennungen der Kerne als Diskriminator; „alle anderen“ nur mit Kennung, sonst Sekunde. Neu R-7.9a (Sekunde nur als letzter Rückfall; Kerne SOLLEN Vorgangskennungen im Hook mitgeben, Adapter MÜSSEN sie nehmen). Katalog: nur `spec_version`. |
 | 1.0.0-draft.11 | 24.11.2026 | MINOR nach R-13.1 (neues Subjekt für vorhandene Befehle), Entscheidung der Inhaberin vom 24.11.2026: `review.request.plan`/`review.request.cancel` auch für Gutscheine von Voucher Captain (R-4.30a); Auflösung der Einlösung über `vcap_review_source_v1` → `open_reference()` (Vertrag der Quelle ab 1.2.0); Einwilligung wie bei nativen Einladungen, Zuständigkeit je Quelle. Katalog: nur `spec_version`. |
 | 1.0.0-draft.12 | 24.11.2026 | MINOR nach R-13.1 (neues Ereignis eines vorhandenen Providers), auf Wunsch der Inhaberin vom 24.11.2026: `voucher.voucher.expiring` über den neuen Hook `vcap_voucher_expiring` (Voucher-Vertrag 1.9.0), je Gutschein und Vorlauf einmal, Felder `balance_minor`, `currency`, `voucher_type`, `expires_at`, `days_before`, `grace_days`; Diskriminator `days_before` + `expires_at` (R-7.9). `voucher.voucher.expired` unverändert: kommt bei Kulanz erst am Ende der Kulanztage (SET-VC-06). Ältere Verträge: Ereignis nicht angeboten (R-13.4). Katalog: neuer Typ, `spec_version`. |
+| 1.0.0-draft.13 | 24.11.2026 | PATCH-artige Klarstellung und MINOR nach R-13.1 (neuer Wert eines vorhandenen Feldes): Diskriminator von `voucher.voucher.expiring` genau als `expiring:{days_before}|{expires_at}` (Rückmeldung captain-pro#35), Beispiel mit nachrechenbarem `idempotency_key` (R-7.8); `affiliate.payout.*` `method` um `bank` erweitert (Affiliate Captain 0.22.0, Vertrag 1.10.0). Katalog: nur `spec_version`. |
 | 1.0.0-draft.8 (Nachtrag) | 23.11.2026 | Ohne Versionswechsel, keine Regel geändert: Stände aller Suite-Repositories nachgetragen (0, 3.1, 4.4, 4.6.1, 4.6.3, R-4.27, 4.6.4, 11). Lizenzserver mit Vertragskonstante 1.0.0 auf `main` (Katalog `min_contract` `1.0.0`), Form Captain 1.1.0 auf `main`, Voucher und Pass Captain auf `main` ohne Konstante, Review Captain 1.1.0 mit Sternen nur auf Branch (Katalog `rating_fields_since`), Course Captain mit Code auf Branch; neue Frage F-24. |
 | 1.0.0-draft.8 | 16.11.2026 | MINOR nach R-13.1 (neuer Provider), nach F-12 (wie D13): Katalog `review.*` mit 3 Ereignissen aus den öffentlichen Hooks der Stufe V von Review Captain (`main` `863b92b`, 4.6.3, R-4.27 bis R-4.31): Positivliste ohne Namen, E-Mail-Adressen, Texte und IP-Adressen; Sterne über eine Lesefunktion ohne Vertrag (R-4.27); Grabstein und endgültiges Löschen unterschieden (R-4.28); `experience_id` nur als Quelle (R-4.29). Keine Befehle für Review Captain in Version 1 (R-4.30, neue Frage F-23). Vertragskonstante `REVIEW_CAPTAIN_CONTRACT_VERSION` = `1.0.0` auf dem Branch von Review Captain (3.1, RC-2); ohne sie Rückfall nach R-3.3. Angepasst: 0 (Belege), 3.1, 6, 7.2, 7.3, 8.1, R-13.6. Katalog: 3 Ereignisse und Beispiele. |
 | 1.0.0-draft.7 (Nachtrag) | 16.11.2026 | Abschnitt 17: R-17.10 bis R-17.15 (Routing-Vertrag mit netzwerkfähigen Ereignissen und Datenschutzklassen, Netzwerkvertrag einer Aktion, Benutzer, Grenzen des Ziels, Betrieb je Website, Plätze je Unterwebsite). Keine Änderung am Umschlag, am Schema oder am Katalog. |
