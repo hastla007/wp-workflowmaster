@@ -109,6 +109,7 @@ final class Plugin {
 			( new \WorkflowCaptain\Admin\ConnectorsPage( $this ) )->register();
 			( new \WorkflowCaptain\Admin\SiteHealth( $this ) )->register();
 			( new \WorkflowCaptain\Admin\TemplatesPage( $this ) )->register();
+			( new \WorkflowCaptain\Admin\SetupWizard( $this ) )->register();
 			// Narrow screens: wide data tables scroll inside their box, the page itself does not (E2E finding, 390px).
 			// Confirmation boxes: the label is 24 px high, WCAG 2.5.8 (E2E second run).
 			// Header rows (run page, editor) wrap instead of widening the page.
