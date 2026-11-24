@@ -79,7 +79,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of changed settings
-#: src/Admin/SetupWizard.php:578
+#: src/Admin/SetupWizard.php:579
 msgid "%d setting changed."
 msgid_plural "%d settings changed."
 msgstr[0] ""
@@ -116,7 +116,7 @@ msgid_plural "%s entries"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Admin/SetupWizard.php:532
+#: src/Admin/SetupWizard.php:533
 msgid "(empty)"
 msgstr ""
 
@@ -148,7 +148,7 @@ msgstr ""
 msgid "A connector is a separate plugin that connects a project to Workflow Captain. It stays off until you approve it here. Until then, its events are not stored and its actions are not offered. Personal data fields stay off even after approval until you switch them on one by one."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:691 src/Admin/SetupWizard.php:438
+#: src/Admin/SettingsPage.php:691 src/Admin/SetupWizard.php:439
 msgid "A country profile only proposes values. You see the current and the proposed value and choose which to take over; nothing is changed without your selection. Values marked “unchecked” have not been legally reviewed yet: check them with your legal advisor before you use them."
 msgstr ""
 
@@ -173,7 +173,7 @@ msgstr ""
 msgid "A missed date is made up for at most once. In the daylight saving gap the time moves later."
 msgstr ""
 
-#: src/Admin/SetupWizard.php:504
+#: src/Admin/SetupWizard.php:505
 msgid "A recipe is added as a draft and never runs on its own. Review it, start a test run, then publish."
 msgstr ""
 
@@ -319,11 +319,11 @@ msgstr ""
 msgid "Apart from the emails described above, Workflow Captain itself sends no data to other services."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:508 src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:459
+#: src/Admin/SettingsPage.php:508 src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:460
 msgid "Apply"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:550
+#: src/Admin/SetupWizard.php:551
 msgid "Apply and finish setup"
 msgstr ""
 
@@ -388,7 +388,7 @@ msgstr ""
 msgid "Automated workflows"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:384
+#: src/Admin/SetupWizard.php:385
 msgid "Back"
 msgstr ""
 
@@ -400,7 +400,7 @@ msgstr ""
 msgid "Building blocks"
 msgstr ""
 
-#: src/Admin/DataTexts.php:66
+#: src/Admin/DataTexts.php:68
 msgid "Buyer"
 msgstr ""
 
@@ -408,7 +408,7 @@ msgstr ""
 msgid "Cancel run"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:387
+#: src/Admin/SetupWizard.php:388
 msgid "Cancel setup – nothing is changed"
 msgstr ""
 
@@ -440,7 +440,7 @@ msgstr ""
 msgid "Changes from the import"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:530
+#: src/Admin/SetupWizard.php:531
 msgid "Changes of the setup"
 msgstr ""
 
@@ -521,7 +521,7 @@ msgstr ""
 msgid "Correlation %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:690 src/Admin/SetupWizard.php:403 src/Admin/SetupWizard.php:437
+#: src/Admin/SettingsPage.php:690 src/Admin/SetupWizard.php:404 src/Admin/SetupWizard.php:438
 msgid "Country profile"
 msgstr ""
 
@@ -530,7 +530,7 @@ msgstr ""
 msgid "Created (%s)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:459 src/Admin/SetupWizard.php:530
+#: src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:460 src/Admin/SetupWizard.php:531
 msgid "Current"
 msgstr ""
 
@@ -551,7 +551,7 @@ msgstr ""
 msgid "Custom secret key"
 msgstr ""
 
-#: src/Admin/DataTexts.php:65
+#: src/Admin/DataTexts.php:67
 msgid "Customer"
 msgstr ""
 
@@ -720,7 +720,7 @@ msgstr ""
 msgid "Emergency pause turned on"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:476
+#: src/Admin/SetupWizard.php:477
 msgid "Empty fields keep today’s behaviour: the sender of WordPress or your mail plugin, replies to the sender, no footer."
 msgstr ""
 
@@ -878,7 +878,7 @@ msgstr ""
 msgid "Filter"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:550
+#: src/Admin/SetupWizard.php:551
 msgid "Finish setup"
 msgstr ""
 
@@ -890,7 +890,7 @@ msgstr ""
 msgid "First page"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:405 src/Admin/SetupWizard.php:503 src/Admin/SetupWizard.php:505
+#: src/Admin/SetupWizard.php:406 src/Admin/SetupWizard.php:504 src/Admin/SetupWizard.php:506
 msgid "First recipe"
 msgstr ""
 
@@ -950,7 +950,7 @@ msgstr ""
 msgid "Getting started"
 msgstr ""
 
-#: src/Admin/DataTexts.php:62
+#: src/Admin/DataTexts.php:64
 msgid "Gift recipient"
 msgstr ""
 
@@ -1197,7 +1197,7 @@ msgstr ""
 msgid "Network"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:495 src/Admin/SetupWizard.php:530 src/Admin/WorkflowsPage.php:433
+#: src/Admin/SettingsPage.php:495 src/Admin/SetupWizard.php:531 src/Admin/WorkflowsPage.php:433
 msgid "New"
 msgstr ""
 
@@ -1209,7 +1209,7 @@ msgstr ""
 msgid "New, not saved yet"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:380
+#: src/Admin/SetupWizard.php:381
 msgid "Next"
 msgstr ""
 
@@ -1285,11 +1285,11 @@ msgstr ""
 msgid "No provider known yet."
 msgstr ""
 
-#: src/Admin/SetupWizard.php:506
+#: src/Admin/SetupWizard.php:507
 msgid "No recipe"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:542
+#: src/Admin/SetupWizard.php:543
 msgid "No recipe will be added."
 msgstr ""
 
@@ -1297,7 +1297,7 @@ msgstr ""
 msgid "No runs."
 msgstr ""
 
-#: src/Admin/SetupWizard.php:528
+#: src/Admin/SetupWizard.php:529
 msgid "No setting will be changed."
 msgstr ""
 
@@ -1356,11 +1356,11 @@ msgstr ""
 msgid "Note"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:564
+#: src/Admin/SetupWizard.php:565
 msgid "Nothing was changed."
 msgstr ""
 
-#: src/Admin/SetupWizard.php:572
+#: src/Admin/SetupWizard.php:573
 msgid "Nothing was changed:"
 msgstr ""
 
@@ -1427,7 +1427,7 @@ msgstr ""
 msgid "Only the selected values are changed. You can undo this for 30 days, until the next import, reset or profile."
 msgstr ""
 
-#: src/Admin/SetupWizard.php:580
+#: src/Admin/SetupWizard.php:581
 msgid "Open the new draft"
 msgstr ""
 
@@ -1455,7 +1455,7 @@ msgstr ""
 msgid "Overview"
 msgstr ""
 
-#: src/Admin/DataTexts.php:67
+#: src/Admin/DataTexts.php:69
 msgid "Partner"
 msgstr ""
 
@@ -1475,7 +1475,7 @@ msgstr ""
 msgid "Paused runs"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:524
+#: src/Admin/SetupWizard.php:525
 msgid "Please correct this first; nothing can be applied:"
 msgstr ""
 
@@ -1515,7 +1515,7 @@ msgstr ""
 msgid "Product"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:693 src/Admin/SetupWizard.php:439
+#: src/Admin/SettingsPage.php:693 src/Admin/SetupWizard.php:440
 msgid "Profile"
 msgstr ""
 
@@ -1528,15 +1528,15 @@ msgid "Promotional messages contain a link to unsubscribe. If it is used, the ti
 msgstr ""
 
 #. translators: %s: name of the country profile
-#: src/Admin/SettingsPage.php:704 src/Admin/SetupWizard.php:453
+#: src/Admin/SettingsPage.php:704 src/Admin/SetupWizard.php:454
 msgid "Proposal of the profile %s"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:459
+#: src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:460
 msgid "Proposed"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:459
+#: src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:460
 msgid "Proposed changes of the country profile"
 msgstr ""
 
@@ -1604,7 +1604,7 @@ msgstr ""
 msgid "Recipient of the daily notice email"
 msgstr ""
 
-#: src/Admin/DataTexts.php:64
+#: src/Admin/DataTexts.php:66
 msgid "Recipient or buyer"
 msgstr ""
 
@@ -1724,7 +1724,7 @@ msgstr ""
 msgid "Retry, resume, cancel"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:459 src/Admin/SetupWizard.php:530
+#: src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:460 src/Admin/SetupWizard.php:531
 msgid "Review"
 msgstr ""
 
@@ -1904,7 +1904,7 @@ msgstr ""
 msgid "Select event %d"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:467
+#: src/Admin/SetupWizard.php:468
 msgid "Selected values are only taken over after you confirm the summary at the end."
 msgstr ""
 
@@ -1920,7 +1920,7 @@ msgstr ""
 msgid "Sender address"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:404 src/Admin/SetupWizard.php:475
+#: src/Admin/SetupWizard.php:405 src/Admin/SetupWizard.php:476
 msgid "Sender and footer"
 msgstr ""
 
@@ -1960,7 +1960,7 @@ msgstr ""
 msgid "Set to defaults"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:495 src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:459 src/Admin/SetupWizard.php:530
+#: src/Admin/SettingsPage.php:495 src/Admin/SettingsPage.php:711 src/Admin/SetupWizard.php:460 src/Admin/SetupWizard.php:531
 msgid "Setting"
 msgstr ""
 
@@ -2000,7 +2000,7 @@ msgstr ""
 msgid "Settings restored"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:586
+#: src/Admin/SetupWizard.php:587
 msgid "Settings → Status (undo, change log)"
 msgstr ""
 
@@ -2029,7 +2029,7 @@ msgstr ""
 msgid "Show preview"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:698 src/Admin/SetupWizard.php:444
+#: src/Admin/SettingsPage.php:698 src/Admin/SetupWizard.php:445
 msgid "Show proposal"
 msgstr ""
 
@@ -2041,7 +2041,7 @@ msgstr ""
 msgid "Site address"
 msgstr ""
 
-#: src/Admin/DataTexts.php:63
+#: src/Admin/DataTexts.php:65
 msgid "Site operator"
 msgstr ""
 
@@ -2053,11 +2053,11 @@ msgstr ""
 msgid "Skip the message"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:381
+#: src/Admin/SetupWizard.php:382
 msgid "Skip this step"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:285 src/Admin/SetupWizard.php:573
+#: src/Admin/SetupWizard.php:285 src/Admin/SetupWizard.php:574
 msgid "Start setup"
 msgstr ""
 
@@ -2161,7 +2161,7 @@ msgstr ""
 msgid "Suggestion – have it checked legally before use."
 msgstr ""
 
-#: src/Admin/SetupWizard.php:406 src/Admin/SetupWizard.php:518
+#: src/Admin/SetupWizard.php:407 src/Admin/SetupWizard.php:519
 msgid "Summary"
 msgstr ""
 
@@ -2346,7 +2346,7 @@ msgid "The quiet time may span midnight, for example 22:00 to 07:00."
 msgstr ""
 
 #. translators: %s: name of the recipe
-#: src/Admin/SetupWizard.php:544
+#: src/Admin/SetupWizard.php:545
 msgid "The recipe “%s” will be added as a draft. It does not run until you publish it."
 msgstr ""
 
@@ -2354,7 +2354,7 @@ msgstr ""
 msgid "The sender is WooCommerce's sender when WooCommerce is active, otherwise WordPress's."
 msgstr ""
 
-#: src/Admin/SetupWizard.php:564 src/Admin/SetupWizard.php:576
+#: src/Admin/SetupWizard.php:565 src/Admin/SetupWizard.php:577
 msgid "The setup is finished."
 msgstr ""
 
@@ -2445,7 +2445,7 @@ msgstr ""
 msgid "Thursday"
 msgstr ""
 
-#: src/Admin/DataTexts.php:68
+#: src/Admin/DataTexts.php:70
 msgid "Ticket holder"
 msgstr ""
 
@@ -2857,7 +2857,7 @@ msgstr ""
 msgid "You can start the setup later at any time under Workflow Captain → Setup."
 msgstr ""
 
-#: src/Admin/SetupWizard.php:553
+#: src/Admin/SetupWizard.php:554
 msgid "You can undo the changed settings for 30 days in Settings → Status, until the next import, reset or profile."
 msgstr ""
 
@@ -2885,7 +2885,7 @@ msgstr ""
 msgid "Your rights:"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:706 src/Admin/SetupWizard.php:456
+#: src/Admin/SettingsPage.php:706 src/Admin/SetupWizard.php:457
 msgid "Your settings already match this profile. Nothing to change."
 msgstr ""
 
@@ -2921,7 +2921,7 @@ msgstr ""
 msgid "any rule (OR)"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:509 src/Admin/TemplatesPage.php:79
+#: src/Admin/SetupWizard.php:510 src/Admin/TemplatesPage.php:79
 msgid "available"
 msgstr ""
 
@@ -3066,7 +3066,7 @@ msgstr ""
 msgid "no adapter (add-on missing, inactive or unlicensed)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:717 src/Admin/SetupWizard.php:430
+#: src/Admin/SettingsPage.php:717 src/Admin/SetupWizard.php:431
 msgid "no legal weight"
 msgstr ""
 
@@ -3094,7 +3094,7 @@ msgstr ""
 msgid "not a whole number"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:509 src/Admin/TemplatesPage.php:79
+#: src/Admin/SetupWizard.php:510 src/Admin/TemplatesPage.php:79
 msgid "not available – you can create a draft, but publishing requires the provider"
 msgstr ""
 
@@ -3172,6 +3172,10 @@ msgstr ""
 msgid "only if “send” is chosen when issuing (default)"
 msgstr ""
 
+#: src/Admin/DataTexts.php:57
+msgid "only on the reminder days of that setting; then a workflow on this event should not send a second reminder"
+msgstr ""
+
 #: src/Admin/DataTexts.php:54
 msgid "only with the filter wpac_notify_credit_note"
 msgstr ""
@@ -3224,7 +3228,11 @@ msgstr ""
 msgid "setting notify_payout_paid (on by default)"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:582
+#: src/Admin/DataTexts.php:56
+msgid "setting vcap_expiry_reminder_days (0 = off, default); can also be turned off under WooCommerce → Settings → Emails"
+msgstr ""
+
+#: src/Admin/SetupWizard.php:583
 msgid "the editor shows what is still needed before publishing."
 msgstr ""
 
@@ -3256,7 +3264,7 @@ msgstr ""
 msgid "too long"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:717 src/Admin/SetupWizard.php:430
+#: src/Admin/SettingsPage.php:717 src/Admin/SetupWizard.php:431
 msgid "unchecked – legal review"
 msgstr ""
 
@@ -3292,7 +3300,7 @@ msgstr ""
 msgid "yes – system cron required: wp workflow-captain process"
 msgstr ""
 
-#: src/Admin/SetupWizard.php:536
+#: src/Admin/SetupWizard.php:537
 msgid "your own entry"
 msgstr ""
 
@@ -3300,7 +3308,7 @@ msgstr ""
 msgid "{{data.issued_tickets}} issued tickets are affected. Pass Captain informs the guests itself; this notice is in addition."
 msgstr ""
 
-#: src/Admin/SetupWizard.php:439
+#: src/Admin/SetupWizard.php:440
 msgid "– no profile –"
 msgstr ""
 

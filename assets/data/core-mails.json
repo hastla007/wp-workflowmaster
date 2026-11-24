@@ -223,6 +223,14 @@
     "off": "can be turned off under WooCommerce → Settings → Emails",
     "note": "depending on the change; reactivation without email"
    }
+  ],
+  "voucher.voucher.expiring": [
+   {
+    "to": "gift_recipient",
+    "mail": "vcap_voucher_expiry",
+    "off": "setting vcap_expiry_reminder_days (0 = off, default); can also be turned off under WooCommerce → Settings → Emails",
+    "note": "only on the reminder days of that setting; then a workflow on this event should not send a second reminder"
+   }
   ]
  }
 }

@@ -384,6 +384,14 @@
   "currency": "currency",
   "voucher_type": "string"
  },
+ "voucher.voucher.expiring": {
+  "balance_minor": "integer",
+  "currency": "currency",
+  "voucher_type": "string",
+  "expires_at": "datetime",
+  "days_before": "integer",
+  "grace_days": "integer"
+ },
  "voucher.voucher.issued_standalone": {
   "amount_minor": "integer",
   "currency": "currency",
